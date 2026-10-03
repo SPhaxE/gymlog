@@ -33,4 +33,5 @@
 - 组件预览页：`NavPill` 5 种 ring × 3 个 Tab × 减少动画；`Capsule` 5 态；`BodyFigure` 男 / 女 × 正 / 背（`signature-nav.md` §4.5）。
 - `settings.navRing`（ia §1.11 / §1.12）；store 暴露「今日进度」「休息剩余比例」两个只读值。
 - 引擎用 TS 重写，≥ 40 条测试，含原型新增的 5 条规则（`ia.md` §7）。
+  - **M2 已完成**：`src/engine/`，89 条测试。系数取 V1（`DEFAULT_CONFIG`）；`parity.test.ts` 用原型系数（`PROTOTYPE_CONFIG`）跑 10 个演示场景 × 3 个时刻，与 `prototype/engine.js` 逐项一致。规则 1–4 在 `prescribe.test.ts` / `records.test.ts`；规则 5（放大镜松手选最近肌头）依赖人体图几何，随 M3 的 `BodyFigure` 测。
 - 附录 F：`src/pages`、`src/components` 里不出现散落的颜色和尺寸数值。
