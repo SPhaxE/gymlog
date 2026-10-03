@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // 构建后把原型、mock 数据和设计稿拷进 dist/，让 Vercel 上 /prototype/、/design/stage3/ 继续可用。
+// design/hifi/*/refs/ 是 AI 出的视觉参考图（约 30 MB），不进网页包。
 // APK 不需要这些：MILO_TARGET=android 时跳过（public/ 里的动作视频与人体图由 Vite 自己带上）。
 import { cpSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -12,6 +13,6 @@ const root = new URL('..', import.meta.url).pathname;
 for (const dir of ['prototype', 'mock', 'design']) {
   const src = join(root, dir);
   if (!existsSync(src)) continue;
-  cpSync(src, join(root, 'dist', dir), { recursive: true, filter: (p) => !p.includes('/figma-plugin/') });
+  cpSync(src, join(root, 'dist', dir), { recursive: true, filter: (p) => !p.includes('/figma-plugin/') && !p.includes('/refs/') });
   console.log(`[copy_static] ${dir}/ → dist/${dir}/`);
 }
