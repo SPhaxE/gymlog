@@ -169,6 +169,7 @@ function frame(name, dir, gap) {
   f.primaryAxisSizingMode = 'AUTO';
   f.counterAxisSizingMode = 'AUTO';
   f.fills = [];
+  f.clipsContent = false;
   return f;
 }
 async function label(parent, chars, style, color, width) {
@@ -176,7 +177,8 @@ async function label(parent, chars, style, color, width) {
   await t.setTextStyleIdAsync(style.id);
   t.characters = chars;
   t.fills = [boundPaint(color)];
-  if (width) { t.textAutoResize = 'HEIGHT'; t.resize(width, t.height); }
+  // 先定宽再设「自动高度」：resize() 会把文字改成固定尺寸
+  if (width) { t.resize(width, Math.max(1, t.height)); t.textAutoResize = 'HEIGHT'; }
   parent.appendChild(t);
   return t;
 }
@@ -197,8 +199,10 @@ async function buildDocs(V, S) {
   const root = frame('Foundations', 'VERTICAL', 56);
   root.paddingLeft = root.paddingRight = root.paddingTop = root.paddingBottom = 56;
   root.fills = [boundPaint(C('bg/base'))];
-  root.counterAxisSizingMode = 'FIXED';
+  // resize() 会把自动布局的两个方向都改成固定尺寸，所以要在 resize 之后再把高度设回「随内容」
   root.resize(1440, 100);
+  root.counterAxisSizingMode = 'FIXED';
+  root.primaryAxisSizingMode = 'AUTO';
 
   await label(root, T.meta.name, ts['Title/L'], C('text/primary'));
   await label(root, '方向：' + T.meta.direction + '。\n' + T.meta.source + '\n生成自仓库提交 ' + DATA.build.commit + ' · ' + DATA.build.date, ts['Body'], C('text/secondary'), 1100);

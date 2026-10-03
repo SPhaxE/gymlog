@@ -100,8 +100,10 @@ function makeFigma(state, opts) {
     const n = { id: id(type), type, name: type, x: 0, y: 0, width: 100, height: 100, children: [], parent: null, fills: [], strokes: [], boundVariables: {} };
     n.appendChild = (c) => { if (['FRAME', 'SECTION', 'PAGE'].indexOf(n.type) < 0) fail(n.type + ' 不能有子节点'); if (c.parent) c.parent.children = c.parent.children.filter((x) => x !== c); c.parent = n; n.children.push(c); layout(n); };
     n.remove = () => { if (n.parent) n.parent.children = n.parent.children.filter((x) => x !== n); n.parent = null; };
-    n.resize = (w, h) => { if (!(w > 0 && h > 0)) fail('resize 尺寸必须 > 0'); n.width = w; n.height = h; };
-    n.resizeWithoutConstraints = n.resize;
+    // 与 Figma 一致：resize() 会把自动布局框的两个方向都改成 FIXED，把文字的 textAutoResize 改成 NONE
+    n.resize = (w, h) => { if (!(w > 0 && h > 0)) fail('resize 尺寸必须 > 0'); n.width = w; n.height = h; if (n.layoutMode && n.layoutMode !== 'NONE') { n.primaryAxisSizingMode = 'FIXED'; n.counterAxisSizingMode = 'FIXED'; } if (n.type === 'TEXT') n.textAutoResize = 'NONE'; };
+    n.resizeWithoutConstraints = (w, h) => { if (!(w > 0 && h > 0)) fail('resize 尺寸必须 > 0'); n.width = w; n.height = h; };
+    n.clipsContent = type === 'FRAME';
     n.setBoundVariable = (field, v) => { if (NODE_FIELDS.indexOf(field) < 0) fail('节点不能绑定 ' + field); if (v.resolvedType !== 'FLOAT') fail(field + ' 只能绑 FLOAT 变量'); n.boundVariables[field] = v.id; };
     for (const k of ['textStyleId', 'fillStyleId', 'effectStyleId']) Object.defineProperty(n, k, { set() { fail('dynamic-page 下不能直接设 ' + k + '，要用 set' + k[0].toUpperCase() + k.slice(1) + 'Async'); }, get() { return n['_' + k] || ''; } });
     n.setFillStyleIdAsync = async (sid) => { if (!state.styles.some((s) => s.id === sid && s.kind === 'paint')) fail('填充样式不存在'); n._fillStyleId = sid; };
@@ -123,8 +125,8 @@ function makeFigma(state, opts) {
     const ch = f.children, gap = f.itemSpacing || 0;
     const sum = (k) => ch.reduce((a, c) => a + c[k], 0) + gap * Math.max(0, ch.length - 1);
     const max = (k) => ch.reduce((a, c) => Math.max(a, c[k]), 0);
-    if (f.layoutMode === 'VERTICAL') { f.height = sum('height') + (f.paddingTop || 0) + (f.paddingBottom || 0); if (f.counterAxisSizingMode !== 'FIXED') f.width = max('width'); }
-    else { if (f.primaryAxisSizingMode !== 'FIXED' && f.layoutWrap !== 'WRAP') f.width = sum('width'); f.height = max('height'); }
+    if (f.layoutMode === 'VERTICAL') { f._contentH = sum('height') + (f.paddingTop || 0) + (f.paddingBottom || 0); if (f.primaryAxisSizingMode !== 'FIXED') f.height = f._contentH; if (f.counterAxisSizingMode !== 'FIXED') f.width = max('width'); }
+    else { if (f.primaryAxisSizingMode !== 'FIXED' && f.layoutWrap !== 'WRAP') f.width = sum('width'); f._contentH = max('height') + (f.paddingTop || 0) + (f.paddingBottom || 0); if (f.counterAxisSizingMode !== 'FIXED') f.height = f._contentH; }
     if (f.parent) layout(f.parent);
   }
 
@@ -194,6 +196,12 @@ async function run(state, opts) {
   check(sec.length === 1 && sec[0].x >= 400, '生成 1 个说明分区，放在已有画板右边');
   check(st.pageChildren.indexOf(existing) >= 0 && st.pageChildren.filter((n) => n.type !== 'SECTION').length === 1, '没动用户已有的画板，也没在页面上留下散落的节点');
   check(r.logs.filter((l) => /^ERROR/.test(l)).length === 0, '没有运行期报错');
+  const frames = []; (function walk(n) { (n.children || []).forEach((c) => { if (c.type === 'FRAME') frames.push(c); walk(c); }); })(sec[0]);
+  const cut = frames.filter((f) => f.clipsContent && f._contentH > f.height + 0.5);
+  check(frames.length > 0 && cut.length === 0, '没有会裁掉内容的框（框高 ≥ 内容高，或不裁切）' + (cut.length ? '：' + cut.map((f) => f.name + ' ' + f.height + '<' + f._contentH).join('，') : ''));
+  check(sec[0].height >= frames[0].height + 80 - 0.5, '分区高度装得下整个说明框（' + sec[0].height + ' ≥ ' + (frames[0].height + 80) + '）');
+  const texts = []; (function walk(n) { (n.children || []).forEach((c) => { if (c.type === 'TEXT') texts.push(c); walk(c); }); })(sec[0]);
+  check(texts.every((t) => t.textAutoResize !== 'NONE'), '定宽文字都是「自动高度」，不会被截断');
   check(r.logs.filter((l) => /^\[milo\]/.test(l)).length === 0, '字体齐全时没有任何提醒（scopes、绑定都成功）' + (r.logs.length ? '：' + r.logs[0] : ''));
 
   console.log('② 再跑一次（幂等）');
