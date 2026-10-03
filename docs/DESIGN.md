@@ -1,6 +1,7 @@
 # 慢牛 Milo 视觉规范（DESIGN.md）
 
 > 阶段 4 · Foundations + Components + 标杆页 P06 · 2026-10-03 · **已过关**（用户在 Figma 里运行插件并确认） · 方向 B「配重片」（吸收 A「刻度」），初版只有深色
+> **2026-10-03 退回重做**：用户评审认为标杆页 P06 没有设计感、达不到 V1 水准；同时导航从 3 项改为 5 项（`ia.md` §3）。下面的数值与组件作为起点保留，等新的线框和高保真定稿后改写；`NavPill`（3 项版）与 P06 画板作废。
 > **数值的唯一源头是 `design/tokens/tokens.json`。** 本文只写使用规则；数值以 tokens.json 为准，经插件导入 Figma（`design/figma-plugin/README.md`），经 `design/tokens/tokens.css` 给代码用。
 > 方向的来由见 `docs/references.md` §8–§12。
 
