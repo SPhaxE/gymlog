@@ -1,0 +1,271 @@
+{
+ "regions": [
+  {
+   "id": "lower",
+   "name": "下肢"
+  },
+  {
+   "id": "back",
+   "name": "背"
+  },
+  {
+   "id": "chest",
+   "name": "胸"
+  },
+  {
+   "id": "shoulders",
+   "name": "肩"
+  },
+  {
+   "id": "arms",
+   "name": "手臂"
+  },
+  {
+   "id": "core",
+   "name": "核心"
+  }
+ ],
+ "tiers": {
+  "large": {
+   "name": "大肌群",
+   "baseWindowHours": 72,
+   "volumeScale": 1.2
+  },
+  "medium": {
+   "name": "中肌群",
+   "baseWindowHours": 48,
+   "volumeScale": 1.0
+  },
+  "small": {
+   "name": "小肌群",
+   "baseWindowHours": 24,
+   "volumeScale": 0.75
+  }
+ },
+ "heads": [
+  {
+   "id": "gastrocnemius",
+   "name": "腓肠肌",
+   "region": "lower",
+   "tier": "small",
+   "exerciseCount": 6
+  },
+  {
+   "id": "gluteus-maximus",
+   "name": "臀大肌",
+   "region": "lower",
+   "tier": "large",
+   "exerciseCount": 21
+  },
+  {
+   "id": "gluteus-medius",
+   "name": "臀中肌",
+   "region": "lower",
+   "tier": "large",
+   "exerciseCount": 12
+  },
+  {
+   "id": "groin",
+   "name": "腹股沟",
+   "region": "lower",
+   "tier": "large",
+   "exerciseCount": 0
+  },
+  {
+   "id": "inner-quadricep",
+   "name": "股内侧肌",
+   "region": "lower",
+   "tier": "large",
+   "exerciseCount": 13
+  },
+  {
+   "id": "inner-thigh",
+   "name": "大腿内收肌",
+   "region": "lower",
+   "tier": "large",
+   "exerciseCount": 7
+  },
+  {
+   "id": "lateral-hamstrings",
+   "name": "股二头肌",
+   "region": "lower",
+   "tier": "large",
+   "exerciseCount": 7
+  },
+  {
+   "id": "medial-hamstrings",
+   "name": "半腱肌与半膜肌",
+   "region": "lower",
+   "tier": "large",
+   "exerciseCount": 5
+  },
+  {
+   "id": "outer-quadricep",
+   "name": "股外侧肌",
+   "region": "lower",
+   "tier": "large",
+   "exerciseCount": 13
+  },
+  {
+   "id": "rectus-femoris",
+   "name": "股直肌",
+   "region": "lower",
+   "tier": "large",
+   "exerciseCount": 10
+  },
+  {
+   "id": "soleus",
+   "name": "比目鱼肌",
+   "region": "lower",
+   "tier": "small",
+   "exerciseCount": 4
+  },
+  {
+   "id": "tibialis",
+   "name": "胫骨前肌",
+   "region": "lower",
+   "tier": "small",
+   "exerciseCount": 4
+  },
+  {
+   "id": "lats",
+   "name": "背阔肌",
+   "region": "back",
+   "tier": "large",
+   "exerciseCount": 10
+  },
+  {
+   "id": "lower-trapezius",
+   "name": "下斜方肌",
+   "region": "back",
+   "tier": "medium",
+   "exerciseCount": 5
+  },
+  {
+   "id": "lowerback",
+   "name": "下背部",
+   "region": "back",
+   "tier": "large",
+   "exerciseCount": 4
+  },
+  {
+   "id": "traps-middle",
+   "name": "中斜方肌",
+   "region": "back",
+   "tier": "large",
+   "exerciseCount": 8
+  },
+  {
+   "id": "upper-trapezius",
+   "name": "上斜方肌",
+   "region": "back",
+   "tier": "medium",
+   "exerciseCount": 7
+  },
+  {
+   "id": "mid-lower-pectoralis",
+   "name": "中下胸",
+   "region": "chest",
+   "tier": "large",
+   "exerciseCount": 13
+  },
+  {
+   "id": "upper-pectoralis",
+   "name": "上胸",
+   "region": "chest",
+   "tier": "large",
+   "exerciseCount": 10
+  },
+  {
+   "id": "anterior-deltoid",
+   "name": "三角肌前束",
+   "region": "shoulders",
+   "tier": "medium",
+   "exerciseCount": 9
+  },
+  {
+   "id": "lateral-deltoid",
+   "name": "三角肌中束",
+   "region": "shoulders",
+   "tier": "medium",
+   "exerciseCount": 8
+  },
+  {
+   "id": "posterior-deltoid",
+   "name": "三角肌后束",
+   "region": "shoulders",
+   "tier": "medium",
+   "exerciseCount": 8
+  },
+  {
+   "id": "lateral-head-triceps",
+   "name": "肱三头肌外侧头",
+   "region": "arms",
+   "tier": "medium",
+   "exerciseCount": 8
+  },
+  {
+   "id": "long-head-bicep",
+   "name": "肱二头肌长头",
+   "region": "arms",
+   "tier": "medium",
+   "exerciseCount": 6
+  },
+  {
+   "id": "long-head-triceps",
+   "name": "肱三头肌长头",
+   "region": "arms",
+   "tier": "medium",
+   "exerciseCount": 7
+  },
+  {
+   "id": "medial-head-triceps",
+   "name": "肱三头肌内侧头",
+   "region": "arms",
+   "tier": "medium",
+   "exerciseCount": 8
+  },
+  {
+   "id": "short-head-bicep",
+   "name": "肱二头肌短头",
+   "region": "arms",
+   "tier": "medium",
+   "exerciseCount": 7
+  },
+  {
+   "id": "wrist-extensors",
+   "name": "腕伸肌",
+   "region": "arms",
+   "tier": "small",
+   "exerciseCount": 5
+  },
+  {
+   "id": "wrist-flexors",
+   "name": "腕屈肌",
+   "region": "arms",
+   "tier": "small",
+   "exerciseCount": 6
+  },
+  {
+   "id": "lower-abdominals",
+   "name": "下腹",
+   "region": "core",
+   "tier": "small",
+   "exerciseCount": 5
+  },
+  {
+   "id": "obliques",
+   "name": "腹斜肌",
+   "region": "core",
+   "tier": "small",
+   "exerciseCount": 6
+  },
+  {
+   "id": "upper-abdominals",
+   "name": "上腹",
+   "region": "core",
+   "tier": "small",
+   "exerciseCount": 7
+  }
+ ]
+}

@@ -1,0 +1,5449 @@
+[
+ {
+  "id": "barbell-bench-press-4",
+  "name": "杠铃卧推",
+  "nameEn": "Barbell Bench Press",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "mid-lower-pectoralis"
+  ],
+  "secondaryHeads": [
+   "upper-pectoralis"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/chest/barbell-bench-press-4_front.mp4",
+    "side": "/exercises/clips/male/chest/barbell-bench-press-4_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/chest/barbell-bench-press-4_front.mp4",
+    "side": "/exercises/clips/female/chest/barbell-bench-press-4_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肩胛收紧贴凳，杠铃落至中下胸，推起时肘不锁死",
+   "steps": [
+    "仰卧，眼在杠下，握距略宽于肩",
+    "吸气下放，前臂垂直，触胸即停",
+    "呼气推起，脚踩实，臀不离凳"
+   ]
+  }
+ },
+ {
+  "id": "barbell-calf-raises-210",
+  "name": "杠铃提踵",
+  "nameEn": "Barbell Calf Raises",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "gastrocnemius"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/calves/barbell-calf-raises-210_front.mp4",
+    "side": "/exercises/clips/male/calves/barbell-calf-raises-210_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/calves/barbell-calf-raises-210_front.mp4",
+    "side": "/exercises/clips/female/calves/barbell-calf-raises-210_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "脚跟上抬至最高点，顶端停顿后缓慢下放",
+   "steps": [
+    "杠铃置于上背，双脚与髋同宽",
+    "膝盖保持伸直，脚跟用力上抬",
+    "停顿一秒，缓慢降至小腿拉伸",
+    "核心收紧，身体不前后晃动"
+   ]
+  }
+ },
+ {
+  "id": "barbell-close-grip-bench-press-211",
+  "name": "杠铃窄握卧推",
+  "nameEn": "Barbell Close Grip Bench Press",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "lateral-head-triceps",
+   "medial-head-triceps"
+  ],
+  "secondaryHeads": [
+   "long-head-triceps"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/triceps/barbell-close-grip-bench-press-211_front.mp4",
+    "side": "/exercises/clips/male/triceps/barbell-close-grip-bench-press-211_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/triceps/barbell-close-grip-bench-press-211_front.mp4",
+    "side": "/exercises/clips/female/triceps/barbell-close-grip-bench-press-211_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "握距与肩同宽，肘贴近身体，用三头肌推起",
+   "steps": [
+    "仰卧收紧肩胛，握距约与肩同宽",
+    "杠铃下放至下胸，肘夹在体侧",
+    "推起至手臂伸直，三头肌收缩",
+    "握距过窄会压迫手腕，避免过窄"
+   ]
+  }
+ },
+ {
+  "id": "barbell-curl-1",
+  "name": "杠铃弯举",
+  "nameEn": "Barbell Curl",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "long-head-bicep",
+   "short-head-bicep"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/biceps/barbell-curl-1_front.mp4",
+    "side": "/exercises/clips/male/biceps/barbell-curl-1_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/biceps/barbell-curl-1_front.mp4",
+    "side": "/exercises/clips/female/biceps/barbell-curl-1_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "上臂固定在体侧，仅靠肘关节弯曲举起杠铃",
+   "steps": [
+    "站姿，掌心向上握杠，与肩同宽",
+    "肘贴紧身体，弯举至二头肌收缩",
+    "顶端停顿，控制速度缓慢下放",
+    "不借助腰背摆动发力"
+   ]
+  }
+ },
+ {
+  "id": "barbell-deadlift-39",
+  "name": "杠铃硬拉",
+  "nameEn": "Barbell Deadlift",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "traps-middle",
+   "lowerback"
+  ],
+  "secondaryHeads": [
+   "gluteus-maximus",
+   "gluteus-medius"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/traps-middle/barbell-deadlift-39_front.mp4",
+    "side": "/exercises/clips/male/traps-middle/barbell-deadlift-39_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/traps-middle/barbell-deadlift-39_front.mp4",
+    "side": "/exercises/clips/female/traps-middle/barbell-deadlift-39_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "背部保持中立，杠铃贴腿，髋膝同时伸展拉起",
+   "steps": [
+    "双脚与髋同宽，杠铃在脚掌中部上方",
+    "屈髋屈膝握杠，挺胸，背部平直",
+    "蹬地起身，杠铃贴腿，髋完全伸展",
+    "下放先送髋，避免圆背和耸肩"
+   ]
+  }
+ },
+ {
+  "id": "barbell-decline-close-grip-bench-press-2301",
+  "name": "杠铃下斜窄握卧推",
+  "nameEn": "Barbell Decline Close Grip Bench Press",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "long-head-triceps",
+   "lateral-head-triceps",
+   "medial-head-triceps"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/triceps/barbell-decline-close-grip-bench-press-2301_front.mp4",
+    "side": "/exercises/clips/male/triceps/barbell-decline-close-grip-bench-press-2301_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/triceps/barbell-decline-close-grip-bench-press-2301_front.mp4",
+    "side": "/exercises/clips/female/triceps/barbell-decline-close-grip-bench-press-2301_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "下斜凳窄握下放至下胸，肘贴体侧推起",
+   "steps": [
+    "固定好双腿，握距约与肩同宽",
+    "杠铃下放至下胸，上臂靠近躯干",
+    "推起至手臂伸直，三头肌发力",
+    "建议有保护者在旁，防杠铃失控"
+   ]
+  }
+ },
+ {
+  "id": "barbell-floor-press-296",
+  "name": "杠铃地板卧推",
+  "nameEn": "Barbell Floor Press",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "long-head-triceps",
+   "lateral-head-triceps",
+   "medial-head-triceps"
+  ],
+  "secondaryHeads": [
+   "upper-pectoralis",
+   "mid-lower-pectoralis"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/triceps/barbell-floor-press-296_front.mp4",
+    "side": "/exercises/clips/male/triceps/barbell-floor-press-296_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/triceps/barbell-floor-press-296_front.mp4",
+    "side": "/exercises/clips/female/triceps/barbell-floor-press-296_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "仰卧地面，上臂触地后停顿，再发力推起杠铃",
+   "steps": [
+    "仰卧地面，屈膝，握距略宽于肩",
+    "杠铃下放至上臂后侧轻触地面",
+    "停顿片刻，不借反弹，推至伸直",
+    "肘不过度外展，保护肩关节"
+   ]
+  }
+ },
+ {
+  "id": "barbell-front-raise-297",
+  "name": "杠铃前平举",
+  "nameEn": "Barbell Front Raise",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "anterior-deltoid"
+  ],
+  "secondaryHeads": [
+   "lateral-deltoid"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/anterior-deltoid/barbell-front-raise-297_front.mp4",
+    "side": "/exercises/clips/male/anterior-deltoid/barbell-front-raise-297_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/anterior-deltoid/barbell-front-raise-297_front.mp4",
+    "side": "/exercises/clips/female/anterior-deltoid/barbell-front-raise-297_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "手臂近乎伸直，将杠铃抬至与肩同高后控制放下",
+   "steps": [
+    "站姿，正握杠铃置于大腿前",
+    "肘微屈，向前抬杠至与肩同高",
+    "顶端稍停，缓慢下放",
+    "身体挺直，避免后仰借力"
+   ]
+  }
+ },
+ {
+  "id": "barbell-front-squat-bodybuilding-299",
+  "name": "杠铃前蹲 健美",
+  "nameEn": "Barbell Front Squat Bodybuilding",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "gluteus-maximus",
+   "gluteus-medius",
+   "rectus-femoris",
+   "outer-quadricep",
+   "inner-quadricep"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/glutes/barbell-front-squat-bodybuilding-299_front.mp4",
+    "side": "/exercises/clips/male/glutes/barbell-front-squat-bodybuilding-299_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/glutes/barbell-front-squat-bodybuilding-299_front.mp4",
+    "side": "/exercises/clips/female/glutes/barbell-front-squat-bodybuilding-299_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肘部抬高托住杠铃，躯干保持直立下蹲",
+   "steps": [
+    "杠铃置于前三角肌，肘抬高向前",
+    "站距与肩同宽，核心收紧下蹲",
+    "蹲至大腿平行以下，膝对准脚尖",
+    "蹬地起身，保持挺胸，避免前塌"
+   ]
+  }
+ },
+ {
+  "id": "barbell-glute-bridge-334",
+  "name": "杠铃臀桥",
+  "nameEn": "Barbell Glute Bridge",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "gluteus-maximus"
+  ],
+  "secondaryHeads": [
+   "gluteus-medius"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/glutes/barbell-glute-bridge-334_front.mp4",
+    "side": "/exercises/clips/male/glutes/barbell-glute-bridge-334_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/glutes/barbell-glute-bridge-334_front.mp4",
+    "side": "/exercises/clips/female/glutes/barbell-glute-bridge-334_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "仰卧屈膝，蹬地顶髋至身体成直线，顶端夹紧臀部",
+   "steps": [
+    "仰卧地面，杠铃置于髋部并扶稳",
+    "双脚踩实，脚跟发力向上顶髋",
+    "肩到膝成直线，顶端停顿夹臀",
+    "腰部不过度挺起，缓慢下放"
+   ]
+  }
+ },
+ {
+  "id": "barbell-hip-thrust-30",
+  "name": "杠铃臀桥",
+  "nameEn": "Barbell Hip Thrust",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "gluteus-maximus"
+  ],
+  "secondaryHeads": [
+   "gluteus-medius"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/glutes/barbell-hip-thrust-30_front.mp4",
+    "side": "/exercises/clips/male/glutes/barbell-hip-thrust-30_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/glutes/barbell-hip-thrust-30_front.mp4",
+    "side": "/exercises/clips/female/glutes/barbell-hip-thrust-30_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "上背靠凳，下巴微收，顶髋至躯干与大腿成直线",
+   "steps": [
+    "上背抵住凳沿，杠铃横放髋部并垫好",
+    "双脚踩实，膝约九十度",
+    "脚跟发力顶髋，顶端夹臀停顿",
+    "肋骨下沉，避免腰椎过度后伸"
+   ]
+  }
+ },
+ {
+  "id": "barbell-incline-bench-press-55",
+  "name": "杠铃上斜卧推",
+  "nameEn": "Barbell Incline Bench Press",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "upper-pectoralis"
+  ],
+  "secondaryHeads": [
+   "anterior-deltoid",
+   "mid-lower-pectoralis",
+   "lateral-deltoid"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/chest/barbell-incline-bench-press-55_front.mp4",
+    "side": "/exercises/clips/male/chest/barbell-incline-bench-press-55_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/chest/barbell-incline-bench-press-55_front.mp4",
+    "side": "/exercises/clips/female/chest/barbell-incline-bench-press-55_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "凳角约三十度，杠铃落至上胸，肩胛始终收紧",
+   "steps": [
+    "凳调至三十度左右，握距略宽于肩",
+    "杠铃下放至上胸，前臂保持垂直",
+    "推起至手臂伸直，肘不锁死",
+    "臀部贴凳，避免挺腰借力"
+   ]
+  }
+ },
+ {
+  "id": "barbell-low-bar-squat-315",
+  "name": "杠铃低位深蹲",
+  "nameEn": "Barbell Low Bar Squat",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "gluteus-maximus",
+   "gluteus-medius",
+   "rectus-femoris",
+   "outer-quadricep",
+   "inner-quadricep"
+  ],
+  "secondaryHeads": [
+   "lowerback"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/glutes/barbell-low-bar-squat-315_front.mp4",
+    "side": "/exercises/clips/male/glutes/barbell-low-bar-squat-315_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/glutes/barbell-low-bar-squat-315_front.mp4",
+    "side": "/exercises/clips/female/glutes/barbell-low-bar-squat-315_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "杠铃置于后三角肌，髋部后坐，躯干前倾下蹲",
+   "steps": [
+    "杠铃横在后三角肌上，站距略宽于肩",
+    "先向后送髋再屈膝，躯干适度前倾",
+    "蹲至大腿平行，膝对准脚尖",
+    "蹬地起身，背部保持平直"
+   ]
+  }
+ },
+ {
+  "id": "barbell-overhead-press-303",
+  "name": "杠铃推举",
+  "nameEn": "Barbell Overhead Press",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "lateral-deltoid",
+   "anterior-deltoid"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/shoulders/barbell-overhead-press-303_front.mp4",
+    "side": "/exercises/clips/male/shoulders/barbell-overhead-press-303_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/shoulders/barbell-overhead-press-303_front.mp4",
+    "side": "/exercises/clips/female/shoulders/barbell-overhead-press-303_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "核心与臀部收紧，杠铃沿头前垂直线推过头顶",
+   "steps": [
+    "站姿，杠铃置于锁骨前，握距略宽于肩",
+    "头略后让，杠沿直线向上推",
+    "推至手臂伸直，杠铃在肩正上方",
+    "缓慢下放至锁骨，腰不过度后仰"
+   ]
+  }
+ },
+ {
+  "id": "barbell-rack-pull-1818",
+  "name": "杠铃架上硬拉",
+  "nameEn": "Barbell Rack Pull",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "traps-middle",
+   "lowerback"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/traps-middle/barbell-rack-pull-1818_front.mp4",
+    "side": "/exercises/clips/male/traps-middle/barbell-rack-pull-1818_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/traps-middle/barbell-rack-pull-1818_front.mp4",
+    "side": "/exercises/clips/female/traps-middle/barbell-rack-pull-1818_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "杠铃置于膝上架位，挺胸伸髋拉起，顶端夹紧背部",
+   "steps": [
+    "杠铃架调至膝盖附近，握距与肩同宽",
+    "背部平直，杠铃贴腿，髋膝同时伸展",
+    "站直时肩向后收，不过度后仰",
+    "下放控制速度，避免圆背"
+   ]
+  }
+ },
+ {
+  "id": "barbell-reverse-deadlift-347",
+  "name": "杠铃反握硬拉",
+  "nameEn": "Barbell Reverse Deadlift",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "rectus-femoris",
+   "outer-quadricep",
+   "inner-quadricep"
+  ],
+  "secondaryHeads": [
+   "lowerback",
+   "gluteus-maximus",
+   "gluteus-medius"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/quads/barbell-reverse-deadlift-347_front.mp4",
+    "side": "/exercises/clips/male/quads/barbell-reverse-deadlift-347_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/quads/barbell-reverse-deadlift-347_front.mp4",
+    "side": "/exercises/clips/female/quads/barbell-reverse-deadlift-347_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "反握持杠，双臂伸直，以腿蹬地带起杠铃",
+   "steps": [
+    "双脚与髋同宽，反握杠铃，肘伸直",
+    "挺胸，背部平直，屈膝屈髋预紧",
+    "蹬地起身，杠铃贴腿，髋膝同时伸展",
+    "手臂不弯曲，防止二头肌拉伤"
+   ]
+  }
+ },
+ {
+  "id": "barbell-seated-calf-raise-350",
+  "name": "杠铃坐姿提踵",
+  "nameEn": "Barbell Seated Calf Raise",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "soleus"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/calves/barbell-seated-calf-raise-350_front.mp4",
+    "side": "/exercises/clips/male/calves/barbell-seated-calf-raise-350_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/calves/barbell-seated-calf-raise-350_front.mp4",
+    "side": "/exercises/clips/female/calves/barbell-seated-calf-raise-350_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "膝盖屈曲约九十度，踮脚发力，充分拉伸与收缩",
+   "steps": [
+    "坐姿，前脚掌踩台，杠铃横放膝上方",
+    "垫好护垫，双手扶稳杠铃",
+    "脚跟抬至最高，顶端停顿一秒",
+    "缓慢下放，让比目鱼肌充分拉伸"
+   ]
+  }
+ },
+ {
+  "id": "barbell-shrug-351",
+  "name": "杠铃耸肩",
+  "nameEn": "Barbell Shrug",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "upper-trapezius",
+   "traps-middle",
+   "lower-trapezius"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/traps/barbell-shrug-351_front.mp4",
+    "side": "/exercises/clips/male/traps/barbell-shrug-351_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/traps/barbell-shrug-351_front.mp4",
+    "side": "/exercises/clips/female/traps/barbell-shrug-351_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肩部垂直向上耸起，顶端停顿，不绕肩转动",
+   "steps": [
+    "站姿，正握杠铃，握距略宽于肩",
+    "手臂伸直，肩向耳朵方向上提",
+    "顶端停顿，缓慢下放至充分拉伸",
+    "头部保持中立，不前探"
+   ]
+  }
+ },
+ {
+  "id": "barbell-single-leg-deadlift-308",
+  "name": "杠铃单腿硬拉",
+  "nameEn": "Barbell Single Leg Deadlift",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "gluteus-maximus",
+   "lateral-hamstrings"
+  ],
+  "secondaryHeads": [
+   "lowerback",
+   "gluteus-medius",
+   "medial-hamstrings"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/gluteus-maximus/barbell-single-leg-deadlift-308_front.mp4",
+    "side": "/exercises/clips/male/gluteus-maximus/barbell-single-leg-deadlift-308_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/gluteus-maximus/barbell-single-leg-deadlift-308_front.mp4",
+    "side": "/exercises/clips/female/gluteus-maximus/barbell-single-leg-deadlift-308_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "支撑腿微屈，髋部后移，躯干与后抬腿成一线",
+   "steps": [
+    "单脚站立，双手持杠铃垂于腿前",
+    "支撑膝微屈，屈髋后推，背部平直",
+    "躯干前俯至接近水平，后腿同步抬起",
+    "臀部发力还原，骨盆保持水平"
+   ]
+  }
+ },
+ {
+  "id": "barbell-squat-8",
+  "name": "杠铃深蹲",
+  "nameEn": "Barbell Squat",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "inner-thigh",
+   "inner-quadricep",
+   "outer-quadricep"
+  ],
+  "secondaryHeads": [
+   "gluteus-maximus",
+   "gluteus-medius",
+   "rectus-femoris",
+   "groin"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/quads/barbell-squat-8_front.mp4",
+    "side": "/exercises/clips/male/quads/barbell-squat-8_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/quads/barbell-squat-8_front.mp4",
+    "side": "/exercises/clips/female/quads/barbell-squat-8_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "杠铃置于上背，髋膝同时弯曲，起身时蹬实地面",
+   "steps": [
+    "杠铃横于斜方肌，站距与肩同宽",
+    "核心收紧，髋膝同时屈曲下蹲",
+    "蹲至大腿平行以下，膝对准脚尖",
+    "蹬地起身，背部保持平直"
+   ]
+  }
+ },
+ {
+  "id": "barbell-stiff-leg-deadlifts-27",
+  "name": "杠铃直腿硬拉",
+  "nameEn": "Barbell Stiff Leg Deadlifts",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "gluteus-maximus",
+   "lateral-hamstrings"
+  ],
+  "secondaryHeads": [
+   "gluteus-medius",
+   "medial-hamstrings"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/gluteus-maximus/barbell-stiff-leg-deadlifts-27_front.mp4",
+    "side": "/exercises/clips/male/gluteus-maximus/barbell-stiff-leg-deadlifts-27_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/gluteus-maximus/barbell-stiff-leg-deadlifts-27_front.mp4",
+    "side": "/exercises/clips/female/gluteus-maximus/barbell-stiff-leg-deadlifts-27_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "膝盖微屈固定，以髋为轴后推，感受腘绳肌拉伸",
+   "steps": [
+    "站姿，杠铃握于大腿前，膝微屈",
+    "向后推髋，杠铃贴腿下放至小腿中部",
+    "背部保持平直，腿后侧有拉紧感",
+    "臀部发力伸髋站直，腰不代偿"
+   ]
+  }
+ },
+ {
+  "id": "barbell-sumo-deadlift-305",
+  "name": "杠铃相扑硬拉",
+  "nameEn": "Barbell Sumo Deadlift",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "gluteus-maximus",
+   "gluteus-medius"
+  ],
+  "secondaryHeads": [
+   "lowerback",
+   "rectus-femoris",
+   "outer-quadricep",
+   "inner-quadricep"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/glutes/barbell-sumo-deadlift-305_front.mp4",
+    "side": "/exercises/clips/male/glutes/barbell-sumo-deadlift-305_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/glutes/barbell-sumo-deadlift-305_front.mp4",
+    "side": "/exercises/clips/female/glutes/barbell-sumo-deadlift-305_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "宽站距，脚尖外展，握杠在膝内侧，挺胸蹬地拉起",
+   "steps": [
+    "站距宽于肩，脚尖外展，握杠在腿内侧",
+    "挺胸，背部平直，膝朝脚尖方向打开",
+    "蹬地推起，髋向前顶，杠铃贴身上升",
+    "下放控制路径，避免膝内扣"
+   ]
+  }
+ },
+ {
+  "id": "barbell-upright-row-304",
+  "name": "杠铃直立划船",
+  "nameEn": "Barbell Upright Row",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "lateral-deltoid"
+  ],
+  "secondaryHeads": [
+   "anterior-deltoid",
+   "upper-trapezius",
+   "traps-middle",
+   "lower-trapezius"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/lateral-deltoid/barbell-upright-row-304_front.mp4",
+    "side": "/exercises/clips/male/lateral-deltoid/barbell-upright-row-304_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/lateral-deltoid/barbell-upright-row-304_front.mp4",
+    "side": "/exercises/clips/female/lateral-deltoid/barbell-upright-row-304_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "以肘带动杠铃，沿身体上提至胸部高度",
+   "steps": [
+    "站姿，握距与肩同宽或略窄",
+    "肘部领先上抬，杠铃贴近身体",
+    "肘不超过肩高，避免肩部不适",
+    "缓慢下放，躯干保持直立"
+   ]
+  }
+ },
+ {
+  "id": "barbell-wrist-curl-52",
+  "name": "杠铃腕弯举",
+  "nameEn": "Barbell Wrist Curl",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "wrist-flexors"
+  ],
+  "secondaryHeads": [
+   "wrist-extensors"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/forearms/barbell-wrist-curl-52_front.mp4",
+    "side": "/exercises/clips/male/forearms/barbell-wrist-curl-52_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/forearms/barbell-wrist-curl-52_front.mp4",
+    "side": "/exercises/clips/female/forearms/barbell-wrist-curl-52_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "前臂固定在大腿上，仅靠手腕屈曲举起杠铃",
+   "steps": [
+    "坐姿，前臂贴放大腿，掌心向上",
+    "手腕伸展，让杠铃滑至指尖",
+    "手腕向上卷起至最高并收缩",
+    "前臂不离开支撑，重量宜轻"
+   ]
+  }
+ },
+ {
+  "id": "bicycle-crunch-866",
+  "name": "自行车卷腹",
+  "nameEn": "Bicycle Crunch",
+  "equipment": "自重/负重",
+  "equipmentType": "bodyweight",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "lower-abdominals",
+   "upper-abdominals"
+  ],
+  "secondaryHeads": [
+   "obliques"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/lower-abdominals/bicycle-crunch-866_front.mp4",
+    "side": "/exercises/clips/male/lower-abdominals/bicycle-crunch-866_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/lower-abdominals/bicycle-crunch-866_front.mp4",
+    "side": "/exercises/clips/female/lower-abdominals/bicycle-crunch-866_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肩部离地，对侧肘与膝交替靠拢，腰背贴紧地面",
+   "steps": [
+    "仰卧，双手轻置耳侧，腿抬离地面",
+    "肩离地，转体使一侧肘靠向对侧膝",
+    "另一腿同时伸直，左右交替",
+    "不用手拉头颈，动作保持缓慢"
+   ]
+  }
+ },
+ {
+  "id": "bodyweight-cossack-squat-2328",
+  "name": "自重哥萨克深蹲",
+  "nameEn": "Bodyweight Cossack Squat",
+  "equipment": "自重/负重",
+  "equipmentType": "bodyweight",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "inner-thigh"
+  ],
+  "secondaryHeads": [
+   "gluteus-maximus",
+   "gluteus-medius",
+   "rectus-femoris",
+   "outer-quadricep",
+   "inner-quadricep"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/glutes/bodyweight-cossack-squat-2328_front.mp4",
+    "side": "/exercises/clips/male/glutes/bodyweight-cossack-squat-2328_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/glutes/bodyweight-cossack-squat-2328_front.mp4",
+    "side": "/exercises/clips/female/glutes/bodyweight-cossack-squat-2328_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "重心移向一侧深蹲，另一腿伸直，脚尖朝上",
+   "steps": [
+    "双脚宽站，脚尖微外展，挺胸站直",
+    "重心移向一侧，屈膝屈髋下蹲",
+    "另一腿伸直，脚尖上翘，脚跟着地",
+    "蹬地回中，左右交替，膝对准脚尖"
+   ]
+  }
+ },
+ {
+  "id": "cable-bar-calve-raise-1043",
+  "name": "绳索杆小腿提踵",
+  "nameEn": "Cable Bar Calve Raise",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "gastrocnemius"
+  ],
+  "secondaryHeads": [],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/gastrocnemius/cable-bar-calve-raise-1043_front.mp4",
+    "side": "/exercises/clips/male/gastrocnemius/cable-bar-calve-raise-1043_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/gastrocnemius/cable-bar-calve-raise-1043_front.mp4",
+    "side": "/exercises/clips/female/gastrocnemius/cable-bar-calve-raise-1043_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "膝盖伸直，脚跟上抬至最高，小腿充分收缩",
+   "steps": [
+    "站在台沿，前脚掌踩稳，手持直杆",
+    "膝盖保持伸直，脚跟用力上抬",
+    "顶端停顿，缓慢降至小腿拉伸",
+    "身体直立，不借腰部摆动"
+   ]
+  }
+ },
+ {
+  "id": "cable-bar-front-raise-1016",
+  "name": "缆绳直杆前平举",
+  "nameEn": "Cable Bar Front Raise",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "anterior-deltoid"
+  ],
+  "secondaryHeads": [
+   "lateral-deltoid"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/anterior-deltoid/cable-bar-front-raise-1016_front.mp4",
+    "side": "/exercises/clips/male/anterior-deltoid/cable-bar-front-raise-1016_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/anterior-deltoid/cable-bar-front-raise-1016_front.mp4",
+    "side": "/exercises/clips/female/anterior-deltoid/cable-bar-front-raise-1016_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "手臂近乎伸直，用直杆将拉力从体前抬至肩高",
+   "steps": [
+    "站姿，正握直杆，滑轮置于低位",
+    "肘微屈，向前抬起至与肩同高",
+    "顶端稍停，缓慢控制下放",
+    "身体直立，不后仰借力"
+   ]
+  }
+ },
+ {
+  "id": "cable-bar-pushdown-1023",
+  "name": "滑轮直杆下压",
+  "nameEn": "Cable Bar Pushdown",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "lateral-head-triceps",
+   "medial-head-triceps"
+  ],
+  "secondaryHeads": [
+   "long-head-triceps"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/triceps/cable-bar-pushdown-1023_front.mp4",
+    "side": "/exercises/clips/male/triceps/cable-bar-pushdown-1023_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/triceps/cable-bar-pushdown-1023_front.mp4",
+    "side": "/exercises/clips/female/triceps/cable-bar-pushdown-1023_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肘部固定在体侧，仅前臂下压至手臂完全伸直",
+   "steps": [
+    "面对高位滑轮，握直杆，肘贴体侧",
+    "前臂向下压，至手臂完全伸直",
+    "顶端收缩三头肌，停顿一秒",
+    "缓慢回放至前臂约九十度，肩不耸起"
+   ]
+  }
+ },
+ {
+  "id": "cable-bar-reverse-grip-curl-1020",
+  "name": "绳索直杆反握弯举",
+  "nameEn": "Cable Bar Reverse Grip Curl",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "wrist-flexors",
+   "wrist-extensors"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/forearms/cable-bar-reverse-grip-curl-1020_front.mp4",
+    "side": "/exercises/clips/male/forearms/cable-bar-reverse-grip-curl-1020_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/forearms/cable-bar-reverse-grip-curl-1020_front.mp4",
+    "side": "/exercises/clips/female/forearms/cable-bar-reverse-grip-curl-1020_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "掌心向下握杆，肘贴体侧，弯举时手腕保持中立",
+   "steps": [
+    "站姿，掌心向下握低位直杆",
+    "肘固定在体侧，向上弯举",
+    "顶端停顿，缓慢下放保持张力",
+    "手腕不下垂，身体不后仰"
+   ]
+  }
+ },
+ {
+  "id": "cable-bar-standing-crunch-1841",
+  "name": "站姿绳索卷腹",
+  "nameEn": "Cable Bar Standing Crunch",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "upper-abdominals"
+  ],
+  "secondaryHeads": [
+   "lower-abdominals",
+   "obliques"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/upper-abdominals/cable-bar-standing-crunch-1841_front.mp4",
+    "side": "/exercises/clips/male/upper-abdominals/cable-bar-standing-crunch-1841_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/upper-abdominals/cable-bar-standing-crunch-1841_front.mp4",
+    "side": "/exercises/clips/female/upper-abdominals/cable-bar-standing-crunch-1841_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "髋部固定，用腹肌卷曲躯干，肋骨向骨盆靠拢",
+   "steps": [
+    "面对高位滑轮，直杆置于胸前",
+    "髋部固定，腹部发力卷曲躯干",
+    "肋骨向骨盆靠拢，顶端收缩",
+    "不靠手臂下拉，不弯腰代偿"
+   ]
+  }
+ },
+ {
+  "id": "cable-bench-press-995",
+  "name": "绳索卧推",
+  "nameEn": "Cable Bench Press",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "mid-lower-pectoralis"
+  ],
+  "secondaryHeads": [
+   "anterior-deltoid",
+   "upper-pectoralis",
+   "lateral-deltoid"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/chest/cable-bench-press-995_front.mp4",
+    "side": "/exercises/clips/male/chest/cable-bench-press-995_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/chest/cable-bench-press-995_front.mp4",
+    "side": "/exercises/clips/female/chest/cable-bench-press-995_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "背靠凳，沿胸线推出，肩胛稳定，肘不锁死",
+   "steps": [
+    "坐或躺于凳上，双手握柄置于胸侧",
+    "肩胛收紧，沿胸部水平线向前推出",
+    "手臂接近伸直，胸部收缩",
+    "缓慢回放至胸前，肩不前耸"
+   ]
+  }
+ },
+ {
+  "id": "cable-bent-over-bar-pullover-233",
+  "name": "缆绳俯身直杆下拉",
+  "nameEn": "Cable Bent Over Bar Pullover",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "lats"
+  ],
+  "secondaryHeads": [],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/lats/cable-bent-over-bar-pullover-233_front.mp4",
+    "side": "/exercises/clips/male/lats/cable-bent-over-bar-pullover-233_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/lats/cable-bent-over-bar-pullover-233_front.mp4",
+    "side": "/exercises/clips/female/lats/cable-bent-over-bar-pullover-233_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "俯身躯干固定，手臂近乎伸直，用背阔肌下拉直杆",
+   "steps": [
+    "面对高位滑轮俯身，背平直，握直杆",
+    "手臂微屈，沿弧线将杆压向大腿",
+    "顶端收缩背阔肌，肩胛下沉",
+    "缓慢回放，躯干不上下起伏"
+   ]
+  }
+ },
+ {
+  "id": "cable-calve-raise-245",
+  "name": "绳索提踵",
+  "nameEn": "Cable Calve Raise",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "gastrocnemius"
+  ],
+  "secondaryHeads": [],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/gastrocnemius/cable-calve-raise-245_front.mp4",
+    "side": "/exercises/clips/male/gastrocnemius/cable-calve-raise-245_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/gastrocnemius/cable-calve-raise-245_front.mp4",
+    "side": "/exercises/clips/female/gastrocnemius/cable-calve-raise-245_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "脚跟上抬至最高，顶端停顿，下放时充分拉伸小腿",
+   "steps": [
+    "站姿，前脚掌踩稳，手持绳索把手",
+    "膝盖保持伸直，脚跟上抬至最高",
+    "停顿一秒，缓慢下放至拉伸",
+    "身体直立，避免晃动"
+   ]
+  }
+ },
+ {
+  "id": "cable-cross-pushdown-242",
+  "name": "绳索下压",
+  "nameEn": "Cable Cross Pushdown",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "long-head-triceps",
+   "lateral-head-triceps",
+   "medial-head-triceps"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/triceps/cable-cross-pushdown-242_front.mp4",
+    "side": "/exercises/clips/male/triceps/cable-cross-pushdown-242_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/triceps/cable-cross-pushdown-242_front.mp4",
+    "side": "/exercises/clips/female/triceps/cable-cross-pushdown-242_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "上臂固定，下压至手臂伸直，顶端收紧三头肌",
+   "steps": [
+    "面对高位滑轮，握把手，肘贴体侧",
+    "前臂向下压，至手臂完全伸直",
+    "顶端收紧三头肌，稍作停顿",
+    "缓慢回放，上臂保持不动"
+   ]
+  }
+ },
+ {
+  "id": "cable-incline-chest-fly-992",
+  "name": "上斜绳索飞鸟",
+  "nameEn": "Cable Incline Chest Fly",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "upper-pectoralis",
+   "mid-lower-pectoralis"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/chest/cable-incline-chest-fly-992_front.mp4",
+    "side": "/exercises/clips/male/chest/cable-incline-chest-fly-992_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/chest/cable-incline-chest-fly-992_front.mp4",
+    "side": "/exercises/clips/female/chest/cable-incline-chest-fly-992_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "上斜凳上手臂微屈，沿弧线向上合拢，感受上胸拉伸",
+   "steps": [
+    "凳调至三十度，双手握低位把手",
+    "肘微屈固定，沿弧线向上方合拢",
+    "顶端双手靠拢，上胸收缩",
+    "缓慢打开至胸部拉伸，不过度后展"
+   ]
+  }
+ },
+ {
+  "id": "cable-kneeling-oblique-crunch-1867",
+  "name": "绳索跪姿侧腹卷腹",
+  "nameEn": "Cable Kneeling Oblique Crunch",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "obliques"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/obliques/cable-kneeling-oblique-crunch-1867_front.mp4",
+    "side": "/exercises/clips/male/obliques/cable-kneeling-oblique-crunch-1867_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/obliques/cable-kneeling-oblique-crunch-1867_front.mp4",
+    "side": "/exercises/clips/female/obliques/cable-kneeling-oblique-crunch-1867_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "跪姿固定髋部，躯干向侧下方卷曲，腹斜肌发力",
+   "steps": [
+    "跪于高位滑轮前，绳索握于头侧",
+    "髋部不动，躯干向一侧卷曲下压",
+    "顶端收缩腹斜肌，肘靠近同侧大腿",
+    "缓慢还原，左右两侧均需完成"
+   ]
+  }
+ },
+ {
+  "id": "cable-oblique-pushdown-1041",
+  "name": "绳索侧腹下压",
+  "nameEn": "Cable Oblique Pushdown",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "obliques"
+  ],
+  "secondaryHeads": [],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/obliques/cable-oblique-pushdown-1041_front.mp4",
+    "side": "/exercises/clips/male/obliques/cable-oblique-pushdown-1041_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/obliques/cable-oblique-pushdown-1041_front.mp4",
+    "side": "/exercises/clips/female/obliques/cable-oblique-pushdown-1041_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "侧对滑轮，躯干向握把一侧下屈，腹斜肌发力",
+   "steps": [
+    "侧对高位滑轮，单手握把置于肩侧",
+    "髋部固定，躯干向握把一侧下屈",
+    "顶端收缩体侧腹斜肌",
+    "缓慢还原，不转体、不前倾"
+   ]
+  }
+ },
+ {
+  "id": "cable-pallof-press-rotation-1039",
+  "name": "绳索帕洛夫旋转推举",
+  "nameEn": "Cable Pallof Press Rotation",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "obliques"
+  ],
+  "secondaryHeads": [],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/obliques/cable-pallof-press-rotation-1039_front.mp4",
+    "side": "/exercises/clips/male/obliques/cable-pallof-press-rotation-1039_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/obliques/cable-pallof-press-rotation-1039_front.mp4",
+    "side": "/exercises/clips/female/obliques/cable-pallof-press-rotation-1039_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "髋部稳定，手臂推出后缓慢转动躯干，抵抗绳索拉力",
+   "steps": [
+    "侧对绳索站立，双手握把置于胸前",
+    "向正前方推直，身体不被拉向绳索",
+    "手臂伸直，缓慢转动躯干后回正",
+    "收回胸前，骨盆稳定，换边重复"
+   ]
+  }
+ },
+ {
+  "id": "cable-pec-fly-216",
+  "name": "绳索飞鸟",
+  "nameEn": "Cable Pec Fly",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "mid-lower-pectoralis"
+  ],
+  "secondaryHeads": [
+   "upper-pectoralis"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/chest/cable-pec-fly-216_front.mp4",
+    "side": "/exercises/clips/male/chest/cable-pec-fly-216_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/chest/cable-pec-fly-216_front.mp4",
+    "side": "/exercises/clips/female/chest/cable-pec-fly-216_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肘微屈固定，沿弧线向胸前合拢，顶端夹紧胸肌",
+   "steps": [
+    "站姿，双手握把手，一脚前跨",
+    "身体微前倾，肘微屈，手臂向两侧展开",
+    "沿弧线向体前合拢，顶端收缩",
+    "缓慢打开至胸部拉伸，肩不前耸"
+   ]
+  }
+ },
+ {
+  "id": "cable-pull-through-222",
+  "name": "绳索臀桥",
+  "nameEn": "Cable Pull Through",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "gluteus-maximus",
+   "lateral-hamstrings"
+  ],
+  "secondaryHeads": [
+   "lowerback",
+   "gluteus-medius",
+   "medial-hamstrings"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/gluteus-maximus/cable-pull-through-222_front.mp4",
+    "side": "/exercises/clips/male/gluteus-maximus/cable-pull-through-222_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/gluteus-maximus/cable-pull-through-222_front.mp4",
+    "side": "/exercises/clips/female/gluteus-maximus/cable-pull-through-222_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "背对滑轮屈髋后推，再用臀部发力顶髋站直",
+   "steps": [
+    "背对低位滑轮，双手握绳从胯下穿过",
+    "膝微屈，屈髋后推，背部平直",
+    "臀部发力向前顶髋站直，顶端夹臀",
+    "手臂仅作连接，不用手拉"
+   ]
+  }
+ },
+ {
+  "id": "cable-rope-front-raise-1027",
+  "name": "绳索手柄前平举",
+  "nameEn": "Cable Rope Front Raise",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "anterior-deltoid"
+  ],
+  "secondaryHeads": [
+   "lateral-deltoid"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/anterior-deltoid/cable-rope-front-raise-1027_front.mp4",
+    "side": "/exercises/clips/male/anterior-deltoid/cable-rope-front-raise-1027_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/anterior-deltoid/cable-rope-front-raise-1027_front.mp4",
+    "side": "/exercises/clips/female/anterior-deltoid/cable-rope-front-raise-1027_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "手臂近乎伸直，将绳索把手抬至与肩同高",
+   "steps": [
+    "站姿，握低位绳索把手，掌心相对",
+    "肘微屈，向前抬起至与肩同高",
+    "顶端稍停，缓慢下放保持张力",
+    "躯干直立，不后仰借力"
+   ]
+  }
+ },
+ {
+  "id": "cable-rope-kneeling-crunch-1004",
+  "name": "跪姿绳索卷腹",
+  "nameEn": "Cable Rope Kneeling Crunch",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "upper-abdominals"
+  ],
+  "secondaryHeads": [
+   "lower-abdominals",
+   "obliques"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/abdominals/cable-rope-kneeling-crunch-1004_front.mp4",
+    "side": "/exercises/clips/male/abdominals/cable-rope-kneeling-crunch-1004_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/abdominals/cable-rope-kneeling-crunch-1004_front.mp4",
+    "side": "/exercises/clips/female/abdominals/cable-rope-kneeling-crunch-1004_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "跪姿髋部固定，卷曲脊柱，将肘部压向大腿",
+   "steps": [
+    "跪于高位滑轮前，双手握绳置于头侧",
+    "髋部不动，腹部发力卷曲躯干",
+    "顶端收缩腹肌，肘靠近大腿",
+    "缓慢还原，髋部不前后摆动"
+   ]
+  }
+ },
+ {
+  "id": "cable-rope-kneeling-face-pull-1001",
+  "name": "跪姿绳索面拉",
+  "nameEn": "Cable Rope Kneeling Face Pull",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "posterior-deltoid"
+  ],
+  "secondaryHeads": [],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/posterior-deltoid/cable-rope-kneeling-face-pull-1001_front.mp4",
+    "side": "/exercises/clips/male/posterior-deltoid/cable-rope-kneeling-face-pull-1001_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/posterior-deltoid/cable-rope-kneeling-face-pull-1001_front.mp4",
+    "side": "/exercises/clips/female/posterior-deltoid/cable-rope-kneeling-face-pull-1001_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肘部抬高，将绳索拉向面部，收紧后束与肩胛",
+   "steps": [
+    "跪于高位滑轮前，双手握绳，手臂伸直",
+    "拉向面部，肘高于腕，绳端分开",
+    "顶端肩胛后收，停顿一秒",
+    "缓慢还原，躯干直立不后仰"
+   ]
+  }
+ },
+ {
+  "id": "cable-rope-pullover-981",
+  "name": "绳索过顶下拉",
+  "nameEn": "Cable Rope Pullover",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "lats"
+  ],
+  "secondaryHeads": [],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/lats/cable-rope-pullover-981_front.mp4",
+    "side": "/exercises/clips/male/lats/cable-rope-pullover-981_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/lats/cable-rope-pullover-981_front.mp4",
+    "side": "/exercises/clips/female/lats/cable-rope-pullover-981_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "手臂近乎伸直，从头上方沿弧线下拉至大腿前",
+   "steps": [
+    "面对高位滑轮站立，握绳置于头前上方",
+    "核心收紧，肘微屈，背阔肌发力下拉",
+    "下拉至大腿前，顶端收缩",
+    "缓慢回放至拉伸，腰不过度后仰"
+   ]
+  }
+ },
+ {
+  "id": "cable-rope-pushdown-241",
+  "name": "绳索下压",
+  "nameEn": "Cable Rope Pushdown",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "lateral-head-triceps",
+   "medial-head-triceps"
+  ],
+  "secondaryHeads": [
+   "long-head-triceps"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/triceps/cable-rope-pushdown-241_front.mp4",
+    "side": "/exercises/clips/male/triceps/cable-rope-pushdown-241_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/triceps/cable-rope-pushdown-241_front.mp4",
+    "side": "/exercises/clips/female/triceps/cable-rope-pushdown-241_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肘贴体侧，下压并将绳端向两侧分开，收紧三头肌",
+   "steps": [
+    "面对高位滑轮，握绳，肘贴体侧",
+    "前臂下压至手臂伸直",
+    "底部绳端向两侧分开，收紧三头肌",
+    "缓慢回放，上臂不前后晃动"
+   ]
+  }
+ },
+ {
+  "id": "cable-rope-skullcrusher-243",
+  "name": "绳索仰卧臂屈伸",
+  "nameEn": "Cable Rope Skullcrusher",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "long-head-triceps"
+  ],
+  "secondaryHeads": [
+   "lateral-head-triceps",
+   "medial-head-triceps"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/long-head-triceps/cable-rope-skullcrusher-243_front.mp4",
+    "side": "/exercises/clips/male/long-head-triceps/cable-rope-skullcrusher-243_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/long-head-triceps/cable-rope-skullcrusher-243_front.mp4",
+    "side": "/exercises/clips/female/long-head-triceps/cable-rope-skullcrusher-243_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "上臂垂直固定，仅屈伸肘关节，三头肌发力伸直",
+   "steps": [
+    "仰卧凳上，头朝滑轮，握绳置于头顶",
+    "上臂保持垂直，肘朝向天花板",
+    "伸肘推起，顶端收紧三头肌",
+    "缓慢回放至前臂接近水平，肘不外展"
+   ]
+  }
+ },
+ {
+  "id": "cable-rope-standing-crunch-1848",
+  "name": "绳索站姿卷腹",
+  "nameEn": "Cable Rope Standing Crunch",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "upper-abdominals"
+  ],
+  "secondaryHeads": [
+   "lower-abdominals",
+   "obliques"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/abdominals/cable-rope-standing-crunch-1848_front.mp4",
+    "side": "/exercises/clips/male/abdominals/cable-rope-standing-crunch-1848_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/abdominals/cable-rope-standing-crunch-1848_front.mp4",
+    "side": "/exercises/clips/female/abdominals/cable-rope-standing-crunch-1848_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "站姿髋部固定，腹肌发力卷曲躯干，肘靠近大腿",
+   "steps": [
+    "面对高位滑轮，双手握绳置于头侧",
+    "髋部固定，向下卷曲躯干",
+    "顶端腹部收缩，肋骨靠近骨盆",
+    "缓慢还原，不只靠手臂下拉"
+   ]
+  }
+ },
+ {
+  "id": "cable-rope-upright-row-1031",
+  "name": "绳索直立划船",
+  "nameEn": "Cable Rope Upright Row",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "lateral-deltoid"
+  ],
+  "secondaryHeads": [
+   "upper-trapezius",
+   "traps-middle",
+   "lower-trapezius",
+   "anterior-deltoid"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/lateral-deltoid/cable-rope-upright-row-1031_front.mp4",
+    "side": "/exercises/clips/male/lateral-deltoid/cable-rope-upright-row-1031_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/lateral-deltoid/cable-rope-upright-row-1031_front.mp4",
+    "side": "/exercises/clips/female/lateral-deltoid/cable-rope-upright-row-1031_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肘部引领上提绳索至胸前，肘高于腕但不过肩",
+   "steps": [
+    "站姿，面对低位滑轮，握绳置于大腿前",
+    "肘部领先，沿身体上提绳索至胸前",
+    "肘不超过肩高，顶端稍停",
+    "缓慢下放，身体直立，不耸肩"
+   ]
+  }
+ },
+ {
+  "id": "cable-seated-leg-extension-999",
+  "name": "坐姿拉索腿屈伸",
+  "nameEn": "Cable Seated Leg Extension",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "rectus-femoris",
+   "outer-quadricep",
+   "inner-quadricep"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/quads/cable-seated-leg-extension-999_front.mp4",
+    "side": "/exercises/clips/male/quads/cable-seated-leg-extension-999_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/quads/cable-seated-leg-extension-999_front.mp4",
+    "side": "/exercises/clips/female/quads/cable-seated-leg-extension-999_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "坐姿固定大腿，伸膝至接近伸直，顶端收紧股四头肌",
+   "steps": [
+    "坐稳，脚踝绑带连接低位绳索，大腿固定",
+    "伸直膝盖抬起小腿至接近伸直",
+    "顶端收紧股四头肌，稍作停顿",
+    "缓慢还原，膝不锁死、不借力摆动"
+   ]
+  }
+ },
+ {
+  "id": "cable-single-leg-deadlift-221",
+  "name": "绳索单腿硬拉",
+  "nameEn": "Cable Single Leg Deadlift",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "gluteus-maximus",
+   "lateral-hamstrings"
+  ],
+  "secondaryHeads": [
+   "lowerback",
+   "gluteus-medius",
+   "medial-hamstrings"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/gluteus-maximus/cable-single-leg-deadlift-221_front.mp4",
+    "side": "/exercises/clips/male/gluteus-maximus/cable-single-leg-deadlift-221_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/gluteus-maximus/cable-single-leg-deadlift-221_front.mp4",
+    "side": "/exercises/clips/female/gluteus-maximus/cable-single-leg-deadlift-221_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "单腿支撑，髋部后推，躯干与后抬腿保持成一线",
+   "steps": [
+    "单脚站立，手握低位把手，膝微屈",
+    "屈髋后推，躯干前俯，后腿同步抬起",
+    "背部平直，骨盆保持水平不旋转",
+    "臀部发力伸髋回正，腰不代偿"
+   ]
+  }
+ },
+ {
+  "id": "cable-standing-bilateral-straight-arm-pull-in-2279",
+  "name": "绳索站姿双臂直臂下压",
+  "nameEn": "Cable Standing Bilateral Straight Arm Pull In",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "lats"
+  ],
+  "secondaryHeads": [],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/lats/cable-standing-bilateral-straight-arm-pull-in-2279_front.mp4",
+    "side": "/exercises/clips/male/lats/cable-standing-bilateral-straight-arm-pull-in-2279_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/lats/cable-standing-bilateral-straight-arm-pull-in-2279_front.mp4",
+    "side": "/exercises/clips/female/lats/cable-standing-bilateral-straight-arm-pull-in-2279_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "手臂近乎伸直，以肩为轴将拉杆压向大腿",
+   "steps": [
+    "面对高位滑轮，双手握把，身体微前倾",
+    "肘微屈固定，肩胛下沉",
+    "向下压至大腿前，顶端收缩背阔肌",
+    "缓慢回放至拉伸，腰背保持稳定"
+   ]
+  }
+ },
+ {
+  "id": "cable-standing-crunch-248",
+  "name": "站姿绳索卷腹",
+  "nameEn": "Cable Standing Crunch",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "upper-abdominals"
+  ],
+  "secondaryHeads": [
+   "lower-abdominals",
+   "obliques"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/upper-abdominals/cable-standing-crunch-248_front.mp4",
+    "side": "/exercises/clips/male/upper-abdominals/cable-standing-crunch-248_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/upper-abdominals/cable-standing-crunch-248_front.mp4",
+    "side": "/exercises/clips/female/upper-abdominals/cable-standing-crunch-248_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "以腹部卷曲带动躯干，髋部保持固定",
+   "steps": [
+    "面向滑轮站立，双手握绳置于头侧",
+    "屈髋微蹲，脊柱逐节向下卷曲",
+    "腹部收缩至肘接近大腿，稍停",
+    "还原时控制速度，髋部不前后摆"
+   ]
+  }
+ },
+ {
+  "id": "cable-standing-hip-adduction-1008",
+  "name": "站姿绳索髋内收",
+  "nameEn": "Cable Standing Hip Adduction",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "inner-thigh"
+  ],
+  "secondaryHeads": [
+   "gluteus-maximus",
+   "gluteus-medius",
+   "groin"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/inner-thigh/cable-standing-hip-adduction-1008_front.mp4",
+    "side": "/exercises/clips/male/inner-thigh/cable-standing-hip-adduction-1008_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/inner-thigh/cable-standing-hip-adduction-1008_front.mp4",
+    "side": "/exercises/clips/female/inner-thigh/cable-standing-hip-adduction-1008_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "腿向身体中线内收，躯干保持直立不倾斜",
+   "steps": [
+    "脚踝绑扣，侧对滑轮，手扶支撑",
+    "髋部摆正，内收腿从外侧启动",
+    "腿经支撑腿前方内收至中线",
+    "缓慢还原，勿借腰部侧倾发力"
+   ]
+  }
+ },
+ {
+  "id": "cable-twisting-curl-237",
+  "name": "绳索旋转弯举",
+  "nameEn": "Cable Twisting Curl",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "long-head-bicep",
+   "short-head-bicep"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/biceps/cable-twisting-curl-237_front.mp4",
+    "side": "/exercises/clips/male/biceps/cable-twisting-curl-237_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/biceps/cable-twisting-curl-237_front.mp4",
+    "side": "/exercises/clips/female/biceps/cable-twisting-curl-237_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "上臂贴身固定，弯举时前臂逐渐旋后",
+   "steps": [
+    "低位滑轮，掌心相对握把站稳",
+    "肘贴躯干，弯举同时前臂外旋",
+    "顶端掌心朝上，收紧二头肌",
+    "下放时回到中立位，不甩身体"
+   ]
+  }
+ },
+ {
+  "id": "cable-upright-row-229",
+  "name": "绳索直立划船",
+  "nameEn": "Cable Upright Row",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "lateral-deltoid"
+  ],
+  "secondaryHeads": [
+   "upper-trapezius",
+   "traps-middle",
+   "lower-trapezius",
+   "anterior-deltoid"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/lateral-deltoid/cable-upright-row-229_front.mp4",
+    "side": "/exercises/clips/male/lateral-deltoid/cable-upright-row-229_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/lateral-deltoid/cable-upright-row-229_front.mp4",
+    "side": "/exercises/clips/female/lateral-deltoid/cable-upright-row-229_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "以肘部带动上提，肘高不超过肩",
+   "steps": [
+    "面向低位滑轮，握把垂于身前",
+    "肘部领先上提，握把贴近躯干",
+    "拉至胸口高度，肘略高于手腕",
+    "缓慢下放，避免耸肩代偿"
+   ]
+  }
+ },
+ {
+  "id": "cable-wrist-curl-230",
+  "name": "绳索手腕弯举",
+  "nameEn": "Cable Wrist Curl",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "wrist-flexors"
+  ],
+  "secondaryHeads": [
+   "wrist-extensors"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/forearms/cable-wrist-curl-230_front.mp4",
+    "side": "/exercises/clips/male/forearms/cable-wrist-curl-230_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/forearms/cable-wrist-curl-230_front.mp4",
+    "side": "/exercises/clips/female/forearms/cable-wrist-curl-230_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "前臂固定，仅靠手腕屈曲完成动作",
+   "steps": [
+    "坐姿前臂架于大腿，掌心向上握把",
+    "手腕下放至可控范围",
+    "屈腕卷起至最高点，稍停",
+    "缓慢放回，前臂不离开支撑"
+   ]
+  }
+ },
+ {
+  "id": "cable-wrist-extension-231",
+  "name": "绳索手腕伸展",
+  "nameEn": "Cable Wrist Extension",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "wrist-extensors"
+  ],
+  "secondaryHeads": [
+   "wrist-flexors"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/forearms/cable-wrist-extension-231_front.mp4",
+    "side": "/exercises/clips/male/forearms/cable-wrist-extension-231_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/forearms/cable-wrist-extension-231_front.mp4",
+    "side": "/exercises/clips/female/forearms/cable-wrist-extension-231_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "掌心向下，仅靠手腕上抬完成动作",
+   "steps": [
+    "前臂架于大腿，掌心朝下握把",
+    "手腕自然下垂，保持绳索张力",
+    "伸腕向上抬至最高点",
+    "缓慢放回，勿用肘部带动"
+   ]
+  }
+ },
+ {
+  "id": "chin-ups-184",
+  "name": "反握引体向上",
+  "nameEn": "Chin Ups",
+  "equipment": "自重/负重",
+  "equipmentType": "bodyweight",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "lats"
+  ],
+  "secondaryHeads": [
+   "long-head-bicep",
+   "short-head-bicep",
+   "wrist-flexors",
+   "wrist-extensors"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/lats/chin-ups-184_front.mp4",
+    "side": "/exercises/clips/male/lats/chin-ups-184_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/lats/chin-ups-184_front.mp4",
+    "side": "/exercises/clips/female/lats/chin-ups-184_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "反握与肩同宽，沉肩后以背部发力上拉",
+   "steps": [
+    "反握横杠，双手与肩同宽悬垂",
+    "沉肩收肩胛，核心收紧",
+    "肘向下向后，下巴过杠",
+    "控制下放至手臂接近伸直，勿甩腿"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-bench-press-377",
+  "name": "哑铃卧推",
+  "nameEn": "Dumbbell Bench Press",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "mid-lower-pectoralis"
+  ],
+  "secondaryHeads": [
+   "long-head-triceps",
+   "lateral-head-triceps",
+   "medial-head-triceps",
+   "upper-pectoralis"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/chest/dumbbell-bench-press-377_front.mp4",
+    "side": "/exercises/clips/male/chest/dumbbell-bench-press-377_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/chest/dumbbell-bench-press-377_front.mp4",
+    "side": "/exercises/clips/female/chest/dumbbell-bench-press-377_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肩胛收紧贴凳，下放至胸侧，推起不锁肘",
+   "steps": [
+    "仰卧平凳，哑铃置于胸侧上方",
+    "前臂垂直地面，肘约成45度",
+    "下放至胸部两侧有拉伸感",
+    "推起至手臂接近伸直，肘不锁死"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-bench-wrist-curl-1060",
+  "name": "哑铃靠凳手腕弯举",
+  "nameEn": "Dumbbell Bench Wrist Curl",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "wrist-flexors"
+  ],
+  "secondaryHeads": [
+   "wrist-extensors"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/forearms/dumbbell-bench-wrist-curl-1060_front.mp4",
+    "side": "/exercises/clips/male/forearms/dumbbell-bench-wrist-curl-1060_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/forearms/dumbbell-bench-wrist-curl-1060_front.mp4",
+    "side": "/exercises/clips/female/forearms/dumbbell-bench-wrist-curl-1060_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "前臂贴凳固定，手腕向上卷起",
+   "steps": [
+    "前臂平放凳面，手腕探出边缘",
+    "掌心向上握哑铃，手腕下沉",
+    "卷腕向上至最高点，稍停",
+    "缓慢下放，前臂始终贴凳"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-bench-wrist-extension-1061",
+  "name": "哑铃卧凳手腕伸展",
+  "nameEn": "Dumbbell Bench Wrist Extension",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "wrist-extensors"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/unknown/dumbbell-bench-wrist-extension-1061_front.mp4",
+    "side": "/exercises/clips/male/unknown/dumbbell-bench-wrist-extension-1061_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/unknown/dumbbell-bench-wrist-extension-1061_front.mp4",
+    "side": "/exercises/clips/female/unknown/dumbbell-bench-wrist-extension-1061_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "前臂贴凳固定，掌心向下伸腕上抬",
+   "steps": [
+    "前臂平放凳面，手腕探出边缘",
+    "掌心向下握哑铃，手腕自然下垂",
+    "伸腕上抬至最高点，稍停",
+    "控制下放，避免快速甩动"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-box-squat-1519",
+  "name": "哑铃箱式深蹲",
+  "nameEn": "Dumbbell Box Squat",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "gluteus-maximus",
+   "gluteus-medius",
+   "rectus-femoris",
+   "outer-quadricep",
+   "inner-quadricep"
+  ],
+  "secondaryHeads": [
+   "lowerback"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/glutes/dumbbell-box-squat-1519_front.mp4",
+    "side": "/exercises/clips/male/glutes/dumbbell-box-squat-1519_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/glutes/dumbbell-box-squat-1519_front.mp4",
+    "side": "/exercises/clips/female/glutes/dumbbell-box-squat-1519_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "髋部后坐触箱，保持躯干稳定后站起",
+   "steps": [
+    "双手持哑铃，站于凳箱前",
+    "髋后推下蹲，小腿接近垂直",
+    "臀部轻触箱面，不放松坐下",
+    "足跟发力站起，膝盖对准脚尖"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-bulgarian-split-squat-317",
+  "name": "哑铃保加利亚分腿蹲",
+  "nameEn": "Dumbbell Bulgarian Split Squat",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "gluteus-maximus",
+   "inner-thigh",
+   "inner-quadricep",
+   "outer-quadricep"
+  ],
+  "secondaryHeads": [
+   "gluteus-medius",
+   "rectus-femoris"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/glutes/dumbbell-bulgarian-split-squat-317_front.mp4",
+    "side": "/exercises/clips/male/glutes/dumbbell-bulgarian-split-squat-317_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/glutes/dumbbell-bulgarian-split-squat-317_front.mp4",
+    "side": "/exercises/clips/female/glutes/dumbbell-bulgarian-split-squat-317_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "后脚搭凳，前腿发力下蹲，躯干保持稳定",
+   "steps": [
+    "后脚背搭凳，前脚向前一大步",
+    "垂直下蹲，前膝对准脚尖",
+    "后膝接近地面，前脚全掌着地",
+    "前脚跟发力蹬起，不让膝内扣"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-calf-raise-294",
+  "name": "哑铃提踵",
+  "nameEn": "Dumbbell Calf Raise",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "gastrocnemius"
+  ],
+  "secondaryHeads": [],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/calves/dumbbell-calf-raise-294_front.mp4",
+    "side": "/exercises/clips/male/calves/dumbbell-calf-raise-294_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/calves/dumbbell-calf-raise-294_front.mp4",
+    "side": "/exercises/clips/female/calves/dumbbell-calf-raise-294_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "脚跟充分上提并停顿，下放时拉伸到底",
+   "steps": [
+    "单手持哑铃，前脚掌踩稳台阶",
+    "另一手扶物，脚跟下沉至拉伸",
+    "踮脚到最高，小腿充分收缩",
+    "膝盖伸直，避免弹震借力"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-chest-fly-379",
+  "name": "哑铃飞鸟",
+  "nameEn": "Dumbbell Chest Fly",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "upper-pectoralis",
+   "mid-lower-pectoralis"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/chest/dumbbell-chest-fly-379_front.mp4",
+    "side": "/exercises/clips/male/chest/dumbbell-chest-fly-379_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/chest/dumbbell-chest-fly-379_front.mp4",
+    "side": "/exercises/clips/female/chest/dumbbell-chest-fly-379_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肘微屈固定，以弧线打开并向胸前合拢",
+   "steps": [
+    "仰卧平凳，哑铃举至胸上方",
+    "肘微屈，向两侧画弧下放",
+    "至胸部高度有拉伸感即停",
+    "胸肌发力合拢，下放不过深防伤肩"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-concentration-curl-562",
+  "name": "哑铃集中弯举",
+  "nameEn": "Dumbbell Concentration Curl",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "long-head-bicep",
+   "short-head-bicep"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/biceps/dumbbell-concentration-curl-562_front.mp4",
+    "side": "/exercises/clips/male/biceps/dumbbell-concentration-curl-562_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/biceps/dumbbell-concentration-curl-562_front.mp4",
+    "side": "/exercises/clips/female/biceps/dumbbell-concentration-curl-562_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "坐姿肘贴大腿内侧，仅以肘关节屈曲发力",
+   "steps": [
+    "坐于凳端，单臂肘抵大腿内侧",
+    "手臂自然下垂，掌心朝上握铃",
+    "弯举至二头肌充分收缩",
+    "缓慢下放，上身不要晃动"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-crunch-563",
+  "name": "哑铃卷腹",
+  "nameEn": "Dumbbell Crunch",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "upper-abdominals"
+  ],
+  "secondaryHeads": [
+   "lower-abdominals",
+   "obliques"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/upper-abdominals/dumbbell-crunch-563_front.mp4",
+    "side": "/exercises/clips/male/upper-abdominals/dumbbell-crunch-563_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/upper-abdominals/dumbbell-crunch-563_front.mp4",
+    "side": "/exercises/clips/female/upper-abdominals/dumbbell-crunch-563_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "腰背贴地，以腹部卷起肩胛离地",
+   "steps": [
+    "仰卧屈膝，双手将哑铃抱于胸前",
+    "下巴微收，腹部收紧",
+    "卷起上背至肩胛离地",
+    "稍停后缓慢还原，勿拉扯颈部"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-curl-2",
+  "name": "哑铃弯举",
+  "nameEn": "Dumbbell Curl",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "long-head-bicep",
+   "short-head-bicep"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/biceps/dumbbell-curl-2_front.mp4",
+    "side": "/exercises/clips/male/biceps/dumbbell-curl-2_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/biceps/dumbbell-curl-2_front.mp4",
+    "side": "/exercises/clips/female/biceps/dumbbell-curl-2_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "上臂贴身固定，仅靠肘部弯曲举起哑铃",
+   "steps": [
+    "站姿双手持铃，掌心朝前",
+    "肘贴躯干，弯举至二头肌收紧",
+    "顶端稍停，不借助身体摆动",
+    "缓慢下放至手臂接近伸直"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-decline-chest-fly-382",
+  "name": "下斜哑铃飞鸟",
+  "nameEn": "Dumbbell Decline Chest Fly",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "upper-pectoralis",
+   "mid-lower-pectoralis"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/chest/dumbbell-decline-chest-fly-382_front.mp4",
+    "side": "/exercises/clips/male/chest/dumbbell-decline-chest-fly-382_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/chest/dumbbell-decline-chest-fly-382_front.mp4",
+    "side": "/exercises/clips/female/chest/dumbbell-decline-chest-fly-382_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "下斜凳固定身体，肘微屈弧线打开合拢",
+   "steps": [
+    "仰卧下斜凳，固定双脚，举铃于胸上",
+    "肘微屈，向两侧弧线下放",
+    "下放至胸侧有拉伸即停",
+    "胸部发力合拢，避免耸肩"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-floor-press-1181",
+  "name": "哑铃地板卧推",
+  "nameEn": "Dumbbell Floor Press",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "long-head-triceps",
+   "lateral-head-triceps",
+   "medial-head-triceps"
+  ],
+  "secondaryHeads": [
+   "upper-pectoralis",
+   "mid-lower-pectoralis"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/triceps/dumbbell-floor-press-1181_front.mp4",
+    "side": "/exercises/clips/male/triceps/dumbbell-floor-press-1181_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/triceps/dumbbell-floor-press-1181_front.mp4",
+    "side": "/exercises/clips/female/triceps/dumbbell-floor-press-1181_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肘触地即停，推起时发力于肱三头肌",
+   "steps": [
+    "仰卧地面屈膝，哑铃置于胸侧",
+    "上臂约成45度，肘轻触地面",
+    "稍停消除弹力，再向上推起",
+    "推至手臂伸直，肘不锁死"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-front-raise-46",
+  "name": "哑铃前平举",
+  "nameEn": "Dumbbell Front Raise",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "anterior-deltoid"
+  ],
+  "secondaryHeads": [
+   "lateral-deltoid"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/anterior-deltoid/dumbbell-front-raise-46_front.mp4",
+    "side": "/exercises/clips/male/anterior-deltoid/dumbbell-front-raise-46_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/anterior-deltoid/dumbbell-front-raise-46_front.mp4",
+    "side": "/exercises/clips/female/anterior-deltoid/dumbbell-front-raise-46_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "手臂微屈上抬至与肩同高，避免身体后仰",
+   "steps": [
+    "站姿持铃置于大腿前，核心收紧",
+    "单臂或双臂交替向前上抬",
+    "抬至与肩平齐，稍停",
+    "缓慢下放，不借腰部摆动"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-glute-bridge-293",
+  "name": "哑铃臀桥",
+  "nameEn": "Dumbbell Glute Bridge",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "gluteus-maximus",
+   "gluteus-medius",
+   "lateral-hamstrings",
+   "medial-hamstrings",
+   "rectus-femoris",
+   "outer-quadricep",
+   "inner-quadricep"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/glutes/dumbbell-glute-bridge-293_front.mp4",
+    "side": "/exercises/clips/male/glutes/dumbbell-glute-bridge-293_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/glutes/dumbbell-glute-bridge-293_front.mp4",
+    "side": "/exercises/clips/female/glutes/dumbbell-glute-bridge-293_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "足跟踩地，髋部上顶至躯干与大腿成直线",
+   "steps": [
+    "仰卧屈膝，哑铃横放于髋部",
+    "双脚与髋同宽，足跟踩实",
+    "收紧臀部上顶，肩膝成直线",
+    "顶端稍停，避免腰部过度反弓"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-hammer-curl-3",
+  "name": "哑铃锤式弯举",
+  "nameEn": "Dumbbell Hammer Curl",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "short-head-bicep"
+  ],
+  "secondaryHeads": [
+   "long-head-bicep"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/biceps/dumbbell-hammer-curl-3_front.mp4",
+    "side": "/exercises/clips/male/biceps/dumbbell-hammer-curl-3_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/biceps/dumbbell-hammer-curl-3_front.mp4",
+    "side": "/exercises/clips/female/biceps/dumbbell-hammer-curl-3_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "掌心相对中立握，上臂固定向上弯举",
+   "steps": [
+    "站姿双手持铃，掌心相对",
+    "肘贴躯干，保持中立握弯举",
+    "举至前臂接近垂直，稍停",
+    "缓慢下放，身体不后仰借力"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-hip-thrust-286",
+  "name": "哑铃臀桥",
+  "nameEn": "Dumbbell Hip Thrust",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "gluteus-maximus"
+  ],
+  "secondaryHeads": [
+   "gluteus-medius"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/glutes/dumbbell-hip-thrust-286_front.mp4",
+    "side": "/exercises/clips/male/glutes/dumbbell-hip-thrust-286_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/glutes/dumbbell-hip-thrust-286_front.mp4",
+    "side": "/exercises/clips/female/glutes/dumbbell-hip-thrust-286_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "上背靠凳，髋部上顶至完全伸展并收紧臀部",
+   "steps": [
+    "上背靠凳，哑铃置于髋部",
+    "脚踩实，膝盖约成90度",
+    "下巴微收，臀部发力上顶",
+    "顶端躯干与大腿成直线，勿挺腰"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-incline-bench-press-398",
+  "name": "上斜哑铃卧推",
+  "nameEn": "Dumbbell Incline Bench Press",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "upper-pectoralis"
+  ],
+  "secondaryHeads": [
+   "anterior-deltoid",
+   "mid-lower-pectoralis",
+   "lateral-deltoid"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/chest/dumbbell-incline-bench-press-398_front.mp4",
+    "side": "/exercises/clips/male/chest/dumbbell-incline-bench-press-398_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/chest/dumbbell-incline-bench-press-398_front.mp4",
+    "side": "/exercises/clips/female/chest/dumbbell-incline-bench-press-398_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "凳面约30度，肩胛收紧，沿上胸方向推起",
+   "steps": [
+    "调凳至30到45度，仰靠稳定",
+    "哑铃置于上胸两侧，肘约45度",
+    "下放至上胸侧有拉伸感",
+    "推起至接近伸直，避免耸肩"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-incline-chest-fly-399",
+  "name": "上斜哑铃飞鸟",
+  "nameEn": "Dumbbell Incline Chest Fly",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "upper-pectoralis"
+  ],
+  "secondaryHeads": [
+   "mid-lower-pectoralis"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/chest/dumbbell-incline-chest-fly-399_front.mp4",
+    "side": "/exercises/clips/male/chest/dumbbell-incline-chest-fly-399_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/chest/dumbbell-incline-chest-fly-399_front.mp4",
+    "side": "/exercises/clips/female/chest/dumbbell-incline-chest-fly-399_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肘微屈固定，弧线下放并向上胸合拢",
+   "steps": [
+    "凳面调至30度，哑铃举于胸上",
+    "肘微屈，向两侧弧线下放",
+    "至胸侧有拉伸感即停，勿过深",
+    "上胸发力合拢，肩部保持下沉"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-incline-chest-flys-7",
+  "name": "上斜哑铃飞鸟",
+  "nameEn": "Dumbbell Incline Chest Flys",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "upper-pectoralis"
+  ],
+  "secondaryHeads": [
+   "anterior-deltoid",
+   "mid-lower-pectoralis",
+   "lateral-deltoid"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/chest/dumbbell-incline-chest-flys-7_front.mp4",
+    "side": "/exercises/clips/male/chest/dumbbell-incline-chest-flys-7_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/chest/dumbbell-incline-chest-flys-7_front.mp4",
+    "side": "/exercises/clips/female/chest/dumbbell-incline-chest-flys-7_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "上斜凳上肩胛稳定，肘微屈弧线开合",
+   "steps": [
+    "仰卧上斜凳，双手持铃于胸上方",
+    "掌心相对，肘保持微屈角度",
+    "向两侧下放至上胸有拉伸",
+    "沿弧线合拢，勿用手臂推举代偿"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-lateral-raise-20",
+  "name": "哑铃侧平举",
+  "nameEn": "Dumbbell Lateral Raise",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "lateral-deltoid"
+  ],
+  "secondaryHeads": [
+   "anterior-deltoid"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/lateral-deltoid/dumbbell-lateral-raise-20_front.mp4",
+    "side": "/exercises/clips/male/lateral-deltoid/dumbbell-lateral-raise-20_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/lateral-deltoid/dumbbell-lateral-raise-20_front.mp4",
+    "side": "/exercises/clips/female/lateral-deltoid/dumbbell-lateral-raise-20_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肘微屈，向两侧抬至与肩平，肘领先于手",
+   "steps": [
+    "站姿持铃于体侧，躯干微前倾",
+    "肘领先向两侧外展上抬",
+    "抬至与肩同高，稍停",
+    "缓慢下放，不借助身体晃动"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-leg-curl-436",
+  "name": "哑铃腿弯举",
+  "nameEn": "Dumbbell Leg Curl",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "medial-hamstrings"
+  ],
+  "secondaryHeads": [
+   "lateral-hamstrings"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/medial-hamstrings/dumbbell-leg-curl-436_front.mp4",
+    "side": "/exercises/clips/male/medial-hamstrings/dumbbell-leg-curl-436_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/medial-hamstrings/dumbbell-leg-curl-436_front.mp4",
+    "side": "/exercises/clips/female/medial-hamstrings/dumbbell-leg-curl-436_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "俯卧夹铃，仅靠膝关节屈曲将小腿卷起",
+   "steps": [
+    "俯卧凳上，双脚夹紧哑铃",
+    "髋部贴凳，腹部收紧",
+    "屈膝将哑铃卷向臀部",
+    "缓慢放下，避免腰部抬起摆动"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-leg-extension-437",
+  "name": "哑铃腿屈伸",
+  "nameEn": "Dumbbell Leg Extension",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "rectus-femoris",
+   "outer-quadricep",
+   "inner-quadricep"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/quads/dumbbell-leg-extension-437_front.mp4",
+    "side": "/exercises/clips/male/quads/dumbbell-leg-extension-437_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/quads/dumbbell-leg-extension-437_front.mp4",
+    "side": "/exercises/clips/female/quads/dumbbell-leg-extension-437_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "坐姿夹铃伸膝，顶端稍停并控制下放",
+   "steps": [
+    "坐于凳边，双脚夹紧哑铃",
+    "背部挺直，双手扶凳稳定",
+    "伸膝抬起小腿，股四头肌收紧",
+    "缓慢放回，勿猛甩或锁死膝盖"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-overhead-press-441",
+  "name": "哑铃推举",
+  "nameEn": "Dumbbell Overhead Press",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "anterior-deltoid"
+  ],
+  "secondaryHeads": [
+   "lateral-deltoid",
+   "long-head-triceps",
+   "lateral-head-triceps",
+   "medial-head-triceps"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/anterior-deltoid/dumbbell-overhead-press-441_front.mp4",
+    "side": "/exercises/clips/male/anterior-deltoid/dumbbell-overhead-press-441_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/anterior-deltoid/dumbbell-overhead-press-441_front.mp4",
+    "side": "/exercises/clips/female/anterior-deltoid/dumbbell-overhead-press-441_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "核心收紧，哑铃沿直线上推，避免腰部过度反弓",
+   "steps": [
+    "站姿持铃于肩侧，肘在腕下方",
+    "收紧腹臀，肋骨下压",
+    "向上推至手臂接近伸直",
+    "缓慢下放至肩部，不锁肘"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-push-press-446",
+  "name": "哑铃推举",
+  "nameEn": "Dumbbell Push Press",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "anterior-deltoid"
+  ],
+  "secondaryHeads": [
+   "lateral-deltoid",
+   "long-head-triceps",
+   "lateral-head-triceps",
+   "medial-head-triceps"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/anterior-deltoid/dumbbell-push-press-446_front.mp4",
+    "side": "/exercises/clips/male/anterior-deltoid/dumbbell-push-press-446_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/anterior-deltoid/dumbbell-push-press-446_front.mp4",
+    "side": "/exercises/clips/female/anterior-deltoid/dumbbell-push-press-446_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "先屈膝借腿部蓄力，再爆发上推哑铃",
+   "steps": [
+    "站姿持铃于肩侧，核心收紧",
+    "微屈膝下沉，躯干保持直立",
+    "伸髋伸膝爆发，带动哑铃上推",
+    "稳定过头后缓慢下放，膝盖缓冲"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-rear-delt-fly-21",
+  "name": "哑铃后束飞鸟",
+  "nameEn": "Dumbbell Rear Delt Fly",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "posterior-deltoid"
+  ],
+  "secondaryHeads": [],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/posterior-deltoid/dumbbell-rear-delt-fly-21_front.mp4",
+    "side": "/exercises/clips/male/posterior-deltoid/dumbbell-rear-delt-fly-21_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/posterior-deltoid/dumbbell-rear-delt-fly-21_front.mp4",
+    "side": "/exercises/clips/female/posterior-deltoid/dumbbell-rear-delt-fly-21_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "俯身背部平直，肘微屈向两侧打开",
+   "steps": [
+    "屈髋俯身，背部平直，双臂下垂",
+    "肘微屈，向两侧弧线抬起",
+    "抬至与躯干平行，肩胛轻夹",
+    "缓慢下放，不用腰部甩动"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-rear-delt-row-319",
+  "name": "哑铃后三角肌划船",
+  "nameEn": "Dumbbell Rear Delt Row",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "posterior-deltoid"
+  ],
+  "secondaryHeads": [
+   "long-head-bicep",
+   "short-head-bicep",
+   "traps-middle"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/posterior-deltoid/dumbbell-rear-delt-row-319_front.mp4",
+    "side": "/exercises/clips/male/posterior-deltoid/dumbbell-rear-delt-row-319_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/posterior-deltoid/dumbbell-rear-delt-row-319_front.mp4",
+    "side": "/exercises/clips/female/posterior-deltoid/dumbbell-rear-delt-row-319_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肘外展约90度向后拉，聚焦后束而非背阔",
+   "steps": [
+    "屈髋俯身，背部平直，哑铃垂于胸下",
+    "肘外展，沿肩线向后拉铃",
+    "拉至肘略高于躯干，稍停",
+    "缓慢放回，颈部保持放松"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-romanian-deadlift-291",
+  "name": "哑铃罗马尼亚硬拉",
+  "nameEn": "Dumbbell Romanian Deadlift",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "gluteus-maximus",
+   "lateral-hamstrings"
+  ],
+  "secondaryHeads": [
+   "lowerback",
+   "gluteus-medius",
+   "medial-hamstrings"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/gluteus-maximus/dumbbell-romanian-deadlift-291_front.mp4",
+    "side": "/exercises/clips/male/gluteus-maximus/dumbbell-romanian-deadlift-291_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/gluteus-maximus/dumbbell-romanian-deadlift-291_front.mp4",
+    "side": "/exercises/clips/female/gluteus-maximus/dumbbell-romanian-deadlift-291_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "屈髋后推，哑铃贴腿下放，背部保持中立",
+   "steps": [
+    "站姿持铃，膝微屈，肩胛收紧",
+    "髋向后推，哑铃沿大腿下滑",
+    "腘绳肌有拉伸感即停，勿弯腰",
+    "臀部发力伸髋站起，不过度后仰"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-row-bilateral-26",
+  "name": "双臂哑铃划船",
+  "nameEn": "Dumbbell Row Bilateral",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "traps-middle",
+   "lats"
+  ],
+  "secondaryHeads": [
+   "lowerback"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/traps-middle/dumbbell-row-bilateral-26_front.mp4",
+    "side": "/exercises/clips/male/traps-middle/dumbbell-row-bilateral-26_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/traps-middle/dumbbell-row-bilateral-26_front.mp4",
+    "side": "/exercises/clips/female/traps-middle/dumbbell-row-bilateral-26_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "俯身背平，肘贴身向后，拉向腹部两侧",
+   "steps": [
+    "屈髋俯身，背部平直，双手持铃",
+    "肩胛先收紧，再屈肘向后拉",
+    "哑铃拉至腹部两侧，稍停",
+    "缓慢放下，避免抬头或圆背"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-seated-calf-raise-448",
+  "name": "哑铃坐姿提踵",
+  "nameEn": "Dumbbell Seated Calf Raise",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "soleus"
+  ],
+  "secondaryHeads": [],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/calves/dumbbell-seated-calf-raise-448_front.mp4",
+    "side": "/exercises/clips/male/calves/dumbbell-seated-calf-raise-448_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/calves/dumbbell-seated-calf-raise-448_front.mp4",
+    "side": "/exercises/clips/female/calves/dumbbell-seated-calf-raise-448_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "膝呈90度，哑铃压于大腿，充分提踵",
+   "steps": [
+    "坐于凳上，前脚掌踩台阶",
+    "哑铃置于膝上，用手扶稳",
+    "足跟下沉至小腿充分拉伸",
+    "踮脚到最高，稍停后缓慢放下"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-seated-overhead-press-45",
+  "name": "坐姿哑铃推举",
+  "nameEn": "Dumbbell Seated Overhead Press",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "anterior-deltoid"
+  ],
+  "secondaryHeads": [
+   "lateral-deltoid"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/anterior-deltoid/dumbbell-seated-overhead-press-45_front.mp4",
+    "side": "/exercises/clips/male/anterior-deltoid/dumbbell-seated-overhead-press-45_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/anterior-deltoid/dumbbell-seated-overhead-press-45_front.mp4",
+    "side": "/exercises/clips/female/anterior-deltoid/dumbbell-seated-overhead-press-45_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "背靠稳定，哑铃垂直上推，不耸肩不挺腰",
+   "steps": [
+    "坐姿背贴靠垫，哑铃于肩侧",
+    "前臂垂直，核心收紧",
+    "向上推至手臂接近伸直",
+    "缓慢下放至耳侧高度，不锁肘"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-seated-rear-delt-row-1184",
+  "name": "坐姿哑铃后束划船",
+  "nameEn": "Dumbbell Seated Rear Delt Row",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "posterior-deltoid"
+  ],
+  "secondaryHeads": [
+   "traps-middle"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/posterior-deltoid/dumbbell-seated-rear-delt-row-1184_front.mp4",
+    "side": "/exercises/clips/male/posterior-deltoid/dumbbell-seated-rear-delt-row-1184_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/posterior-deltoid/dumbbell-seated-rear-delt-row-1184_front.mp4",
+    "side": "/exercises/clips/female/posterior-deltoid/dumbbell-seated-rear-delt-row-1184_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "坐姿俯身贴近大腿，肘外展向后拉",
+   "steps": [
+    "坐于凳边，俯身胸部贴近大腿",
+    "背部平直，哑铃垂于小腿旁",
+    "肘外展，向后上方拉至躯干线",
+    "稍停后缓慢放回，不借力甩动"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-seated-shrug-12",
+  "name": "坐姿哑铃耸肩",
+  "nameEn": "Dumbbell Seated Shrug",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "upper-trapezius"
+  ],
+  "secondaryHeads": [
+   "traps-middle",
+   "lower-trapezius"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/traps/dumbbell-seated-shrug-12_front.mp4",
+    "side": "/exercises/clips/male/traps/dumbbell-seated-shrug-12_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/traps/dumbbell-seated-shrug-12_front.mp4",
+    "side": "/exercises/clips/female/traps/dumbbell-seated-shrug-12_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肩部垂直上提靠近耳朵，不转肩不前探头",
+   "steps": [
+    "坐姿挺胸，双手持铃于体侧",
+    "手臂伸直，沉肩准备",
+    "肩部垂直上提至最高，稍停",
+    "缓慢下放，勿绕肩或前伸颈部"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-seated-tibialis-raise-860",
+  "name": "坐姿哑铃胫前肌抬举",
+  "nameEn": "Dumbbell Seated Tibialis Raise",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "tibialis"
+  ],
+  "secondaryHeads": [],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/tibialis/dumbbell-seated-tibialis-raise-860_front.mp4",
+    "side": "/exercises/clips/male/tibialis/dumbbell-seated-tibialis-raise-860_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/tibialis/dumbbell-seated-tibialis-raise-860_front.mp4",
+    "side": "/exercises/clips/female/tibialis/dumbbell-seated-tibialis-raise-860_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "足跟着地，抬起脚尖使脚背向小腿靠近",
+   "steps": [
+    "坐于凳上，膝约90度，足跟着地",
+    "哑铃稳放于脚背前部，手扶住",
+    "勾脚尖向上抬至最高，稍停",
+    "缓慢放下，膝盖与小腿保持不动"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-shrug-290",
+  "name": "哑铃耸肩",
+  "nameEn": "Dumbbell Shrug",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "upper-trapezius"
+  ],
+  "secondaryHeads": [
+   "traps-middle",
+   "lower-trapezius"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/traps/dumbbell-shrug-290_front.mp4",
+    "side": "/exercises/clips/male/traps/dumbbell-shrug-290_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/traps/dumbbell-shrug-290_front.mp4",
+    "side": "/exercises/clips/female/traps/dumbbell-shrug-290_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肩部垂直上提，顶端停顿，不要绕肩",
+   "steps": [
+    "站姿挺胸，双手持铃于体侧",
+    "手臂伸直，核心收紧",
+    "肩向耳朵方向垂直上提",
+    "稍停后缓慢放下，颈部放松"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-side-bend-575",
+  "name": "哑铃侧弯",
+  "nameEn": "Dumbbell Side Bend",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "obliques"
+  ],
+  "secondaryHeads": [],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/obliques/dumbbell-side-bend-575_front.mp4",
+    "side": "/exercises/clips/male/obliques/dumbbell-side-bend-575_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/obliques/dumbbell-side-bend-575_front.mp4",
+    "side": "/exercises/clips/female/obliques/dumbbell-side-bend-575_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "躯干在冠状面侧屈，髋部保持不动",
+   "steps": [
+    "单手持铃，另一手置于头侧或腰间",
+    "身体正对前方，不前后倾",
+    "向持铃侧缓慢下沉，幅度适中",
+    "腹斜肌发力将躯干拉回直立"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-single-arm-bench-wrist-extension-1827",
+  "name": "单臂哑铃长凳上手腕伸展",
+  "nameEn": "Dumbbell Single Arm Bench Wrist Extension",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "wrist-extensors"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/wrist-extensors/dumbbell-single-arm-bench-wrist-extension-1827_front.mp4",
+    "side": "/exercises/clips/male/wrist-extensors/dumbbell-single-arm-bench-wrist-extension-1827_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/wrist-extensors/dumbbell-single-arm-bench-wrist-extension-1827_front.mp4",
+    "side": "/exercises/clips/female/wrist-extensors/dumbbell-single-arm-bench-wrist-extension-1827_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "单臂前臂贴凳，掌心向下伸腕上抬",
+   "steps": [
+    "单臂前臂平放凳上，手腕探出边缘",
+    "掌心向下握铃，手腕自然下垂",
+    "伸腕上抬至最高点，稍停",
+    "缓慢放下，另一手可压住前臂"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-single-leg-calf-raise-1749",
+  "name": "单腿哑铃提踵",
+  "nameEn": "Dumbbell Single Leg Calf Raise",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "gastrocnemius"
+  ],
+  "secondaryHeads": [],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/calves/dumbbell-single-leg-calf-raise-1749_front.mp4",
+    "side": "/exercises/clips/male/calves/dumbbell-single-leg-calf-raise-1749_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/calves/dumbbell-single-leg-calf-raise-1749_front.mp4",
+    "side": "/exercises/clips/female/calves/dumbbell-single-leg-calf-raise-1749_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "单腿站稳，脚跟充分上提并停顿",
+   "steps": [
+    "单手持铃，单脚前脚掌踩台阶",
+    "另一手扶墙，另一脚离地",
+    "脚跟下沉至小腿充分拉伸",
+    "踮脚到最高，稍停后缓慢下放"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-skullcrusher-285",
+  "name": "哑铃仰卧臂屈伸",
+  "nameEn": "Dumbbell Skullcrusher",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "long-head-triceps"
+  ],
+  "secondaryHeads": [
+   "lateral-head-triceps",
+   "medial-head-triceps"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/long-head-triceps/dumbbell-skullcrusher-285_front.mp4",
+    "side": "/exercises/clips/male/long-head-triceps/dumbbell-skullcrusher-285_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/long-head-triceps/dumbbell-skullcrusher-285_front.mp4",
+    "side": "/exercises/clips/female/long-head-triceps/dumbbell-skullcrusher-285_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "上臂垂直固定，仅靠屈肘将哑铃放向头侧",
+   "steps": [
+    "仰卧平凳，双手持铃举于胸上",
+    "上臂垂直地面，肘朝向前方",
+    "屈肘将哑铃放向头部两侧",
+    "三头发力伸肘，肘不外张"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-standing-tibialis-raise-893",
+  "name": "哑铃站立提脚背",
+  "nameEn": "Dumbbell Standing Tibialis Raise",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "tibialis"
+  ],
+  "secondaryHeads": [],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/tibialis/dumbbell-standing-tibialis-raise-893_front.mp4",
+    "side": "/exercises/clips/male/tibialis/dumbbell-standing-tibialis-raise-893_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/tibialis/dumbbell-standing-tibialis-raise-893_front.mp4",
+    "side": "/exercises/clips/female/tibialis/dumbbell-standing-tibialis-raise-893_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "背靠墙站立，足跟固定，抬起脚尖对抗重量",
+   "steps": [
+    "背靠墙站立，双脚前伸，身体稍后倾",
+    "哑铃置于脚背，扶墙保持平衡",
+    "勾脚尖上抬至最高，稍停",
+    "缓慢放下，膝盖保持微屈"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-twisting-curl-471",
+  "name": "哑铃旋转弯举",
+  "nameEn": "Dumbbell Twisting Curl",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "long-head-bicep",
+   "short-head-bicep"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/biceps/dumbbell-twisting-curl-471_front.mp4",
+    "side": "/exercises/clips/male/biceps/dumbbell-twisting-curl-471_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/biceps/dumbbell-twisting-curl-471_front.mp4",
+    "side": "/exercises/clips/female/biceps/dumbbell-twisting-curl-471_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "弯举过程中前臂旋后，顶端掌心朝上",
+   "steps": [
+    "站姿双手持铃，掌心朝向身体",
+    "肘贴躯干，弯举同时外旋手腕",
+    "顶端掌心向上，收紧二头肌",
+    "下放时回到起始，不甩身体"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-wrist-curl-32",
+  "name": "哑铃手腕弯举",
+  "nameEn": "Dumbbell Wrist Curl",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "wrist-flexors"
+  ],
+  "secondaryHeads": [
+   "wrist-extensors"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/forearms/dumbbell-wrist-curl-32_front.mp4",
+    "side": "/exercises/clips/male/forearms/dumbbell-wrist-curl-32_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/forearms/dumbbell-wrist-curl-32_front.mp4",
+    "side": "/exercises/clips/female/forearms/dumbbell-wrist-curl-32_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "前臂贴大腿固定，手腕卷起并充分伸展",
+   "steps": [
+    "坐姿前臂架于大腿，掌心向上握铃",
+    "手腕下放至可控的最大幅度",
+    "屈腕卷起至最高点，稍停",
+    "放下时前臂不离开大腿"
+   ]
+  }
+ },
+ {
+  "id": "dumbbell-wrist-extension-316",
+  "name": "哑铃手腕伸展",
+  "nameEn": "Dumbbell Wrist Extension",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "wrist-extensors"
+  ],
+  "secondaryHeads": [
+   "wrist-flexors"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/forearms/dumbbell-wrist-extension-316_front.mp4",
+    "side": "/exercises/clips/male/forearms/dumbbell-wrist-extension-316_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/forearms/dumbbell-wrist-extension-316_front.mp4",
+    "side": "/exercises/clips/female/forearms/dumbbell-wrist-extension-316_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "前臂贴大腿固定，掌心向下伸腕上抬",
+   "steps": [
+    "坐姿前臂架于大腿，掌心向下握铃",
+    "手腕自然下垂至可控幅度",
+    "伸腕向上抬至最高点，稍停",
+    "缓慢放下，前臂保持不动"
+   ]
+  }
+ },
+ {
+  "id": "ez-bar-curl-2240",
+  "name": "EZ杠弯举",
+  "nameEn": "Ez Bar Curl",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "long-head-bicep",
+   "short-head-bicep"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/biceps/ez-bar-curl-2240_front.mp4",
+    "side": "/exercises/clips/male/biceps/ez-bar-curl-2240_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/biceps/ez-bar-curl-2240_front.mp4",
+    "side": "/exercises/clips/female/biceps/ez-bar-curl-2240_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肘贴躯干固定，握住曲杠斜面弯举",
+   "steps": [
+    "站姿握EZ杠内侧曲面，与肩同宽",
+    "肘贴身体，弯举至二头肌收紧",
+    "顶端稍停，不后仰摆腰",
+    "缓慢下放至手臂接近伸直"
+   ]
+  }
+ },
+ {
+  "id": "ez-bar-shrug-2234",
+  "name": "EZ杠耸肩",
+  "nameEn": "Ez Bar Shrug",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "upper-trapezius",
+   "traps-middle",
+   "lower-trapezius"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/traps/ez-bar-shrug-2234_front.mp4",
+    "side": "/exercises/clips/male/traps/ez-bar-shrug-2234_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/traps/ez-bar-shrug-2234_front.mp4",
+    "side": "/exercises/clips/female/traps/ez-bar-shrug-2234_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肩部垂直上提，手臂伸直，顶端稍停",
+   "steps": [
+    "站姿握EZ杠置于身前，与肩同宽",
+    "胸部挺起，手臂自然伸直",
+    "耸肩上提靠近耳朵，稍停",
+    "缓慢放下，不绕肩不探头"
+   ]
+  }
+ },
+ {
+  "id": "frog-crunch-1541",
+  "name": "蛙式卷腹",
+  "nameEn": "Frog Crunch",
+  "equipment": "自重/负重",
+  "equipmentType": "bodyweight",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "lower-abdominals"
+  ],
+  "secondaryHeads": [
+   "upper-abdominals",
+   "obliques"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/lower-abdominals/frog-crunch-1541_front.mp4",
+    "side": "/exercises/clips/male/lower-abdominals/frog-crunch-1541_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/lower-abdominals/frog-crunch-1541_front.mp4",
+    "side": "/exercises/clips/female/lower-abdominals/frog-crunch-1541_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "脚掌相贴膝外展，腹部卷起带动膝肘靠近",
+   "steps": [
+    "仰卧，脚掌相贴，双膝向外打开",
+    "双手置于耳侧，下巴微收",
+    "卷起上身同时收膝向胸前靠近",
+    "腰背贴地，勿用手拉扯颈部"
+   ]
+  }
+ },
+ {
+  "id": "glute-bridge-29",
+  "name": "臀桥",
+  "nameEn": "Glute Bridge",
+  "equipment": "自重/负重",
+  "equipmentType": "bodyweight",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "gluteus-maximus",
+   "gluteus-medius"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/glutes/glute-bridge-29_front.mp4",
+    "side": "/exercises/clips/male/glutes/glute-bridge-29_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/glutes/glute-bridge-29_front.mp4",
+    "side": "/exercises/clips/female/glutes/glute-bridge-29_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "髋部发力上顶，顶端夹紧臀部，腰部不过度反弓",
+   "steps": [
+    "仰卧屈膝，双脚与髋同宽踩地",
+    "收紧腹部，臀部发力顶髋",
+    "顶端肩膝成直线，停顿夹臀",
+    "缓慢下放，腰部不挺起"
+   ]
+  }
+ },
+ {
+  "id": "hanging-knee-raises-206",
+  "name": "悬垂抬膝",
+  "nameEn": "Hanging Knee Raises",
+  "equipment": "自重/负重",
+  "equipmentType": "bodyweight",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "lower-abdominals"
+  ],
+  "secondaryHeads": [
+   "upper-abdominals",
+   "obliques"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/abdominals/hanging-knee-raises-206_front.mp4",
+    "side": "/exercises/clips/male/abdominals/hanging-knee-raises-206_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/abdominals/hanging-knee-raises-206_front.mp4",
+    "side": "/exercises/clips/female/abdominals/hanging-knee-raises-206_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "卷动骨盆抬膝，避免借力摆动身体",
+   "steps": [
+    "双手握杠悬垂，肩部下沉稳定",
+    "腹部发力，抬膝至髋部以上",
+    "顶端骨盆后卷，稍作停顿",
+    "控制下放，不靠惯性摆荡"
+   ]
+  }
+ },
+ {
+  "id": "kickbacks-196",
+  "name": "俯身臂屈伸",
+  "nameEn": "Kickbacks",
+  "equipment": "自重/负重",
+  "equipmentType": "bodyweight",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "gluteus-maximus",
+   "gluteus-medius"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/unknown/kickbacks-196_front.mp4",
+    "side": "/exercises/clips/male/unknown/kickbacks-196_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/unknown/kickbacks-196_front.mp4",
+    "side": "/exercises/clips/female/unknown/kickbacks-196_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "四足跪姿，臀部发力后蹬，腰部保持中立",
+   "steps": [
+    "四足跪撑，手在肩下，膝在髋下",
+    "收紧核心，一腿屈膝向后上蹬",
+    "蹬至髋部伸展，夹紧臀部",
+    "缓慢收回，腰部不塌不拱"
+   ]
+  }
+ },
+ {
+  "id": "lawnmower-row-561",
+  "name": "割草机划船",
+  "nameEn": "Lawnmower Row",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "lats"
+  ],
+  "secondaryHeads": [
+   "long-head-bicep",
+   "short-head-bicep"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/lats/lawnmower-row-561_front.mp4",
+    "side": "/exercises/clips/male/lats/lawnmower-row-561_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/lats/lawnmower-row-561_front.mp4",
+    "side": "/exercises/clips/female/lats/lawnmower-row-561_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "髋部折叠，背阔肌发力将哑铃拉向髋侧",
+   "steps": [
+    "前后分腿站，髋后推，背部平直",
+    "另一手撑膝，持铃手自然下垂",
+    "沿弧线拉向髋侧，肘贴近身体",
+    "顶端收紧背部，缓慢放下"
+   ]
+  }
+ },
+ {
+  "id": "laying-lateral-raise-570",
+  "name": "侧卧侧平举",
+  "nameEn": "Laying Lateral Raise",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "lateral-deltoid"
+  ],
+  "secondaryHeads": [
+   "anterior-deltoid"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/lateral-deltoid/laying-lateral-raise-570_front.mp4",
+    "side": "/exercises/clips/male/lateral-deltoid/laying-lateral-raise-570_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/lateral-deltoid/laying-lateral-raise-570_front.mp4",
+    "side": "/exercises/clips/female/lateral-deltoid/laying-lateral-raise-570_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "侧卧固定躯干，肘微屈，抬至手臂接近垂直",
+   "steps": [
+    "侧卧于平凳，上侧手持哑铃置于身前",
+    "肘微屈，中束发力向上抬起",
+    "抬至手臂接近垂直，停顿",
+    "缓慢下放，不耸肩不借力"
+   ]
+  }
+ },
+ {
+  "id": "laying-leg-raises-37",
+  "name": "仰卧抬腿",
+  "nameEn": "Laying Leg Raises",
+  "equipment": "自重/负重",
+  "equipmentType": "bodyweight",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "lower-abdominals"
+  ],
+  "secondaryHeads": [
+   "upper-abdominals",
+   "obliques"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/abdominals/laying-leg-raises-37_front.mp4",
+    "side": "/exercises/clips/male/abdominals/laying-leg-raises-37_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/abdominals/laying-leg-raises-37_front.mp4",
+    "side": "/exercises/clips/female/abdominals/laying-leg-raises-37_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "下背贴地，腹部控制双腿升降",
+   "steps": [
+    "仰卧，双手放身侧，下背贴地",
+    "腹部收紧，双腿并拢抬至垂直",
+    "缓慢下放，离地数厘米停住",
+    "腰部若拱起，缩小下放幅度"
+   ]
+  }
+ },
+ {
+  "id": "machine-45-degree-back-extension-40",
+  "name": "45度背部伸展机",
+  "nameEn": "Machine 45 Degree Back Extension",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "lowerback"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/lowerback/machine-45-degree-back-extension-40_front.mp4",
+    "side": "/exercises/clips/male/lowerback/machine-45-degree-back-extension-40_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/lowerback/machine-45-degree-back-extension-40_front.mp4",
+    "side": "/exercises/clips/female/lowerback/machine-45-degree-back-extension-40_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "脊柱保持中立，以髋为轴伸展，顶端不过伸",
+   "steps": [
+    "髋部抵垫沿，脚踝固定，身体成直线",
+    "双手交叉胸前，背部平直前俯",
+    "下背与臀部发力抬起至成直线",
+    "顶端不后仰，避免腰椎挤压"
+   ]
+  }
+ },
+ {
+  "id": "machine-back-extension-1664",
+  "name": "器械背部伸展",
+  "nameEn": "Machine Back Extension",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "lowerback"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/lowerback/machine-back-extension-1664_front.mp4",
+    "side": "/exercises/clips/male/lowerback/machine-back-extension-1664_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/lowerback/machine-back-extension-1664_front.mp4",
+    "side": "/exercises/clips/female/lowerback/machine-back-extension-1664_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "背垫贴紧，下背发力后伸，幅度适中",
+   "steps": [
+    "调整座位，使转轴对齐髋部",
+    "双脚踩实，背部贴紧靠垫",
+    "下背发力，推起至躯干直立",
+    "缓慢回位，顶端不过度后仰"
+   ]
+  }
+ },
+ {
+  "id": "machine-cable-v-bar-push-downs-17",
+  "name": "滑轮V杆下压",
+  "nameEn": "Machine Cable V Bar Push Downs",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "long-head-triceps",
+   "lateral-head-triceps",
+   "medial-head-triceps"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/triceps/machine-cable-v-bar-push-downs-17_front.mp4",
+    "side": "/exercises/clips/male/triceps/machine-cable-v-bar-push-downs-17_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/triceps/machine-cable-v-bar-push-downs-17_front.mp4",
+    "side": "/exercises/clips/female/triceps/machine-cable-v-bar-push-downs-17_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "上臂夹紧身侧固定，仅前臂下压伸肘",
+   "steps": [
+    "站稳身体微前倾，握V杆，肘贴肋",
+    "肘部固定，向下压至手臂伸直",
+    "顶端收紧三头肌，稍作停顿",
+    "缓慢回放至肘弯约九十度，不耸肩"
+   ]
+  }
+ },
+ {
+  "id": "machine-chest-press-1513",
+  "name": "坐姿推胸机",
+  "nameEn": "Machine Chest Press",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "upper-pectoralis",
+   "mid-lower-pectoralis"
+  ],
+  "secondaryHeads": [
+   "long-head-triceps",
+   "lateral-head-triceps",
+   "medial-head-triceps"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/chest/machine-chest-press-1513_front.mp4",
+    "side": "/exercises/clips/male/chest/machine-chest-press-1513_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/chest/machine-chest-press-1513_front.mp4",
+    "side": "/exercises/clips/female/chest/machine-chest-press-1513_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肩胛后收贴紧靠背，推出时肘不锁死",
+   "steps": [
+    "调整座椅，握把与胸口同高",
+    "背部贴紧，肩胛后收下沉",
+    "向前推至手臂接近伸直",
+    "缓慢回放，保持胸部张力"
+   ]
+  }
+ },
+ {
+  "id": "machine-crunch-1686",
+  "name": "器械卷腹",
+  "nameEn": "Machine Crunch",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "upper-abdominals"
+  ],
+  "secondaryHeads": [
+   "lower-abdominals",
+   "obliques"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/upper-abdominals/machine-crunch-1686_front.mp4",
+    "side": "/exercises/clips/male/upper-abdominals/machine-crunch-1686_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/upper-abdominals/machine-crunch-1686_front.mp4",
+    "side": "/exercises/clips/female/upper-abdominals/machine-crunch-1686_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "腹部卷曲发力，不用手臂和髋部拉动",
+   "steps": [
+    "调整座位，握把贴近胸口，髋部固定",
+    "呼气，腹部卷曲带动躯干前屈",
+    "顶端收紧腹部，停顿一秒",
+    "缓慢还原，背部不过度后仰"
+   ]
+  }
+ },
+ {
+  "id": "machine-dips-1682",
+  "name": "器械双杠臂屈伸",
+  "nameEn": "Machine Dips",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "mid-lower-pectoralis"
+  ],
+  "secondaryHeads": [
+   "long-head-triceps",
+   "lateral-head-triceps",
+   "medial-head-triceps",
+   "upper-pectoralis"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/chest/machine-dips-1682_front.mp4",
+    "side": "/exercises/clips/male/chest/machine-dips-1682_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/chest/machine-dips-1682_front.mp4",
+    "side": "/exercises/clips/female/chest/machine-dips-1682_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "躯干略前倾，屈肘下放，胸部发力推起",
+   "steps": [
+    "调整座位，握住握把，肩膀下沉",
+    "躯干前倾，屈肘至上臂接近水平",
+    "肩部不过度下沉，保护肩关节",
+    "向前下方推起，顶端不锁肘"
+   ]
+  }
+ },
+ {
+  "id": "machine-face-pulls-22",
+  "name": "绳索面拉",
+  "nameEn": "Cable Rope Face Pulls",
+  "equipment": "绳索",
+  "equipmentType": "cable",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "posterior-deltoid"
+  ],
+  "secondaryHeads": [],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/posterior-deltoid/machine-face-pulls-22_front.mp4",
+    "side": "/exercises/clips/male/posterior-deltoid/machine-face-pulls-22_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/posterior-deltoid/machine-face-pulls-22_front.mp4",
+    "side": "/exercises/clips/female/posterior-deltoid/machine-face-pulls-22_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "拉向面部，肘高于手，后束发力",
+   "steps": [
+    "滑轮置于面部高度，单手握把站稳",
+    "肘抬高，将把手拉向脸侧耳旁",
+    "末端肩胛后收，停顿一秒",
+    "缓慢还原，躯干不后仰借力"
+   ]
+  }
+ },
+ {
+  "id": "machine-hack-squat-1499",
+  "name": "哈克深蹲机",
+  "nameEn": "Machine Hack Squat",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "gluteus-maximus",
+   "gluteus-medius",
+   "rectus-femoris",
+   "outer-quadricep",
+   "inner-quadricep"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/glutes/machine-hack-squat-1499_front.mp4",
+    "side": "/exercises/clips/male/glutes/machine-hack-squat-1499_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/glutes/machine-hack-squat-1499_front.mp4",
+    "side": "/exercises/clips/female/glutes/machine-hack-squat-1499_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "背贴靠垫，下蹲至大腿接近水平，膝对脚尖",
+   "steps": [
+    "肩抵肩垫，背贴靠背，双脚与肩同宽",
+    "解锁后屈髋屈膝，缓慢下蹲",
+    "大腿接近水平，膝对脚尖方向",
+    "脚掌踩实推起，不锁死膝关节"
+   ]
+  }
+ },
+ {
+  "id": "machine-hip-adduction-1504",
+  "name": "坐姿大腿内收机",
+  "nameEn": "Machine Hip Adduction",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "inner-thigh"
+  ],
+  "secondaryHeads": [
+   "groin"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/inner-thigh/machine-hip-adduction-1504_front.mp4",
+    "side": "/exercises/clips/male/inner-thigh/machine-hip-adduction-1504_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/inner-thigh/machine-hip-adduction-1504_front.mp4",
+    "side": "/exercises/clips/female/inner-thigh/machine-hip-adduction-1504_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "缓慢并拢双腿，内收肌发力，回放要控制",
+   "steps": [
+    "调整腿垫宽度，背贴靠垫坐稳",
+    "大腿内侧顶住腿垫，幅度适中",
+    "内收肌发力并拢，顶端停顿",
+    "缓慢打开，避免被重量弹开"
+   ]
+  }
+ },
+ {
+  "id": "machine-hip-and-glute-adduction-1510",
+  "name": "器械髋/臀内收",
+  "nameEn": "Machine Hip And Glute Adduction",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "inner-thigh"
+  ],
+  "secondaryHeads": [
+   "groin"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/inner-thigh/machine-hip-and-glute-adduction-1510_front.mp4",
+    "side": "/exercises/clips/male/inner-thigh/machine-hip-and-glute-adduction-1510_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/inner-thigh/machine-hip-and-glute-adduction-1510_front.mp4",
+    "side": "/exercises/clips/female/inner-thigh/machine-hip-and-glute-adduction-1510_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "骨盆保持稳定，大腿内收发力，不借身体摆动",
+   "steps": [
+    "调整座位与腿垫，坐稳并扶住握把",
+    "大腿内侧抵住垫，躯干保持不动",
+    "并拢双腿至身体中线，停顿",
+    "缓慢还原，保持内收肌张力"
+   ]
+  }
+ },
+ {
+  "id": "machine-hip-thrust-1498",
+  "name": "器械臀推",
+  "nameEn": "Machine Hip Thrust",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "gluteus-maximus",
+   "gluteus-medius"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/glutes/machine-hip-thrust-1498_front.mp4",
+    "side": "/exercises/clips/male/glutes/machine-hip-thrust-1498_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/glutes/machine-hip-thrust-1498_front.mp4",
+    "side": "/exercises/clips/female/glutes/machine-hip-thrust-1498_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "下巴微收，髋部上顶，顶端夹紧臀部不挺腰",
+   "steps": [
+    "上背靠垫，双脚踩稳，膝约九十度",
+    "收紧腹部，臀部发力向上顶髋",
+    "顶端躯干与大腿成一线，停顿",
+    "缓慢下放，避免腰椎过度后伸"
+   ]
+  }
+ },
+ {
+  "id": "machine-leg-extension-10",
+  "name": "坐姿腿屈伸",
+  "nameEn": "Machine Leg Extension",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "rectus-femoris",
+   "outer-quadricep",
+   "inner-quadricep"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/quads/machine-leg-extension-10_front.mp4",
+    "side": "/exercises/clips/male/quads/machine-leg-extension-10_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/quads/machine-leg-extension-10_front.mp4",
+    "side": "/exercises/clips/female/quads/machine-leg-extension-10_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "膝对准转轴，伸腿至顶端收紧股四头肌",
+   "steps": [
+    "调整靠背，膝对转轴，护垫在脚踝上",
+    "股四头肌发力伸膝至接近伸直",
+    "顶端停顿，膝不锁死",
+    "缓慢下放，臀部不离座"
+   ]
+  }
+ },
+ {
+  "id": "machine-overhand-overhead-press-1508",
+  "name": "器械正握肩上推举",
+  "nameEn": "Machine Overhand Overhead Press",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "anterior-deltoid",
+   "lateral-deltoid"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/front-shoulders/machine-overhand-overhead-press-1508_front.mp4",
+    "side": "/exercises/clips/male/front-shoulders/machine-overhand-overhead-press-1508_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/front-shoulders/machine-overhand-overhead-press-1508_front.mp4",
+    "side": "/exercises/clips/female/front-shoulders/machine-overhand-overhead-press-1508_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "前臂保持垂直，沿轨迹上推，核心稳定不耸肩",
+   "steps": [
+    "调整座位，握把与肩同高，背贴靠背",
+    "正握握把，肩部下沉，核心收紧",
+    "向上推至手臂接近伸直，不锁肘",
+    "缓慢下放至握把近肩，腰不挺"
+   ]
+  }
+ },
+ {
+  "id": "machine-overhand-row-1516",
+  "name": "器械正握划船",
+  "nameEn": "Machine Overhand Row",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "posterior-deltoid"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/posterior-deltoid/machine-overhand-row-1516_front.mp4",
+    "side": "/exercises/clips/male/posterior-deltoid/machine-overhand-row-1516_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/posterior-deltoid/machine-overhand-row-1516_front.mp4",
+    "side": "/exercises/clips/female/posterior-deltoid/machine-overhand-row-1516_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "胸贴垫，肘外展向后拉，后束与上背发力",
+   "steps": [
+    "胸部贴紧胸垫，正握握把，手臂伸直",
+    "肘外展约四十五度，向后拉",
+    "肩胛后收，顶端停顿",
+    "缓慢还原，不耸肩不后仰"
+   ]
+  }
+ },
+ {
+  "id": "machine-pec-fly-1507",
+  "name": "蝴蝶机夹胸",
+  "nameEn": "Machine Pec Fly",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "upper-pectoralis",
+   "mid-lower-pectoralis"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/chest/machine-pec-fly-1507_front.mp4",
+    "side": "/exercises/clips/male/chest/machine-pec-fly-1507_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/chest/machine-pec-fly-1507_front.mp4",
+    "side": "/exercises/clips/female/chest/machine-pec-fly-1507_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肘微屈，用胸部带动双臂合拢，肩不前探",
+   "steps": [
+    "背贴靠背，握把与胸同高",
+    "肩胛后收下沉，肘微屈",
+    "双臂向身前合拢，挤压胸肌",
+    "缓慢打开至胸部拉伸，肩不后展过度"
+   ]
+  }
+ },
+ {
+  "id": "machine-plate-loaded-low-row-1676",
+  "name": "杠片式低位划船机",
+  "nameEn": "Machine Plate Loaded Low Row",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "posterior-deltoid"
+  ],
+  "secondaryHeads": [
+   "traps-middle"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/posterior-deltoid/machine-plate-loaded-low-row-1676_front.mp4",
+    "side": "/exercises/clips/male/posterior-deltoid/machine-plate-loaded-low-row-1676_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/posterior-deltoid/machine-plate-loaded-low-row-1676_front.mp4",
+    "side": "/exercises/clips/female/posterior-deltoid/machine-plate-loaded-low-row-1676_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "胸贴垫，肩胛先收，再屈肘向后拉",
+   "steps": [
+    "调整座位，胸贴垫，手臂伸直握把",
+    "肩胛先后收，再屈肘向后拉",
+    "顶端停顿一秒，挤压上背",
+    "缓慢还原，躯干不前后晃动"
+   ]
+  }
+ },
+ {
+  "id": "machine-pulldown-23",
+  "name": "器械下拉",
+  "nameEn": "Machine Pulldown",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "lats"
+  ],
+  "secondaryHeads": [
+   "lower-trapezius"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/lats/machine-pulldown-23_front.mp4",
+    "side": "/exercises/clips/male/lats/machine-pulldown-23_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/lats/machine-pulldown-23_front.mp4",
+    "side": "/exercises/clips/female/lats/machine-pulldown-23_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肩胛下沉，肘向下拉向身侧，不借身体后仰",
+   "steps": [
+    "调整大腿垫，坐稳，手臂伸直握把",
+    "先下沉肩胛，再屈肘下拉",
+    "拉至握把近上胸，挤压背阔肌",
+    "缓慢上放，肩部不耸起"
+   ]
+  }
+ },
+ {
+  "id": "machine-rear-deltoid-row-1660",
+  "name": "器械后束划船",
+  "nameEn": "Machine Rear Deltoid Row",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "posterior-deltoid"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/posterior-deltoid/machine-rear-deltoid-row-1660_front.mp4",
+    "side": "/exercises/clips/male/posterior-deltoid/machine-rear-deltoid-row-1660_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/posterior-deltoid/machine-rear-deltoid-row-1660_front.mp4",
+    "side": "/exercises/clips/female/posterior-deltoid/machine-rear-deltoid-row-1660_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肘与肩同高后拉，后束发力，避免耸肩",
+   "steps": [
+    "胸贴垫，握把与肩同高，手臂前伸",
+    "肘抬高，向后外展拉开",
+    "肩胛后收，顶端停顿",
+    "缓慢还原，保持肩部下沉"
+   ]
+  }
+ },
+ {
+  "id": "machine-seated-calf-raises-34",
+  "name": "坐姿提踵（器械）",
+  "nameEn": "Machine Seated Calf Raises",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "soleus"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/calves/machine-seated-calf-raises-34_front.mp4",
+    "side": "/exercises/clips/male/calves/machine-seated-calf-raises-34_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/calves/machine-seated-calf-raises-34_front.mp4",
+    "side": "/exercises/clips/female/calves/machine-seated-calf-raises-34_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "膝屈曲固定，前脚掌蹬起，下放充分拉伸",
+   "steps": [
+    "坐稳，前脚掌踩踏板，膝垫压住大腿",
+    "脚跟下放，小腿充分拉伸",
+    "前脚掌蹬起至最高点，停顿",
+    "缓慢下放，膝部不晃动"
+   ]
+  }
+ },
+ {
+  "id": "machine-seated-leg-curl-1198",
+  "name": "坐姿腿弯举机",
+  "nameEn": "Machine Seated Leg Curl",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "medial-hamstrings"
+  ],
+  "secondaryHeads": [
+   "lateral-hamstrings"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/medial-hamstrings/machine-seated-leg-curl-1198_front.mp4",
+    "side": "/exercises/clips/male/medial-hamstrings/machine-seated-leg-curl-1198_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/medial-hamstrings/machine-seated-leg-curl-1198_front.mp4",
+    "side": "/exercises/clips/female/medial-hamstrings/machine-seated-leg-curl-1198_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "臀部坐实，屈膝下压，腘绳肌发力",
+   "steps": [
+    "调整靠背，膝对转轴，护垫压在小腿后侧",
+    "腘绳肌发力，小腿向臀部下压",
+    "顶端停顿，髋部不离座",
+    "缓慢放回，不让配重片撞击"
+   ]
+  }
+ },
+ {
+  "id": "machine-seated-shrug-1662",
+  "name": "坐姿器械耸肩",
+  "nameEn": "Machine Seated Shrug",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "upper-trapezius",
+   "traps-middle",
+   "lower-trapezius"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/traps/machine-seated-shrug-1662_front.mp4",
+    "side": "/exercises/clips/male/traps/machine-seated-shrug-1662_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/traps/machine-seated-shrug-1662_front.mp4",
+    "side": "/exercises/clips/female/traps/machine-seated-shrug-1662_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "肩膀垂直向耳朵上提，不转肩不前探",
+   "steps": [
+    "坐稳，握住把手，手臂自然伸直",
+    "肩膀垂直向上耸起",
+    "顶端停顿，斜方肌收紧",
+    "缓慢下放，不转肩，头不前探"
+   ]
+  }
+ },
+ {
+  "id": "machine-standing-calf-raises-33",
+  "name": "器械站姿提踵",
+  "nameEn": "Machine Standing Calf Raises",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "gastrocnemius"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/calves/machine-standing-calf-raises-33_front.mp4",
+    "side": "/exercises/clips/male/calves/machine-standing-calf-raises-33_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/calves/machine-standing-calf-raises-33_front.mp4",
+    "side": "/exercises/clips/female/calves/machine-standing-calf-raises-33_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "双腿伸直，前脚掌蹬起，全幅度提放",
+   "steps": [
+    "肩抵垫，前脚掌踩台沿，膝近伸直",
+    "脚跟下沉，小腿充分拉伸",
+    "蹬至最高点，停顿一秒",
+    "缓慢下放，膝不弯曲借力"
+   ]
+  }
+ },
+ {
+  "id": "machine-standing-shrug-1663",
+  "name": "站姿器械耸肩",
+  "nameEn": "Machine Standing Shrug",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "upper-trapezius",
+   "traps-middle",
+   "lower-trapezius"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/traps/machine-standing-shrug-1663_front.mp4",
+    "side": "/exercises/clips/male/traps/machine-standing-shrug-1663_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/traps/machine-standing-shrug-1663_front.mp4",
+    "side": "/exercises/clips/female/traps/machine-standing-shrug-1663_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "躯干直立，肩部垂直上提，不转肩不前探",
+   "steps": [
+    "站直，握住把手，双臂自然伸直",
+    "肩膀向耳朵方向垂直耸起",
+    "顶端停顿，收紧斜方肌",
+    "缓慢下放，颈部放松，不借膝力"
+   ]
+  }
+ },
+ {
+  "id": "narrow-pulldown-824",
+  "name": "窄握下拉",
+  "nameEn": "Narrow Pulldown",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "lats"
+  ],
+  "secondaryHeads": [
+   "long-head-bicep",
+   "short-head-bicep",
+   "traps-middle",
+   "lower-trapezius"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/lats/narrow-pulldown-824_front.mp4",
+    "side": "/exercises/clips/male/lats/narrow-pulldown-824_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/lats/narrow-pulldown-824_front.mp4",
+    "side": "/exercises/clips/female/lats/narrow-pulldown-824_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "窄握拉向胸前，肘贴近身体，背阔肌发力",
+   "steps": [
+    "握住窄握把手，坐稳压紧大腿垫",
+    "肩胛下沉，身体微后倾",
+    "肘贴近身体，下拉至上胸",
+    "缓慢放回，不借惯性后仰"
+   ]
+  }
+ },
+ {
+  "id": "neutral-chest-press-825",
+  "name": "中立握卧推",
+  "nameEn": "Neutral Chest Press",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "upper-pectoralis",
+   "mid-lower-pectoralis"
+  ],
+  "secondaryHeads": [
+   "long-head-triceps",
+   "lateral-head-triceps",
+   "medial-head-triceps"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/chest/neutral-chest-press-825_front.mp4",
+    "side": "/exercises/clips/male/chest/neutral-chest-press-825_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/chest/neutral-chest-press-825_front.mp4",
+    "side": "/exercises/clips/female/chest/neutral-chest-press-825_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "掌心相对，肘靠近身体，肩胛贴紧靠背",
+   "steps": [
+    "调整座位，握中立握把，肩胛后收",
+    "肘距躯干约四十五度，回放至胸前",
+    "推起至手臂接近伸直，不锁肘",
+    "背部和臀部贴紧，肩不上耸"
+   ]
+  }
+ },
+ {
+  "id": "oblique-crunch-1539",
+  "name": "侧腹卷腹",
+  "nameEn": "Oblique Crunch",
+  "equipment": "自重/负重",
+  "equipmentType": "bodyweight",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "obliques"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/obliques/oblique-crunch-1539_front.mp4",
+    "side": "/exercises/clips/male/obliques/oblique-crunch-1539_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/obliques/oblique-crunch-1539_front.mp4",
+    "side": "/exercises/clips/female/obliques/oblique-crunch-1539_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "躯干侧向卷起，用腹斜肌发力，不拉扯颈部",
+   "steps": [
+    "仰卧屈膝，双手轻置头后",
+    "躯干侧向卷起，肘靠近同侧膝",
+    "收紧腹斜肌，停顿一秒",
+    "缓慢还原，下背保持稳定"
+   ]
+  }
+ },
+ {
+  "id": "parralel-bar-dips-1493",
+  "name": "双杠臂屈伸",
+  "nameEn": "Parallel Bar Dips",
+  "equipment": "自重/负重",
+  "equipmentType": "bodyweight",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "mid-lower-pectoralis"
+  ],
+  "secondaryHeads": [
+   "long-head-triceps",
+   "lateral-head-triceps",
+   "medial-head-triceps",
+   "upper-pectoralis"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/chest/parralel-bar-dips-1493_front.mp4",
+    "side": "/exercises/clips/male/chest/parralel-bar-dips-1493_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/chest/parralel-bar-dips-1493_front.mp4",
+    "side": "/exercises/clips/female/chest/parralel-bar-dips-1493_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "躯干前倾，屈肘下放，胸部发力推起",
+   "steps": [
+    "双手撑杠，手臂伸直，身体略前倾",
+    "屈肘缓慢下放至上臂接近水平",
+    "肩部不过度下沉，保护肩关节",
+    "胸部发力推起，顶端不锁肘"
+   ]
+  }
+ },
+ {
+  "id": "pull-ups-25",
+  "name": "引体向上",
+  "nameEn": "Pull Ups",
+  "equipment": "自重/负重",
+  "equipmentType": "bodyweight",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "lats"
+  ],
+  "secondaryHeads": [
+   "traps-middle"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/lats/pull-ups-25_front.mp4",
+    "side": "/exercises/clips/male/lats/pull-ups-25_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/lats/pull-ups-25_front.mp4",
+    "side": "/exercises/clips/female/lats/pull-ups-25_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "先下沉肩胛，再屈肘拉至下巴过杠",
+   "steps": [
+    "正握略宽于肩，悬垂，肩胛下沉",
+    "核心收紧，肘向下向后拉",
+    "下巴过杠，背阔肌收缩",
+    "缓慢下放至伸直，避免摆荡"
+   ]
+  }
+ },
+ {
+  "id": "push-up-182",
+  "name": "俯卧撑",
+  "nameEn": "Push Up",
+  "equipment": "自重/负重",
+  "equipmentType": "bodyweight",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "mid-lower-pectoralis"
+  ],
+  "secondaryHeads": [
+   "upper-pectoralis"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/chest/push-up-182_front.mp4",
+    "side": "/exercises/clips/male/chest/push-up-182_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/chest/push-up-182_front.mp4",
+    "side": "/exercises/clips/female/chest/push-up-182_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "身体成直线，下放至胸近地，推起不塌腰",
+   "steps": [
+    "双手略宽于肩，身体成直线，核心收紧",
+    "肘约四十五度，屈肘下放至胸近地",
+    "胸部发力推起，顶端不锁肘",
+    "腰部不下塌，臀部不上翘"
+   ]
+  }
+ },
+ {
+  "id": "seated-lateral-raise-890",
+  "name": "坐姿侧平举",
+  "nameEn": "Seated Lateral Raise",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "lateral-deltoid"
+  ],
+  "secondaryHeads": [
+   "anterior-deltoid"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/lateral-deltoid/seated-lateral-raise-890_front.mp4",
+    "side": "/exercises/clips/male/lateral-deltoid/seated-lateral-raise-890_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/lateral-deltoid/seated-lateral-raise-890_front.mp4",
+    "side": "/exercises/clips/female/lateral-deltoid/seated-lateral-raise-890_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "坐稳，肘微屈，向两侧抬至与肩同高",
+   "steps": [
+    "坐于凳上，躯干直立，哑铃垂于身侧",
+    "肘微屈，中束发力向外抬起",
+    "抬至与肩同高，稍作停顿",
+    "缓慢下放，不耸肩不摆身"
+   ]
+  }
+ },
+ {
+  "id": "seated-leg-curl-828",
+  "name": "坐姿腿弯举",
+  "nameEn": "Seated Leg Curl",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "medial-hamstrings"
+  ],
+  "secondaryHeads": [
+   "lateral-hamstrings"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/medial-hamstrings/seated-leg-curl-828_front.mp4",
+    "side": "/exercises/clips/male/medial-hamstrings/seated-leg-curl-828_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/medial-hamstrings/seated-leg-curl-828_front.mp4",
+    "side": "/exercises/clips/female/medial-hamstrings/seated-leg-curl-828_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "髋部贴紧坐垫，屈膝下压，腘绳肌发力",
+   "steps": [
+    "调整座椅，膝对转轴，护垫在脚踝上方",
+    "双腿伸直起始，背部贴紧靠背",
+    "腘绳肌发力屈膝，小腿向下压",
+    "顶端停顿，缓慢还原不弹动"
+   ]
+  }
+ },
+ {
+  "id": "seated-tibialis-raise-859",
+  "name": "坐姿胫前肌抬举",
+  "nameEn": "Seated Tibialis Raise",
+  "equipment": "自重/负重",
+  "equipmentType": "bodyweight",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "tibialis"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/tibialis/seated-tibialis-raise-859_front.mp4",
+    "side": "/exercises/clips/male/tibialis/seated-tibialis-raise-859_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/tibialis/seated-tibialis-raise-859_front.mp4",
+    "side": "/exercises/clips/female/tibialis/seated-tibialis-raise-859_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "脚跟着地，脚尖尽量上勾，缓慢下放",
+   "steps": [
+    "坐于凳上，小腿垂直，脚跟踩地",
+    "脚尖向胫骨方向用力上勾",
+    "顶端停顿，感受胫前肌收缩",
+    "缓慢放下，膝盖不晃动"
+   ]
+  }
+ },
+ {
+  "id": "single-leg-glute-bridge-50",
+  "name": "单腿臀桥",
+  "nameEn": "Single Leg Glute Bridge",
+  "equipment": "自重/负重",
+  "equipmentType": "bodyweight",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "gluteus-maximus",
+   "gluteus-medius"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/glutes/single-leg-glute-bridge-50_front.mp4",
+    "side": "/exercises/clips/male/glutes/single-leg-glute-bridge-50_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/glutes/single-leg-glute-bridge-50_front.mp4",
+    "side": "/exercises/clips/female/glutes/single-leg-glute-bridge-50_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "骨盆保持水平，单腿发力上顶，不塌髋",
+   "steps": [
+    "仰卧屈膝，一脚踩地，另一腿伸直抬起",
+    "踩地脚发力，将髋向上顶起",
+    "顶端骨盆保持水平，夹紧臀部",
+    "缓慢下放，腰部不过度反弓"
+   ]
+  }
+ },
+ {
+  "id": "smith-machine-hanging-knee-tuck-936",
+  "name": "史密斯机悬垂屈膝收腹",
+  "nameEn": "Smith Machine Hanging Knee Tuck",
+  "equipment": "史密斯机",
+  "equipmentType": "smith",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "lower-abdominals"
+  ],
+  "secondaryHeads": [
+   "upper-abdominals",
+   "obliques"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/abdominals/smith-machine-hanging-knee-tuck-936_front.mp4",
+    "side": "/exercises/clips/male/abdominals/smith-machine-hanging-knee-tuck-936_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/abdominals/smith-machine-hanging-knee-tuck-936_front.mp4",
+    "side": "/exercises/clips/female/abdominals/smith-machine-hanging-knee-tuck-936_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "握杆悬垂，卷骨盆收膝，避免摆动",
+   "steps": [
+    "杠调至够高并锁定，双手握杠悬垂",
+    "腹部发力，屈膝收向胸前",
+    "顶端骨盆后卷，停顿一秒",
+    "缓慢下放，肩部保持稳定"
+   ]
+  }
+ },
+ {
+  "id": "smith-machine-oblique-crunch-939",
+  "name": "史密斯机侧腹卷腹",
+  "nameEn": "Smith Machine Oblique Crunch",
+  "equipment": "史密斯机",
+  "equipmentType": "smith",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "obliques"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/obliques/smith-machine-oblique-crunch-939_front.mp4",
+    "side": "/exercises/clips/male/obliques/smith-machine-oblique-crunch-939_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/obliques/smith-machine-oblique-crunch-939_front.mp4",
+    "side": "/exercises/clips/female/obliques/smith-machine-oblique-crunch-939_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "轻重量，躯干侧屈，腹斜肌发力控制幅度",
+   "steps": [
+    "杠置于上背，双脚与肩同宽站稳",
+    "核心收紧，躯干向一侧缓慢侧屈",
+    "腹斜肌发力，直立回到起始位",
+    "重量宜轻，避免前倾或扭转腰椎"
+   ]
+  }
+ },
+ {
+  "id": "smith-machine-romanian-deadlift-963",
+  "name": "史密斯机罗马尼亚硬拉",
+  "nameEn": "Smith Machine Romanian Deadlift",
+  "equipment": "史密斯机",
+  "equipmentType": "smith",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "lateral-hamstrings",
+   "medial-hamstrings"
+  ],
+  "secondaryHeads": [
+   "lowerback",
+   "gluteus-maximus",
+   "gluteus-medius"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/hamstrings/smith-machine-romanian-deadlift-963_front.mp4",
+    "side": "/exercises/clips/male/hamstrings/smith-machine-romanian-deadlift-963_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/hamstrings/smith-machine-romanian-deadlift-963_front.mp4",
+    "side": "/exercises/clips/female/hamstrings/smith-machine-romanian-deadlift-963_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "髋部后推，杠贴腿下滑，背部始终平直",
+   "steps": [
+    "双脚略前于杠，与髋同宽，握杠站直",
+    "膝微屈，髋向后推，杠沿大腿下放",
+    "腘绳肌明显拉伸时停下，背保持平直",
+    "髋向前顶起站直，不过度挺腰"
+   ]
+  }
+ },
+ {
+  "id": "smith-machine-seated-calf-raise-946",
+  "name": "史密斯机坐姿提踵",
+  "nameEn": "Smith Machine Seated Calf Raise",
+  "equipment": "史密斯机",
+  "equipmentType": "smith",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "soleus"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/calves/smith-machine-seated-calf-raise-946_front.mp4",
+    "side": "/exercises/clips/male/calves/smith-machine-seated-calf-raise-946_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/calves/smith-machine-seated-calf-raise-946_front.mp4",
+    "side": "/exercises/clips/female/calves/smith-machine-seated-calf-raise-946_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "杠置膝上方，前脚掌蹬起，下放充分拉伸",
+   "steps": [
+    "坐于凳上，前脚掌踩垫高处，杠垫软垫置于膝上",
+    "脚跟下放，比目鱼肌充分拉伸",
+    "蹬起至最高点，稍作停顿",
+    "缓慢下放，膝部不晃动"
+   ]
+  }
+ },
+ {
+  "id": "smith-machine-squat-967",
+  "name": "史密斯机深蹲",
+  "nameEn": "Smith Machine Squat",
+  "equipment": "史密斯机",
+  "equipmentType": "smith",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "inner-thigh",
+   "inner-quadricep",
+   "outer-quadricep"
+  ],
+  "secondaryHeads": [
+   "gluteus-maximus",
+   "rectus-femoris"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/quads/smith-machine-squat-967_front.mp4",
+    "side": "/exercises/clips/male/quads/smith-machine-squat-967_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/quads/smith-machine-squat-967_front.mp4",
+    "side": "/exercises/clips/female/quads/smith-machine-squat-967_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "杠位于上背，脚略前移，下蹲至大腿平行",
+   "steps": [
+    "杠置于上斜方肌，脚略前于杠站稳",
+    "屈髋屈膝，躯干保持挺直下蹲",
+    "大腿平行，膝对脚尖方向",
+    "脚跟发力蹬起，不锁死膝"
+   ]
+  }
+ },
+ {
+  "id": "standing-tibialis-raise-892",
+  "name": "站姿胫前肌抬举",
+  "nameEn": "Standing Tibialis Raise",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "tibialis"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/tibialis/standing-tibialis-raise-892_front.mp4",
+    "side": "/exercises/clips/male/tibialis/standing-tibialis-raise-892_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/tibialis/standing-tibialis-raise-892_front.mp4",
+    "side": "/exercises/clips/female/tibialis/standing-tibialis-raise-892_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "脚跟踩稳，脚尖上勾，负重宜轻",
+   "steps": [
+    "背靠墙站立，双脚前移，脚跟踩稳",
+    "脚尖用力上勾，靠近小腿",
+    "顶端停顿，胫前肌收紧",
+    "缓慢放下，膝部不弯曲"
+   ]
+  }
+ },
+ {
+  "id": "trap-bar-shrug-2226",
+  "name": "六角杠铃耸肩",
+  "nameEn": "Trap Bar Shrug",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "upper-trapezius",
+   "traps-middle",
+   "lower-trapezius"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/traps/trap-bar-shrug-2226_front.mp4",
+    "side": "/exercises/clips/male/traps/trap-bar-shrug-2226_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/traps/trap-bar-shrug-2226_front.mp4",
+    "side": "/exercises/clips/female/traps/trap-bar-shrug-2226_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "站于杠内，肩部垂直上提，手臂放松伸直",
+   "steps": [
+    "站入六角杠中央，握住中立握把",
+    "挺胸，髋膝微屈，提杠站直",
+    "肩膀垂直向耳朵耸起，停顿",
+    "缓慢下放，不转肩，背保持平直"
+   ]
+  }
+ },
+ {
+  "id": "trap-bar-squat-2222",
+  "name": "六角杠深蹲",
+  "nameEn": "Trap Bar Squat",
+  "equipment": "杠铃",
+  "equipmentType": "barbell",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "gluteus-maximus",
+   "gluteus-medius",
+   "rectus-femoris",
+   "outer-quadricep",
+   "inner-quadricep"
+  ],
+  "secondaryHeads": [],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/glutes/trap-bar-squat-2222_front.mp4",
+    "side": "/exercises/clips/male/glutes/trap-bar-squat-2222_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/glutes/trap-bar-squat-2222_front.mp4",
+    "side": "/exercises/clips/female/glutes/trap-bar-squat-2222_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "站于杠内，挺胸，髋膝同时屈伸，膝对脚尖",
+   "steps": [
+    "站入杠内，双脚与肩同宽，握住把手",
+    "挺胸收腹，髋膝同时屈曲下蹲",
+    "大腿接近平行，膝对脚尖，背平直",
+    "脚掌踩实站起，不锁膝不含胸"
+   ]
+  }
+ },
+ {
+  "id": "underhand-pulldown-829",
+  "name": "反握下拉",
+  "nameEn": "Underhand Pulldown",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "lats"
+  ],
+  "secondaryHeads": [
+   "long-head-bicep",
+   "short-head-bicep",
+   "lower-trapezius"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/lats/underhand-pulldown-829_front.mp4",
+    "side": "/exercises/clips/male/lats/underhand-pulldown-829_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/lats/underhand-pulldown-829_front.mp4",
+    "side": "/exercises/clips/female/lats/underhand-pulldown-829_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "掌心向内反握，肘贴身下拉，肩胛先下沉",
+   "steps": [
+    "反握把杆与肩同宽，压紧大腿垫",
+    "肩胛下沉，躯干微后倾",
+    "屈肘下拉至上胸，肘贴近身体",
+    "缓慢放回，避免过度后仰借力"
+   ]
+  }
+ },
+ {
+  "id": "vertical-leg-press-1690",
+  "name": "垂直腿举",
+  "nameEn": "Vertical Leg Press",
+  "equipment": "固定器械",
+  "equipmentType": "machine",
+  "mechanic": "compound",
+  "primaryHeads": [
+   "gluteus-maximus",
+   "gluteus-medius"
+  ],
+  "secondaryHeads": [
+   "rectus-femoris",
+   "outer-quadricep",
+   "inner-quadricep"
+  ],
+  "unilateral": false,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/glutes/vertical-leg-press-1690_front.mp4",
+    "side": "/exercises/clips/male/glutes/vertical-leg-press-1690_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/glutes/vertical-leg-press-1690_front.mp4",
+    "side": "/exercises/clips/female/glutes/vertical-leg-press-1690_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "下放幅度可控，髋与下背始终贴紧靠垫",
+   "steps": [
+    "仰卧靠垫，双脚踩踏板，与肩同宽",
+    "推起至腿接近伸直，膝不锁死",
+    "缓慢屈膝下放，膝靠近胸侧",
+    "下放时髋和下背不卷起"
+   ]
+  }
+ },
+ {
+  "id": "wrist-flexor-curl-dumbbell-kneeling-1209",
+  "name": "哑铃单臂长凳手腕弯举",
+  "nameEn": "Dumbbell Single Arm Bench Wrist Curl",
+  "equipment": "哑铃",
+  "equipmentType": "dumbbell",
+  "mechanic": "isolation",
+  "primaryHeads": [
+   "wrist-flexors"
+  ],
+  "secondaryHeads": [
+   "wrist-extensors"
+  ],
+  "unilateral": true,
+  "media": {
+   "source": "musclewiki",
+   "male": {
+    "front": "/exercises/clips/male/wrist-flexors/wrist-flexor-curl-dumbbell-kneeling-1209_front.mp4",
+    "side": "/exercises/clips/male/wrist-flexors/wrist-flexor-curl-dumbbell-kneeling-1209_side.mp4"
+   },
+   "female": {
+    "front": "/exercises/clips/female/wrist-flexors/wrist-flexor-curl-dumbbell-kneeling-1209_front.mp4",
+    "side": "/exercises/clips/female/wrist-flexors/wrist-flexor-curl-dumbbell-kneeling-1209_side.mp4"
+   }
+  },
+  "cue": {
+   "summary": "前臂固定于凳上，仅手腕屈曲，缓慢控制",
+   "steps": [
+    "跪于凳旁，单侧前臂置于凳上，掌心向上",
+    "手腕伸出凳边，哑铃缓慢下放",
+    "手腕卷曲，将哑铃向上屈起",
+    "顶端停顿，重量宜轻，前臂不抬离"
+   ]
+  }
+ }
+]
