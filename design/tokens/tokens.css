@@ -133,3 +133,19 @@
   --milo-motion-ease-decelerate: cubic-bezier(0, 0, 0, 1);
   --milo-motion-spring: stiffness 420, damping 32;
 }
+.milo-text-number-hero { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-hero); line-height: 58px; letter-spacing: -0.04em; }
+.milo-text-number-xl { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-xl); line-height: 40px; letter-spacing: -0.02em; }
+.milo-text-number-l { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-l); line-height: 34px; letter-spacing: -0.01em; }
+.milo-text-number-m { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-m); line-height: 26px; letter-spacing: -0.01em; }
+.milo-text-number-s { font-family: var(--milo-font-number); font-weight: 600; font-size: var(--milo-font-size-body); line-height: 18px; letter-spacing: 0em; }
+.milo-text-number-xs { font-family: var(--milo-font-number); font-weight: 600; font-size: var(--milo-font-size-caption); line-height: 15px; letter-spacing: 0em; }
+.milo-text-readout-m { font-family: var(--milo-font-mono); font-weight: 600; font-size: var(--milo-font-size-label); line-height: 16px; letter-spacing: 0em; }
+.milo-text-readout-s { font-family: var(--milo-font-mono); font-weight: 600; font-size: var(--milo-font-size-min); line-height: 14px; letter-spacing: 0em; }
+.milo-text-title-l { font-family: var(--milo-font-ui); font-weight: 900; font-size: var(--milo-font-size-title); line-height: 34px; letter-spacing: 0.02em; }
+.milo-text-title-m { font-family: var(--milo-font-ui); font-weight: 900; font-size: var(--milo-font-size-m); line-height: 30px; letter-spacing: 0em; }
+.milo-text-heading { font-family: var(--milo-font-ui); font-weight: 700; font-size: var(--milo-font-size-heading); line-height: 24px; letter-spacing: 0em; }
+.milo-text-body-strong { font-family: var(--milo-font-ui); font-weight: 700; font-size: var(--milo-font-size-body); line-height: 22px; letter-spacing: 0em; }
+.milo-text-body { font-family: var(--milo-font-ui); font-weight: 400; font-size: var(--milo-font-size-body); line-height: 22px; letter-spacing: 0em; }
+.milo-text-label { font-family: var(--milo-font-ui); font-weight: 700; font-size: var(--milo-font-size-label); line-height: 18px; letter-spacing: 0em; }
+.milo-text-caption { font-family: var(--milo-font-ui); font-weight: 400; font-size: var(--milo-font-size-caption); line-height: 17px; letter-spacing: 0em; }
+.milo-text-micro { font-family: var(--milo-font-ui); font-weight: 500; font-size: var(--milo-font-size-min); line-height: 15px; letter-spacing: 0em; }

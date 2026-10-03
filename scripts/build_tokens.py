@@ -188,6 +188,12 @@ def main():
         val = f"'{v['value']}'{fallbacks[k]}" if k in fallbacks else v['value']
         css.append(f'  --milo-{k.replace("/", "-")}: {val};')
     css.append('}')
+    # 文字样式 → 类名（与 Figma 的 Milo/ 文字样式一一对应）：.milo-text-number-hero 等
+    weight = {'Regular': 400, 'Medium': 500, 'SemiBold': 600, 'Bold': 700, 'ExtraBold': 800, 'Black': 900}
+    for d in T['textStyles']:
+        cls = 'milo-text-' + d['name'].lower().replace('/', '-')
+        css.append(f".{cls} {{ font-family: var(--milo-{d['family'].replace('/', '-')}); font-weight: {weight[d['style']]}; "
+                   f"font-size: var(--milo-{d['size'].replace('/', '-')}); line-height: {d['lineHeight']}px; letter-spacing: {d['letterSpacing'] / 100:g}em; }}")
     open(CSS_OUT, 'w', encoding='utf-8').write('\n'.join(css) + '\n')
     print(f'\n已生成 {os.path.relpath(PLUGIN_OUT, ROOT)}（{os.path.getsize(PLUGIN_OUT) // 1024} KB）与 {os.path.relpath(CSS_OUT, ROOT)}；build {build}')
     return 0

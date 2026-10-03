@@ -1,8 +1,15 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "redirects": [{ "source": "/", "destination": "/prototype/", "permanent": false }],
+  "installCommand": "npm ci",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/public/:path*", "destination": "/:path*" },
+    { "source": "/((?!prototype/|design/|mock/|exercises/|bodymap/|assets/).*)", "destination": "/index.html" }
+  ],
   "headers": [
-    { "source": "/public/exercises/clips/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] },
+    { "source": "/assets/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] },
+    { "source": "/exercises/clips/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] },
     { "source": "/prototype/(.*)", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
     { "source": "/mock/(.*)", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] }
   ]
