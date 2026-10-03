@@ -1,6 +1,6 @@
 # 慢牛 Milo 视觉规范（DESIGN.md）
 
-> 阶段 4 · Foundations + Components + 标杆页 P06 · 2026-10-03 · 方向 B「配重片」（吸收 A「刻度」），初版只有深色
+> 阶段 4 · Foundations + Components + 标杆页 P06 · 2026-10-03 · **已过关**（用户在 Figma 里运行插件并确认） · 方向 B「配重片」（吸收 A「刻度」），初版只有深色
 > **数值的唯一源头是 `design/tokens/tokens.json`。** 本文只写使用规则；数值以 tokens.json 为准，经插件导入 Figma（`design/figma-plugin/README.md`），经 `design/tokens/tokens.css` 给代码用。
 > 方向的来由见 `docs/references.md` §8–§12。
 
