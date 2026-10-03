@@ -1,9 +1,29 @@
 {
-  "name": "Milo Foundations Import",
+  "name": "Milo Design System Import",
   "id": "milo-foundations-import-dev",
   "api": "1.0.0",
   "main": "code.js",
-  "editorType": ["figma"],
+  "editorType": [
+    "figma"
+  ],
   "documentAccess": "dynamic-page",
-  "networkAccess": { "allowedDomains": ["none"] }
+  "networkAccess": {
+    "allowedDomains": [
+      "none"
+    ]
+  },
+  "menu": [
+    {
+      "name": "1 · 导入 Foundations（变量、样式、说明）",
+      "command": "foundations"
+    },
+    {
+      "name": "2 · 导入组件",
+      "command": "components"
+    },
+    {
+      "name": "3 · 生成标杆页 P06",
+      "command": "benchmark"
+    }
+  ]
 }

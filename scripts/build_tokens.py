@@ -12,7 +12,14 @@ import base64, json, os, random, struct, subprocess, sys, zlib, datetime
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 SRC = os.path.join(ROOT, 'design', 'tokens', 'tokens.json')
-PLUGIN_SRC = os.path.join(ROOT, 'design', 'figma-plugin', 'src', 'plugin.js')
+PLUGIN_SRCS = [os.path.join(ROOT, 'design', 'figma-plugin', 'src', f + '.js') for f in ('plugin', 'foundations', 'components', 'benchmark', 'main')]
+P06_DATA = os.path.join(ROOT, 'design', 'benchmark', 'p06.json')
+# 导航图标（方向 B：实心几何，24×24；挖空用 evenodd，插件里统一重新着色）
+ICONS = {
+    'today': 'M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18zm0 6.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6z',
+    'progress': 'M3 20l7-9 4 4 7-10v15z',
+    'settings': 'M3 5h18v3H3z M3 10.5h12v3H3z M3 16h15v3H3z',
+}
 PLUGIN_OUT = os.path.join(ROOT, 'design', 'figma-plugin', 'code.js')
 CSS_OUT = os.path.join(ROOT, 'design', 'tokens', 'tokens.css')
 BAD_NAME_CHARS = set('.{}$')
@@ -143,8 +150,18 @@ def main():
     except OSError:
         commit = '未知'
     build = {'commit': commit, 'date': datetime.date.today().isoformat()}
-    data = {'tokens': T, 'contrast': [[fg, bg, round(r, 2), need, note] for fg, bg, r, need, note in rows], 'images': textures(col), 'build': build}
-    src = open(PLUGIN_SRC, encoding='utf-8').read()
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import bodymap
+    bm, lists = {}, {}
+    for g in ('male', 'female'):
+        d = bodymap.load(g)
+        bm[g] = {v: bodymap.svg(d, v) for v in ('front', 'back')}
+        if g == 'male':
+            lists = {v: bodymap.muscles(d, v) for v in ('front', 'back')}
+    icons = {k: f'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="{d}" fill="#000" fill-rule="evenodd"/></svg>' for k, d in ICONS.items()}
+    data = {'tokens': T, 'contrast': [[fg, bg, round(r, 2), need, note] for fg, bg, r, need, note in rows], 'images': textures(col), 'build': build,
+            'bodymap': bm, 'bodymapMuscles': lists, 'icons': icons, 'p06': json.load(open(P06_DATA, encoding='utf-8'))}
+    src = '\n'.join(open(p, encoding='utf-8').read() for p in PLUGIN_SRCS)
     if '__MILO_DATA__' not in src:
         print('src/plugin.js 里找不到 __MILO_DATA__ 占位')
         return 1
