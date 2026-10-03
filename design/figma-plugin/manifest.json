@@ -1,0 +1,9 @@
+{
+  "name": "Milo Foundations Import",
+  "id": "milo-foundations-import-dev",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": { "allowedDomains": ["none"] }
+}

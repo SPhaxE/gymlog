@@ -1,0 +1,180 @@
+#!/usr/bin/env python3
+"""慢牛 Milo · 由 design/tokens/tokens.json 生成 Figma 导入插件与 CSS 变量。
+
+    python3 scripts/build_tokens.py           # 校验 + 生成
+    python3 scripts/build_tokens.py --check   # 只校验（对比度、引用），不写文件
+
+产物（都由本脚本生成，勿手改）：
+    design/figma-plugin/code.js      插件主程序（src/plugin.js + 内嵌的 Token 与纹理）
+    design/tokens/tokens.css         给阶段 5 的 CSS 变量
+校验不过（对比度不达标、引用不存在）时返回 1，不写任何文件。只用标准库。"""
+import base64, json, os, random, struct, subprocess, sys, zlib, datetime
+
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+SRC = os.path.join(ROOT, 'design', 'tokens', 'tokens.json')
+PLUGIN_SRC = os.path.join(ROOT, 'design', 'figma-plugin', 'src', 'plugin.js')
+PLUGIN_OUT = os.path.join(ROOT, 'design', 'figma-plugin', 'code.js')
+CSS_OUT = os.path.join(ROOT, 'design', 'tokens', 'tokens.css')
+BAD_NAME_CHARS = set('.{}$')
+
+
+def hex_rgba(h):
+    h = h.lstrip('#')
+    if len(h) not in (6, 8):
+        raise ValueError('颜色必须是 #RRGGBB 或 #RRGGBBAA：' + h)
+    r, g, b = (int(h[i:i + 2], 16) / 255 for i in (0, 2, 4))
+    a = int(h[6:8], 16) / 255 if len(h) == 8 else 1.0
+    return r, g, b, a
+
+
+def lum(rgb):
+    c = [x / 12.92 if x <= 0.03928 else ((x + 0.055) / 1.055) ** 2.4 for x in rgb]
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+
+
+def over(fg, bg):
+    """把带透明度的颜色合成到不透明底上。"""
+    a = fg[3]
+    return tuple(fg[i] * a + bg[i] * (1 - a) for i in range(3)) + (1.0,)
+
+
+def ratio(a, b):
+    la, lb = lum(a[:3]), lum(b[:3])
+    return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
+
+
+# ---------- 纹理：纯标准库写 PNG ----------
+def png(w, h, px):
+    raw = b''.join(b'\x00' + bytes(sum((px[y * w + x] for x in range(w)), ())) for y in range(h))
+    def chunk(t, d):
+        return struct.pack('>I', len(d)) + t + d + struct.pack('>I', zlib.crc32(t + d) & 0xffffffff)
+    return b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', w, h, 8, 6, 0, 0, 0)) + chunk(b'IDAT', zlib.compress(raw, 9)) + chunk(b'IEND', b'')
+
+
+def to8(rgba):
+    return tuple(max(0, min(255, round(v * 255))) for v in rgba)
+
+
+def textures(col):
+    rnd = random.Random(89)  # 与 mock 同一个固定种子，产物可复现
+    out = {}
+    # 噪点 128×128，灰度随机、全不透明（插件里用 OVERLAY + opacity/grain 叠加）
+    px = []
+    for _ in range(128 * 128):
+        v = rnd.randint(0, 255)
+        px.append((v, v, v, 255))
+    out['grain'] = png(128, 128, px)
+    # 不足：暗荧光底 + 荧光圆点（10×10，@2x）
+    bg, dot = to8(col['data/tier-low']), to8(col['data/tier-low-dot'])
+    px = []
+    for y in range(10):
+        for x in range(10):
+            d = ((x - 4.5) ** 2 + (y - 4.5) ** 2) ** 0.5
+            px.append(dot if d <= 2.0 else bg)
+    out['tier-low'] = png(10, 10, px)
+    # 超量：白底 + 黑 45° 斜纹（10×10）
+    wh, bk = to8(col['data/tier-over']), to8(col['data/tier-over-stripe'])
+    out['tier-over'] = png(10, 10, [bk if (x + y) % 10 < 3 else wh for y in range(10) for x in range(10)])
+    # 未练胶囊：面色底 + 暗斜纹（12×12）
+    a, b = to8(col['bg/raised']), to8(col['data/tier-none'])
+    out['untrained'] = png(12, 12, [b if (x - y) % 12 < 4 else a for y in range(12) for x in range(12)])
+    return {k: base64.b64encode(v).decode() for k, v in out.items()}
+
+
+def main():
+    check_only = '--check' in sys.argv
+    T = json.load(open(SRC, encoding='utf-8'))
+    errs, notes = [], []
+    prim = {k: v['value'] for k, v in T['primitives']['color'].items()}
+    for k, v in prim.items():
+        hex_rgba(v)
+    sem = T['semantic']['color']
+    col = {}
+    for k, v in sem.items():
+        if v['ref'] not in prim:
+            errs.append(f'语义色 {k} 引用了不存在的原始色 {v["ref"]}')
+            continue
+        col[k] = hex_rgba(prim[v['ref']])
+    names = list(prim) + list(sem) + list(T['number']) + list(T['string'])
+    for n in names:
+        if BAD_NAME_CHARS & set(n):
+            errs.append(f'变量名 {n} 含 Figma 不接受的字符（. {{ }} $）')
+    base = col.get('bg/base')
+    # 对比度：带透明度的颜色先合成到 bg/base 上再算
+    rows = []
+    for fg, bg, need, note in T['contrast']:
+        if fg not in col or bg not in col:
+            errs.append(f'对比度检查引用了不存在的语义色：{fg} / {bg}')
+            continue
+        b = over(col[bg], base) if col[bg][3] < 1 else col[bg]
+        f = over(col[fg], b) if col[fg][3] < 1 else col[fg]
+        r = ratio(f, b)
+        rows.append((fg, bg, r, need, note))
+        if r + 1e-9 < need:
+            errs.append(f'对比度不达标：{fg} on {bg} = {r:.2f}:1 < {need}:1（{note}）')
+    nums = T['number']
+    for s in T['textStyles']:
+        for key in ('family', 'size'):
+            ref = s[key]
+            if ref not in (T['string'] if key == 'family' else nums):
+                errs.append(f'文字样式 {s["name"]} 的 {key} 引用了不存在的变量 {ref}')
+        if s['size'] in nums and nums[s['size']]['value'] < nums['font-size/min']['value']:
+            errs.append(f'文字样式 {s["name"]} 小于字号下限 font-size/min')
+    for s in T['effectStyles']:
+        for e in s['effects']:
+            if e['color'] not in col:
+                errs.append(f'效果样式 {s["name"]} 引用了不存在的颜色 {e["color"]}')
+    for s in T['paintStyles']:
+        for ref, _ in s.get('stops', []):
+            if ref not in prim:
+                errs.append(f'填充样式 {s["name"]} 的渐变引用了不存在的原始色 {ref}')
+    print('对比度：')
+    for fg, bg, r, need, note in rows:
+        print(f'  {"✓" if r + 1e-9 >= need else "✗"} {r:5.2f}:1 ≥ {need:<3}  {fg} on {bg}  · {note}')
+    if errs:
+        print('\n校验失败：', *errs, sep='\n  ✗ ')
+        return 1
+    if check_only:
+        print('\n校验通过（--check，未写文件）')
+        return 0
+
+    try:
+        commit = subprocess.run(['git', '-C', ROOT, 'rev-parse', '--short', 'HEAD'], capture_output=True, text=True).stdout.strip() or '未提交'
+    except OSError:
+        commit = '未知'
+    build = {'commit': commit, 'date': datetime.date.today().isoformat()}
+    data = {'tokens': T, 'contrast': [[fg, bg, round(r, 2), need, note] for fg, bg, r, need, note in rows], 'images': textures(col), 'build': build}
+    src = open(PLUGIN_SRC, encoding='utf-8').read()
+    if '__MILO_DATA__' not in src:
+        print('src/plugin.js 里找不到 __MILO_DATA__ 占位')
+        return 1
+    banner = '// 由 scripts/build_tokens.py 从 design/tokens/tokens.json 生成，勿手改。改值请改 tokens.json 再重新生成。\n'
+    open(PLUGIN_OUT, 'w', encoding='utf-8').write(banner + src.replace('__MILO_DATA__', json.dumps(data, ensure_ascii=False)))
+
+    css = ['/* 由 scripts/build_tokens.py 从 design/tokens/tokens.json 生成，勿手改。初版只有深色。 */', ':root {']
+    for k, v in prim.items():
+        css.append(f'  --milo-prim-{k}: {v};')
+    for k, v in sem.items():
+        css.append(f'  --milo-color-{k.replace("/", "-")}: var(--milo-prim-{v["ref"]});')
+    for k, v in nums.items():
+        val = v['value']
+        if k.startswith('opacity/'):
+            out = f'{val / 100:g}'
+        elif k.startswith('motion/'):
+            unit = 'ms' if k in ('motion/press', 'motion/fast', 'motion/base', 'motion/slow', 'motion/stagger', 'motion/list-max', 'motion/long-press') else ''
+            out = f'{val / 100:g}' if k.startswith('motion/press-') else f'{val:g}{unit}'
+        else:
+            out = f'{val:g}px'
+        css.append(f'  --milo-{k.replace("/", "-")}: {out};')
+    fallbacks = {'font/number': ", 'Noto Sans SC', system-ui, sans-serif", 'font/ui': ', system-ui, sans-serif', 'font/mono': ', ui-monospace, monospace'}
+    for k, v in T['string'].items():
+        val = f"'{v['value']}'{fallbacks[k]}" if k in fallbacks else v['value']
+        css.append(f'  --milo-{k.replace("/", "-")}: {val};')
+    css.append('}')
+    open(CSS_OUT, 'w', encoding='utf-8').write('\n'.join(css) + '\n')
+    print(f'\n已生成 {os.path.relpath(PLUGIN_OUT, ROOT)}（{os.path.getsize(PLUGIN_OUT) // 1024} KB）与 {os.path.relpath(CSS_OUT, ROOT)}；build {build}')
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
