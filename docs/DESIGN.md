@@ -1,6 +1,6 @@
 # 慢牛 Milo 视觉规范（DESIGN.md）
 
-> 阶段 4 · Foundations · 2026-10-03 · 方向 B「配重片」（吸收 A「刻度」），初版只有深色
+> 阶段 4 · Foundations + Components + 标杆页 P06 · 2026-10-03 · 方向 B「配重片」（吸收 A「刻度」），初版只有深色
 > **数值的唯一源头是 `design/tokens/tokens.json`。** 本文只写使用规则；数值以 tokens.json 为准，经插件导入 Figma（`design/figma-plugin/README.md`），经 `design/tokens/tokens.css` 给代码用。
 > 方向的来由见 `docs/references.md` §8–§12。
 
@@ -45,7 +45,7 @@ tokens.json ──build_tokens.py──┬─> design/figma-plugin/code.js ─�
 
 | 样式 | 用在 |
 |---|---|
-| `Number/Hero` … `Number/S` | 数字：Space Grotesk。单位（kg、组、%）用同一行里更小的 `Caption` 或 `Micro`，颜色 `text/secondary` |
+| `Number/Hero` … `Number/XS` | 数字：Space Grotesk。单位（kg、组、%）用同一行里更小的 `Caption` 或 `Micro`，颜色 `text/secondary` |
 | `Readout/M`、`Readout/S` | 刻度读数与计时（1:35）：JetBrains Mono，等宽防跳动。**只放数字**，中文标签另起一段用 `Micro` |
 | `Title/L`、`Title/M`、`Heading` | 页面标题、卡片与面板标题 |
 | `Body/Strong`、`Body`、`Label`、`Caption`、`Micro` | 正文、动作名、按钮、说明、胶囊名称 |
@@ -57,7 +57,7 @@ tokens.json ──build_tokens.py──┬─> design/figma-plugin/code.js ─�
 
 - 圆角：胶囊、按钮、导航 `radius/pill`；卡片 `radius/l`；底部面板顶角 `radius/xl`；小标签与刻度条 `radius/xs`。
 - 间距只用 `space/*`（2–48）；页面左右边距 `space/l`（16）。
-- 最小触控区 `size/hit-min`（48）。胶囊的视觉高度 `size/capsule-h`（22）可以小于它，但命中区按轨道均分（ia §1.10）。
+- 最小触控区 `size/hit-min`（48）。胶囊的视觉高度 `size/capsule-h`（26）可以小于它，但命中区按轨道均分（ia §1.10）。
 - P01 今日处方卡高度不超过 `size/hero-max-h`（160）：首个动作的建议重量必须在首屏（U1）。
 
 ## 5. 数据图形
@@ -94,13 +94,30 @@ tokens.json ──build_tokens.py──┬─> design/figma-plugin/code.js ─�
 - 编造的英文或中文「技术标签」：CALIB-24、SYS.LOCKED、RX //、处方负荷校准……功能界面文案保持中性、克制。
 - 一屏多处荧光；荧光按钮。
 - 信号红或任何颜色的整条主按钮（主按钮只有暖白一种）。
-- 「机甲」化、写实化的人体图；人体只用几何形状或轮廓线。
+- **任何不是 MuscleWiki 素材的人体图**：几何拼的、手画的、Stitch 或其他工具生成的都不行。人体图只用 `public/bodymap/`（V1 的 MuscleWiki 解剖路径，见 `asset-audit.md` §5），出现的页面要有「人体图：MuscleWiki」署名。
 - 照抄参考图或生成图里的数字。口径只看 brief / ia。
 
-## 9. 自检
+## 9. 组件（Figma「Components · 配重片」分区，由插件生成）
+
+| 组件 | 变体 | 用法与限制 |
+|---|---|---|
+| `NavPill` | ring 无环 / 进度 / 休息 / 进度+休息 / 满环 × selected 今日 / 进度 / 设置 × state 默认 / 按下（30） | 有 Tab 的页面都用它（ia §1.12）。外圈实线 = 今日进度，满环 = 今天已练完；恢复日、动作池不足、空态用「无环」。休息时选中项写「Tab 名 + 剩余时间」 |
+| `Capsule` | 静止 / 邻近放大 / 放大中心 / 选中 / 未练 | **放大中心每屏只能有一个**（荧光 + 光晕）。放大镜按余弦衰减：中心上下各一个「邻近放大」。松手后被选中的是「选中」（荧光描边，不填色）。近 7 天 0 组用「未练」 |
+| `ScaleBar` | size 胶囊 / 面板 × tone 默认 / 荧光底 × tier 大 / 中 / 小（面板没有荧光底，共 9） | 三条地标按肌头大小定位，不要手挪。已填比例 = 组数 ÷（上限 × 1.1，面板 × 1.15）：在实例里改 `fill` 图层的硬边渐变，不改尺寸 |
+| `BodyFigure` | gender 男 / 女 × view 正面 / 背面 | MuscleWiki 素材，每个肌头一组 `muscle/<id>`；在实例里给组内矢量换填充表示容量档位（§5），选中的肌头加荧光描边。腹股沟是中性部位，不着色 |
+| `RecoveryBlock` / `VolumeBlock` | 时相 4 档 / 肌头大小 3 档 | 详情面板的两块；时相条当前段是荧光，属于「进度」类用途 |
+| `Segmented` / `Segmented2` | 选中项 | 选中项用 `control/selected`（暖白），不是荧光 |
+| `Button` | 主 / 次 × L / S | 一屏最多一个主按钮 |
+| `TierLegend`、`KpiRow`、`PageHeader`、`SheetHeader`、`InfoRow`、`InlineNote` | — | 文字都在实例里改，不要拆开 |
+| `TouchPoint` | — | 只在标杆页示意手指位置，产品里不出现 |
+
+标杆页 P06（「Benchmark · P06」分区）由这些组件拼成：① 放大镜按住「中下胸」② 松手后的详情面板 ③ 空态。除引线外没有散落的图形；数据来自 `design/benchmark/p06.json`（原型引擎的实算结果）。正面 19 个肌头的胶囊轨道比 800 高的屏幕长约 60 px，页面本来就可滚动（ia §1.10），这是预期的。
+
+## 10. 自检
 
 ```bash
 python3 scripts/build_tokens.py --check   # 对比度与引用
 python3 scripts/build_tokens.py           # 生成插件与 CSS
-node scripts/test_figma_plugin.js         # 模拟 Figma API 跑一遍插件（幂等、缺字体、移除旧变量）
+node scripts/test_figma_plugin.js         # 模拟 Figma API 跑三个命令（62 项：幂等、组件 ID 不变、只用变量、只用实例、MuscleWiki 署名……）
+node scripts/test_figma_plugin.js --render out.html   # 顺带把标杆页的模拟结果粗略画成 HTML（文字宽度是估的）
 ```
