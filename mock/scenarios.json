@@ -572,14 +572,116 @@
    "profile": "default",
    "profilePatch": {
     "equipment": [
-     "bodyweight"
+     "smith"
     ]
    },
-   "history": {},
+   "history": {
+    "append": [
+     {
+      "id": "scn-smith-week",
+      "daysAgo": 2,
+      "startTime": "18:00",
+      "durationMin": 45,
+      "exertion": 8,
+      "exercises": [
+       {
+        "exerciseId": "smith-machine-hanging-knee-tuck-936",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 10,
+          "rpe": null
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 10,
+          "rpe": null
+         }
+        ]
+       },
+       {
+        "exerciseId": "smith-machine-oblique-crunch-939",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 10,
+          "rpe": null
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 10,
+          "rpe": null
+         }
+        ]
+       },
+       {
+        "exerciseId": "smith-machine-romanian-deadlift-963",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 10,
+          "rpe": null
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 10,
+          "rpe": null
+         }
+        ]
+       },
+       {
+        "exerciseId": "smith-machine-seated-calf-raise-946",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 10,
+          "rpe": null
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 10,
+          "rpe": null
+         }
+        ]
+       },
+       {
+        "exerciseId": "smith-machine-squat-967",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 10,
+          "rpe": null
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 10,
+          "rpe": null
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
    "covers": [
     "P01 动作池不足"
    ],
-   "note": "只剩自重动作，有候选肌头但排不出动作。"
+   "note": "器械只剩史密斯机，MVP 动作库里只有 5 个史密斯机动作，且都在 2 天前练过（7 天内不重复）；其余肌头仍是候选，但排不出动作。"
   },
   {
    "id": "done-today",
@@ -711,8 +813,21 @@
    ]
   },
   {
+   "id": "fresh-install",
+   "title": "全新安装（还没建档）",
+   "profile": null,
+   "history": {
+    "replaceWith": []
+   },
+   "covers": [
+    "P12 默认",
+    "F1 起点"
+   ],
+   "note": "没有档案，任何路由都重定向到建档；建档完成后就是「冷启动」。"
+  },
+  {
    "id": "cold-start",
-   "title": "冷启动（没有历史）",
+   "title": "冷启动（已建档，没有历史）",
    "profile": "default",
    "history": {
     "replaceWith": []
@@ -722,8 +837,7 @@
     "P02 首次记录",
     "P06 空",
     "P07 空",
-    "P09 空",
-    "P12 默认"
+    "P09 空"
    ]
   },
   {

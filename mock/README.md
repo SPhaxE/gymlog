@@ -14,7 +14,7 @@
 
 ## 数据约定
 
-- **日期**：`daysAgo`（0 = 今天）加 `startTime`。演示数据载入时换算成真实日期，所以「近 7 天」永远有数据。排布按「今天是周六」。
+- **日期**：`daysAgo`（0 = 今天）加 `startTime`。演示数据载入时换算成真实日期，所以「近 7 天」永远有数据。排布按「今天是周二」的相对间隔：最近一周的训练日分别在 8、7、6、5、4、3 天前（`gen_mock.py` 的 `WEEK_DAYS`，更早的周再加 7 天的倍数）。这样任何一天打开，近 7 天里都有数据，几个肌头还在恢复、几个已回落，今日处方里也有做过的动作（有建议重量和理由）。界面里的星期几按真实日期换算，所以不一定是周二，只有相对间隔是固定的。
 - **组类型**：`warmup` 不计入容量、趋势和 PR；`work` 和 `drop` 计入。
 - **单侧动作**：`exercise.unilateral = true` 的动作，每组记 `repsLeft` / `repsRight`，其余动作记 `reps`。`unilateral` 的含义是「一次只练一侧」，当前 154 个动作里只有 10 个是（此前从 V1 带来的标记有 58 个，大半不符合这个定义，已重新核定）。
 - **力竭度** `exertion`：1–10，`null` 表示跳过。**RPE** `rpe`：1–10，步进 0.5，`null` 表示没记。
@@ -43,16 +43,16 @@ PR 角标在 29 次训练里出现在 17 次——因为一次训练有 5 个动
 
 | 页面 | 数据态 | 构造方法 |
 |---|---|---|
-| P12 | 默认 | `cold-start` |
+| P12 | 默认 | `fresh-install`（没有档案，进入建档流程） |
 | P12 | 存储失败 | 测试注入 `storage.fail` |
 | P01 | 加载 | 运行时 |
 | P01 | 有处方 | `plain-prescription`（无减量）/ `deload-suggested` |
 | P01 | 有减量建议 | `deload-suggested`；采纳后 `deload-adopted`；「这次不减」后 `deload-dismissed` |
 | P01 | 恢复日 | `rest-day` |
-| P01 | 动作池不足 | `pool-exhausted` |
+| P01 | 动作池不足 | `pool-exhausted`（档案只勾「史密斯机」，且 2 天前刚把 5 个史密斯动作都练过，7 天不重复规则把它们全挡掉） |
 | P01 | 今天已练完 | `done-today` |
 | P01 | 有进行中训练 | `in-progress` |
-| P01 | 冷启动（无建议重量） | `cold-start` |
+| P01 | 冷启动（无建议重量） | `cold-start`（已建档、没有历史）；也可以走一遍 F1 |
 | P01 | 引擎错误 | `engine-error`（测试注入） |
 | P02 | 有历史 / 冷启动 / 减量周 | `deload-suggested` / `cold-start` / `deload-adopted` |
 | P03 | 进行中、休息中 | `in-progress` |
@@ -71,6 +71,10 @@ PR 角标在 29 次训练里出现在 17 次——因为一次训练有 5 个动
 | P11 | 正常 / 高阶 | 默认 / `advanced-profile` |
 | P11 | 保存失败 | 测试注入 `storage.fail` |
 | P11 | 训练进行中（改动延后生效） | `in-progress` |
+
+## 原型引擎的额外规则
+
+`prototype/engine.js` 在 ia §1 之外加了几条规则（熟悉动作优先、7 天不重复按日历天、每肌头先选 1 个再补 2 个、PR 门槛 0.05 kg），列在 `docs/ia.md` §7 末尾，阶段 5 逐条决定是否收进规格。`node scripts/verify_prototype.js` 用原型引擎把每个场景跑一遍，核对触发的状态符合预期。
 
 ## 已知局限
 

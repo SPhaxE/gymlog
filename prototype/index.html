@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>慢牛 Milo · 低保真原型</title>
+<meta name="description" content="慢牛 Milo 阶段 2 低保真原型：P01–P12 全部页面与 F1–F4 四条核心流程可点通。灰阶线框，数据来自 mock/。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="stage">
+  <aside class="panel" id="panel" aria-label="原型控制面板"></aside>
+  <main class="device-wrap">
+    <div class="device" id="device">
+      <div class="statusbar"><span id="clock">9:41</span><span>▂▄▆ 100%</span></div>
+      <div class="screen" id="screen"></div>
+      <nav class="tabbar" id="tabbar"></nav>
+      <div class="annocard" id="annocard"></div>
+      <div class="overlay" id="overlay"></div>
+    </div>
+  </main>
+</div>
+<button class="panel-fab" id="fab" aria-label="原型控制">⚙</button>
+<script src="engine.js"></script>
+<script src="data.js"></script>
+<script src="meta.js"></script>
+<script src="ui.js"></script>
+<script src="pages-today.js"></script>
+<script src="pages-session.js"></script>
+<script src="pages-progress.js"></script>
+<script src="pages-settings.js"></script>
+<script src="boot.js"></script>
+</body>
+</html>

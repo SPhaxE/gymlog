@@ -1,6 +1,6 @@
 {
  "_meta": {
-  "说明": "示例训练历史。日期用 daysAgo（0=今天），按「今天是周六」排布；载入演示数据时换算成真实日期。",
+  "说明": "示例训练历史。日期用 daysAgo（0=今天），按「今天是周二」排布（见 gen_mock.py 里 WEEK_DAYS 的说明）；载入演示数据时换算成真实日期。",
   "字段": {
    "sets[].type": "warmup 热身组（不计入容量、趋势、PR）/ work 工作组 / drop 递减组（计入工作组）",
    "sets[].reps": "双侧动作的次数；单侧动作（exercise.unilateral = true）改用 repsLeft / repsRight",
@@ -57,7 +57,7 @@
  "sessions": [
   {
    "id": "demo-w7-lowerA",
-   "daysAgo": 53,
+   "daysAgo": 56,
    "startTime": "18:30",
    "durationMin": 62,
    "exertion": 8,
@@ -180,7 +180,7 @@
   },
   {
    "id": "demo-w7-push",
-   "daysAgo": 51,
+   "daysAgo": 54,
    "startTime": "18:45",
    "durationMin": 60,
    "exertion": 8,
@@ -309,7 +309,7 @@
   },
   {
    "id": "demo-w7-pull",
-   "daysAgo": 49,
+   "daysAgo": 52,
    "startTime": "19:00",
    "durationMin": 55,
    "exertion": 7,
@@ -417,7 +417,7 @@
   },
   {
    "id": "demo-w6-lowerA",
-   "daysAgo": 47,
+   "daysAgo": 50,
    "startTime": "18:30",
    "durationMin": 71,
    "exertion": 8,
@@ -540,7 +540,7 @@
   },
   {
    "id": "demo-w6-push",
-   "daysAgo": 46,
+   "daysAgo": 49,
    "startTime": "18:45",
    "durationMin": 66,
    "exertion": 7,
@@ -669,7 +669,7 @@
   },
   {
    "id": "demo-w6-pull",
-   "daysAgo": 44,
+   "daysAgo": 47,
    "startTime": "19:00",
    "durationMin": 58,
    "exertion": 8,
@@ -777,7 +777,7 @@
   },
   {
    "id": "demo-w6-lowerB",
-   "daysAgo": 43,
+   "daysAgo": 46,
    "startTime": "18:20",
    "durationMin": 59,
    "exertion": 8,
@@ -882,7 +882,7 @@
   },
   {
    "id": "demo-w5-lowerA",
-   "daysAgo": 40,
+   "daysAgo": 43,
    "startTime": "18:30",
    "durationMin": 62,
    "exertion": 8,
@@ -1005,7 +1005,7 @@
   },
   {
    "id": "demo-w5-push",
-   "daysAgo": 38,
+   "daysAgo": 41,
    "startTime": "18:45",
    "durationMin": 63,
    "exertion": 7,
@@ -1134,7 +1134,7 @@
   },
   {
    "id": "demo-w5-pull",
-   "daysAgo": 36,
+   "daysAgo": 39,
    "startTime": "19:00",
    "durationMin": 64,
    "exertion": null,
@@ -1242,7 +1242,7 @@
   },
   {
    "id": "demo-w4-lowerA",
-   "daysAgo": 33,
+   "daysAgo": 36,
    "startTime": "18:30",
    "durationMin": 71,
    "exertion": 8,
@@ -1365,7 +1365,7 @@
   },
   {
    "id": "demo-w4-push",
-   "daysAgo": 32,
+   "daysAgo": 35,
    "startTime": "18:45",
    "durationMin": 57,
    "exertion": 9,
@@ -1500,7 +1500,7 @@
   },
   {
    "id": "demo-w4-pull",
-   "daysAgo": 30,
+   "daysAgo": 33,
    "startTime": "19:00",
    "durationMin": 61,
    "exertion": 8,
@@ -1608,7 +1608,7 @@
   },
   {
    "id": "demo-w4-lowerB",
-   "daysAgo": 29,
+   "daysAgo": 32,
    "startTime": "18:20",
    "durationMin": 68,
    "exertion": 7,
@@ -1713,7 +1713,7 @@
   },
   {
    "id": "demo-w3-lowerA",
-   "daysAgo": 26,
+   "daysAgo": 29,
    "startTime": "18:30",
    "durationMin": 65,
    "exertion": 8,
@@ -1836,7 +1836,7 @@
   },
   {
    "id": "demo-w3-push",
-   "daysAgo": 25,
+   "daysAgo": 28,
    "startTime": "18:45",
    "durationMin": 60,
    "exertion": 8,
@@ -1965,7 +1965,7 @@
   },
   {
    "id": "demo-w3-pull",
-   "daysAgo": 23,
+   "daysAgo": 26,
    "startTime": "19:00",
    "durationMin": 55,
    "exertion": 9,
@@ -2060,7 +2060,7 @@
   },
   {
    "id": "demo-w2-lowerA",
-   "daysAgo": 19,
+   "daysAgo": 22,
    "startTime": "18:30",
    "durationMin": 62,
    "exertion": 9,
@@ -2183,7 +2183,7 @@
   },
   {
    "id": "demo-w2-push",
-   "daysAgo": 18,
+   "daysAgo": 21,
    "startTime": "18:45",
    "durationMin": 57,
    "exertion": 7,
@@ -2312,7 +2312,7 @@
   },
   {
    "id": "demo-w2-pull",
-   "daysAgo": 16,
+   "daysAgo": 19,
    "startTime": "19:00",
    "durationMin": 55,
    "exertion": 8,
@@ -2420,7 +2420,7 @@
   },
   {
    "id": "demo-w2-lowerB",
-   "daysAgo": 15,
+   "daysAgo": 18,
    "startTime": "18:20",
    "durationMin": 65,
    "exertion": 9,
@@ -2525,7 +2525,7 @@
   },
   {
    "id": "demo-w1-lowerA",
-   "daysAgo": 12,
+   "daysAgo": 15,
    "startTime": "18:30",
    "durationMin": 59,
    "exertion": 9,
@@ -2648,7 +2648,7 @@
   },
   {
    "id": "demo-w1-push",
-   "daysAgo": 11,
+   "daysAgo": 14,
    "startTime": "18:45",
    "durationMin": 66,
    "exertion": 8,
@@ -2777,7 +2777,7 @@
   },
   {
    "id": "demo-w1-pull",
-   "daysAgo": 9,
+   "daysAgo": 12,
    "startTime": "19:00",
    "durationMin": 55,
    "exertion": 8,
@@ -2903,7 +2903,7 @@
   },
   {
    "id": "demo-w1-lowerB",
-   "daysAgo": 8,
+   "daysAgo": 11,
    "startTime": "18:20",
    "durationMin": 68,
    "exertion": 9,
@@ -3008,7 +3008,7 @@
   },
   {
    "id": "demo-w0-lowerA",
-   "daysAgo": 5,
+   "daysAgo": 8,
    "startTime": "18:30",
    "durationMin": 71,
    "exertion": 10,
@@ -3131,7 +3131,7 @@
   },
   {
    "id": "demo-w0-push",
-   "daysAgo": 4,
+   "daysAgo": 7,
    "startTime": "18:45",
    "durationMin": 54,
    "exertion": 8,
@@ -3260,7 +3260,7 @@
   },
   {
    "id": "demo-w0-pull",
-   "daysAgo": 2,
+   "daysAgo": 5,
    "startTime": "19:00",
    "durationMin": 52,
    "exertion": 8,
@@ -3386,7 +3386,7 @@
   },
   {
    "id": "demo-w0-lowerB",
-   "daysAgo": 1,
+   "daysAgo": 4,
    "startTime": "18:20",
    "durationMin": 56,
    "exertion": 9,

@@ -2,7 +2,7 @@
 """生成 mock/history.json、mock/profile.json、mock/scenarios.json。
 
 固定随机种子，重复运行得到同样的文件。日期用「几天前」(daysAgo) 表示，演示数据载入时再换算成真实日期，
-这样「近 7 天」永远有数据。约定：daysAgo = 0 是「今天」，演示数据按「今天是周六」排布。
+这样「近 7 天」永远有数据。约定：daysAgo = 0 是「今天」，演示数据按「今天是周二」排布（见 gen_mock.py 里 WEEK_DAYS 的说明）。
 
 用法：python3 scripts/gen_mock.py
 """
@@ -69,8 +69,11 @@ TITLES = {"lowerA": "下肢 A", "push": "推", "pull": "拉", "lowerB": "下肢 
 DURATION = {"lowerA": 65, "push": 60, "pull": 58, "lowerB": 62}
 START = {"lowerA": "18:30", "push": "18:45", "pull": "19:00", "lowerB": "18:20"}
 
-# (周序号 w, 模板, 距今天数 daysAgo)；今天是周六：周一 5、周二 4、周三 3、周四 2、周五 1（再加 7×w）
-WEEK_DAYS = {"mon": 5, "tue": 4, "wed": 3, "thu": 2, "fri": 1, "sat": 0}
+# (周序号 w, 模板, 距今天数 daysAgo)。今天是周二：上周一 8、上周二 7、上周三 6、上周四 5、上周五 4、上周六 3（再加 7×w）。
+# 这样排的原因：引擎规定「同一动作 7 天内不重复」（按日历日算，今天往前 6 天），而示例用户每周把同一套动作练一遍；
+# 只有让「今天」落在下一个周期的开头，今日处方里才会有做过的动作（有历史才有建议重量和理由）。
+# 同时，周五的下肢 B 才过 4 天，个别肌头还在恢复中，P02 / P06 才有「还没恢复」可看。
+WEEK_DAYS = {"mon": 8, "tue": 7, "wed": 6, "thu": 5, "fri": 4, "sat": 3}
 SCHEDULE = [
     (7, "lowerA", "tue"), (7, "push", "thu"), (7, "pull", "sat"),
     (6, "lowerA", "mon"), (6, "push", "tue"), (6, "pull", "thu"), (6, "lowerB", "fri"),
@@ -205,9 +208,9 @@ prs = {}
 for ex_id, recs in history.items():
     top = recs[0][1]
     for sid, v in recs[1:]:
-        if v > top + 1e-9:
+        if v - top >= 0.05:  # PR 门槛：比此前最好成绩至少高 0.05 kg（与 prototype/engine.js 的 PR_MIN 一致）
             prs.setdefault(sid, []).append(ex_id)
-            top = v
+        top = max(top, v)
 
 # 减量信号：最近 3 次记录里 e1RM 连续两次下降且每次 > 1%
 deload = []
@@ -237,7 +240,7 @@ for s in sessions:
 latest_pr = min(prs, key=lambda k: next(x for x in sessions if x["id"] == k)["daysAgo"])
 assert "barbell-bench-press-4" in prs.get("demo-w0-push", []), "本周推训练里卧推应是 PR"
 meta = {
-    "说明": "示例训练历史。日期用 daysAgo（0=今天），按「今天是周六」排布；载入演示数据时换算成真实日期。",
+    "说明": "示例训练历史。日期用 daysAgo（0=今天），按「今天是周二」排布（见 gen_mock.py 里 WEEK_DAYS 的说明）；载入演示数据时换算成真实日期。",
     "字段": {
         "sets[].type": "warmup 热身组（不计入容量、趋势、PR）/ work 工作组 / drop 递减组（计入工作组）",
         "sets[].reps": "双侧动作的次数；单侧动作（exercise.unilateral = true）改用 repsLeft / repsRight",
@@ -336,6 +339,13 @@ in_progress = {
         ],
     },
 }
+smith_ids = sorted(i for i, e in EX.items() if e["equipmentType"] == "smith")
+smith_week = {
+    "id": "scn-smith-week", "daysAgo": 2, "startTime": "18:00", "durationMin": 45, "exertion": 8,
+    "exercises": [{"exerciseId": i, "skipped": False,
+                   "sets": [{"type": "work", "weightKg": 20, "reps": 10, "rpe": None} for _ in range(2)]}
+                  for i in smith_ids],
+}
 scenarios = {
     "_meta": {
         "说明": "各页面状态的构造方法。base 为 profile.json 的 default + history.json 全量；history.remove 按 session id 删除，history.append 追加。",
@@ -355,14 +365,17 @@ scenarios = {
          "history": {"append": [fatigue]}, "covers": ["P01 恢复日", "P02 恢复日说明"],
          "note": "一次覆盖全部有动作的肌头的高强度训练（力竭度 10），今天刚练完；预期各肌头恢复度 < 50%。具体数字以引擎为准，阶段 5 用测试固定。"},
         {"id": "pool-exhausted", "title": "动作池不足", "profile": "default",
-         "profilePatch": {"equipment": ["bodyweight"]}, "history": {},
-         "covers": ["P01 动作池不足"], "note": "只剩自重动作，有候选肌头但排不出动作。"},
+         "profilePatch": {"equipment": ["smith"]}, "history": {"append": [smith_week]},
+         "covers": ["P01 动作池不足"],
+         "note": "器械只剩史密斯机，MVP 动作库里只有 5 个史密斯机动作，且都在 2 天前练过（7 天内不重复）；其余肌头仍是候选，但排不出动作。"},
         {"id": "done-today", "title": "今天已练完", "profile": "default", "history": {"append": [done_today]},
          "covers": ["P01 今天已练完", "P05（今天的训练）"]},
         {"id": "in-progress", "title": "有进行中训练", "profile": "default", "history": {},
          "inProgress": in_progress, "covers": ["P01 有进行中训练", "P03 进行中", "P03 休息中"]},
-        {"id": "cold-start", "title": "冷启动（没有历史）", "profile": "default", "history": {"replaceWith": []},
-         "covers": ["P01 冷启动", "P02 首次记录", "P06 空", "P07 空", "P09 空", "P12 默认"]},
+        {"id": "fresh-install", "title": "全新安装（还没建档）", "profile": None, "history": {"replaceWith": []},
+         "covers": ["P12 默认", "F1 起点"], "note": "没有档案，任何路由都重定向到建档；建档完成后就是「冷启动」。"},
+        {"id": "cold-start", "title": "冷启动（已建档，没有历史）", "profile": "default", "history": {"replaceWith": []},
+         "covers": ["P01 冷启动", "P02 首次记录", "P06 空", "P07 空", "P09 空"]},
         {"id": "advanced-profile", "title": "高阶档案", "profile": "advanced", "history": {},
          "covers": ["P11 高阶档案", "处方预算 9 个动作 / 21 组"]},
         {"id": "engine-error", "title": "引擎错误（测试注入）", "profile": "default", "history": {},
