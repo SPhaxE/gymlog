@@ -26,6 +26,8 @@ jobs:
       - run: npm run check:hardcoded
       - name: Token 对比度与引用
         run: python3 scripts/build_tokens.py --check
+      - name: Figma 插件（mock API 62 项）
+        run: node scripts/test_figma_plugin.cjs
       - run: npm run build
 
   android:

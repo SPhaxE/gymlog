@@ -22,6 +22,9 @@
   --milo-prim-black-a66: #000000A8;
   --milo-prim-black-a80: #000000CC;
   --milo-prim-gray-150-a94: #1B1B1EF0;
+  --milo-prim-bone-100: #E9E3D3;
+  --milo-prim-bone-500: #9C9585;
+  --milo-prim-bone-800: #34312A;
   --milo-color-bg-base: var(--milo-prim-gray-0);
   --milo-color-bg-raised: var(--milo-prim-gray-100);
   --milo-color-bg-raised-2: var(--milo-prim-gray-150);
@@ -37,9 +40,9 @@
   --milo-color-accent-default: var(--milo-prim-lime-500);
   --milo-color-accent-glow: var(--milo-prim-lime-500-a33);
   --milo-color-accent-glow-ring: var(--milo-prim-lime-500-a13);
-  --milo-color-action-primary: var(--milo-prim-gray-900);
+  --milo-color-action-primary: var(--milo-prim-bone-100);
   --milo-color-action-primary-ink: var(--milo-prim-gray-0);
-  --milo-color-control-selected: var(--milo-prim-gray-900);
+  --milo-color-control-selected: var(--milo-prim-bone-100);
   --milo-color-control-selected-ink: var(--milo-prim-gray-0);
   --milo-color-feedback-danger: var(--milo-prim-red-400);
   --milo-color-data-track: var(--milo-prim-gray-300);
@@ -47,16 +50,17 @@
   --milo-color-data-tick: var(--milo-prim-gray-900);
   --milo-color-data-tier-none: var(--milo-prim-gray-200);
   --milo-color-data-tier-none-edge: var(--milo-prim-gray-500);
-  --milo-color-data-tier-low: var(--milo-prim-lime-900);
-  --milo-color-data-tier-low-dot: var(--milo-prim-lime-500);
-  --milo-color-data-tier-ok: var(--milo-prim-lime-500);
-  --milo-color-data-tier-over: var(--milo-prim-gray-900);
+  --milo-color-data-tier-low: var(--milo-prim-gray-400);
+  --milo-color-data-tier-low-dot: var(--milo-prim-gray-500);
+  --milo-color-data-tier-ok: var(--milo-prim-bone-500);
+  --milo-color-data-tier-over: var(--milo-prim-bone-100);
   --milo-color-data-tier-over-stripe: var(--milo-prim-gray-0);
   --milo-color-data-body: var(--milo-prim-gray-150);
+  --milo-color-data-gauge: var(--milo-prim-bone-800);
   --milo-color-data-leader: var(--milo-prim-gray-300);
   --milo-color-nav-bg: var(--milo-prim-gray-150-a94);
   --milo-color-nav-ink: var(--milo-prim-gray-600);
-  --milo-color-nav-pill: var(--milo-prim-lime-500);
+  --milo-color-nav-pill: var(--milo-prim-bone-100);
   --milo-color-nav-pill-ink: var(--milo-prim-gray-0);
   --milo-color-nav-track: var(--milo-prim-gray-300);
   --milo-color-nav-progress: var(--milo-prim-lime-500);
@@ -126,17 +130,17 @@
   --milo-motion-magnifier-radius: 3;
   --milo-motion-press-scale: 0.96;
   --milo-motion-press-overshoot: 1.003;
-  --milo-font-number: 'Space Grotesk', 'Noto Sans SC', system-ui, sans-serif;
+  --milo-font-number: 'Barlow Condensed', 'Noto Sans SC', system-ui, sans-serif;
   --milo-font-ui: 'Noto Sans SC', system-ui, sans-serif;
   --milo-font-mono: 'JetBrains Mono', ui-monospace, monospace;
   --milo-motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --milo-motion-ease-decelerate: cubic-bezier(0, 0, 0, 1);
   --milo-motion-spring: stiffness 420, damping 32;
 }
-.milo-text-number-hero { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-hero); line-height: 58px; letter-spacing: -0.04em; }
-.milo-text-number-xl { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-xl); line-height: 40px; letter-spacing: -0.02em; }
-.milo-text-number-l { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-l); line-height: 34px; letter-spacing: -0.01em; }
-.milo-text-number-m { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-m); line-height: 26px; letter-spacing: -0.01em; }
+.milo-text-number-hero { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-hero); line-height: 60px; letter-spacing: 0em; }
+.milo-text-number-xl { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-xl); line-height: 40px; letter-spacing: 0em; }
+.milo-text-number-l { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-l); line-height: 32px; letter-spacing: 0em; }
+.milo-text-number-m { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-m); line-height: 24px; letter-spacing: 0em; }
 .milo-text-number-s { font-family: var(--milo-font-number); font-weight: 600; font-size: var(--milo-font-size-body); line-height: 18px; letter-spacing: 0em; }
 .milo-text-number-xs { font-family: var(--milo-font-number); font-weight: 600; font-size: var(--milo-font-size-caption); line-height: 15px; letter-spacing: 0em; }
 .milo-text-readout-m { font-family: var(--milo-font-mono); font-weight: 600; font-size: var(--milo-font-size-label); line-height: 16px; letter-spacing: 0em; }

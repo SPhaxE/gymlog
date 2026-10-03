@@ -46,7 +46,7 @@ tokens.json ──build_tokens.py──┬─> design/figma-plugin/code.js ─�
 
 | 样式 | 用在 |
 |---|---|
-| `Number/Hero` … `Number/XS` | 数字：Space Grotesk。单位（kg、组、%）用同一行里更小的 `Caption` 或 `Micro`，颜色 `text/secondary` |
+| `Number/Hero` … `Number/XS` | 数字：Barlow Condensed（v2 起，压缩粗体）。单位（kg、组、%）用同一行里更小的 `Caption` 或 `Micro`，颜色 `text/secondary` |
 | `Readout/M`、`Readout/S` | 刻度读数与计时（1:35）：JetBrains Mono，等宽防跳动。**只放数字**，中文标签另起一段用 `Micro` |
 | `Title/L`、`Title/M`、`Heading` | 页面标题、卡片与面板标题 |
 | `Body/Strong`、`Body`、`Label`、`Caption`、`Micro` | 正文、动作名、按钮、说明、胶囊名称 |
@@ -119,6 +119,6 @@ tokens.json ──build_tokens.py──┬─> design/figma-plugin/code.js ─�
 ```bash
 python3 scripts/build_tokens.py --check   # 对比度与引用
 python3 scripts/build_tokens.py           # 生成插件与 CSS
-node scripts/test_figma_plugin.js         # 模拟 Figma API 跑三个命令（62 项：幂等、组件 ID 不变、只用变量、只用实例、MuscleWiki 署名……）
-node scripts/test_figma_plugin.js --render out.html   # 顺带把标杆页的模拟结果粗略画成 HTML（文字宽度是估的）
+node scripts/test_figma_plugin.cjs         # 模拟 Figma API 跑三个命令（62 项：幂等、组件 ID 不变、只用变量、只用实例、MuscleWiki 署名……）
+node scripts/test_figma_plugin.cjs --render out.html   # 顺带把标杆页的模拟结果粗略画成 HTML（文字宽度是估的）
 ```

@@ -129,7 +129,7 @@ async function buildDocs(V, S) {
   for (const r of DATA.contrast) await label(ctab, (r[2] >= r[3] ? '✓ ' : '✗ ') + r[2].toFixed(2) + ':1 ≥ ' + r[3] + '   ' + r[0] + ' on ' + r[1] + '   · ' + r[4], ts['Caption'], C(r[2] >= r[3] ? 'text/primary' : 'feedback/danger'));
 
   // 文字
-  await label(root, '文字样式（数字 Space Grotesk · 中文 Noto Sans SC · 刻度读数 JetBrains Mono；字号下限 ' + T.number['font-size/min'].value + '）', ts['Heading'], C('text/primary'));
+  await label(root, '文字样式（数字 Barlow Condensed · 中文 Noto Sans SC · 刻度读数 JetBrains Mono；字号下限 ' + T.number['font-size/min'].value + '）', ts['Heading'], C('text/primary'));
   const sample = { Number: '13,854', Readout: '8 · 16 · 22 · 1:35' }; // JetBrains Mono 没有中文字形，样例只放数字
   for (const d of T.textStyles) {
     const row = frame(d.name, 'HORIZONTAL', 24);
