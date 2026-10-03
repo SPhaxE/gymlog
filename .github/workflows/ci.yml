@@ -32,6 +32,8 @@ jobs:
     name: Android APK（debug）
     needs: web
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # main 上把 APK 提交进 apk/
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -59,3 +61,19 @@ jobs:
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 14
           if-no-files-found: error
+      # 用户要求：main 上打好的 APK 直接放进仓库的 apk/ 文件夹（只保留最新一个，旧的在 git 历史里）
+      # 用 GITHUB_TOKEN 推送不会再触发工作流；[skip ci] 再保险一次
+      - name: 提交到 main 的 apk/
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          mkdir -p apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk apk/milo-debug.apk
+          printf '# 最新 APK\n\n- 文件：milo-debug.apk（debug 签名）\n- 源提交：%s\n- 构建时间：%s UTC\n- 工作流：%s/%s/actions/runs/%s\n' \
+            "${GITHUB_SHA::7}" "$(date -u '+%Y-%m-%d %H:%M')" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > apk/BUILD.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
+          git add apk
+          git diff --cached --quiet && exit 0
+          git commit -m "apk: debug 构建（源提交 ${GITHUB_SHA::7}）[skip ci]"
+          for i in 1 2 3; do git pull --rebase origin main && git push origin HEAD:main && exit 0; sleep 5; done
+          exit 1
