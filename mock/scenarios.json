@@ -1,0 +1,762 @@
+{
+ "_meta": {
+  "说明": "各页面状态的构造方法。base 为 profile.json 的 default + history.json 全量；history.remove 按 session id 删除，history.append 追加。",
+  "appState 字段": "暂定，字段名在阶段 5 与 store 一起定，不要在页面里硬编码。"
+ },
+ "scenarios": [
+  {
+   "id": "deload-suggested",
+   "title": "有减量建议（默认演示）",
+   "profile": "default",
+   "history": {},
+   "covers": [
+    "P01 有处方",
+    "P01 有减量建议",
+    "P02 有历史",
+    "P06 有数据",
+    "P07 很多条"
+   ]
+  },
+  {
+   "id": "plain-prescription",
+   "title": "有处方，没有减量建议",
+   "profile": "default",
+   "history": {
+    "remove": [
+     "demo-w2-lowerA",
+     "demo-w1-lowerA",
+     "demo-w0-lowerA"
+    ]
+   },
+   "covers": [
+    "P01 有处方（无减量）"
+   ]
+  },
+  {
+   "id": "deload-adopted",
+   "title": "已采纳减量",
+   "profile": "default",
+   "history": {},
+   "appState": {
+    "deload": {
+     "status": "adopted",
+     "daysLeft": 6
+    }
+   },
+   "covers": [
+    "P01 减量周",
+    "P02 减量周"
+   ]
+  },
+  {
+   "id": "deload-dismissed",
+   "title": "选了「这次不减」",
+   "profile": "default",
+   "history": {},
+   "appState": {
+    "deload": {
+     "status": "dismissed",
+     "dismissedDaysAgo": 0
+    }
+   },
+   "covers": [
+    "P01 6 天内小字提示"
+   ]
+  },
+  {
+   "id": "rest-day",
+   "title": "恢复日（所有候选肌头都在修复期）",
+   "profile": "default",
+   "history": {
+    "append": [
+     {
+      "id": "scn-fatigue-all",
+      "daysAgo": 0,
+      "startTime": "08:00",
+      "durationMin": 140,
+      "exertion": 10,
+      "exercises": [
+       {
+        "exerciseId": "dumbbell-glute-bridge-293",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         }
+        ]
+       },
+       {
+        "exerciseId": "barbell-decline-close-grip-bench-press-2301",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         }
+        ]
+       },
+       {
+        "exerciseId": "barbell-shrug-351",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         }
+        ]
+       },
+       {
+        "exerciseId": "barbell-curl-1",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         }
+        ]
+       },
+       {
+        "exerciseId": "barbell-overhead-press-303",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         }
+        ]
+       },
+       {
+        "exerciseId": "bicycle-crunch-866",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         }
+        ]
+       },
+       {
+        "exerciseId": "cable-bar-reverse-grip-curl-1020",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         }
+        ]
+       },
+       {
+        "exerciseId": "cable-incline-chest-fly-992",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         }
+        ]
+       },
+       {
+        "exerciseId": "barbell-calf-raises-210",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         }
+        ]
+       },
+       {
+        "exerciseId": "barbell-deadlift-39",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         }
+        ]
+       },
+       {
+        "exerciseId": "barbell-seated-calf-raise-350",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         }
+        ]
+       },
+       {
+        "exerciseId": "barbell-squat-8",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         }
+        ]
+       },
+       {
+        "exerciseId": "cable-bent-over-bar-pullover-233",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         }
+        ]
+       },
+       {
+        "exerciseId": "cable-kneeling-oblique-crunch-1867",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         }
+        ]
+       },
+       {
+        "exerciseId": "cable-rope-kneeling-face-pull-1001",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         }
+        ]
+       },
+       {
+        "exerciseId": "dumbbell-seated-tibialis-raise-860",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         },
+         {
+          "type": "work",
+          "weightKg": 20,
+          "reps": 8,
+          "rpe": 9
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "covers": [
+    "P01 恢复日",
+    "P02 恢复日说明"
+   ],
+   "note": "一次覆盖全部有动作的肌头的高强度训练（力竭度 10），今天刚练完；预期各肌头恢复度 < 50%。具体数字以引擎为准，阶段 5 用测试固定。"
+  },
+  {
+   "id": "pool-exhausted",
+   "title": "动作池不足",
+   "profile": "default",
+   "profilePatch": {
+    "equipment": [
+     "bodyweight"
+    ]
+   },
+   "history": {},
+   "covers": [
+    "P01 动作池不足"
+   ],
+   "note": "只剩自重动作，有候选肌头但排不出动作。"
+  },
+  {
+   "id": "done-today",
+   "title": "今天已练完",
+   "profile": "default",
+   "history": {
+    "append": [
+     {
+      "id": "scn-today-push",
+      "daysAgo": 0,
+      "startTime": "09:10",
+      "durationMin": 48,
+      "exertion": 8,
+      "exercises": [
+       {
+        "exerciseId": "barbell-bench-press-4",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 65.0,
+          "reps": 6,
+          "rpe": 8
+         },
+         {
+          "type": "work",
+          "weightKg": 65.0,
+          "reps": 6,
+          "rpe": 8
+         },
+         {
+          "type": "work",
+          "weightKg": 65.0,
+          "reps": 6,
+          "rpe": 8
+         }
+        ]
+       },
+       {
+        "exerciseId": "dumbbell-lateral-raise-20",
+        "skipped": false,
+        "sets": [
+         {
+          "type": "work",
+          "weightKg": 7.5,
+          "reps": 12,
+          "rpe": null
+         },
+         {
+          "type": "work",
+          "weightKg": 7.5,
+          "reps": 12,
+          "rpe": null
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "covers": [
+    "P01 今天已练完",
+    "P05（今天的训练）"
+   ]
+  },
+  {
+   "id": "in-progress",
+   "title": "有进行中训练",
+   "profile": "default",
+   "history": {},
+   "inProgress": {
+    "status": "in_progress",
+    "restEndsInSeconds": 95,
+    "currentExerciseIndex": 1,
+    "session": {
+     "id": "scn-in-progress",
+     "daysAgo": 0,
+     "startTime": "18:30",
+     "exercises": [
+      {
+       "exerciseId": "barbell-bench-press-4",
+       "skipped": false,
+       "sets": [
+        {
+         "type": "warmup",
+         "weightKg": 30,
+         "reps": 5,
+         "rpe": null
+        },
+        {
+         "type": "work",
+         "weightKg": 65.0,
+         "reps": 6,
+         "rpe": 8
+        },
+        {
+         "type": "work",
+         "weightKg": 65.0,
+         "reps": 6,
+         "rpe": 8.5
+        },
+        {
+         "type": "work",
+         "weightKg": 65.0,
+         "reps": 5,
+         "rpe": 9
+        }
+       ]
+      },
+      {
+       "exerciseId": "dumbbell-incline-bench-press-398",
+       "skipped": false,
+       "sets": [
+        {
+         "type": "work",
+         "weightKg": 30,
+         "reps": 7,
+         "rpe": 8
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "covers": [
+    "P01 有进行中训练",
+    "P03 进行中",
+    "P03 休息中"
+   ]
+  },
+  {
+   "id": "cold-start",
+   "title": "冷启动（没有历史）",
+   "profile": "default",
+   "history": {
+    "replaceWith": []
+   },
+   "covers": [
+    "P01 冷启动",
+    "P02 首次记录",
+    "P06 空",
+    "P07 空",
+    "P09 空",
+    "P12 默认"
+   ]
+  },
+  {
+   "id": "advanced-profile",
+   "title": "高阶档案",
+   "profile": "advanced",
+   "history": {},
+   "covers": [
+    "P11 高阶档案",
+    "处方预算 9 个动作 / 21 组"
+   ]
+  },
+  {
+   "id": "engine-error",
+   "title": "引擎错误（测试注入）",
+   "profile": "default",
+   "history": {},
+   "inject": "engine.throw",
+   "covers": [
+    "P01 引擎错误"
+   ]
+  }
+ ],
+ "pageStates": {
+  "P05 有 PR": "demo-w0-push（卧推创新高）",
+  "P05 无 PR": "demo-w7-push",
+  "P05 首次训练（基线）": "demo-w7-lowerA",
+  "P05 部分动作未做": "demo-w3-pull",
+  "P08 正常": "任意 session id",
+  "P10 少于 2 次": "dumbbell-bulgarian-split-squat-317",
+  "P10 只有 2 次": "machine-face-pulls-22",
+  "P10 正常": "barbell-bench-press-4",
+  "P10 下滑中": "barbell-squat-8",
+  "P08 单侧动作": "demo-w0-pull（割草机划船分左右）"
+ }
+}

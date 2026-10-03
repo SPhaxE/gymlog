@@ -1,0 +1,105 @@
+{
+ "_meta": {
+  "说明": "示例档案。derived 由单次训练时长换算（ia §1.1）：setsPerDay = round(分钟×14/60)，exercisesPerDay = max(3, round(setsPerDay/2.3))。",
+  "experience": "novice 新手 / intermediate 进阶 / advanced 高阶",
+  "equipment 扩展项": "壶铃、弹力带、杠铃片在 MVP 动作库里没有动作（inPool=false），勾选不会改变处方；界面上是否展示在阶段 3 决定"
+ },
+ "equipmentCatalog": [
+  {
+   "id": "barbell",
+   "name": "杠铃",
+   "default": true,
+   "inPool": true
+  },
+  {
+   "id": "dumbbell",
+   "name": "哑铃",
+   "default": true,
+   "inPool": true
+  },
+  {
+   "id": "machine",
+   "name": "固定器械",
+   "default": true,
+   "inPool": true
+  },
+  {
+   "id": "cable",
+   "name": "绳索",
+   "default": true,
+   "inPool": true
+  },
+  {
+   "id": "smith",
+   "name": "史密斯机",
+   "default": true,
+   "inPool": true
+  },
+  {
+   "id": "bodyweight",
+   "name": "自重 / 负重",
+   "default": true,
+   "inPool": true
+  },
+  {
+   "id": "kettlebell",
+   "name": "壶铃",
+   "default": false,
+   "inPool": false
+  },
+  {
+   "id": "band",
+   "name": "弹力带",
+   "default": false,
+   "inPool": false
+  },
+  {
+   "id": "plate",
+   "name": "杠铃片",
+   "default": false,
+   "inPool": false
+  }
+ ],
+ "profiles": [
+  {
+   "id": "default",
+   "label": "默认档案（进阶）",
+   "experience": "intermediate",
+   "equipment": [
+    "barbell",
+    "dumbbell",
+    "machine",
+    "cable",
+    "smith",
+    "bodyweight"
+   ],
+   "sessionMinutes": 60,
+   "sex": "male",
+   "unit": "kg",
+   "derived": {
+    "setsPerDay": 14,
+    "exercisesPerDay": 6
+   }
+  },
+  {
+   "id": "advanced",
+   "label": "高阶档案",
+   "experience": "advanced",
+   "equipment": [
+    "barbell",
+    "dumbbell",
+    "machine",
+    "cable",
+    "smith",
+    "bodyweight"
+   ],
+   "sessionMinutes": 90,
+   "sex": "female",
+   "unit": "kg",
+   "derived": {
+    "setsPerDay": 21,
+    "exercisesPerDay": 9
+   }
+  }
+ ]
+}

@@ -1,0 +1,3520 @@
+{
+ "_meta": {
+  "说明": "示例训练历史。日期用 daysAgo（0=今天），按「今天是周六」排布；载入演示数据时换算成真实日期。",
+  "字段": {
+   "sets[].type": "warmup 热身组（不计入容量、趋势、PR）/ work 工作组 / drop 递减组（计入工作组）",
+   "sets[].reps": "双侧动作的次数；单侧动作（exercise.unilateral = true）改用 repsLeft / repsRight",
+   "exertion": "用户自评力竭度 1–10；null = 跳过",
+   "exercises[].skipped": "true = 处方里有但没做，不计入任何统计",
+   "rpe": "1–10，步进 0.5；null = 没记"
+  },
+  "期望": {
+   "减量信号动作": [
+    "barbell-squat-8",
+    "barbell-stiff-leg-deadlifts-27"
+   ],
+   "最近一次 PR": {
+    "sessionId": "demo-w0-push",
+    "exerciseIds": [
+     "barbell-bench-press-4",
+     "dumbbell-incline-bench-press-398",
+     "dumbbell-lateral-raise-20",
+     "cable-rope-pushdown-241"
+    ]
+   },
+   "只有 1 次记录的动作（新动作）": "dumbbell-bulgarian-split-squat-317",
+   "只有 2 次记录的动作": "machine-face-pulls-22",
+   "有未做动作的训练": {
+    "sessionId": "demo-w3-pull",
+    "exerciseId": "dumbbell-hammer-curl-3"
+   },
+   "首次训练（基线）": "demo-w7-lowerA",
+   "没有 PR 的训练": [
+    "demo-w7-push",
+    "demo-w7-pull",
+    "demo-w6-lowerA",
+    "demo-w6-pull",
+    "demo-w6-lowerB",
+    "demo-w4-lowerA",
+    "demo-w4-lowerB",
+    "demo-w1-lowerA",
+    "demo-w0-lowerA",
+    "demo-w0-pull",
+    "demo-w0-lowerB"
+   ],
+   "每周训练次数（w=周序号，0=本周）": {
+    "w7": 3,
+    "w6": 4,
+    "w5": 3,
+    "w4": 4,
+    "w3": 3,
+    "w2": 4,
+    "w1": 4,
+    "w0": 4
+   }
+  }
+ },
+ "sessions": [
+  {
+   "id": "demo-w7-lowerA",
+   "daysAgo": 53,
+   "startTime": "18:30",
+   "durationMin": 62,
+   "exertion": 8,
+   "exercises": [
+    {
+     "exerciseId": "barbell-squat-8",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 40.0,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 55.0,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 5,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "barbell-stiff-leg-deadlifts-27",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 5,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "seated-leg-curl-828",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 35,
+       "reps": 9,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 35,
+       "reps": 9,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "machine-standing-calf-raises-33",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 60,
+       "reps": 9,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 60,
+       "reps": 9,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "cable-rope-kneeling-crunch-1004",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 9,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 9,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w7-push",
+   "daysAgo": 51,
+   "startTime": "18:45",
+   "durationMin": 60,
+   "exertion": 8,
+   "exercises": [
+    {
+     "exerciseId": "barbell-bench-press-4",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 30.0,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 45.0,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 62.5,
+       "reps": 6,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 62.5,
+       "reps": 6,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 62.5,
+       "reps": 6,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-incline-bench-press-398",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 6,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 6,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 6,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-seated-overhead-press-45",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 20,
+       "reps": 6,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 20,
+       "reps": 6,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 20,
+       "reps": 6,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-lateral-raise-20",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 7.5,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 7.5,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "cable-rope-pushdown-241",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 25,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 25,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w7-pull",
+   "daysAgo": 49,
+   "startTime": "19:00",
+   "durationMin": 55,
+   "exertion": 7,
+   "exercises": [
+    {
+     "exerciseId": "machine-pulldown-23",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 27.5,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 37.5,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 55,
+       "reps": 6,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 55,
+       "reps": 6,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 55,
+       "reps": 5,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "lawnmower-row-561",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 20,
+       "repsLeft": 6,
+       "repsRight": 5,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 20,
+       "repsLeft": 6,
+       "repsRight": 6,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 20,
+       "repsLeft": 6,
+       "repsRight": 5,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "barbell-curl-1",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-hammer-curl-3",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 12.5,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 12.5,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w6-lowerA",
+   "daysAgo": 47,
+   "startTime": "18:30",
+   "durationMin": 71,
+   "exertion": 8,
+   "exercises": [
+    {
+     "exerciseId": "barbell-squat-8",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 40.0,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 55.0,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 5,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 5,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 5,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "barbell-stiff-leg-deadlifts-27",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 5,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 5,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 5,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "seated-leg-curl-828",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 35,
+       "reps": 9,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 35,
+       "reps": 9,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "machine-standing-calf-raises-33",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 60,
+       "reps": 9,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 60,
+       "reps": 9,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "cable-rope-kneeling-crunch-1004",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 9,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 9,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w6-push",
+   "daysAgo": 46,
+   "startTime": "18:45",
+   "durationMin": 66,
+   "exertion": 7,
+   "exercises": [
+    {
+     "exerciseId": "barbell-bench-press-4",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 30.0,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 45.0,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 62.5,
+       "reps": 7,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 62.5,
+       "reps": 7,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 62.5,
+       "reps": 6,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-incline-bench-press-398",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 7,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 7,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 7,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-seated-overhead-press-45",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 20,
+       "reps": 7,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 20,
+       "reps": 7,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 20,
+       "reps": 7,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-lateral-raise-20",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 7.5,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 7.5,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "cable-rope-pushdown-241",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 25,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 25,
+       "reps": 11,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w6-pull",
+   "daysAgo": 44,
+   "startTime": "19:00",
+   "durationMin": 58,
+   "exertion": 8,
+   "exercises": [
+    {
+     "exerciseId": "machine-pulldown-23",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 27.5,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 37.5,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 55,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 55,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 55,
+       "reps": 5,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "lawnmower-row-561",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 20,
+       "repsLeft": 6,
+       "repsRight": 5,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 20,
+       "repsLeft": 6,
+       "repsRight": 6,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 20,
+       "repsLeft": 6,
+       "repsRight": 6,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "barbell-curl-1",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-hammer-curl-3",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 12.5,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 12.5,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w6-lowerB",
+   "daysAgo": 43,
+   "startTime": "18:20",
+   "durationMin": 59,
+   "exertion": 8,
+   "exercises": [
+    {
+     "exerciseId": "vertical-leg-press-1690",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 60.0,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 85.0,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 120,
+       "reps": 6,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 120,
+       "reps": 6,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 120,
+       "reps": 6,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "machine-hip-thrust-1498",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 6,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 6,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 6,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "machine-leg-extension-10",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 40,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 40,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "barbell-seated-calf-raise-350",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 40,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 40,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w5-lowerA",
+   "daysAgo": 40,
+   "startTime": "18:30",
+   "durationMin": 62,
+   "exertion": 8,
+   "exercises": [
+    {
+     "exerciseId": "barbell-squat-8",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 40.0,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 55.0,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 6,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 6,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 6,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "barbell-stiff-leg-deadlifts-27",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 6,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 6,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 6,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "seated-leg-curl-828",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 35,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 35,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "machine-standing-calf-raises-33",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 60,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 60,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "cable-rope-kneeling-crunch-1004",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w5-push",
+   "daysAgo": 38,
+   "startTime": "18:45",
+   "durationMin": 63,
+   "exertion": 7,
+   "exercises": [
+    {
+     "exerciseId": "barbell-bench-press-4",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 30.0,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 45.0,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 62.5,
+       "reps": 7,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 62.5,
+       "reps": 7,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 62.5,
+       "reps": 6,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-incline-bench-press-398",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 8,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 8,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 8,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-seated-overhead-press-45",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 20,
+       "reps": 8,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 20,
+       "reps": 8,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 20,
+       "reps": 8,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-lateral-raise-20",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 7.5,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 7.5,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "cable-rope-pushdown-241",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 25,
+       "reps": 12,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 25,
+       "reps": 12,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w5-pull",
+   "daysAgo": 36,
+   "startTime": "19:00",
+   "durationMin": 64,
+   "exertion": null,
+   "exercises": [
+    {
+     "exerciseId": "machine-pulldown-23",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 27.5,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 37.5,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 55,
+       "reps": 6,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 55,
+       "reps": 6,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 55,
+       "reps": 6,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "lawnmower-row-561",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 20,
+       "repsLeft": 7,
+       "repsRight": 7,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 20,
+       "repsLeft": 7,
+       "repsRight": 7,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 20,
+       "repsLeft": 7,
+       "repsRight": 6,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "barbell-curl-1",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 11,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-hammer-curl-3",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 12.5,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 12.5,
+       "reps": 11,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w4-lowerA",
+   "daysAgo": 33,
+   "startTime": "18:30",
+   "durationMin": 71,
+   "exertion": 8,
+   "exercises": [
+    {
+     "exerciseId": "barbell-squat-8",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 40.0,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 55.0,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 6,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 6,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 6,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "barbell-stiff-leg-deadlifts-27",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 6,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 6,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 6,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "seated-leg-curl-828",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 35,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 35,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "machine-standing-calf-raises-33",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 60,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 60,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "cable-rope-kneeling-crunch-1004",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w4-push",
+   "daysAgo": 32,
+   "startTime": "18:45",
+   "durationMin": 57,
+   "exertion": 9,
+   "exercises": [
+    {
+     "exerciseId": "barbell-bench-press-4",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 30.0,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 45.0,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 62.5,
+       "reps": 7,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 62.5,
+       "reps": 7,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 62.5,
+       "reps": 7,
+       "rpe": 8.5
+      },
+      {
+       "type": "drop",
+       "weightKg": 50.0,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-incline-bench-press-398",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 25.0,
+       "reps": 6,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 25.0,
+       "reps": 5,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 25.0,
+       "reps": 6,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-seated-overhead-press-45",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 6,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 6,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 6,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-lateral-raise-20",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 7.5,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 7.5,
+       "reps": 11,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "cable-rope-pushdown-241",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 27.5,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 27.5,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w4-pull",
+   "daysAgo": 30,
+   "startTime": "19:00",
+   "durationMin": 61,
+   "exertion": 8,
+   "exercises": [
+    {
+     "exerciseId": "machine-pulldown-23",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 27.5,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 37.5,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 55,
+       "reps": 7,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 55,
+       "reps": 7,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 55,
+       "reps": 7,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "lawnmower-row-561",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 20,
+       "repsLeft": 8,
+       "repsRight": 7,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 20,
+       "repsLeft": 8,
+       "repsRight": 7,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 20,
+       "repsLeft": 8,
+       "repsRight": 7,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "barbell-curl-1",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 12,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 12,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-hammer-curl-3",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 12.5,
+       "reps": 12,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 12.5,
+       "reps": 12,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w4-lowerB",
+   "daysAgo": 29,
+   "startTime": "18:20",
+   "durationMin": 68,
+   "exertion": 7,
+   "exercises": [
+    {
+     "exerciseId": "vertical-leg-press-1690",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 60.0,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 85.0,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 120,
+       "reps": 6,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 120,
+       "reps": 6,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 120,
+       "reps": 5,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "machine-hip-thrust-1498",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 6,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 6,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 5,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "machine-leg-extension-10",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 40,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 40,
+       "reps": 9,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "barbell-seated-calf-raise-350",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 40,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 40,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w3-lowerA",
+   "daysAgo": 26,
+   "startTime": "18:30",
+   "durationMin": 65,
+   "exertion": 8,
+   "exercises": [
+    {
+     "exerciseId": "barbell-squat-8",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 40.0,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 55.0,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 8,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 8,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 8,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "barbell-stiff-leg-deadlifts-27",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 8,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 8,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 7,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "seated-leg-curl-828",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 35,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 35,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "machine-standing-calf-raises-33",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 60,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 60,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "cable-rope-kneeling-crunch-1004",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w3-push",
+   "daysAgo": 25,
+   "startTime": "18:45",
+   "durationMin": 60,
+   "exertion": 8,
+   "exercises": [
+    {
+     "exerciseId": "barbell-bench-press-4",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 30.0,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 45.0,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 62.5,
+       "reps": 8,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 62.5,
+       "reps": 8,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 62.5,
+       "reps": 7,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-incline-bench-press-398",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 25.0,
+       "reps": 6,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 25.0,
+       "reps": 6,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 25.0,
+       "reps": 6,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-seated-overhead-press-45",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 7,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 7,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 6,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-lateral-raise-20",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 7.5,
+       "reps": 12,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 7.5,
+       "reps": 12,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "cable-rope-pushdown-241",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 27.5,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 27.5,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w3-pull",
+   "daysAgo": 23,
+   "startTime": "19:00",
+   "durationMin": 55,
+   "exertion": 9,
+   "exercises": [
+    {
+     "exerciseId": "machine-pulldown-23",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 27.5,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 37.5,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 55,
+       "reps": 8,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 55,
+       "reps": 7,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 55,
+       "reps": 8,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "lawnmower-row-561",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "repsLeft": 6,
+       "repsRight": 5,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "repsLeft": 6,
+       "repsRight": 6,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "repsLeft": 5,
+       "repsRight": 4,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "barbell-curl-1",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 32.5,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 32.5,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-hammer-curl-3",
+     "skipped": true,
+     "sets": []
+    }
+   ]
+  },
+  {
+   "id": "demo-w2-lowerA",
+   "daysAgo": 19,
+   "startTime": "18:30",
+   "durationMin": 62,
+   "exertion": 9,
+   "exercises": [
+    {
+     "exerciseId": "barbell-squat-8",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 40.0,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 55.0,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 85,
+       "reps": 5,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 85,
+       "reps": 5,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 85,
+       "reps": 4,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "barbell-stiff-leg-deadlifts-27",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 7,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 6,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 6,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "seated-leg-curl-828",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 35,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 35,
+       "reps": 11,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "machine-standing-calf-raises-33",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 60,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 60,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "cable-rope-kneeling-crunch-1004",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 11,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w2-push",
+   "daysAgo": 18,
+   "startTime": "18:45",
+   "durationMin": 57,
+   "exertion": 7,
+   "exercises": [
+    {
+     "exerciseId": "barbell-bench-press-4",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 30.0,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 45.0,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 62.5,
+       "reps": 8,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 62.5,
+       "reps": 8,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 62.5,
+       "reps": 8,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-incline-bench-press-398",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 25.0,
+       "reps": 7,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 25.0,
+       "reps": 7,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 25.0,
+       "reps": 6,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-seated-overhead-press-45",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 7,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 7,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 7,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-lateral-raise-20",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 10.0,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 10.0,
+       "reps": 9,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "cable-rope-pushdown-241",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 27.5,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 27.5,
+       "reps": 11,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w2-pull",
+   "daysAgo": 16,
+   "startTime": "19:00",
+   "durationMin": 55,
+   "exertion": 8,
+   "exercises": [
+    {
+     "exerciseId": "machine-pulldown-23",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 27.5,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 37.5,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 55,
+       "reps": 7,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 55,
+       "reps": 7,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 55,
+       "reps": 7,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "lawnmower-row-561",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "repsLeft": 5,
+       "repsRight": 4,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "repsLeft": 5,
+       "repsRight": 5,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "repsLeft": 5,
+       "repsRight": 5,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "barbell-curl-1",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 32.5,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 32.5,
+       "reps": 9,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-hammer-curl-3",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 15.0,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 15.0,
+       "reps": 9,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w2-lowerB",
+   "daysAgo": 15,
+   "startTime": "18:20",
+   "durationMin": 65,
+   "exertion": 9,
+   "exercises": [
+    {
+     "exerciseId": "vertical-leg-press-1690",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 60.0,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 85.0,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 120,
+       "reps": 7,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 120,
+       "reps": 7,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 120,
+       "reps": 7,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "machine-hip-thrust-1498",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 7,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 7,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 7,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "machine-leg-extension-10",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 40,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 40,
+       "reps": 11,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "barbell-seated-calf-raise-350",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 40,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 40,
+       "reps": 11,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w1-lowerA",
+   "daysAgo": 12,
+   "startTime": "18:30",
+   "durationMin": 59,
+   "exertion": 9,
+   "exercises": [
+    {
+     "exerciseId": "barbell-squat-8",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 42.5,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 60.0,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 85,
+       "reps": 4,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 85,
+       "reps": 4,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 85,
+       "reps": 3,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "barbell-stiff-leg-deadlifts-27",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 6,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 6,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 5,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "seated-leg-curl-828",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 35,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 35,
+       "reps": 11,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "machine-standing-calf-raises-33",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 60,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 60,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "cable-rope-kneeling-crunch-1004",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 11,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w1-push",
+   "daysAgo": 11,
+   "startTime": "18:45",
+   "durationMin": 66,
+   "exertion": 8,
+   "exercises": [
+    {
+     "exerciseId": "barbell-bench-press-4",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 32.5,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 45.0,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 65.0,
+       "reps": 6,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 65.0,
+       "reps": 6,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 65.0,
+       "reps": 6,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-incline-bench-press-398",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 25.0,
+       "reps": 7,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 25.0,
+       "reps": 7,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 25.0,
+       "reps": 7,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-seated-overhead-press-45",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 8,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 7,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 8,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-lateral-raise-20",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 10.0,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 10.0,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "cable-rope-pushdown-241",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 27.5,
+       "reps": 12,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 27.5,
+       "reps": 12,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w1-pull",
+   "daysAgo": 9,
+   "startTime": "19:00",
+   "durationMin": 55,
+   "exertion": 8,
+   "exercises": [
+    {
+     "exerciseId": "machine-pulldown-23",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 27.5,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 37.5,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 55,
+       "reps": 8,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 55,
+       "reps": 8,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 55,
+       "reps": 8,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "lawnmower-row-561",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "repsLeft": 6,
+       "repsRight": 5,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "repsLeft": 6,
+       "repsRight": 6,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "repsLeft": 6,
+       "repsRight": 6,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "machine-face-pulls-22",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 20,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 20,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "barbell-curl-1",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 32.5,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 32.5,
+       "reps": 11,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-hammer-curl-3",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 15.0,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 15.0,
+       "reps": 11,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w1-lowerB",
+   "daysAgo": 8,
+   "startTime": "18:20",
+   "durationMin": 68,
+   "exertion": 9,
+   "exercises": [
+    {
+     "exerciseId": "vertical-leg-press-1690",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 60.0,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 85.0,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 120,
+       "reps": 8,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 120,
+       "reps": 8,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 120,
+       "reps": 8,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "machine-hip-thrust-1498",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 8,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 8,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 7,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "machine-leg-extension-10",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 40,
+       "reps": 12,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 40,
+       "reps": 12,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "barbell-seated-calf-raise-350",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 40,
+       "reps": 12,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 40,
+       "reps": 12,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w0-lowerA",
+   "daysAgo": 5,
+   "startTime": "18:30",
+   "durationMin": 71,
+   "exertion": 10,
+   "exercises": [
+    {
+     "exerciseId": "barbell-squat-8",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 42.5,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 60.0,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 4,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 4,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "barbell-stiff-leg-deadlifts-27",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 70,
+       "reps": 4,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "seated-leg-curl-828",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 35,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 35,
+       "reps": 11,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "machine-standing-calf-raises-33",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 60,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 60,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "cable-rope-kneeling-crunch-1004",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 30,
+       "reps": 11,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w0-push",
+   "daysAgo": 4,
+   "startTime": "18:45",
+   "durationMin": 54,
+   "exertion": 8,
+   "exercises": [
+    {
+     "exerciseId": "barbell-bench-press-4",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 32.5,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 45.0,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 65.0,
+       "reps": 7,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 65.0,
+       "reps": 7,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 65.0,
+       "reps": 6,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-incline-bench-press-398",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 25.0,
+       "reps": 8,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 25.0,
+       "reps": 8,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 25.0,
+       "reps": 8,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-seated-overhead-press-45",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 8,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 8,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "reps": 8,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-lateral-raise-20",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 10.0,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 10.0,
+       "reps": 11,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "cable-rope-pushdown-241",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 30.0,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 30.0,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w0-pull",
+   "daysAgo": 2,
+   "startTime": "19:00",
+   "durationMin": 52,
+   "exertion": 8,
+   "exercises": [
+    {
+     "exerciseId": "machine-pulldown-23",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 30.0,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 40.0,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 57.5,
+       "reps": 5,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 57.5,
+       "reps": 5,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 57.5,
+       "reps": 5,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "lawnmower-row-561",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "repsLeft": 6,
+       "repsRight": 6,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "repsLeft": 5,
+       "repsRight": 4,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 22.5,
+       "repsLeft": 6,
+       "repsRight": 6,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "machine-face-pulls-22",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 20,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 20,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "barbell-curl-1",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 32.5,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 32.5,
+       "reps": 11,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-hammer-curl-3",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 15.0,
+       "reps": 11,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 15.0,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "demo-w0-lowerB",
+   "daysAgo": 1,
+   "startTime": "18:20",
+   "durationMin": 56,
+   "exertion": 9,
+   "exercises": [
+    {
+     "exerciseId": "vertical-leg-press-1690",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "warmup",
+       "weightKg": 62.5,
+       "reps": 5,
+       "rpe": null
+      },
+      {
+       "type": "warmup",
+       "weightKg": 87.5,
+       "reps": 3,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 125,
+       "reps": 6,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 125,
+       "reps": 6,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 125,
+       "reps": 5,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "machine-hip-thrust-1498",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 8,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 8,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 80,
+       "reps": 7,
+       "rpe": 8.5
+      }
+     ]
+    },
+    {
+     "exerciseId": "machine-leg-extension-10",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 42.5,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 42.5,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "barbell-seated-calf-raise-350",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 42.5,
+       "reps": 10,
+       "rpe": null
+      },
+      {
+       "type": "work",
+       "weightKg": 42.5,
+       "reps": 10,
+       "rpe": null
+      }
+     ]
+    },
+    {
+     "exerciseId": "dumbbell-bulgarian-split-squat-317",
+     "skipped": false,
+     "sets": [
+      {
+       "type": "work",
+       "weightKg": 16,
+       "repsLeft": 6,
+       "repsRight": 5,
+       "rpe": 7.5
+      },
+      {
+       "type": "work",
+       "weightKg": 16,
+       "repsLeft": 6,
+       "repsRight": 6,
+       "rpe": 8
+      },
+      {
+       "type": "work",
+       "weightKg": 16,
+       "repsLeft": 6,
+       "repsRight": 5,
+       "rpe": 8.5
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

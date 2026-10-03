@@ -655,7 +655,7 @@
    "gluteus-medius",
    "medial-hamstrings"
   ],
-  "unilateral": false,
+  "unilateral": true,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -952,7 +952,7 @@
    "gastrocnemius"
   ],
   "secondaryHeads": [],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -987,7 +987,7 @@
   "secondaryHeads": [
    "lateral-deltoid"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -1023,7 +1023,7 @@
   "secondaryHeads": [
    "long-head-triceps"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -1130,7 +1130,7 @@
    "upper-pectoralis",
    "lateral-deltoid"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -1163,7 +1163,7 @@
    "lats"
   ],
   "secondaryHeads": [],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -1196,7 +1196,7 @@
    "gastrocnemius"
   ],
   "secondaryHeads": [],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -1331,7 +1331,7 @@
    "obliques"
   ],
   "secondaryHeads": [],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -1364,7 +1364,7 @@
    "obliques"
   ],
   "secondaryHeads": [],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -1399,7 +1399,7 @@
   "secondaryHeads": [
    "upper-pectoralis"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -1437,7 +1437,7 @@
    "gluteus-medius",
    "medial-hamstrings"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -1472,7 +1472,7 @@
   "secondaryHeads": [
    "lateral-deltoid"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -1541,7 +1541,7 @@
    "posterior-deltoid"
   ],
   "secondaryHeads": [],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -1574,7 +1574,7 @@
    "lats"
   ],
   "secondaryHeads": [],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -1610,7 +1610,7 @@
   "secondaryHeads": [
    "long-head-triceps"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -1646,7 +1646,7 @@
    "lateral-head-triceps",
    "medial-head-triceps"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -1720,7 +1720,7 @@
    "lower-trapezius",
    "anterior-deltoid"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -1826,7 +1826,7 @@
    "lats"
   ],
   "secondaryHeads": [],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -1899,7 +1899,7 @@
    "gluteus-medius",
    "groin"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -1971,7 +1971,7 @@
    "lower-trapezius",
    "anterior-deltoid"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -2006,7 +2006,7 @@
   "secondaryHeads": [
    "wrist-extensors"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -2117,7 +2117,7 @@
    "medial-head-triceps",
    "upper-pectoralis"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -2152,7 +2152,7 @@
   "secondaryHeads": [
    "wrist-extensors"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -2224,7 +2224,7 @@
   "secondaryHeads": [
    "lowerback"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -2296,7 +2296,7 @@
    "gastrocnemius"
   ],
   "secondaryHeads": [],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -2364,7 +2364,7 @@
    "short-head-bicep"
   ],
   "secondaryHeads": [],
-  "unilateral": false,
+  "unilateral": true,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -2541,7 +2541,7 @@
   "secondaryHeads": [
    "lateral-deltoid"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -2615,7 +2615,7 @@
   "secondaryHeads": [
    "long-head-bicep"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -2650,7 +2650,7 @@
   "secondaryHeads": [
    "gluteus-medius"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -2687,7 +2687,7 @@
    "mid-lower-pectoralis",
    "lateral-deltoid"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -2722,7 +2722,7 @@
   "secondaryHeads": [
    "mid-lower-pectoralis"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -2759,7 +2759,7 @@
    "mid-lower-pectoralis",
    "lateral-deltoid"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -2794,7 +2794,7 @@
   "secondaryHeads": [
    "anterior-deltoid"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -2829,7 +2829,7 @@
   "secondaryHeads": [
    "lateral-hamstrings"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -2902,7 +2902,7 @@
    "lateral-head-triceps",
    "medial-head-triceps"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -2940,7 +2940,7 @@
    "lateral-head-triceps",
    "medial-head-triceps"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -2973,7 +2973,7 @@
    "posterior-deltoid"
   ],
   "secondaryHeads": [],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -3010,7 +3010,7 @@
    "short-head-bicep",
    "traps-middle"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -3048,7 +3048,7 @@
    "gluteus-medius",
    "medial-hamstrings"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -3084,7 +3084,7 @@
   "secondaryHeads": [
    "lowerback"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -3117,7 +3117,7 @@
    "soleus"
   ],
   "secondaryHeads": [],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -3152,7 +3152,7 @@
   "secondaryHeads": [
    "lateral-deltoid"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -3187,7 +3187,7 @@
   "secondaryHeads": [
    "traps-middle"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -3223,7 +3223,7 @@
    "traps-middle",
    "lower-trapezius"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -3256,7 +3256,7 @@
    "tibialis"
   ],
   "secondaryHeads": [],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -3292,7 +3292,7 @@
    "traps-middle",
    "lower-trapezius"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -3325,7 +3325,7 @@
    "obliques"
   ],
   "secondaryHeads": [],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -3358,7 +3358,7 @@
    "wrist-extensors"
   ],
   "secondaryHeads": [],
-  "unilateral": false,
+  "unilateral": true,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -3427,7 +3427,7 @@
    "lateral-head-triceps",
    "medial-head-triceps"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -3460,7 +3460,7 @@
    "tibialis"
   ],
   "secondaryHeads": [],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -3529,7 +3529,7 @@
   "secondaryHeads": [
    "wrist-extensors"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -4126,7 +4126,7 @@
    "posterior-deltoid"
   ],
   "secondaryHeads": [],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -4574,7 +4574,7 @@
   "secondaryHeads": [
    "lateral-hamstrings"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -4929,7 +4929,7 @@
   "secondaryHeads": [
    "anterior-deltoid"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -4964,7 +4964,7 @@
   "secondaryHeads": [
    "lateral-hamstrings"
   ],
-  "unilateral": true,
+  "unilateral": false,
   "media": {
    "source": "musclewiki",
    "male": {
@@ -5031,7 +5031,7 @@
    "gluteus-medius"
   ],
   "secondaryHeads": [],
-  "unilateral": false,
+  "unilateral": true,
   "media": {
    "source": "musclewiki",
    "male": {
