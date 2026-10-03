@@ -4,7 +4,7 @@
 
 ## 打开
 
-在线：部署到 Vercel 后访问根地址（`vercel.json` 把 `/` 跳到 `/prototype/`）。
+在线：Vercel 部署的 `/prototype/`（根路径 `/` 自阶段 5 起是真实 App）。
 
 本地（要走 HTTP，不能直接双击 html，因为要 fetch `mock/*.json`）：
 

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 与 design/tokens/tokens.json 的 bg/base 保持一致 -->
+<resources>
+    <color name="milo_bg_base">#0A0A0B</color>
+</resources>
