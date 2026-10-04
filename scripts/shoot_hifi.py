@@ -17,6 +17,7 @@ SHOTS = [
     ('home', 'final-rest', '/explore/home?scenario=rest-day'),
     ('home', 'final-cold', '/explore/home?scenario=cold-start'),
 ]
+FULL = [('spec', 'preview', '/preview')]  # 整页长图
 ap = argparse.ArgumentParser()
 ap.add_argument('--base', default='http://127.0.0.1:5199')
 ap.add_argument('--chromium', default=os.environ.get('CHROMIUM', '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'))
@@ -40,6 +41,13 @@ with sync_playwright() as p:
         pg.screenshot(path=out)
         print('saved', os.path.relpath(out, ROOT))
         pg.close()
+    for page, name, url in FULL:
+        pg = b.new_page(viewport={'width': 1100, 'height': 900}, device_scale_factor=1.5)
+        pg.on('pageerror', lambda e: errors.append(f'{name}: {e}'))
+        pg.goto(f'{args.base}{url}?now={NOW}'); pg.wait_for_timeout(1500)
+        out = os.path.join(ROOT, 'screenshots', 'hifi', page, f'{name}.png')
+        os.makedirs(os.path.dirname(out), exist_ok=True)
+        pg.screenshot(path=out, full_page=True); print('saved', os.path.relpath(out, ROOT)); pg.close()
     b.close()
 if errors:
     print('页面错误：', *errors, sep='\n  '); sys.exit(1)

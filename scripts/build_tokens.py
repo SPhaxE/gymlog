@@ -7,6 +7,7 @@
 产物（都由本脚本生成，勿手改）：
     design/figma-plugin/code.js      插件主程序（src/plugin.js + 内嵌的 Token 与纹理）
     design/tokens/tokens.css         给阶段 5 的 CSS 变量
+    src/styles/tokens.gen.ts         给 JS 的数值（几何计算用）
 校验不过（对比度不达标、引用不存在）时返回 1，不写任何文件。只用标准库。"""
 import base64, json, os, random, struct, subprocess, sys, zlib, datetime
 
@@ -22,6 +23,7 @@ ICONS = {
 }
 PLUGIN_OUT = os.path.join(ROOT, 'design', 'figma-plugin', 'code.js')
 CSS_OUT = os.path.join(ROOT, 'design', 'tokens', 'tokens.css')
+TS_OUT = os.path.join(ROOT, 'src', 'styles', 'tokens.gen.ts')
 BAD_NAME_CHARS = set('.{}$')
 
 
@@ -175,7 +177,7 @@ def main():
         css.append(f'  --milo-color-{k.replace("/", "-")}: var(--milo-prim-{v["ref"]});')
     for k, v in nums.items():
         val = v['value']
-        if k.startswith('opacity/'):
+        if k.startswith('opacity/') or k.startswith('ratio/'):
             out = f'{val / 100:g}'
         elif k.startswith('motion/'):
             unit = 'ms' if k in ('motion/press', 'motion/fast', 'motion/base', 'motion/slow', 'motion/stagger', 'motion/list-max', 'motion/long-press') else ''
@@ -195,6 +197,14 @@ def main():
         css.append(f".{cls} {{ font-family: var(--milo-{d['family'].replace('/', '-')}); font-weight: {weight[d['style']]}; "
                    f"font-size: var(--milo-{d['size'].replace('/', '-')}); line-height: {d['lineHeight']}px; letter-spacing: {d['letterSpacing'] / 100:g}em; }}")
     open(CSS_OUT, 'w', encoding='utf-8').write('\n'.join(css) + '\n')
+    # 给 JS 用的数值（放大镜、引线等几何计算）：只有 number 部分；opacity/ratio 已换算成 0–1
+    ts = ['// 由 scripts/build_tokens.py 从 design/tokens/tokens.json 生成，勿手改。JS 里的尺寸、时长只从这里取。', 'export const T = {']
+    for k, v in nums.items():
+        val = v['value'] / 100 if k.startswith(('opacity/', 'ratio/')) else v['value']
+        ts.append(f"  '{k}': {val:g},")
+    ts.append('} as const;')
+    ts.append('export type TokenKey = keyof typeof T;')
+    open(TS_OUT, 'w', encoding='utf-8').write('\n'.join(ts) + '\n')
     print(f'\n已生成 {os.path.relpath(PLUGIN_OUT, ROOT)}（{os.path.getsize(PLUGIN_OUT) // 1024} KB）与 {os.path.relpath(CSS_OUT, ROOT)}；build {build}')
     return 0
 

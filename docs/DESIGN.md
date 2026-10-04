@@ -1,124 +1,196 @@
-# 慢牛 Milo 视觉规范（DESIGN.md）
+# 慢牛 Milo 视觉规范（DESIGN.md）· v2
 
-> 阶段 4 · Foundations + Components + 标杆页 P06 · 2026-10-03 · **已过关**（用户在 Figma 里运行插件并确认） · 方向 B「配重片」（吸收 A「刻度」），初版只有深色
-> **2026-10-03 退回重做**：用户评审认为标杆页 P06 没有设计感、达不到 V1 水准；同时导航从 3 项改为 5 项（`ia.md` §3）。下面的数值与组件作为起点保留，等新的线框和高保真定稿后改写；`NavPill`（3 项版）与 P06 画板作废。
-> **数值的唯一源头是 `design/tokens/tokens.json`。** 本文只写使用规则；数值以 tokens.json 为准，经插件导入 Figma（`design/figma-plugin/README.md`），经 `design/tokens/tokens.css` 给代码用。
-> 方向的来由见 `docs/references.md` §8–§12。
+> 2026-10-04 · **规范 v2**，取代阶段 4 的 v1。来源：用户选定的线框（`ia.md` §6）、54 张参考图提炼出的视觉语言 v2（`design/hifi/refs-analysis.md`），以及用户确认过视觉的身体页、首页代码定稿。
+> **数值的唯一源头是 `design/tokens/tokens.json`。** 本文只写使用规则。
+> **规范的实物是 `/preview`**（`src/pages/Preview.tsx`）：每个 Token、文字样式和组件状态都在那一页渲染。阶段 6 每页开工前先对照它。
 
-## 0. 流程
+## 0. 流程与门禁
 
 ```
-tokens.json ──build_tokens.py──┬─> design/figma-plugin/code.js ──在 Figma 里运行──> 变量 / 样式 / 说明分区
-   （改这里）   （校验对比度）  └─> design/tokens/tokens.css ──> 阶段 5 的代码
+tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS 变量与 .milo-text-* 文字样式
+（只改这里）  （校验对比度）     ├─> src/styles/tokens.gen.ts  → JS 几何计算（放大镜、引线）用的数值
+                                └─> design/figma-plugin/code.js → Figma 变量与样式
 ```
 
-- 改值只改 `tokens.json`。Figma 里手改的值会被下次导入覆盖；确实要改，先回写 tokens.json。
-- `build_tokens.py` 校验对比度（`contrast` 里列出的每一对），不达标就不生成。
-- 页面和组件里**只用变量和样式**，不写散落的数值（阶段 5 用附录 F 的 grep 检查 `src/pages`、`src/components`）。
+- 改值只改 `tokens.json`，再跑 `python3 scripts/build_tokens.py`。`contrast` 里列出的每一对颜色都要达标，否则不生成。
+- `src/pages`、`src/components` 里**不许出现散落的颜色和尺寸**：不写 `#hex`、`rgb()`、`px`、`ms` 字面量（`npm run check:hardcoded`，CI 必过）。JS 里的尺寸和时长只从 `tokens.gen.ts` 的 `T` 取。
+- 新组件先进 `src/components` 和 `/preview`，再写进本文 §9，最后才能在页面里用。页面只拼组件，不自造样式。
 
-## 1. 颜色
+## 1. 颜色：暖黑 + 骨白 + 荧光
 
-只用 `Milo · Tokens` 里的语义变量；`Milo · Primitives` 是原料，不直接用。
+只用语义变量（`--milo-color-*`），原始色（`--milo-prim-*`）不直接用。
 
-| 组 | 用途 |
-|---|---|
-| `bg/*` | 页面底 `bg/base`、卡片与胶囊 `bg/raised`、选中与按下 `bg/raised-2`、底部面板 `bg/sheet`、遮罩 `bg/scrim` |
-| `text/*` | 正文 `primary`、说明与单位 `secondary`、禁用 `disabled`、荧光底上 `on-accent` / `on-accent-secondary` |
-| `accent/*` | 荧光黄绿与它的光晕。**用途有限，见 §2** |
-| `action/*` | 主按钮：暖白底 + 黑字。不是荧光 |
-| `feedback/danger` | 只用于错误、保存失败、删除确认 |
-| `data/*` | 刻度条、容量四档、人体图、引线 |
-| `nav/*` | 导航胶囊环，见 §6 |
+| 角色 | 变量 | 用在 |
+|---|---|---|
+| 底与面 | `bg/base`、`bg/raised`、`bg/raised-2`、`bg/sheet`、`bg/scrim`、`line/*` | 页面底、卡片与胶囊、选中底、底部面板、遮罩、描边与分隔 |
+| 文字 | `text/primary`、`text/secondary`、`text/disabled` | 正文；说明与单位；禁用与 0 组 |
+| **骨白：选中 / 实心中性** | `control/selected`、`action/primary`、`nav/pill`、`data/gauge`（暗骨） | 分段选中项、导航选中项、中性主按钮（完成、确认）、增量尺的增量段；胶囊量尺填充 |
+| **荧光：焦点 + 进度** | `accent/*`、`text/on-accent*`、`nav/progress` | 见下面的荧光规矩 |
+| 数据 | `data/*` | 容量四档、人体图、引线、刻度 |
+| 反馈 | `feedback/danger` | 只用于错误、清除数据、下降趋势 |
 
-## 2. 荧光色的规矩
+**荧光规矩（v2）**
 
-1. 荧光（`accent/default`）只给三类东西：
-   - **当前主角**：放大镜下的胶囊、P01 今日处方卡、P01 训练中的当前动作行；
-   - **导航选中项**（`nav/pill`）；
-   - **进度**（`nav/progress`、刻度条上的当前段）。
-   正文、图标、分割线、按钮一律不用。
-2. **光晕 `Milo/Glow/Focus` 每屏最多一处。** 导航选中项是实心填充、不发光，不占这个预算。
-3. 一屏里荧光**面积**最大的只能有一个：P01 有荧光主角卡时，当前动作行只用荧光描边，不填色。
-4. 「超量」不用荧光（会被读成「好」），用 `Milo/Data/Tier-Over` 白底黑斜纹。
-5. 噪点 `Milo/Texture/Grain` 只叠在主角卡和底部面板上，不叠在列表项和胶囊上。
+1. 荧光只给两类东西：
+   - **这一屏唯一的焦点或主操作**：首页的「开始训练」、放大镜中心的胶囊（含它的引线和人体上的描边）、详情面板里的当前时相段。
+   - **进度**：导航外圈。
+2. **每屏只能有一处荧光面积**。有荧光按钮时，主角卡不再用荧光，改用骨白点缀（例如增量尺）。
+3. 导航选中项、分段控件选中项、中性按钮一律用骨白，不用荧光。
+4. 容量四档不用荧光：「达标」用中骨，「超量」用骨白底加黑斜纹，免得被读成「好」。
+5. 光晕（`accent/glow`）只跟着那一处荧光走，每屏最多一处。
 
-## 3. 文字
+## 2. 文字
 
-| 样式 | 用在 |
-|---|---|
-| `Number/Hero` … `Number/XS` | 数字：Barlow Condensed（v2 起，压缩粗体）。单位（kg、组、%）用同一行里更小的 `Caption` 或 `Micro`，颜色 `text/secondary` |
-| `Readout/M`、`Readout/S` | 刻度读数与计时（1:35）：JetBrains Mono，等宽防跳动。**只放数字**，中文标签另起一段用 `Micro` |
-| `Title/L`、`Title/M`、`Heading` | 页面标题、卡片与面板标题 |
-| `Body/Strong`、`Body`、`Label`、`Caption`、`Micro` | 正文、动作名、按钮、说明、胶囊名称 |
+| 字体 | 变量 | 用在 |
+|---|---|---|
+| Barlow Condensed（压缩粗体） | `font/number` | 所有关键数字：重量、组数、恢复 %、PR 数 |
+| Noto Sans SC | `font/ui` | 中文和界面文字 |
+| JetBrains Mono | `font/mono` | 计时与刻度读数（1:35），等宽防跳动 |
 
-- **字号下限 11**（`font-size/min`，样式 `Micro`）。V1 正文 10 px 是教训，任何文字不得小于它。
-- 胶囊静止时也必须显示肌肉名称（ia §1.10），用 `Micro`。
+| 文字样式（`.milo-text-*`） | 字号 | 用在 |
+|---|---|---|
+| `Number/Hero` | 64 | 首页建议重量、详情面板的恢复 % |
+| `Number/XL` / `L` / `M` | 40 / 30 / 22 | 面板里的组数；目标「3 × 6–8」；摘要读数、列表重量 |
+| `Number/S` / `XS` | 15 / 12 | 胶囊里的组数；小读数 |
+| `Title/L` / `Title/M` | 26 / 22 | 页面标题；面板标题、恢复日 |
+| `Heading` | 17 | 卡片里的动作名、放大中心的肌头名 |
+| `Body/Strong` / `Body` | 15 | 列表行名称；正文 |
+| `Label` | 13 | 区块标题（接下来、恢复、近 7 天容量） |
+| `Caption` | 12 | 说明、理由、单位、标签 |
+| `Micro` | 11 | 图例、导航名称、刻度地标 |
 
-## 4. 形状、间距、尺寸
+- **字号下限 11**（`font-size/min`）。
+- **数字 + 单位**：数字用 `Number/*`，单位（kg、组、%、小时）跟一个 `Caption`，颜色 `text/secondary`，中间留 `space/2xs`。统一用组件 `Num`。
+- 放大镜的胶囊字号在 `Caption` 和 `Heading` 之间按权重插值；放大中心固定用 `Heading`。不要另造字号。
 
-- 圆角：胶囊、按钮、导航 `radius/pill`；卡片 `radius/l`；底部面板顶角 `radius/xl`；小标签与刻度条 `radius/xs`。
-- 间距只用 `space/*`（2–48）；页面左右边距 `space/l`（16）。
-- 最小触控区 `size/hit-min`（48）。胶囊的视觉高度 `size/capsule-h`（26）可以小于它，但命中区按轨道均分（ia §1.10）。
-- P01 今日处方卡高度不超过 `size/hero-max-h`（160）：首个动作的建议重量必须在首屏（U1）。
+## 3. 间距、圆角
+
+- 间距只用 `space/*`，全部是 4 的倍数：2 / 4 / 8 / 12 / 16 / 20 / 24 / 32 / 40 / 48。
+- 常用节奏：
+  - 页头上边距 `space/l`，页头内块间 `space/s`，页头到内容 `space/m`；
+  - 卡片内边距 `space/l`，卡片内块间 `space/xs`；
+  - 内容区块之间 `space/m`；
+  - 列表行最小高 `size/hit-min`（48），行间用刻度分隔线。
+- 圆角：
+  - `radius/pill`：胶囊、按钮、导航、分段控件；
+  - `radius/l`：卡片、放大中心的胶囊；
+  - `radius/m`：面板里的块、状态条；
+  - `radius/s`：时相段底；
+  - `radius/xs`：标签、刻度条；
+  - `radius/xl`：底部面板顶角。
+
+## 4. 版式
+
+- **屏幕框**（组件 `Screen`）：
+  - 背景全出血，宽屏时内容最宽 `size/content-max-w`（448）并居中；
+  - 上下避开系统栏，Android 由 Capacitor 注入 `--safe-area-inset-*`。
+- **出血规则**：一切内容都在左右 `size/gutter`（16）之内，人体图、胶囊、导航、按钮都不例外。只有背景色可以出血。
+- **人体半身**（组件 `BodyFigure`，同 V1 `BodyProgressMap` 的做法）：
+  - 人体放在左右各留页面边距的裁切框里，越界部分剪掉，不越过组件最外层；
+  - 按包围盒从左裁掉 `ratio/figure-crop`（42%），露出约 58%；
+  - 左缘再加 `ratio/figure-fade`（8%）宽的渐隐，让裁切读起来是有意的暗角，而不是一刀切；
+  - 整体不透明度 `opacity/figure`，右侧再淡一些，让胶囊更清楚；
+  - 胶囊列从内容区宽度的 `ratio/rail-start`（43%）开始，到内容区右缘结束。
+- **底部留白**：
+  - 有导航的页面，内容底部留 `nav-bar-h + nav-bottom + space/s`（CSS 变量 `--nav-clear`）；
+  - 有固定主按钮时再加 `button-h + space/2xl`；
+  - 主按钮浮在导航上方 `space/s` 处。
+- **层级**（从下到上）：内容 → 人体 → 引线 → 胶囊 → 固定主按钮 → 导航 → 底部面板（含遮罩）。
+- **触控**：目标不小于 `size/hit-min`（48）。视觉更小的件要把命中区外扩：分段控件高 32，用伪元素补到 48；静止胶囊的命中区按轨道均分。
 
 ## 5. 数据图形
 
-- **容量四档**：同时靠明暗和纹理区分，不只靠色相；P06 上常驻图例（ia §1.10）。
-  | 档 | 填充 |
+- **容量四档**：同时靠明暗和纹理区分，不只靠色相；身体页常驻图例（组件 `TierLegend`）。
+
+  | 档 | 人体与图例 |
   |---|---|
-  | 未练 | `data/tier-none` + 轮廓 `data/tier-none-edge` |
-  | 不足 | `Milo/Data/Tier-Low`（暗荧光底 + 荧光点阵） |
-  | 达标 | `data/tier-ok`（荧光实色） |
-  | 超量 | `Milo/Data/Tier-Over`（白底黑斜纹） |
-- 近 7 天 0 组的胶囊用 `Milo/Data/Untrained` 斜纹压暗。
-- **刻度条**（借自方向 A）：空槽 `data/track`、已填 `data/fill`、三条地标（最低有效量 / 适宜量 / 最大可恢复量）用 `data/tick`，地标数字用 `Readout/S`。
-- 空槽和导航轨道只有约 1.4 : 1，属于装饰性元素：信息靠已填部分或描边的长度传达，不靠空槽本身。
+  | 未练 | `data/tier-none` + 斜纹 |
+  | 不足 | `data/tier-low`（暗灰） |
+  | 达标 | `data/tier-ok`（中骨） |
+  | 超量 | `data/tier-over`（骨白）+ 黑斜纹 |
 
-## 6. 导航胶囊环（ia §1.12）
+- **胶囊**本身就是量尺：底色按「组数 ÷ 最大可恢复量」从左填充 `data/gauge`；0 组用斜纹并压暗文字。
+- **刻度**只做分隔线和量尺，不做装饰：
+  - 刻度间距 `size/tick-pitch`，小刻度高 `size/tick-minor`，大刻度 / 地标高 `size/tick-major`；
+  - 分隔线（`Ticks`）向右渐隐。
+- **地标尺**（`LandmarkRuler`）：已填段 `data/fill`，最低 / 适宜 / 上限三条地标 `data/tick`，位置 = 值 ÷（上限 × 1.1）。
+- **增量尺**（`IncrementRuler`）：同一把刻度上标出上次和这次，中间那段（就是增量）用骨白高亮；减重时方向相反（−5 kg）。刻度步进 = 引擎的 `loadStep`（2.5 kg），两侧各留 4 步。
+- **时相段**（`PhaseSegments`）：修复期 / 恢复中 / 黄金窗 / 已回落，当前段荧光（属于进度类用途）。
 
-| 元素 | Token |
+## 6. 导航（ia §1.12，组件 `Nav`）
+
+| 元素 | 规则 |
 |---|---|
-| 导航底 | `nav/bg` + `Milo/Elevation/Float`，尺寸 `size/nav-w` × `size/nav-h`，离底 `size/nav-bottom` |
-| 外圈轨道 | `nav/track`，`stroke/ring-track` |
-| 外圈进度（今日组数） | `nav/progress`，**实线**，`stroke/ring-progress`；从顶边正中顺时针 |
-| 选中项 | `nav/pill` 填充，文字与图标 `nav/pill-ink`，高 `size/nav-pill-h` |
-| 休息倒计时 | `nav/rest`，**虚线**（`stroke/ring-rest-dash` / `stroke/ring-rest-gapdash`）+ 端点圆点，`stroke/ring-rest` |
-| 描边与小胶囊的缝 | `stroke/ring-gap`：白描边贴着荧光胶囊时对比只有 1.03 : 1，必须留缝 |
+| 位置与尺寸 | 左右贴页面边距，离底 `size/nav-bottom`，高 `size/nav-bar-h`；`nav/bg` + 模糊 + `shadow/float` |
+| 五项 | 首页 · 身体 · 增量 · 记录 · 我的，都是「图标（`size/nav-icon`）+ 名称（`Micro`）」 |
+| 选中项 | `nav/pill` 骨白实心，图标与文字 `nav/pill-ink`，高 `size/nav-item-h` |
+| 外圈：今日进度 | `nav/progress` **实线** `stroke/ring-progress`，**从顶边正中顺时针**。null：不画（恢复日、动作池不足、空态）；0：只画轨道 `nav/track`；1：满环（今天已练完） |
+| 休息倒计时 | 选中项的名称换成剩余时间（1:35）；小胶囊外加 `nav/rest` **虚线**（`stroke/ring-rest-dash` / `-gapdash`）+ 端点圆点，只走剩余比例那一段；与胶囊之间留 `stroke/ring-gap` 的缝 |
 
 ## 7. 动效
 
-参数都在 `motion/*`。预算：按下反馈 ≤ `motion/press`，单次转场 ≤ `motion/slow`，P03 记组页上的形变 ≤ `motion/base`，列表入场总时长 ≤ `motion/list-max`。
-每个视效都要有「减少动画」降级，对照表在 `references.md` §9.2。P03 不放持续动画、光晕和噪点。
+参数都在 `motion/*`：
+- 按下反馈 ≤ `motion/press`，缩放 `motion/press-scale`；
+- 胶囊放大与位移 `motion/fast`；
+- 底部面板滑入 `motion/base`；
+- 单次转场 ≤ `motion/slow`；
+- 列表入场总时长 ≤ `motion/list-max`。
 
-## 8. 禁止项（来自 Stitch 反例，references §12.3）
+放大镜的阈值：
+- 按住 `motion/long-press` 进入；
+- 进入前移动超过 `motion/drag-slop` 算滚动；
+- 余弦衰减半径 `motion/magnifier-radius`（3 个胶囊）。
 
-- 编造的英文或中文「技术标签」：CALIB-24、SYS.LOCKED、RX //、处方负荷校准……功能界面文案保持中性、克制。
-- 一屏多处荧光；荧光按钮。
-- 信号红或任何颜色的整条主按钮（主按钮只有暖白一种）。
-- **任何不是 MuscleWiki 素材的人体图**：几何拼的、手画的、Stitch 或其他工具生成的都不行。人体图只用 `public/bodymap/`（V1 的 MuscleWiki 解剖路径，见 `asset-audit.md` §5），出现的页面要有「人体图：MuscleWiki」署名。
-- 照抄参考图或生成图里的数字。口径只看 brief / ia。
+每个视效都要有「减少动画」降级（`references.md` §9.2）。训练页不放持续动画、光晕和噪点。
 
-## 9. 组件（Figma「Components · 配重片」分区，由插件生成）
+## 8. 禁止项
 
-| 组件 | 变体 | 用法与限制 |
+- 编造的英文或中文「技术标签」：OVERLOAD ENG.、NEXT TARGET、SEQ // 01、CALIB-24 之类。界面文案保持中性、克制。
+- 一屏多处荧光；荧光的整片背景；荧光的容量档位。
+- 满屏的出血巨型数字。只有结算页允许一次「大声」（荧光斜带上的「4 项 PR」）。
+- **任何不是 MuscleWiki 素材的人体图**：几何拼的、手画的、AI 生成的都不行。人体只用 `public/bodymap/`，出现的页面要有署名。
+- 人体越过页面边距（§4）。
+- 照抄参考图或生成图里的数字，口径只看 brief / ia；页面上的数字只来自引擎。
+
+## 9. 组件目录（`src/components`，`/preview` 里有每个组件的状态）
+
+| 组件 | 结构与尺寸 | 状态 / 用法 |
 |---|---|---|
-| `NavPill` | ring 无环 / 进度 / 休息 / 进度+休息 / 满环 × selected 今日 / 进度 / 设置 × state 默认 / 按下（30） | 有 Tab 的页面都用它（ia §1.12）。外圈实线 = 今日进度，满环 = 今天已练完；恢复日、动作池不足、空态用「无环」。休息时选中项写「Tab 名 + 剩余时间」 |
-| `Capsule` | 静止 / 邻近放大 / 放大中心 / 选中 / 未练 | **放大中心每屏只能有一个**（荧光 + 光晕）。放大镜按余弦衰减：中心上下各一个「邻近放大」。松手后被选中的是「选中」（荧光描边，不填色）。近 7 天 0 组用「未练」 |
-| `ScaleBar` | size 胶囊 / 面板 × tone 默认 / 荧光底 × tier 大 / 中 / 小（面板没有荧光底，共 9） | 三条地标按肌头大小定位，不要手挪。已填比例 = 组数 ÷（上限 × 1.1，面板 × 1.15）：在实例里改 `fill` 图层的硬边渐变，不改尺寸 |
-| `BodyFigure` | gender 男 / 女 × view 正面 / 背面 | MuscleWiki 素材，每个肌头一组 `muscle/<id>`；在实例里给组内矢量换填充表示容量档位（§5），选中的肌头加荧光描边。腹股沟是中性部位，不着色 |
-| `RecoveryBlock` / `VolumeBlock` | 时相 4 档 / 肌头大小 3 档 | 详情面板的两块；时相条当前段是荧光，属于「进度」类用途 |
-| `Segmented` / `Segmented2` | 选中项 | 选中项用 `control/selected`（暖白），不是荧光 |
-| `Button` | 主 / 次 × L / S | 一屏最多一个主按钮 |
-| `TierLegend`、`KpiRow`、`PageHeader`、`SheetHeader`、`InfoRow`、`InlineNote` | — | 文字都在实例里改，不要拆开 |
-| `TouchPoint` | — | 只在标杆页示意手指位置，产品里不出现 |
+| `Screen` | 屏幕框：全出血背景、`content-max-w`、安全区、`--nav-clear` | 每个页面最外层 |
+| `PageHeader` | eyebrow（Caption）+ 标题（Title/L）+ 右侧附件 + 下方插槽 | Tab 根页的页头；子页用返回栏（M3 补） |
+| `Nav` | §6 | progress：null / 0 / 0–1 / 1；rest + restRatio |
+| `Segmented` | 高 `segment-h`，命中区外扩到 `hit-min`；选中项骨白 | 正面 / 背面、男 / 女 |
+| `Button` | 高 `button-h`，`radius/pill`；`primary` 荧光 / `neutral` 骨白 / `ghost` 描边 | 每屏最多一个 primary |
+| `Tag` | Caption，`radius/xs`，`bg/raised` 描边 | 摘要标签、「首次」 |
+| `StatusStrip` | 左侧骨白竖条，标题 Body/Strong + 说明 Caption；`quiet` 为一行小字 | 减量建议、减量周、动作池不足、空态说明 |
+| `Card` | `radius/l`，内边距 `space/l`；`hero` 带径向渐变深度 | 首页主角卡、恢复日 |
+| `List` / `ListRow` | 行高 ≥ `hit-min`，行间刻度分隔线；右侧放 `Num` 或 `Tag` | 「接下来」、记录、设置 |
+| `SectionLabel` | Label，`text/secondary` | 区块标题 |
+| `Num` | §2「数字 + 单位」 | 所有数字 |
+| `Ticks` | §5 | 页头 KPI 下的分隔线 |
+| `TierLegend` | §5 | 身体页 |
+| `BodyFigure` | §4 人体半身 | gender 男 / 女 × view 正面 / 背面；焦点肌头荧光描边 |
+| `CapsuleRail` | 胶囊高：静止 ≤ `capsule-rest-max-h`（均分轨道）、邻居 → `capsule-near-h`、中心 `capsule-focus-h`；中心向左伸出 `capsule-focus-grow`、邻居 `capsule-near-grow`；间距 `capsule-gap`；引线拐点 `leader-elbow` + 错开 `leader-stagger` | 静止 / 0 组 / 邻居 / 中心；按住、滑动、松手打开详情；几何在 `capsuleLayout.ts`（有单测） |
+| `Sheet` / `SheetBlock` | `bg/sheet`，顶角 `radius/xl`，抓手，关闭钮 `button-h-s`；块 `radius/m` | 肌头详情（恢复在上、容量在下）、减量面板 |
+| `PhaseSegments`、`LandmarkRuler`、`IncrementRuler` | §5 | 详情面板、首页主角卡 |
 
-标杆页 P06（「Benchmark · P06」分区）由这些组件拼成：① 放大镜按住「中下胸」② 松手后的详情面板 ③ 空态。除引线外没有散落的图形；数据来自 `design/benchmark/p06.json`（原型引擎的实算结果）。正面 19 个肌头的胶囊轨道比 800 高的屏幕长约 60 px，页面本来就可滚动（ia §1.10），这是预期的。
+**页面骨架**：
+- Tab 根页：`Screen` → `PageHeader` → 内容（左右 gutter、可滚动）→（固定主按钮）→ `Nav`。
+- 训练、结算等任务流页面没有 `Nav`。
+- 底部面板盖在最上层。
 
 ## 10. 自检
 
 ```bash
 python3 scripts/build_tokens.py --check   # 对比度与引用
-python3 scripts/build_tokens.py           # 生成插件与 CSS
-node scripts/test_figma_plugin.cjs         # 模拟 Figma API 跑三个命令（62 项：幂等、组件 ID 不变、只用变量、只用实例、MuscleWiki 署名……）
-node scripts/test_figma_plugin.cjs --render out.html   # 顺带把标杆页的模拟结果粗略画成 HTML（文字宽度是估的）
+python3 scripts/build_tokens.py           # 生成 CSS、TS 常量与 Figma 插件
+npm run check:hardcoded                   # src/pages、src/components 里没有散落的颜色与尺寸
+npm test                                  # 含胶囊列几何的单测
+npx vite --port 5199 & python3 scripts/shoot_hifi.py   # 身体页、首页 8 个状态 + /preview 整页截图
+node scripts/test_figma_plugin.cjs        # Figma 插件 mock 测试（62 项）
 ```
+
+## 11. Figma 的同步状态
+
+- **Foundations**（变量、文字样式、效果）：由 `tokens.json` 自动生成，已经是 v2：骨白、Barlow Condensed、新增的版式与组件尺寸。
+- **Components 与标杆页**：插件里仍是 v1（3 项 `NavPill`、旧胶囊）。标【旧版，仅 Figma 旧组件用】的 Token 只给它们用。下一步按本文 §9 和 `/preview` 重画 Figma 组件，完成后删掉这些旧 Token。在那之前，组件以代码和 `/preview` 为准。

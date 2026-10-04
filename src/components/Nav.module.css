@@ -1,0 +1,23 @@
+/* 导航：贴页面左右边距；高 size/nav-bar-h；外圈细环 = 今日进度 */
+.nav {
+  position: absolute; z-index: 10; left: var(--milo-size-gutter); right: var(--milo-size-gutter); bottom: var(--milo-size-nav-bottom);
+  height: var(--milo-size-nav-bar-h); display: grid; grid-template-columns: repeat(5, 1fr); align-items: center; padding: 0 var(--milo-space-xs);
+  border-radius: var(--milo-radius-pill); background: var(--milo-color-nav-bg); box-shadow: 0 var(--milo-space-s) var(--milo-space-2xl) var(--milo-color-shadow-float);
+  -webkit-backdrop-filter: blur(var(--milo-space-m)); backdrop-filter: blur(var(--milo-space-m));
+}
+.ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.ring path { fill: none; }
+.track { stroke: var(--milo-color-nav-track); stroke-width: var(--milo-stroke-ring-track); }
+/* 外圈进度：实线；休息：虚线 + 端点圆点（两层靠线型区分，不只靠颜色） */
+.progress { stroke: var(--milo-color-nav-progress); stroke-width: var(--milo-stroke-ring-progress); stroke-linecap: round;
+  transition: stroke-dasharray var(--milo-motion-slow) var(--milo-motion-ease-standard); }
+.rest { stroke: var(--milo-color-nav-rest); stroke-width: var(--milo-stroke-ring-rest); stroke-dasharray: var(--milo-stroke-ring-rest-dash) var(--milo-stroke-ring-rest-gapdash); }
+.restMask { fill: none; stroke: white; stroke-width: calc(var(--milo-stroke-ring-rest) * 3); }
+.restDot { fill: var(--milo-color-nav-rest); }
+.item, .on {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--milo-space-2xs); height: var(--milo-size-nav-item-h);
+  color: var(--milo-color-nav-ink); text-decoration: none; font-size: var(--milo-font-size-min); line-height: 1; border-radius: var(--milo-radius-pill);
+  transition: background-color var(--milo-motion-fast) var(--milo-motion-ease-standard);
+}
+.on { background: var(--milo-color-nav-pill); color: var(--milo-color-nav-pill-ink); font-weight: 700; margin: 0 var(--milo-space-2xs); }
+.icon { width: var(--milo-size-nav-icon); height: var(--milo-size-nav-icon); }

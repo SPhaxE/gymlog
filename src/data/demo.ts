@@ -1,4 +1,4 @@
-/** 高保真页的数据：全部来自 TS 引擎在演示场景上的实算值（mock/），不手填数字。 */
+/** 演示数据：全部来自 TS 引擎在演示场景（mock/）上的实算值，不手填数字。页面与预览页共用。 */
 import { buildScenario, demoEnv } from '../engine/demo';
 import { DAY, deloadSignal, deloadView, exerciseRecords, headStats, prescribe, sessionStats, startOfDay } from '../engine';
 import type { DeloadView, HeadStat, Prescription } from '../engine';
