@@ -1,0 +1,17 @@
+/* IP 小牛的颜色：只用原色 Token；荧光只给角（和极少的庆祝点缀） */
+.mascot { display: block; width: 100%; height: auto; overflow: visible; }
+.head { display: block; width: var(--milo-size-icon); height: var(--milo-size-icon); overflow: visible; }
+.bone { fill: var(--milo-prim-bone-100); }
+.boneFx { fill: var(--milo-prim-bone-100); opacity: 0.8; }
+.far { fill: var(--milo-prim-gray-800); }
+.grey { fill: var(--milo-prim-gray-600); }
+.muzzle { fill: var(--milo-prim-gray-800); }
+.nostril { fill: var(--milo-prim-gray-500); }
+.hoof { fill: var(--milo-prim-gray-500); }
+.ink { fill: var(--milo-prim-gray-0); }
+.lineInk { fill: none; stroke: var(--milo-prim-gray-0); stroke-linecap: round; }
+.tail { fill: none; stroke: var(--milo-prim-gray-600); stroke-linecap: round; }
+.horn { fill: var(--milo-prim-lime-500); }
+.spine { fill: none; stroke: var(--milo-prim-lime-500); stroke-linecap: round; }
+.zz { fill: var(--milo-prim-lime-500); font-family: var(--milo-font-number); font-weight: 700; font-style: italic; }
+.sweat { fill: var(--milo-prim-gray-800); }
