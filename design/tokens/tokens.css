@@ -113,7 +113,21 @@
   --milo-size-tick-minor: 8px;
   --milo-size-tick-major: 12px;
   --milo-size-tick-pitch: 4px;
+  --milo-size-bp-wide: 900px;
   --milo-size-hero-max-h: 160px;
+  --milo-size-icon: 20px;
+  --milo-size-icon-s: 16px;
+  --milo-size-switch-w: 46px;
+  --milo-size-switch-h: 28px;
+  --milo-size-switch-knob: 22px;
+  --milo-size-check: 22px;
+  --milo-size-field-h: 56px;
+  --milo-size-day-cell: 40px;
+  --milo-size-spark-w: 64px;
+  --milo-size-spark-h: 24px;
+  --milo-size-chart-h: 168px;
+  --milo-size-chart-dot: 4px;
+  --milo-ratio-media-h: 0.75;
   --milo-stroke-hairline: 1px;
   --milo-stroke-focus: 1.6px;
   --milo-stroke-ring-track: 1.2px;
@@ -129,6 +143,8 @@
   --milo-ratio-figure-fade: 0.08;
   --milo-ratio-rail-start: 0.43;
   --milo-opacity-trace-min: 0.3;
+  --milo-opacity-press: 0.12;
+  --milo-opacity-disabled: 0.38;
   --milo-font-size-hero: 64px;
   --milo-font-size-xl: 40px;
   --milo-font-size-l: 30px;
@@ -145,6 +161,7 @@
   --milo-motion-slow: 350ms;
   --milo-motion-stagger: 80ms;
   --milo-motion-list-max: 300ms;
+  --milo-motion-toast-hold: 2800ms;
   --milo-motion-long-press: 150ms;
   --milo-motion-drag-slop: 8;
   --milo-motion-magnifier-radius: 3;

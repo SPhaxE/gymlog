@@ -1,14 +1,6 @@
 /** 身体页（P06，线框 W3 + 视觉语言 v2）：压暗的 MuscleWiki 半身作背景（在内容区内，左缘渐隐），右侧胶囊列叠在上面。 */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BodyFigure, type Anchors } from '../components/BodyFigure';
-import { CapsuleRail } from '../components/CapsuleRail';
-import { LandmarkRuler, PhaseSegments } from '../components/Gauges';
-import { Nav } from '../components/Nav';
-import { Screen } from '../components/Screen';
-import { Segmented } from '../components/Segmented';
-import { Sheet, SheetBlock } from '../components/Sheet';
-import { Ticks } from '../components/Ticks';
-import { Num, PageHeader, StatusStrip, TierLegend } from '../components/ui';
+import { Banner, BodyFigure, CapsuleRail, LandmarkRuler, Nav, Num, PageHeader, PhaseSegments, Screen, Segmented, Sheet, SheetBlock, Ticks, TierLegend, type Anchors, type Tab } from '../components';
 import { ago, bodyData, fmt, REGION_NAME } from '../data/demo';
 import type { HeadStat } from '../engine';
 import { T } from '../styles/tokens.gen';
@@ -16,7 +8,7 @@ import s from './BodyPage.module.css';
 
 const TIER_NAME = { large: '大肌群', medium: '中肌群', small: '小肌群' } as const;
 
-export function BodyPage({ scenario, now, initialFocus }: { scenario: string; now: number; initialFocus: string | null }) {
+export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario: string; now: number; initialFocus: string | null; onTab?: (tab: Tab, path: string) => void }) {
   const data = useMemo(() => bodyData(scenario, now), [scenario, now]);
   const [view, setView] = useState<'front' | 'back'>('front');
   const [gender, setGender] = useState<'male' | 'female'>(data.gender);
@@ -52,7 +44,7 @@ export function BodyPage({ scenario, now, initialFocus }: { scenario: string; no
           <Num value={fmt(k.load)} unit="kg" /><Num value={k.sets} unit="组" /><Num value={k.days} unit="天" />
         </div>
         <Ticks />
-        {k.sets === 0 && <StatusStrip quiet detail="练完第一次训练后，这里会显示每块肌肉近 7 天的容量和恢复。" />}
+        {k.sets === 0 && <Banner quiet detail="练完第一次训练后，这里会显示每块肌肉近 7 天的容量和恢复。" />}
         <TierLegend />
       </PageHeader>
 
@@ -66,7 +58,7 @@ export function BodyPage({ scenario, now, initialFocus }: { scenario: string; no
       </div>
 
       {sheet && <HeadSheet h={data.stats.get(sheet)!} onClose={reset} />}
-      <Nav selected="body" progress={data.trainedToday ? 1 : 0} />
+      <Nav selected="body" progress={data.trainedToday ? 1 : 0} onSelect={onTab} />
     </Screen>
   );
 }

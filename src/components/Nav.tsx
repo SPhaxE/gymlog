@@ -4,9 +4,10 @@
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { T } from '../styles/tokens.gen';
 import { Icon } from './Icon';
+import { cx, forced, type Forced } from './state';
 import s from './Nav.module.css';
 
-export const TABS = [['home', '首页', '/explore/home'], ['body', '身体', '/explore/body'], ['gains', '增量', '#'], ['log', '记录', '#'], ['me', '我的', '#']] as const;
+export const TABS = [['home', '首页', '/today'], ['body', '身体', '/body'], ['gains', '增量', '/gains'], ['log', '记录', '/log'], ['me', '我的', '/me']] as const;
 export type Tab = (typeof TABS)[number][0];
 
 /** 圆角矩形路径，从顶边正中起顺时针（描边进度用 pathLength=1） */
@@ -15,7 +16,11 @@ export function pillPath(x: number, y: number, w: number, h: number) {
   return `M${cx},${y} H${x + w - r} A${r},${r} 0 0 1 ${x + w},${y + r} V${y + h - r} A${r},${r} 0 0 1 ${x + w - r},${y + h} H${x + r} A${r},${r} 0 0 1 ${x},${y + h - r} V${y + r} A${r},${r} 0 0 1 ${x + r},${y} Z`;
 }
 
-export function Nav({ selected, progress, rest, restRatio }: { selected: Tab; progress: number | null; rest?: string; restRatio?: number }) {
+/** onSelect：壳里接路由（不整页刷新）；不传时就是普通链接。itemState：在第一个未选中项上强制显示按下 / 聚焦（Playground 用）。
+ *  选中项的骨白底是一块独立的滑块，切换时滑过去（motion/base）；减少动态效果时直接到位。 */
+export function Nav({ selected, progress, rest, restRatio, onSelect, itemState }: {
+  selected: Tab; progress: number | null; rest?: string; restRatio?: number; onSelect?: (tab: Tab, path: string) => void; itemState?: Forced;
+}) {
   const nav = useRef<HTMLElement>(null), on = useRef<HTMLAnchorElement>(null), maskId = useId();
   const [geo, setGeo] = useState<{ w: number; h: number; pill: [number, number, number, number] | null }>({ w: 0, h: 0, pill: null });
   useLayoutEffect(() => {
@@ -27,12 +32,13 @@ export function Nav({ selected, progress, rest, restRatio }: { selected: Tab; pr
     measure();
     const ro = new ResizeObserver(measure); ro.observe(el);
     return () => ro.disconnect();
-  }, [selected]);
+  }, [selected, rest]);
   const sw = T['stroke/ring-progress'], half = sw / 2, gap = T['stroke/ring-gap'] + T['stroke/ring-rest'] / 2;
   const ring = geo.w ? pillPath(half, half, geo.w - sw, geo.h - sw) : '';
   const p = geo.pill;
   const restRing = p && rest && restRatio != null ? pillPath(p[0] - gap, p[1] - gap, p[2] + gap * 2, p[3] + gap * 2) : '';
   const restEnd = restRing ? endPoint(restRing, restRatio!) : null;
+  const firstOff = TABS.find(([k]) => k !== selected)?.[0];
   return (
     <nav ref={nav} className={s.nav} aria-label="主导航">
       <svg className={s.ring} aria-hidden="true">
@@ -47,8 +53,11 @@ export function Nav({ selected, progress, rest, restRatio }: { selected: Tab; pr
         )}
         {restEnd && <circle className={s.restDot} cx={restEnd[0]} cy={restEnd[1]} r={T['stroke/ring-rest']} />}
       </svg>
+      {p && <span className={s.pill} aria-hidden="true" style={{ transform: `translate(${p[0]}px, ${p[1]}px)`, width: p[2], height: p[3] }} />}
       {TABS.map(([k, label, href]) => (
-        <a key={k} ref={k === selected ? on : undefined} href={href} className={k === selected ? s.on : s.item} aria-current={k === selected ? 'page' : undefined}>
+        <a key={k} ref={k === selected ? on : undefined} href={href} className={cx('milo-press milo-focus', k === selected ? s.on : s.item)} aria-current={k === selected ? 'page' : undefined}
+          aria-label={k === selected && rest ? `${label}，休息剩余 ${rest}` : undefined}
+          onClick={(e) => { if (onSelect) { e.preventDefault(); onSelect(k, href); } }} {...(k === firstOff ? forced(itemState) : {})}>
           <Icon name={k} className={s.icon} />
           <span>{k === selected && rest ? rest : label}</span>
         </a>

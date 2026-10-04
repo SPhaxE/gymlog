@@ -1,0 +1,35 @@
+/* 交互态的唯一来源（DESIGN §9.1）。组件给可点元素加 milo-press，给可聚焦元素加 milo-focus。
+   按下：缩放 motion/press-scale + currentColor 叠色 opacity/press；聚焦：骨白描边环；禁用：opacity/disabled，不响应按下。
+   触屏优先，没有悬停态。 */
+.milo-press {
+  --press-tint: color-mix(in srgb, currentColor calc(var(--milo-opacity-press) * 100%), transparent);
+  cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none;
+  transition: transform var(--milo-motion-press) var(--milo-motion-ease-standard), background-color var(--milo-motion-fast) var(--milo-motion-ease-standard),
+    color var(--milo-motion-fast) var(--milo-motion-ease-standard), opacity var(--milo-motion-fast) var(--milo-motion-ease-standard);
+}
+.milo-press:active:not(:disabled, [aria-disabled='true']), .milo-press[data-pressed] {
+  transform: scale(var(--milo-motion-press-scale));
+  background-image: linear-gradient(var(--press-tint), var(--press-tint));
+}
+.milo-focus:focus { outline: none; }
+.milo-focus:focus-visible, .milo-focus[data-focus] {
+  outline: var(--milo-stroke-focus) solid var(--milo-color-control-selected); outline-offset: var(--milo-space-2xs);
+}
+.milo-press:disabled, .milo-press[aria-disabled='true'], .milo-disabled { opacity: var(--milo-opacity-disabled); cursor: not-allowed; }
+
+/* 加载中：三点依次亮起（motion/stagger 错开） */
+.milo-dots { display: inline-flex; gap: var(--milo-space-xs); align-items: center; }
+.milo-dots i { width: var(--milo-space-s); height: var(--milo-space-s); border-radius: var(--milo-radius-pill); background: currentColor;
+  animation: milo-dot calc(var(--milo-motion-slow) * 2) var(--milo-motion-ease-standard) infinite; }
+.milo-dots i:nth-child(2) { animation-delay: var(--milo-motion-stagger); }
+.milo-dots i:nth-child(3) { animation-delay: calc(var(--milo-motion-stagger) * 2); }
+@keyframes milo-dot { 0%, 100% { opacity: var(--milo-opacity-disabled); } 50% { opacity: 1; } }
+
+/* 视觉上隐藏、读屏可读 */
+.milo-sr { position: absolute; width: var(--milo-stroke-hairline); height: var(--milo-stroke-hairline); overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  .milo-press { transition: none; }
+  .milo-press:active:not(:disabled), .milo-press[data-pressed] { transform: none; }
+  .milo-dots i { animation: none; opacity: 1; }
+}

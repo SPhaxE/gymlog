@@ -26,3 +26,6 @@
 .focus .val b { font-size: var(--milo-font-size-l); }
 .focus .val i { font-style: normal; font-family: var(--milo-font-ui); font-size: var(--milo-font-size-caption); }
 .l2 { position: relative; margin-top: var(--milo-space-2xs); font-size: var(--milo-font-size-caption); font-weight: 700; color: var(--milo-color-text-on-accent-secondary); white-space: nowrap; }
+/* 超过最大可恢复量：量尺填满并加斜纹（与人体图「超量」同源），不只靠长度 */
+.gaugeOver { background: repeating-linear-gradient(135deg, var(--milo-color-data-gauge) 0 var(--milo-stroke-ring-progress), var(--milo-color-bg-raised-2) var(--milo-stroke-ring-progress) calc(var(--milo-stroke-ring-progress) * 1.5)); }
+.standalone { position: relative; left: auto !important; top: auto !important; }

@@ -29,8 +29,11 @@ export function IncrementRuler({ last, next, step }: { last: number; next: numbe
     <div className={s.inc} role="img" aria-label={`上次 ${fmt(last)} kg，这次 ${fmt(next)} kg`}>
       <div className={s.ticks}>{Array.from({ length: n + 1 }, (_, i) => <i key={i} className={i % 2 ? undefined : s.major} />)}</div>
       <div className={s.span} style={{ left: x(a), width: `calc(${x(b)} - ${x(a)})` }} />
-      <div className={s.at} style={{ left: x(last) }}><span>上次 {fmt(last)}</span></div>
-      <div className={`${s.at} ${s.next}`} style={{ left: x(next) }}><span>{diff > 0 ? '+' : diff < 0 ? '−' : '±'}{fmt(Math.abs(diff))} kg</span></div>
+      {diff === 0 ? <div className={`${s.at} ${s.next}`} style={{ left: x(next) }}><span>重量不变 · {fmt(next)}</span></div> : <>
+        {/* 两个标注向外推：左边那个右对齐、右边那个左对齐，差一个步进时也不重叠 */}
+        <div className={`${s.at} ${diff > 0 ? s.toLeft : s.toRight}`} style={{ left: x(last) }}><span>上次 {fmt(last)}</span></div>
+        <div className={`${s.at} ${s.next} ${diff > 0 ? s.toRight : s.toLeft}`} style={{ left: x(next) }}><span>{diff > 0 ? '+' : '−'}{fmt(Math.abs(diff))} kg</span></div>
+      </>}
     </div>
   );
 }

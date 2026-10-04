@@ -73,13 +73,14 @@ export function CapsuleRail({ ids, stats, anchors, width, height, left, right, m
   );
 }
 
-function Capsule({ h, c, top }: { h: HeadStat; c: CapBox; top: number }) {
+/** 单个胶囊。在轨道里由 CapsuleRail 定位；standalone 时按自身宽高排在文档流里（Playground、说明页） */
+export function Capsule({ h, c, top = 0, standalone }: { h: HeadStat; c: CapBox; top?: number; standalone?: boolean }) {
   const none = !(h.sets7d > 0);
   const fill = Math.min(1, h.sets7d / h.mrv) * 100;
   return (
-    <div className={c.focus ? s.focus : none ? s.none : s.cap} data-id={h.id} role="option" aria-selected={c.focus}
+    <div className={`${c.focus ? s.focus : none ? s.none : s.cap} ${standalone ? s.standalone : ''}`} data-id={h.id} role="option" aria-selected={c.focus}
       style={{ left: c.x, top: top + c.y, width: c.w, height: c.h, ['--w' as string]: c.weight }}>
-      {!c.focus && !none && <div className={s.gauge} style={{ width: `${fill}%` }} />}
+      {!c.focus && !none && <div className={`${s.gauge} ${h.sets7d > h.mrv ? s.gaugeOver : ''}`} style={{ width: `${fill}%` }} />}
       <div className={s.l1}>
         <span className={s.name}>{h.name}</span>
         <span className={s.val}><b>{fmt(h.sets7d)}</b>/{h.mav}{c.focus && <i> 组</i>}</span>

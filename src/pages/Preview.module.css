@@ -24,8 +24,4 @@
 .navBox { position: absolute; left: calc(var(--milo-size-gutter) / 2); right: calc(var(--milo-size-gutter) / 2); bottom: calc(var(--milo-size-nav-bottom) / 2); height: calc(var(--milo-size-nav-bar-h) / 2);
   border-radius: var(--milo-radius-pill); background: var(--milo-color-nav-pill); color: var(--milo-color-nav-pill-ink); display: grid; place-items: center; text-align: center; padding: 0 var(--milo-space-s); }
 .rules { margin: 0; padding-left: var(--milo-space-l); display: grid; gap: var(--milo-space-xs); color: var(--milo-color-text-secondary); max-width: calc(var(--milo-size-content-max-w)); }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--milo-size-screen-w) - var(--milo-size-gutter) * 2), 1fr)); gap: var(--milo-space-l); }
-.row { display: flex; align-items: center; justify-content: space-between; gap: var(--milo-space-s); flex-wrap: wrap; }
-.rail { position: relative; }
-.navs { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--milo-size-screen-w), 1fr)); gap: var(--milo-space-s); }
-.navSlot { position: relative; height: calc(var(--milo-size-nav-bar-h) + var(--milo-size-nav-bottom) * 2); }
+.link { color: var(--milo-color-text-primary); }

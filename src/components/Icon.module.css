@@ -1,0 +1,2 @@
+.icon { width: var(--milo-size-icon); height: var(--milo-size-icon); flex: none; }
+.small { width: var(--milo-size-icon-s); height: var(--milo-size-icon-s); flex: none; }

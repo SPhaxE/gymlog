@@ -18,3 +18,5 @@
   font-family: var(--milo-font-number); font-weight: 600; font-size: var(--milo-font-size-caption); color: var(--milo-color-text-secondary); }
 .next { border-left-color: var(--milo-color-control-selected); }
 .next span { color: var(--milo-color-text-primary); font-size: var(--milo-font-size-body); font-weight: 700; }
+.toLeft span { transform: translateX(calc(-100% - var(--milo-space-xs))); }
+.toRight span { transform: translateX(var(--milo-space-xs)); }

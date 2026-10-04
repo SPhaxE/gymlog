@@ -1,0 +1,76 @@
+/** 图表（DESIGN §5）：Sparkline（P09 列表行的趋势小线）、TrendChart（P10 动作进步曲线）。
+ *  时间一律按正序画（旧 → 新），组件内部再排一次（ia §1.9：V1 把倒序当正序，进步画成了退步）。
+ *  PR 点同时用形状（菱形）区分，不只靠颜色。 */
+import { useLayoutEffect, useRef, useState } from 'react';
+import { T } from '../styles/tokens.gen';
+import { cx } from './state';
+import s from './charts.module.css';
+
+export interface Point { t: number; v: number; pr?: boolean; label?: string }
+const asc = (ps: Point[]) => [...ps].sort((a, b) => a.t - b.t);
+const fmt = (x: number) => (Math.round(x * 10) / 10).toLocaleString('en-US');
+
+function scale(ps: Point[], w: number, h: number, pad: number) {
+  const vs = ps.map((p) => p.v), lo = Math.min(...vs), hi = Math.max(...vs), span = hi - lo || 1;
+  const t0 = ps[0].t, t1 = ps.at(-1)!.t, ts = t1 - t0 || 1;
+  return (p: Point): [number, number] => [ps.length === 1 ? w / 2 : pad + ((p.t - t0) / ts) * (w - pad * 2), pad + (1 - (p.v - lo) / span) * (h - pad * 2)];
+}
+const diamond = (x: number, y: number, r: number) => `M${x},${y - r * 1.4} L${x + r * 1.4},${y} L${x},${y + r * 1.4} L${x - r * 1.4},${y} Z`;
+
+export function Sparkline({ points, label }: { points: Point[]; label: string }) {
+  const ps = asc(points), w = T['size/spark-w'], h = T['size/spark-h'], r = T['stroke/ring-progress'] / 2 + T['stroke/hairline'];
+  if (ps.length < 2) return <svg className={s.spark} viewBox={`0 0 ${w} ${h}`} role="img" aria-label={`${label}：只有 1 次记录`}><line className={s.base} x1={0} x2={w} y1={h / 2} y2={h / 2} /></svg>;
+  const at = scale(ps, w, h, r * 1.6), last = at(ps.at(-1)!);
+  return (
+    <svg className={s.spark} viewBox={`0 0 ${w} ${h}`} role="img" aria-label={`${label}：${fmt(ps[0].v)} → ${fmt(ps.at(-1)!.v)}`}>
+      <polyline className={s.line} points={ps.map((p) => at(p).join(',')).join(' ')} />
+      {ps.map((p, i) => p.pr && i < ps.length - 1 ? <path key={i} className={s.pr} d={diamond(...at(p), r * 0.8)} /> : null)}
+      {ps.at(-1)!.pr ? <path className={s.pr} d={diamond(...last, r)} /> : <circle className={s.last} cx={last[0]} cy={last[1]} r={r} />}
+    </svg>
+  );
+}
+
+/** 动作进步曲线：预估 1RM 对日期。点一下（或方向键）选中一次训练，顶部读数显示当次数值。少于 2 次不画线 */
+export function TrendChart({ points, selected, onSelect, unit = 'kg' }: { points: Point[]; selected?: number | null; onSelect?: (i: number) => void; unit?: string }) {
+  const box = useRef<HTMLDivElement>(null);
+  const [w, setW] = useState(T['size/screen-w'] - T['size/gutter'] * 2);
+  useLayoutEffect(() => {
+    const el = box.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => el.clientWidth && setW(el.clientWidth));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const ps = asc(points), h = T['size/chart-h'], r = T['size/chart-dot'], pad = T['space/l'];
+  if (!ps.length) return <div className={s.empty}>还没有这个动作的记录</div>;
+  // 右侧留一条刻度标注栏（space/3xl），数据点不和标注重叠
+  const gut = T['space/3xl'], at = scale(ps, w - gut, h, pad), xy = ps.map(at);
+  const vs = ps.map((p) => p.v), lo = Math.min(...vs), hi = Math.max(...vs);
+  const grid = ps.length > 1 && hi > lo ? [hi, (hi + lo) / 2, lo] : [ps[0].v];
+  const sel = selected != null && ps[selected] ? selected : null;
+  const key = (e: React.KeyboardEvent) => {
+    if (!onSelect) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); onSelect(Math.min(ps.length - 1, (sel ?? -1) + 1)); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); onSelect(Math.max(0, (sel ?? ps.length) - 1)); }
+  };
+  return (
+    <div ref={box} className={s.chart}>
+      <div className={s.readout} aria-live="polite">
+        {sel != null ? <><b className="milo-text-number-m">{fmt(ps[sel].v)}</b><i>{unit}</i><span className="milo-text-caption">{ps[sel].label}{ps[sel].pr ? ' · PR' : ''}</span></>
+          : <span className="milo-text-caption">{ps.length > 1 ? '点一个点查看当次' : '再练一次就能看到趋势'}</span>}
+      </div>
+      <svg className={cx('milo-focus', s.plot)} width={w} height={h} tabIndex={onSelect ? 0 : -1} onKeyDown={key} role="img"
+        aria-label={`预估 1RM，共 ${ps.length} 次：${fmt(ps[0].v)} 到 ${fmt(ps.at(-1)!.v)} ${unit}`}>
+        {grid.map((v) => { const y = at({ t: ps[0].t, v })[1]; return <g key={v}><line className={s.grid} x1={0} x2={w - gut + T['space/xs']} y1={y} y2={y} /><text className={s.axis} x={w} y={y + T['space/xs']}>{fmt(v)}</text></g>; })}
+        {sel != null && <line className={s.rule} x1={xy[sel][0]} x2={xy[sel][0]} y1={0} y2={h} />}
+        {ps.length > 1 && <polyline className={s.trend} points={xy.map((p) => p.join(',')).join(' ')} />}
+        {ps.map((p, i) => p.pr ? <path key={i} className={cx(s.prDot, i === sel && s.on)} d={diamond(...xy[i], r)} /> : <circle key={i} className={cx(s.dot, i === sel && s.on)} cx={xy[i][0]} cy={xy[i][1]} r={r} />)}
+        {onSelect && ps.map((_, i) => {
+          const x0 = i === 0 ? 0 : (xy[i - 1][0] + xy[i][0]) / 2, x1 = i === ps.length - 1 ? w - gut : (xy[i][0] + xy[i + 1][0]) / 2;
+          return <rect key={i} className={s.hit} x={x0} y={0} width={x1 - x0} height={h} onClick={() => onSelect(i)} />;
+        })}
+      </svg>
+      <div className={cx('milo-text-micro', s.dates)}><span>{ps[0].label}</span>{ps.length > 1 && <span>{ps.at(-1)!.label}</span>}</div>
+    </div>
+  );
+}

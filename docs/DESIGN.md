@@ -2,7 +2,8 @@
 
 > 2026-10-04 · **规范 v2**，取代阶段 4 的 v1。来源：用户选定的线框（`ia.md` §6）、54 张参考图提炼出的视觉语言 v2（`design/hifi/refs-analysis.md`），以及用户确认过视觉的身体页、首页代码定稿。
 > **数值的唯一源头是 `design/tokens/tokens.json`。** 本文只写使用规则。
-> **规范的实物是 `/preview`**（`src/pages/Preview.tsx`）：每个 Token、文字样式和组件状态都在那一页渲染。阶段 6 每页开工前先对照它。
+> **规范的实物有两页**：`/preview`（`src/pages/Preview.tsx`）放基础规范——颜色、文字、间距、圆角、版式；`/playground`（`src/pages/Playground.tsx`，目录在 `src/playground/catalog.tsx`）放**全部组件 × 全部交互态**和交互演示。阶段 6 每页开工前先对照这两页。
+> 2026-10-04 用户决定：**Figma 暂缓**，组件与交互态以代码和 `/playground` 为准（§11）。
 
 ## 0. 流程与门禁
 
@@ -13,8 +14,8 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 ```
 
 - 改值只改 `tokens.json`，再跑 `python3 scripts/build_tokens.py`。`contrast` 里列出的每一对颜色都要达标，否则不生成。
-- `src/pages`、`src/components` 里**不许出现散落的颜色和尺寸**：不写 `#hex`、`rgb()`、`px`、`ms` 字面量（`npm run check:hardcoded`，CI 必过）。JS 里的尺寸和时长只从 `tokens.gen.ts` 的 `T` 取。
-- 新组件先进 `src/components` 和 `/preview`，再写进本文 §9，最后才能在页面里用。页面只拼组件，不自造样式。
+- `src/pages`、`src/components`、`src/playground`、`src/shell` 里**不许出现散落的颜色和尺寸**：不写 `#hex`、`rgb()`、`px`、`ms` 字面量（`npm run check:hardcoded`，CI 必过）。JS 里的尺寸和时长只从 `tokens.gen.ts` 的 `T` 取。唯一例外是 `@media` 断点（CSS 不允许变量），字面量必须等于某个 `size/bp-*`，检查脚本核对。
+- 新组件的顺序：写进 `src/components` 并从 `index.ts` 导出 → 在 `catalog.tsx` 登记全部变体轴（`catalog.test` 会拦下漏登记的导出）→ 写进本文 §9 → 才能在页面里用。页面只从 `../components` 取组件，不自造样式。
 
 ## 1. 颜色：暖黑 + 骨白 + 荧光
 
@@ -143,6 +144,11 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 
 每个视效都要有「减少动画」降级（`references.md` §9.2）。训练页不放持续动画、光晕和噪点。
 
+阶段 5 补充：
+- 导航选中滑块切换 `motion/base`；对话框淡入 + 由 `motion/press-scale` 放大到 1，`motion/base`；轻提示从下方 `space/l` 滑入，停留 `motion/toast-hold`（带「撤销」的加倍）。
+- 组间休息倒计时按**结束时间戳**每 `motion/base` 刷新一次，不累加定时器。
+- 减少动态效果时：按下不缩放、导航滑块直接到位、骨架与示范占位不闪、对话框与轻提示不做入场动画。
+
 ## 8. 禁止项
 
 - 编造的英文或中文「技术标签」：OVERLOAD ENG.、NEXT TARGET、SEQ // 01、CALIB-24 之类。界面文案保持中性、克制。
@@ -152,45 +158,112 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 - 人体越过页面边距（§4）。
 - 照抄参考图或生成图里的数字，口径只看 brief / ia；页面上的数字只来自引擎。
 
-## 9. 组件目录（`src/components`，`/preview` 里有每个组件的状态）
+## 9. 组件与交互态（`src/components` → `/playground`）
 
-| 组件 | 结构与尺寸 | 状态 / 用法 |
-|---|---|---|
-| `Screen` | 屏幕框：全出血背景、`content-max-w`、安全区、`--nav-clear` | 每个页面最外层 |
-| `PageHeader` | eyebrow（Caption）+ 标题（Title/L）+ 右侧附件 + 下方插槽 | Tab 根页的页头；子页用返回栏（M3 补） |
-| `Nav` | §6 | progress：null / 0 / 0–1 / 1；rest + restRatio |
-| `Segmented` | 高 `segment-h`，命中区外扩到 `hit-min`；选中项骨白 | 正面 / 背面、男 / 女 |
-| `Button` | 高 `button-h`，`radius/pill`；`primary` 荧光 / `neutral` 骨白 / `ghost` 描边 | 每屏最多一个 primary |
-| `Tag` | Caption，`radius/xs`，`bg/raised` 描边 | 摘要标签、「首次」 |
-| `StatusStrip` | 左侧骨白竖条，标题 Body/Strong + 说明 Caption；`quiet` 为一行小字 | 减量建议、减量周、动作池不足、空态说明 |
-| `Card` | `radius/l`，内边距 `space/l`；`hero` 带径向渐变深度 | 首页主角卡、恢复日 |
-| `List` / `ListRow` | 行高 ≥ `hit-min`，行间刻度分隔线；右侧放 `Num` 或 `Tag` | 「接下来」、记录、设置 |
-| `SectionLabel` | Label，`text/secondary` | 区块标题 |
-| `Num` | §2「数字 + 单位」 | 所有数字 |
-| `Ticks` | §5 | 页头 KPI 下的分隔线 |
-| `TierLegend` | §5 | 身体页 |
-| `BodyFigure` | §4 人体半身 | gender 男 / 女 × view 正面 / 背面；焦点肌头荧光描边 |
-| `CapsuleRail` | 胶囊高：静止 ≤ `capsule-rest-max-h`（均分轨道）、邻居 → `capsule-near-h`、中心 `capsule-focus-h`；中心向左伸出 `capsule-focus-grow`、邻居 `capsule-near-grow`；间距 `capsule-gap`；引线拐点 `leader-elbow` + 错开 `leader-stagger` | 静止 / 0 组 / 邻居 / 中心；按住、滑动、松手打开详情；几何在 `capsuleLayout.ts`（有单测） |
-| `Sheet` / `SheetBlock` | `bg/sheet`，顶角 `radius/xl`，抓手，关闭钮 `button-h-s`；块 `radius/m` | 肌头详情（恢复在上、容量在下）、减量面板 |
-| `PhaseSegments`、`LandmarkRuler`、`IncrementRuler` | §5 | 详情面板、首页主角卡 |
+`/playground` 是这一节的实物：43 个组件、311 个变体，每个变体是 `catalog.tsx` 里各轴取值的组合。下面的表只写用法；尺寸都在 Token 里，状态在 Playground 里看。
+
+### 9.1 交互态（所有可点的件共用 `interactive.css`）
+
+| 状态 | 代码里 | 样式 | Playground |
+|---|---|---|---|
+| 默认 | — | — | 默认 |
+| 按下 | `:active` | 缩放 `motion/press-scale` + 当前文字色叠一层 `opacity/press` | `state="pressed"` → `data-pressed` |
+| 聚焦 | `:focus-visible` | 骨白描边环 `stroke/focus`，外移 `space/2xs`（键盘、读屏、外接键盘时才出现） | `state="focused"` → `data-focus` |
+| 禁用 | `disabled` / `aria-disabled` | 整体 `opacity/disabled`，不响应按下；要在旁边说明为什么不能点 | 禁用 |
+| 加载 | `aria-busy` | 文字隐去、三点依次亮起（`motion/stagger`），宽度不变，不能重复点 | 加载中 |
+| 错误 | `aria-invalid` | 描边与提示 `feedback/danger` + 警示图标（不只靠颜色），提示经 `aria-describedby` 读出 | 错误 |
+
+- 触屏优先，**没有悬停态**。
+- 命中区不小于 `size/hit-min`：视觉更小的件（分段、Chip、开关、图标按钮、周历）用 `::after` 把命中区外扩。
+- 选中一律骨白（`control/selected`），**荧光只给每屏唯一的行动焦点和进度**（主按钮、焦点胶囊、时相当前段、导航外圈）。
+
+### 9.2 数据态（每个页面都要覆盖，ia 各页「边界情况」）
+
+| 数据态 | 组件 | 规则 | 示例 |
+|---|---|---|---|
+| 加载中 | `StateView kind="loading"` / `Skeleton` | 骨架与真实内容同尺寸，不跳动 | `/patterns/loading` |
+| 空 | `StateView kind="empty"` | 说明为什么空 + 一个去下一步的主按钮 | `/patterns/empty`；身体页空态是一行小字 |
+| 错误 | `StateView kind="error"` / `Banner tone="error"` / `Toast kind="error"` | 说清楚数据有没有丢，给「重试」；保存失败必须可见，不静默回退 | `/patterns/error` |
+| 部分数据 | 页面就地处理 | 缺的行隐藏，不显示 0；只有 1 次记录写「基线」，少于 2 次不画线 | `TrendChart`、`Delta` |
+
+### 9.3 悬浮层与返回键
+
+- `Dialog`、`Toast` 渲染到壳的悬浮层宿主（`OverlayHost`），和 `Screen` 同一个框；Playground 的每块迷你屏幕各有自己的宿主。
+- `Dialog`、`Sheet` 打开时焦点进入、Tab 在层内循环、Esc 关闭、关闭后焦点回到打开前的位置。
+- Android 返回键（`src/shell/back.ts`，有单测）：先关最上面的悬浮层 → 非首页的 Tab 根页回首页 → 首页退出 App → 其余子页返回上一页。
+
+### 9.4 组件目录
+
+| 组 | 组件 | 变体轴（`/playground`） | 用法 |
+|---|---|---|---|
+| 基础 | `Icon` | 26 个图标 | 24×24 实心几何，`size/icon` / `size/icon-s`；装饰性 |
+| | `Button` | kind 主操作 / 中性 / 描边 / 危险 × size 大 / 小 × 5 种交互态 | 每屏最多一个 primary；危险只用于删除、清除 |
+| | `IconButton` | 实底 / 无底 × 4 种交互态 | 必须有 `label` |
+| | `Tag` | 信息 / 强调（只给 PR）/ 虚线（首次、基线、未做）/ 错误 | |
+| | `Num`、`Delta` | 6 档字号；上升 / 下降 / 持平 / 基线 | 方向用形状 + 文字 |
+| 表单 | `Segmented` | 2 / 3 项 × 4 种交互态 | 方向键切换 |
+| | `Chip` | 选中 × 4 种交互态 | 增量页按部位筛选 |
+| | `Switch` | 开关 × 4 种交互态 | 设置里即时生效的开关 |
+| | `OptionCard`（+ `OptionGroup`） | 单选 / 多选 × 选中 × 4 种交互态 | 建档、设置 |
+| | `Stepper` | 默认 / 到下限 / 到上限 / 聚焦 / 禁用 | 重量、时长、休息 |
+| | `NumberField` | 空 / 聚焦 / 已填 / 错误 / 禁用 | 超范围行内报错，不截断 |
+| | `ProgressSteps` | 第 1–3 步 | 建档 |
+| 反馈与悬浮层 | `Banner` | 建议减量 / 减量周 / 一行小字 / 动作池不足 / 继续上次训练 / 错误 | 页面顶部状态位 |
+| | `Toast`（+ `ToastViewport`） | 成功 / 错误 / 可撤销 | 一次一条，停在导航上方 |
+| | `DialogCard`（+ `Dialog`） | 中性 / 危险 | 只用于二次确认 |
+| | `Sheet` / `SheetBlock` | — | 肌头详情、减量面板；盖住导航 |
+| | `Skeleton`、`StateView` | 5 种形状；加载 / 空 / 错误 | §9.2 |
+| 列表与页头 | `ListRow`（+ `List`） | 只读 / 可进入 / 开关 / 危险 × 4 种交互态 | 开关行整行是 label |
+| | `Card` | 普通 / 主角 × 默认 / 按下 / 聚焦 | 主角卡每屏一张 |
+| | `SectionLabel`、`PageHeader`、`TopBar` | —；普通 / 带日期与附件；子页 / 训练中 | Tab 根页用 `PageHeader`，没有 Tab 的子页用 `TopBar` |
+| 训练与记录 | `PrescriptionHero` | 加重 / 保持 / 减重 / 首次 / 减量周 | 首页第一个动作 |
+| | `ExerciseRow` | 待做 / 首次 / 进行中 / 已完成 / 未做 × 3 种交互态 | 处方、训练中 |
+| | `SetRow` | 待做 / 进行中 / 缺值 / 已完成 / 修改中 / 错误 / 热身组 / 递减组 | 「完成」是唯一入口 |
+| | `RestBar` | 计时中 / 即将结束 / 结束 | 结束时间戳；±15、跳过 |
+| | `SessionRow` | 普通 / 有 PR / 减量周 × 3 种交互态 | 记录列表 |
+| | `DayCell`、`WeekStrip` | 已练 / 已练 · PR / 休息 / 今天 / 未来 × 默认 / 选中 / 按下 / 聚焦 | 记录页顶部 |
+| | `MediaFrame` | 加载中 / 已加载 / 缺素材 / 加载失败 | 只经 `media` 字段引用，保留署名 |
+| 数据图形 | `Sparkline`、`TrendChart` | 上升 / 下降 / 只有 1 次；多次 / 选中一次 / 只有 1 次 / 没有记录 | 时间按正序画（有单测）；PR 用菱形 |
+| | `IncrementRuler`、`LandmarkRuler`、`PhaseSegments`、`Ticks`、`TierLegend` | 加重 / 保持 / 减重；未练 / 不足 / 达标 / 超量；四个时相 | §5 |
+| 身体 | `Capsule` | 未练 / 不足 / 达标 / 超量 × 静止 / 邻近 / 焦点 | 胶囊即量尺；超量加斜纹 |
+| | `CapsuleRail` | 静止 / 焦点；交互演示里是整张身体页 | 几何在 `capsuleLayout.ts`（有单测） |
+| | `BodyFigure` | 正面 / 背面 × 男 / 女 | §4 半身 |
+| 导航 | `Nav` | 选中 5 项 × 外圈（不画环 / 只有轨道 / 进行中 / 满环 / 休息）+ 未选中项的按下 / 聚焦 | §6；选中滑块切换时滑动 |
+
+不进矩阵的导出：`Screen`（页面框，见 `/preview` §4）、`OptionGroup`、`ToastViewport`、`Dialog`（都在交互演示里）、`StatusStrip`（`Banner` 的旧名，已弃用）。
 
 **页面骨架**：
 - Tab 根页：`Screen` → `PageHeader` → 内容（左右 gutter、可滚动）→（固定主按钮）→ `Nav`。
-- 训练、结算等任务流页面没有 `Nav`。
-- 底部面板盖在最上层。
+- 训练、结算等任务流页面：`Screen` → `TopBar` → 内容，没有 `Nav`；组间休息条悬浮在底部。
+- 底部面板与对话框盖在最上层。
+
+### 9.5 App 壳（`src/shell`）
+
+| 路由 | 页面 |
+|---|---|
+| `/today` · `/body` · `/gains` · `/log` · `/me` | 5 个 Tab 根页；增量、记录、我的在阶段 6 搭，现在是说明占位 |
+| `/patterns/loading` · `empty` · `error` | 页面级数据态示例 |
+| `/playground` · `/preview` | 组件与交互态；基础规范 |
+| `/check` | M1 的管线检查 |
+| `/explore/*` | 旧地址，重定向到 `/today`、`/body` |
+
+Tab 之间切换走路由，不整页刷新；`?scenario=` 选演示场景，`?now=` 固定时间（截图用）。
 
 ## 10. 自检
 
 ```bash
 python3 scripts/build_tokens.py --check   # 对比度与引用
 python3 scripts/build_tokens.py           # 生成 CSS、TS 常量与 Figma 插件
-npm run check:hardcoded                   # src/pages、src/components 里没有散落的颜色与尺寸
-npm test                                  # 含胶囊列几何的单测
-npx vite --port 5199 & python3 scripts/shoot_hifi.py   # 身体页、首页 8 个状态 + /preview 整页截图
+npm run check:hardcoded                   # src/pages、components、playground、shell 里没有散落的颜色与尺寸
+npm test                                  # 含目录覆盖（每个导出 × 每个变体能渲染、交互态落到 DOM）、胶囊几何、曲线正序、返回键
+npx vite --port 5199 &
+python3 scripts/shoot_playground.py       # 阶段 5 运行时门禁：变体数一致、记组 / 导航 / 对话框交互、5 个 Tab 无横向溢出 + 截图
+python3 scripts/shoot_hifi.py             # 身体页、首页 8 个状态 + /preview 整页截图
 node scripts/test_figma_plugin.cjs        # Figma 插件 mock 测试（62 项）
 ```
 
 ## 11. Figma 的同步状态
 
-- **Foundations**（变量、文字样式、效果）：由 `tokens.json` 自动生成，已经是 v2：骨白、Barlow Condensed、新增的版式与组件尺寸。
-- **Components 与标杆页**：插件里仍是 v1（3 项 `NavPill`、旧胶囊）。标【旧版，仅 Figma 旧组件用】的 Token 只给它们用。下一步按本文 §9 和 `/preview` 重画 Figma 组件，完成后删掉这些旧 Token。在那之前，组件以代码和 `/preview` 为准。
+- **2026-10-04 用户决定：Figma 暂缓。** 组件与交互态以代码和 `/playground` 为准，不再要求 Figma 组件与代码一一对应后才能进阶段 6。
+- **Foundations**（变量、文字样式、效果）：仍由 `tokens.json` 自动生成插件，已经是 v2。
+- **Components 与标杆页**：插件里停在 v1（3 项 `NavPill`、旧胶囊），不再维护。标【旧版，仅 Figma 旧组件用】的 Token 先保留（插件测试还在用），以后恢复 Figma 时按 §9 重画并删掉它们。

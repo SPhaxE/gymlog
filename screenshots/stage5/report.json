@@ -1,0 +1,120 @@
+{
+  "now": 1791050400000,
+  "variants": 311,
+  "components": 43,
+  "checks": [
+    {
+      "ok": true,
+      "check": "变体数：页面 311 = 目录 311"
+    },
+    {
+      "ok": true,
+      "check": "变体键不重复"
+    },
+    {
+      "ok": true,
+      "check": "按下 / 聚焦态已强制显示"
+    },
+    {
+      "ok": true,
+      "check": "记组：完成一组后自动开始组间休息"
+    },
+    {
+      "ok": true,
+      "check": "休息 +15 秒生效"
+    },
+    {
+      "ok": true,
+      "check": "记组：超范围行内报错且「完成」禁用"
+    },
+    {
+      "ok": true,
+      "check": "导航：点「身体」后当前页移到身体"
+    },
+    {
+      "ok": true,
+      "check": "导航：休息时选中项读出剩余时间"
+    },
+    {
+      "ok": true,
+      "check": "对话框打开"
+    },
+    {
+      "ok": true,
+      "check": "对话框：Esc 关闭"
+    },
+    {
+      "ok": true,
+      "check": "对话框：关闭后焦点回到「删除训练」"
+    },
+    {
+      "ok": true,
+      "check": "/today：无横向溢出（360）"
+    },
+    {
+      "ok": true,
+      "check": "/today：有主导航"
+    },
+    {
+      "ok": true,
+      "check": "/body：无横向溢出（360）"
+    },
+    {
+      "ok": true,
+      "check": "/body：有主导航"
+    },
+    {
+      "ok": true,
+      "check": "/gains：无横向溢出（360）"
+    },
+    {
+      "ok": true,
+      "check": "/gains：有主导航"
+    },
+    {
+      "ok": true,
+      "check": "/log：无横向溢出（360）"
+    },
+    {
+      "ok": true,
+      "check": "/log：有主导航"
+    },
+    {
+      "ok": true,
+      "check": "/me：无横向溢出（360）"
+    },
+    {
+      "ok": true,
+      "check": "/me：有主导航"
+    },
+    {
+      "ok": true,
+      "check": "/patterns/loading：无横向溢出（360）"
+    },
+    {
+      "ok": true,
+      "check": "/patterns/loading：有主导航"
+    },
+    {
+      "ok": true,
+      "check": "/patterns/empty：无横向溢出（360）"
+    },
+    {
+      "ok": true,
+      "check": "/patterns/empty：有主导航"
+    },
+    {
+      "ok": true,
+      "check": "/patterns/error：无横向溢出（360）"
+    },
+    {
+      "ok": true,
+      "check": "/patterns/error：有主导航"
+    },
+    {
+      "ok": true,
+      "check": "Tab 切换走路由，不整页刷新"
+    }
+  ],
+  "errors": []
+}

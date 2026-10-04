@@ -1,14 +1,43 @@
-/** 导航与界面图标：24×24 实心几何，颜色跟随 currentColor */
-const PATHS: Record<string, string> = {
+/** 图标：24×24 实心几何，颜色跟随 currentColor；默认 size/icon，small 为 size/icon-s。装饰性（aria-hidden），含义由旁边的文字或 aria-label 给出。 */
+import s from './Icon.module.css';
+
+const PATHS = {
+  // 导航
   home: 'M4 11.2 12 4l8 7.2V20h-5.2v-5.4H9.2V20H4z',
   body: 'M12 2.6a2.6 2.6 0 1 1 0 5.2 2.6 2.6 0 0 1 0-5.2zM6.4 9h11.2l-.6 2.2-3.2 1V16l1.6 6h-2.3L12 17.2 10.9 22H8.6l1.6-6v-3.8l-3.2-1z',
   gains: 'M3 18.5 9.2 12l3.6 3.6L19 9.3V13h2V6h-7v2h3.6l-4.8 4.8L9.2 9.2 1.6 17.1z',
   log: 'M5 3h14v18H5zm3 4v2h8V7zm0 4v2h8v-2zm0 4v2h5v-2z',
   me: 'M12 3.2a4.2 4.2 0 1 1 0 8.4 4.2 4.2 0 0 1 0-8.4zM4 20.5c.6-4 3.8-6.6 8-6.6s7.4 2.6 8 6.6z',
+  // 操作
   close: 'M6.4 5 12 10.6 17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4z',
-};
+  back: 'M14.6 5 16 6.4 10.4 12l5.6 5.6-1.4 1.4-7-7z',
+  chevron: 'M9.4 5 8 6.4 13.6 12 8 17.6 9.4 19l7-7z',
+  plus: 'M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z',
+  minus: 'M5 11h14v2H5z',
+  check: 'M9.5 16.2 5.3 12l-1.4 1.4 5.6 5.6L20.1 8.4 18.7 7z',
+  more: 'M6 10.2a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6zm6 0a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6zm6 0a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6z',
+  edit: 'M4 17.2V20h2.8L17 9.8 14.2 7zM15.6 5.6l2.8 2.8 1.4-1.4a1 1 0 0 0 0-1.4l-1.4-1.4a1 1 0 0 0-1.4 0z',
+  trash: 'M9 3h6l1 1.5h4v2H4v-2h4zM6 8h12l-1 13H7z',
+  timer: 'M9 1.5h6v2H9zM12 5a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-1 3.5V13h2V8.5z',
+  skip: 'M4 6v12l8.5-6zM12.5 6v12l8.5-6z',
+  play: 'M8 5v14l11-7z',
+  refresh: 'M12 4a8 8 0 0 1 6.9 4H16v2h6V4h-2v2.4A10 10 0 1 0 22 12h-2a8 8 0 1 1-8-8z',
+  calendar: 'M7 2h2v2h6V2h2v2h3v17H4V4h3zM6 9v10h12V9z',
+  // 状态
+  info: 'M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18zm-1 7v7h2v-7zm0-4v2h2V6z',
+  alert: 'M12 3 22.4 20.5H1.6zm-1 6v6h2V9zm0 7.5v2h2v-2z',
+  up: 'M12 6l7 11H5z',
+  down: 'M12 18 5 7h14z',
+  flat: 'M5 8.5h14v2.5H5zm0 4.5h14v2.5H5z',
+  star: 'M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.3L12 17.1l-5.7 3.1 1.2-6.3L2.8 9.5l6.4-.8z',
+} as const;
 export type IconName = keyof typeof PATHS;
+export const ICONS = Object.keys(PATHS) as IconName[];
 
-export function Icon({ name, className }: { name: IconName; className?: string }) {
-  return <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d={PATHS[name]} fillRule="evenodd" /></svg>;
+export function Icon({ name, small, className }: { name: IconName; small?: boolean; className?: string }) {
+  return (
+    <svg className={className ?? (small ? s.small : s.icon)} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
+      <path d={PATHS[name]} fillRule="evenodd" />
+    </svg>
+  );
 }

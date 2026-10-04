@@ -17,7 +17,11 @@
 .item, .on {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--milo-space-2xs); height: var(--milo-size-nav-item-h);
   color: var(--milo-color-nav-ink); text-decoration: none; font-size: var(--milo-font-size-min); line-height: 1; border-radius: var(--milo-radius-pill);
-  transition: background-color var(--milo-motion-fast) var(--milo-motion-ease-standard);
 }
-.on { background: var(--milo-color-nav-pill); color: var(--milo-color-nav-pill-ink); font-weight: 700; margin: 0 var(--milo-space-2xs); }
+.item, .on { position: relative; z-index: 1; background-color: transparent; margin: 0 var(--milo-space-2xs); }
+.on { color: var(--milo-color-nav-pill-ink); font-weight: 700; }
+/* 选中滑块：独立一层，切换时滑过去 */
+.pill { position: absolute; left: 0; top: 0; z-index: 0; border-radius: var(--milo-radius-pill); background: var(--milo-color-nav-pill);
+  transition: transform var(--milo-motion-base) var(--milo-motion-ease-standard), width var(--milo-motion-base) var(--milo-motion-ease-standard); }
+@media (prefers-reduced-motion: reduce) { .pill { transition: none; } }
 .icon { width: var(--milo-size-nav-icon); height: var(--milo-size-nav-icon); }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""高保真代码定稿截图：/explore/* → screenshots/hifi/<页面>/final-<状态>.png（360×800 @2x）。
+"""高保真代码定稿截图：/today、/body → screenshots/hifi/<页面>/final-<状态>.png（360×800 @2x）。
 用法：先 npx vite --port 5199，再 python3 scripts/shoot_hifi.py [--base http://127.0.0.1:5199]
 now 固定为 2026-10-03 18:00（与提示词包、线框同一时刻），截图可复现。"""
 import argparse, os, sys
@@ -8,14 +8,14 @@ from playwright.sync_api import sync_playwright
 
 NOW = int(datetime(2026, 10, 3, 18, 0).timestamp() * 1000)
 SHOTS = [
-    ('body', 'final-mag', '/explore/body?focus=mid-lower-pectoralis'),
-    ('body', 'final-rest', '/explore/body?focus=none'),
-    ('body', 'final-sheet', '/explore/body?focus=none&tap=mid-lower-pectoralis'),
-    ('body', 'final-empty', '/explore/body?scenario=cold-start&focus=none'),
-    ('home', 'final-plan', '/explore/home'),
-    ('home', 'final-deload', '/explore/home?scenario=deload-suggested'),
-    ('home', 'final-rest', '/explore/home?scenario=rest-day'),
-    ('home', 'final-cold', '/explore/home?scenario=cold-start'),
+    ('body', 'final-mag', '/body?focus=mid-lower-pectoralis'),
+    ('body', 'final-rest', '/body'),
+    ('body', 'final-sheet', '/body?tap=mid-lower-pectoralis'),
+    ('body', 'final-empty', '/body?scenario=cold-start'),
+    ('home', 'final-plan', '/today'),
+    ('home', 'final-deload', '/today?scenario=deload-suggested'),
+    ('home', 'final-rest', '/today?scenario=rest-day'),
+    ('home', 'final-cold', '/today?scenario=cold-start'),
 ]
 FULL = [('spec', 'preview', '/preview')]  # 整页长图
 ap = argparse.ArgumentParser()
