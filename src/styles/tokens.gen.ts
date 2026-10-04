@@ -101,5 +101,7 @@ export const T = {
   'motion/magnifier-radius': 3,
   'motion/press-scale': 96,
   'motion/press-overshoot': 100.3,
+  'motion/spring-ms': 420,
+  'motion/spring-soft-ms': 800,
 } as const;
 export type TokenKey = keyof typeof T;

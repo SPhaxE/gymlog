@@ -1,6 +1,8 @@
-/** 图标：24×24 实心几何，颜色跟随 currentColor；默认 size/icon，small 为 size/icon-s。装饰性（aria-hidden），含义由旁边的文字或 aria-label 给出。 */
+/** 图标（2026-10-04 用户选定 I3）：2 号圆头线稿，故意留缺口，整体右倾（iconref2 的动态感）；颜色跟随 currentColor。
+ *  默认 size/icon，small 为 size/icon-s。active：沿路径画出来（导航选中时，配合 Nav 的加载轨迹）。装饰性，含义由文字或 aria-label 给出。
+ *  PATHS 是旧的实心一套，只在 /lab 对照（IconStyleCtx = 'current'）时用。 */
 import { useContext, useId } from 'react';
-import { CUT, GEO, IconStyleCtx } from './iconSets';
+import { CUT, GEO, IconStyleCtx, SLANT } from './iconSets';
 import s from './Icon.module.css';
 
 const PATHS = {
@@ -40,13 +42,13 @@ export function Icon({ name, small, className, active }: { name: IconName; small
   const style = useContext(IconStyleCtx), gid = useId().replace(/[^a-zA-Z0-9-]/g, '');
   const cls = className ?? (small ? s.small : s.icon);
   if (style === 'geo' && GEO[name]) return <svg className={cls} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d={GEO[name]} fillRule="evenodd" /></svg>;
-  if ((style === 'cut' || style === 'trace') && CUT[name]) {
+  if ((style === 'cut' || style === 'trace' || style === 'slant') && CUT[name]) {
     const trace = style === 'trace';
     return (
       <svg className={cls} viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
         {trace && <defs><linearGradient id={gid} x1="0" y1="1" x2="1" y2="0"><stop offset="0" stopColor="currentColor" stopOpacity="0.15" /><stop offset="0.75" stopColor="currentColor" /></linearGradient></defs>}
         <path d={CUT[name]} stroke={trace ? `url(#${gid})` : 'currentColor'} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
-          pathLength={trace ? 1 : undefined} className={trace && active ? s.draw : undefined} />
+          transform={style === 'slant' ? SLANT : undefined} pathLength={active ? 1 : undefined} className={active ? s.draw : undefined} />
       </svg>
     );
   }

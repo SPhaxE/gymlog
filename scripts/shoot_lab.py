@@ -7,8 +7,7 @@ from playwright.sync_api import sync_playwright
 from PIL import Image
 
 NOW = int(datetime(2026, 10, 3, 18, 0).timestamp() * 1000)
-GROUPS = {'A': (['A0', 'A1', 'A2', 'A3', 'A4'], 5), 'T': (['T0', 'T1', 'T2', 'T3', 'T4'], 5), 'I': (['I0', 'I1', 'I2', 'I3'], 1),
-          'R': (['R0', 'R1', 'R2'], 3), 'E': ([f'E{i}' for i in range(1, 9)], 4), 'M': ([f'M0{i}' for i in range(1, 9)], 4)}
+GROUPS = {'A': (['A4', 'T4'], 2), 'I': (['I3', 'R1'], 2), 'E': ([f'E{i}' for i in range(1, 6)], 3), 'M': (['M02', 'M05', 'M06', 'M07', 'M08'], 3)}
 ap = argparse.ArgumentParser()
 ap.add_argument('--base', default='http://127.0.0.1:5199')
 ap.add_argument('--chromium', default=os.environ.get('CHROMIUM', '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'))

@@ -35,6 +35,12 @@ export function fixtures(now: number) {
     return { weekday: WD[d.getDay()], day: d.getDate(), status, pr: done.some((s) => (prs.get(s.id)?.size ?? 0) > 0) };
   });
 
+  // 点阵日历与近 8 周组数（E1 / E3）
+  const trainedDays = new Set(history.map((x) => startOfDay(x.startMs)));
+  const end = startOfDay(now) + DAY;
+  const weekBars = Array.from({ length: 8 }, (_, i) => ({ label: i === 7 ? '本周' : `−${7 - i}`, value: 0, current: i === 7 }));
+  for (const x of history) { const k = Math.floor((end - x.startMs) / (7 * DAY)); if (k >= 0 && k < 8) weekBars[7 - k].value += sessionStats(x).sets; }
+
   // 胶囊四档：从「今天已练完」场景里各挑一个真实肌头
   const heads = [...body.stats.values()];
   const pick = (f: (h: HeadStat) => boolean) => heads.find(f);
@@ -52,7 +58,7 @@ export function fixtures(now: number) {
   type Media = { id: string; name: string; media?: { male?: { front?: string } }; cue?: { summary: string; steps: string[] } };
   const bench = (exercisesJson as Media[]).find((e) => e.id === 'barbell-bench-press-4')!;
   return {
-    now, home, body, items, history, sessions, week, tiers,
+    now, home, body, items, history, sessions, week, tiers, trainedDays, weekBars,
     trends: { normal: trend('barbell-bench-press-4'), falling: trend('barbell-squat-8'), two: trend('machine-face-pulls-22'), one: trend('dumbbell-bulgarian-split-squat-317') },
     media: { src: bench.media?.male?.front ?? null, name: bench.name, cue: bench.cue },
     step: env.cfg.loadStep,

@@ -1,7 +1,7 @@
 /** Playground 的交互演示：真实状态、真实动效（矩阵里是静态展示）。每个演示挂在一个组件小节下面。 */
 import { useState, type ReactNode } from 'react';
 import {
-  Banner, Button, Dialog, ExerciseRow, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, RestBar, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
+  Banner, Button, Cascade, Dialog, ExerciseRow, ExpandOverlay, RestDock, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
   LandmarkRuler, PhaseSegments, Num, Screen, SetRow, clock, useCountdown, useToast, type Tab,
 } from '../components';
 import { BodyPage } from '../pages/BodyPage';
@@ -94,7 +94,7 @@ function SessionInner({ f }: { f: Fixtures }) {
   const w0 = it?.suggestion.weightKg != null ? String(it.suggestion.weightKg) : '';
   const [sets, setSets] = useState<SetState[]>(() => Array.from({ length: it?.sets ?? 3 }, () => ({ weight: w0, reps: String(it?.repRange[1] ?? 8), done: false })));
   const [editing, setEditing] = useState<number | null>(null);
-  const [end, setEnd] = useState<number | null>(null);
+  const [end, setEnd] = useState<number | null>(null), [dockOpen, setDockOpen] = useState(true);
   const left = useCountdown(end);
   const cur = sets.findIndex((x) => !x.done);
   const err = (x: SetState) => { const n = Number(x.weight); return x.weight && (!/^\d+(\.\d+)?$/.test(x.weight) || n > 500) ? '重量范围 0–500 kg' : x.reps && (!/^\d+$/.test(x.reps) || Number(x.reps) < 1 || Number(x.reps) > 100) ? '次数范围 1–100' : undefined; };
@@ -104,7 +104,7 @@ function SessionInner({ f }: { f: Fixtures }) {
     setEditing(null);
     if (editing === i) { toast.show(`已修改第 ${i + 1} 组`); return; }
     const last = sets.filter((x) => !x.done).length === 1;
-    if (last) { setEnd(null); toast.show('这个动作练完了'); } else setEnd(Date.now() + rest * 1000);
+    if (last) { setEnd(null); toast.show('这个动作练完了'); } else { setEnd(Date.now() + rest * 1000); setDockOpen(true); }
   };
   return (
     <Screen label="训练中">
@@ -119,14 +119,14 @@ function SessionInner({ f }: { f: Fixtures }) {
         ))}
         <button type="button" className={s.reset} onClick={() => { setSets((xs) => xs.map((x) => ({ ...x, done: false }))); setEnd(null); }}>重来</button>
       </div>
-      {end != null && <div className={s.restDock}><RestBar remaining={left} total={rest} onAdjust={(d) => setEnd((e) => Math.max(Date.now(), (e ?? Date.now()) + d * 1000))}
-        onSkip={() => setEnd(null)} onDismiss={() => setEnd(null)} /></div>}
+      {end != null && <div className={s.restDock}><RestDock remaining={left} total={rest} open={dockOpen} onToggle={setDockOpen}
+        onAdjust={(d) => setEnd((e) => Math.max(Date.now(), (e ?? Date.now()) + d * 1000))} onSkip={() => { setEnd(null); setDockOpen(false); }} /></div>}
     </Screen>
   );
 }
 export function SessionDemo({ f }: { f: Fixtures }) {
   return <div className={s.demoCol}><Stage tall label="记组演示"><SessionInner f={f} /></Stage>
-    <Note>当前组预填建议值，点「完成」一次就记完；完成后自动开始组间休息（按结束时间戳算，切后台回来仍然准）。把重量改成 620 看行内报错；已完成的组点铅笔修改。</Note></div>;
+    <Note>当前组预填建议值，点「完成」一次就记完；完成后自动开始组间休息（按结束时间戳算，切后台回来仍然准）。休息面板点「收起」缩成小胶囊，再点长回来（M02）。把重量改成 620 看行内报错；已完成的组点铅笔修改。</Note></div>;
 }
 
 /** 导航：点切换（小胶囊滑过去）；+1 组推进外圈；开始休息后小胶囊出现虚线描边与剩余时间 */
@@ -146,7 +146,7 @@ function NavInner() {
         </div>
         <Note>外圈 = 今日训练 {done} / 14 组（实线，从顶边正中顺时针）；休息中选中项写剩余时间，虚线描边按剩余比例收短。</Note>
       </div>
-      <Nav selected={tab} onSelect={(t) => setTab(t)} progress={done / 14} rest={resting ? clock(left) : undefined} restRatio={resting ? left / total : undefined} />
+      <Nav selected={tab} onSelect={(t) => setTab(t)} progress={done / 14} started rest={resting ? clock(left) : undefined} restEndAt={resting ? end! : undefined} restTotalMs={total * 1000} />
     </Screen>
   );
 }
@@ -176,7 +176,47 @@ export function WeekDemo({ f }: { f: Fixtures }) {
   return <div className={s.demoPad}><WeekStrip days={f.week.map((d, i) => ({ ...d, selected: sel === i, onClick: () => setSel(i) }))} /></div>;
 }
 
+/** M07 交错入场：重放看列表依次弹入 */
+function CascadeDemo({ f }: { f: Fixtures }) {
+  const [k, setK] = useState(0);
+  return (
+    <div className={s.demoPad}>
+      <Button kind="ghost" size="s" icon="refresh" onClick={() => setK((x) => x + 1)}>重放</Button>
+      <Cascade replayKey={k}>
+        {f.items.map((x) => <ExerciseRow key={x.exerciseId} name={x.name} detail={`${x.sets} × ${x.repRange.join('–')}`} weight={x.suggestion.weightKg} />)}
+      </Cascade>
+    </div>
+  );
+}
+
+/** M03 共享元素展开：点一行，原地长成详情；返回缩回 */
+function ExpandInner({ f }: { f: Fixtures }) {
+  const [sel, setSel] = useState<{ i: number; r: { x: number; y: number; w: number; h: number }; open: boolean } | null>(null);
+  const items = f.items.slice(0, 4), it = sel ? items[sel.i] : null;
+  return (
+    <Screen label="共享元素">
+      <div className={s.expandList}>
+        {items.map((x, i) => (
+          <div key={x.exerciseId} className={s.expandRow} style={{ visibility: sel?.i === i ? 'hidden' : undefined }}
+            onClick={(e) => { const b = e.currentTarget.parentElement!.getBoundingClientRect(), r = e.currentTarget.getBoundingClientRect();
+              setSel({ i, r: { x: r.left - b.left, y: r.top - b.top, w: r.width, h: r.height }, open: true }); }}>
+            <ExerciseRow name={x.name} detail={`${x.sets} × ${x.repRange.join('–')}`} weight={x.suggestion.weightKg} />
+          </div>
+        ))}
+        {sel && it && (
+          <ExpandOverlay origin={sel.r} open={sel.open} title={it.name} onClose={() => setSel((x) => x && { ...x, open: false })} onClosed={() => setSel(null)}>
+            {it.suggestion.weightKg != null ? <Num size="hero" value={it.suggestion.weightKg} unit="kg" /> : <span className="milo-text-title-l">首次</span>}
+            <span className="milo-text-caption">{it.suggestion.reason.text || `选一个能干净做完 ${it.repRange[0]} 次的重量`}</span>
+          </ExpandOverlay>
+        )}
+      </div>
+    </Screen>
+  );
+}
+
 export const DEMOS: Record<string, (f: Fixtures) => ReactNode> = {
+  ExerciseRow: (f) => <CascadeDemo f={f} />,
+  ExpandOverlay: (f) => <div className={s.demoCol}><Stage tall label="共享元素演示"><ExpandInner f={f} /></Stage></div>,
   Button: () => <ButtonDemo />,
   OptionCard: () => <FormDemo />,
   DialogCard: () => <FeedbackDemo />,

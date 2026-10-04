@@ -27,6 +27,20 @@ TS_OUT = os.path.join(ROOT, 'src', 'styles', 'tokens.gen.ts')
 BAD_NAME_CHARS = set('.{}$')
 
 
+def spring_linear(spec, mass=1.0):
+    """弹簧（stiffness k, damping c）→ CSS linear() 缓动与时长。欠阻尼解析解，取到误差 < 0.002 为止。"""
+    import math, re
+    k, c = (float(x) for x in re.findall(r'[\d.]+', spec)[:2])
+    w = math.sqrt(k / mass); z = c / (2 * math.sqrt(k * mass)); wd = w * math.sqrt(max(1e-6, 1 - z * z))
+    x = lambda t: 1 - math.exp(-z * w * t) * (math.cos(wd * t) + (z * w / wd) * math.sin(wd * t))
+    T = 0.05
+    while T < 2 and abs(1 - x(T)) + math.exp(-z * w * T) > 0.002:
+        T += 0.01
+    n = 32
+    pts = ', '.join(f'{x(T * i / n):.4f}'.rstrip('0').rstrip('.') or '0' for i in range(n + 1))
+    return f'linear({pts})', round(T * 1000)
+
+
 def hex_rgba(h):
     h = h.lstrip('#')
     if len(h) not in (6, 8):
@@ -189,6 +203,11 @@ def main():
     for k, v in T['string'].items():
         val = f"'{v['value']}'{fallbacks[k]}" if k in fallbacks else v['value']
         css.append(f'  --milo-{k.replace("/", "-")}: {val};')
+        if k.startswith('motion/spring'):
+            ease, ms = spring_linear(v['value'])
+            name = k.replace('motion/', '')
+            css.append(f'  --milo-motion-ease-{name}: {ease};')
+            css.append(f'  --milo-motion-{name}-ms: {ms}ms;')
     css.append('}')
     # 文字样式 → 类名（与 Figma 的 Milo/ 文字样式一一对应）：.milo-text-number-hero 等
     weight = {'Regular': 400, 'Medium': 500, 'SemiBold': 600, 'Bold': 700, 'ExtraBold': 800, 'Black': 900}
@@ -202,6 +221,9 @@ def main():
     for k, v in nums.items():
         val = v['value'] / 100 if k.startswith(('opacity/', 'ratio/')) else v['value']
         ts.append(f"  '{k}': {val:g},")
+    for k, v in T['string'].items():
+        if k.startswith('motion/spring'):
+            ts.append(f"  '{k}-ms': {spring_linear(v['value'])[1]},")
     ts.append('} as const;')
     ts.append('export type TokenKey = keyof typeof T;')
     open(TS_OUT, 'w', encoding='utf-8').write('\n'.join(ts) + '\n')

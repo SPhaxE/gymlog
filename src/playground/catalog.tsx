@@ -4,7 +4,7 @@
  *  按下 / 聚焦在代码里是 :active / :focus-visible，这里经 state 强制显示（state.ts）。 */
 import { useRef, type ReactNode } from 'react';
 import {
-  Banner, BodyFigure, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
+  Banner, BodyFigure, DotCalendar, ExpandOverlay, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
   ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProgressSteps, RestBar, SectionLabel, Segmented,
   SessionRow, SetRow, Sheet, SheetBlock, Skeleton, Sparkline, StateView, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
   type Forced, type IconName, type NumSize, type SkeletonShape, type Tab, type TagTone,
@@ -36,6 +36,7 @@ export const GROUPS = ['基础', '表单', '反馈与悬浮层', '列表与页�
 
 /** 只在交互演示或页面里出现、不进矩阵的导出（catalog.test 读这张表） */
 export const NOT_IN_MATRIX: Record<string, string> = {
+  Cascade: 'M07 交错入场是一段动画，见「训练与记录 · ExerciseRow」下的交互演示',
   Screen: '页面框（版式容器），见 /preview §4 与整页演示',
   OptionGroup: '单选组的方向键行为，见「表单」交互演示',
   ToastViewport: 'Toast 的出口，见「反馈」交互演示',
@@ -49,7 +50,7 @@ const noop = () => {};
 
 /** 轴取值的中文标注（矩阵表头与单元格说明） */
 export const CN: Record<string, string> = {
-  default: '默认', pressed: '按下', focused: '聚焦', disabled: '禁用', loading: '加载中', primary: '主操作', neutral: '中性', ghost: '描边', danger: '危险',
+  default: '默认', pressed: '按下', focused: '聚焦', disabled: '禁用', loading: '加载中', primary: '主操作', primary_glow: '主操作 · 光晕', neutral: '中性', ghost: '描边', danger: '危险',
   l: '大', s: '小', raised: '实底', plain: '无底', true: '是', false: '否', single: '单选', multi: '多选', empty: '空', filled: '已填', error: '错误',
   min: '到下限', max: '到上限', strong: '强调', outline: '虚线', up: '上升', down: '下降', flat: '持平', baseline: '基线', static: '只读', nav: '可进入',
   toggle: '开关', plain_card: '普通', hero: '主角', todo: '待做', first: '首次', current: '进行中', done: '已完成', skipped: '未做', missing: '缺值',
@@ -57,9 +58,9 @@ export const CN: Record<string, string> = {
   'trained-pr': '已练 · PR', rest: '休息', today: '今天', future: '未来', selected: '选中', ready: '已加载', many: '多次', 'many-selected': '多次 · 选中一次',
   one: '只有 1 次', none: '未练', off: '不画环', empty_pts: '没有记录', single_pt: '只有 1 次', add: '加重', hold: '保持', cut: '减重', low: '不足', ok: '达标', over: '超量', repair: '修复期',
   recovering: '恢复中', golden: '黄金窗', decayed: '已回落', near: '邻近', focus: '焦点', front: '正面', back: '背面', male: '男', female: '女',
-  track: '只有轨道', partial: '进行中', full: '满环', home: '首页', body: '身体', gains: '增量', log: '记录', me: '我的', success: '成功', undo: '可撤销',
+  track: '已开始 · 0 组', partial: '进行中', full: '满环', home: '首页', body: '身体', gains: '增量', log: '记录', me: '我的', success: '成功', undo: '可撤销',
   suggest: '建议减量', week: '减量周', quiet: '一行小字', 'pool-empty': '动作池不足', resume: '继续上次训练', info: '信息', page: '子页', session: '训练中',
-  eyebrow: '带日期与附件', loadingState: '加载中',
+  eyebrow: '带日期与附件', pill: '小胶囊', open: '展开', loadingState: '加载中',
 };
 export const cn = (v: string) => CN[v] ?? v;
 
@@ -95,10 +96,11 @@ export const CATALOG: Entry[] = [
     render: (p) => <span className={s.iconCell}><Icon name={p.name as IconName} /><span className="milo-text-micro">{p.name}</span></span>,
   },
   {
-    name: 'Button', group: '基础', desc: 'primary 荧光 = 每屏唯一的行动焦点；neutral 骨白 = 完成 / 确认；ghost = 次要；danger = 删除、清除。l 整宽，s 行内。加载时宽度不变、不可重复点。',
-    axes: { kind: ['primary', 'neutral', 'ghost', 'danger'], size: ['l', 's'], state: [...STATE, 'loading'] }, rows: ['kind', 'size'], cols: 'state', size: 'm',
-    render: (p) => <Button kind={p.kind as 'primary'} size={p.size as 'l'} state={st(p.state)} disabled={p.state === 'disabled'} loading={p.state === 'loading'}>
-      {p.kind === 'primary' ? '开始训练' : p.kind === 'neutral' ? '完成' : p.kind === 'ghost' ? '再练一次' : '删除训练'}</Button>,
+    name: 'Button', group: '基础', desc: 'primary 荧光 = 每屏唯一的行动焦点；glow（M06）= 再加一圈慢转的圆锥渐变描边与呼吸光晕，只给首页「开始训练」；neutral 骨白 = 完成 / 确认；ghost = 次要；danger = 删除、清除。按下：缩放 + 内阴影，松手弹簧回弹（M08）。加载时宽度不变、不可重复点。',
+    axes: { kind: ['primary', 'primary_glow', 'neutral', 'ghost', 'danger'], size: ['l', 's'], state: [...STATE, 'loading'] }, rows: ['kind', 'size'], cols: 'state', size: 'm',
+    skip: (p) => p.kind === 'primary_glow' && (p.size === 's' || p.state !== 'default'),
+    render: (p) => <Button kind={p.kind.startsWith('primary') ? 'primary' : p.kind as 'primary'} glow={p.kind === 'primary_glow'} size={p.size as 'l'} state={st(p.state)} disabled={p.state === 'disabled'} loading={p.state === 'loading'}>
+      {p.kind.startsWith('primary') ? '开始训练' : p.kind === 'neutral' ? '完成' : p.kind === 'ghost' ? '再练一次' : '删除训练'}</Button>,
   },
   {
     name: 'IconButton', group: '基础', desc: '视觉 size/button-h-s，命中区补到 hit-min；必须有 aria-label。raised 用在页头与面板，plain 用在行内。',
@@ -292,6 +294,47 @@ export const CATALOG: Entry[] = [
   },
   /* ---------------- 数据图形 ---------------- */
   {
+    name: 'RestDock', group: '训练与记录', desc: 'M02 流体胶囊形变：组间休息平时是底部一颗小胶囊（底边一道骨白细线 = 剩余比例），点开原地长成休息面板（±15、跳过），尺寸与圆角按软弹簧一起过渡。',
+    axes: { state: ['pill', 'open', 'done'] }, size: 'card',
+    render: (p) => <RestDock remaining={p.state === 'done' ? 0 : 95} total={180} open={p.state === 'open'} onToggle={noop} />,
+  },
+  {
+    name: 'ExpandOverlay', group: '训练与记录', desc: 'M03 共享元素展开：列表项原地长成整屏详情，返回时缩回原位；返回键 / 按钮关闭。真实动画见下方交互演示。',
+    axes: { state: ['open'] }, size: 'screen',
+    render: () => <div className={s.sheetBox}><ExpandOverlay origin={{ x: 0, y: 0, w: 1, h: 1 }} open onClose={noop} onClosed={noop} title="杠铃深蹲"><Num size="hero" value="85" unit="kg" /></ExpandOverlay></div>,
+  },
+  {
+    name: 'StepRing', group: '训练与记录', desc: 'E2 环中数字（ref1）：序号在进度环里，环 = 这个动作已完成的组数比例；完成后整行降到 opacity/done-row。',
+    axes: { state: ['todo', 'current', 'done'] }, size: 'card',
+    render: (p, f) => <StepRing n={2} ratio={p.state === 'todo' ? 0 : p.state === 'current' ? 1 / 3 : 1} done={p.state === 'done'} title={f.items[1]?.name ?? '窄握下拉'}
+      sub={p.state === 'todo' ? '待做' : p.state === 'current' ? '第 2 / 3 组' : '3 / 3 组'} />,
+  },
+  {
+    name: 'DotCalendar', group: '训练与记录', desc: 'E1 点阵日历（ref1）：近 3 个月每天一个点，练过的点亮骨白，今天一圈荧光描边；记录页顶部，也是 P1 出勤热力图。',
+    axes: {}, size: 'card',
+    render: (_, f) => <DotCalendar months={dotMonths(f.trainedDays, f.now)} />,
+  },
+  {
+    name: 'WeekBars', group: '数据图形', desc: 'E3 竖向胶囊量表（ref3）：近 8 周每周完成组数，本周骨白；和身体页胶囊同一语言（胶囊即量尺）。',
+    axes: {}, size: 'card',
+    render: (_, f) => <WeekBars weeks={f.weekBars} />,
+  },
+  {
+    name: 'GiantNumber', group: '数据图形', desc: 'E4 超大渐变数字（ref5「60%」）：结算页唯一一次「大声」，数字从骨白渐隐 + 颗粒。',
+    axes: {}, size: 'card',
+    render: () => <GiantNumber value="+5" unit="kg" caption="杠铃深蹲 · 预估 1RM 新高" />,
+  },
+  {
+    name: 'Odometer', group: '数据图形', desc: 'M04 滚动码表：每一位数字按弹簧滚到目标位；用于曲线读数、结算总负荷。',
+    axes: { size: ['xl', 'l', 'm'] }, size: 'auto',
+    render: (p) => <Odometer value="79.1" size={p.size as 'xl'} />,
+  },
+  {
+    name: 'FluidBackdrop', group: '导航', desc: '底层流体噪点渐变（A4 追加）：几团主题色光斑缓慢漂移 + 颗粒，只铺在 Tab 根页的最底层；页面隐藏时停，减少动态效果时静止。可接音频电平随音乐涨落。',
+    axes: {}, size: 'screen',
+    render: () => <div className={s.sheetBox}><FluidBackdrop /></div>,
+  },
+  {
     name: 'Sparkline', group: '数据图形', desc: '增量页列表行的趋势小线：时间正序；末点实心；PR 用菱形。只有 1 次记录画虚线基线。',
     axes: { trend: ['up', 'down', 'single_pt'] }, size: 'auto',
     render: (p, f) => <Sparkline label="预估 1RM" points={p.trend === 'up' ? f.trends.normal : p.trend === 'down' ? f.trends.falling : f.trends.one} />,
@@ -342,12 +385,12 @@ export const CATALOG: Entry[] = [
   },
   /* ---------------- 导航 ---------------- */
   {
-    name: 'Nav', group: '导航', desc: '5 项「图标 + 名称」，选中项是滑动的骨白小胶囊。外圈实线 = 今日进度（恢复日不画、未开始只画轨道、练完满环）；休息时选中项写剩余时间，小胶囊外加虚线 + 端点。',
+    name: 'Nav', group: '导航', desc: '5 项「图标 + 名称」，选中项是按弹簧滑动的骨白小胶囊，切换时图标先转一圈加载轨迹再画出来。外圈 = 今日进度：不画（恢复日、未开始）→ 开始训练先画一圈暗色待走轨道 → 荧光轨迹（尾淡头实、无端点）→ 满环。休息：选中项写剩余时间，胶囊里一道实线内描边平滑收短。',
     axes: { item: ['default', 'pressed', 'focused'], selected: ['home', 'body', 'gains', 'log', 'me'], ring: ['off', 'track', 'partial', 'full', 'rest'] },
     rows: ['item', 'selected'], cols: 'ring', size: 'screen',
     skip: (p) => p.item !== 'default' && !(p.selected === 'home' && p.ring === 'partial'),
     render: (p) => <div className={s.navBox}><Nav selected={p.selected as Tab} itemState={st(p.item)}
-      progress={p.ring === 'off' ? null : p.ring === 'track' ? 0 : p.ring === 'full' ? 1 : 8 / 14} rest={p.ring === 'rest' ? '1:35' : undefined} restRatio={p.ring === 'rest' ? 95 / 180 : undefined} /></div>,
+      progress={p.ring === 'off' ? null : p.ring === 'track' ? 0 : p.ring === 'full' ? 1 : 8 / 14} started={p.ring !== 'off'} rest={p.ring === 'rest' ? '1:35' : undefined} restRatio={p.ring === 'rest' ? 95 / 180 : undefined} /></div>,
   },
 ];
 

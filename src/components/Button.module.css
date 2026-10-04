@@ -15,3 +15,16 @@
 .iconBtn::after { content: ''; position: absolute; inset: calc((var(--milo-size-button-h-s) - var(--milo-size-hit-min)) / 2); }
 .raised { background-color: var(--milo-color-bg-raised-2); }
 .plain { background-color: transparent; color: var(--milo-color-text-secondary); }
+
+/* M06 弥散光晕边框：外层 1.6 宽的圆锥渐变环慢转，背后一层模糊光晕呼吸 */
+@property --glow-angle { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+.glow { position: relative; display: block; border-radius: var(--milo-radius-pill); padding: var(--milo-stroke-focus); isolation: isolate;
+  background: conic-gradient(from var(--glow-angle), transparent 0 55%, var(--milo-color-accent-default) 75%, var(--milo-color-text-primary) 80%, transparent 95%);
+  animation: glowSpin calc(var(--milo-motion-slow) * 12) linear infinite; }
+.glowS { display: inline-block; }
+.glow::after { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: var(--milo-color-accent-glow); filter: blur(var(--milo-space-l));
+  animation: glowBreathe calc(var(--milo-motion-slow) * 8) ease-in-out infinite; }
+.glow > .btn { box-shadow: none; }
+@keyframes glowSpin { to { --glow-angle: 360deg; } }
+@keyframes glowBreathe { 50% { opacity: 0.45; transform: scale(1.03); } }
+@media (prefers-reduced-motion: reduce) { .glow, .glow::after { animation: none; } }

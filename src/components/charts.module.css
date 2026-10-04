@@ -7,15 +7,20 @@
 .chart { display: grid; gap: var(--milo-space-s); }
 .readout { display: flex; align-items: baseline; gap: var(--milo-space-xs); min-height: var(--milo-space-3xl); color: var(--milo-color-text-secondary); }
 .readout b { color: var(--milo-color-text-primary); }
-.readout i { font-style: normal; font-size: var(--milo-font-size-caption); margin-right: var(--milo-space-s); }
+.readout > i { font-style: normal; font-size: var(--milo-font-size-caption); margin-right: var(--milo-space-s); }
 .plot { display: block; overflow: visible; border-radius: var(--milo-radius-s); }
 .grid { stroke: var(--milo-color-line-default); stroke-width: var(--milo-stroke-hairline); stroke-dasharray: var(--milo-stroke-hairline) var(--milo-size-tick-pitch); }
 .axis { fill: var(--milo-color-text-secondary); font-family: var(--milo-font-number); font-size: var(--milo-font-size-min); text-anchor: end; }
-.trend { fill: none; stroke: var(--milo-color-text-secondary); stroke-width: var(--milo-stroke-focus); stroke-linejoin: round; }
+.trend { fill: none; stroke: var(--milo-color-text-primary); stroke-width: var(--milo-stroke-focus); stroke-linejoin: round; }
+.areaTop { stop-color: var(--milo-color-accent-default); stop-opacity: 0.22; }
+.areaBottom { stop-color: var(--milo-color-accent-default); stop-opacity: 0; }
+.halo { fill: var(--milo-color-accent-glow); pointer-events: none; transform-box: fill-box; transform-origin: center; animation: breathe calc(var(--milo-motion-slow) * 6) ease-in-out infinite; }
+@keyframes breathe { 50% { transform: scale(1.35); opacity: 0.5; } }
+@media (prefers-reduced-motion: reduce) { .halo { animation: none; } }
 .dot { fill: var(--milo-color-bg-base); stroke: var(--milo-color-text-secondary); stroke-width: var(--milo-stroke-focus); }
 .prDot { fill: var(--milo-color-control-selected); }
-.on { fill: var(--milo-color-text-primary); stroke: var(--milo-color-text-primary); }
-.rule { stroke: var(--milo-color-control-selected); stroke-width: var(--milo-stroke-hairline); }
-.hit { fill: transparent; cursor: pointer; }
+.on { fill: var(--milo-color-bg-base); stroke: var(--milo-color-accent-default); stroke-width: var(--milo-stroke-ring-progress); }
+.rule { stroke: var(--milo-color-text-secondary); stroke-width: var(--milo-stroke-hairline); stroke-dasharray: var(--milo-stroke-ring-rest-gapdash); }
+.plot { touch-action: pan-y; cursor: ew-resize; }
 .dates { display: flex; justify-content: space-between; padding-right: var(--milo-space-3xl); color: var(--milo-color-text-secondary); }
 .empty { padding: var(--milo-space-2xl) 0; text-align: center; color: var(--milo-color-text-secondary); font-size: var(--milo-font-size-body); }

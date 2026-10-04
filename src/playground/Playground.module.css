@@ -75,3 +75,6 @@
 .restDock { position: absolute; left: var(--milo-size-gutter); right: var(--milo-size-gutter); bottom: var(--milo-space-l); z-index: 9; }
 .reset { justify-self: start; border: 0; background: none; color: var(--milo-color-text-secondary); font: inherit; font-size: var(--milo-font-size-caption); text-decoration: underline; padding: var(--milo-space-s) 0; }
 .navDemoBody { display: grid; gap: var(--milo-space-m); padding: var(--milo-space-2xl) var(--milo-size-gutter); }
+
+.expandList { position: relative; flex: 1; display: grid; align-content: start; gap: var(--milo-space-s); padding: var(--milo-space-l) var(--milo-size-gutter); }
+.expandRow { border-radius: var(--milo-radius-m); background: var(--milo-color-bg-raised); cursor: pointer; }

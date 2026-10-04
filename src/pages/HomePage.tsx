@@ -1,7 +1,7 @@
 /** 首页（P01，线框 W2 + 视觉语言 v2）：第一个动作做主角，增量尺把「上次 → 这次」画在刻度上。
  *  开始训练是这一屏唯一的荧光；减量、恢复日、动作池不足占用主角卡上方的状态位（ia §1.2）。 */
 import { useMemo } from 'react';
-import { Banner, Button, Card, ExerciseRow, Nav, Num, PageHeader, PrescriptionHero, Screen, SectionLabel, Tag, type Tab } from '../components';
+import { Banner, Button, Card, Cascade, ExerciseRow, Nav, Num, PageHeader, PrescriptionHero, Screen, SectionLabel, Tag, type Tab } from '../components';
 import { dateLabel, env, homeData, REGION_NAME } from '../data/demo';
 import s from './HomePage.module.css';
 
@@ -33,15 +33,17 @@ export function HomePage({ scenario, now, onTab }: { scenario: string; now: numb
           <>
             <SectionLabel>接下来</SectionLabel>
             <div className={s.rows}>
-              {rest.map((it) => (
-                <ExerciseRow key={it.exerciseId} name={it.name} detail={`${REGION_NAME[it.region]} · ${it.sets} × ${it.repRange.join('–')}`} weight={it.suggestion.weightKg} />
-              ))}
+              <Cascade>
+                {rest.map((it) => (
+                  <ExerciseRow key={it.exerciseId} name={it.name} detail={`${REGION_NAME[it.region]} · ${it.sets} × ${it.repRange.join('–')}`} weight={it.suggestion.weightKg} />
+                ))}
+              </Cascade>
             </div>
           </>
         )}
       </div>
 
-      {rx.kind === 'plan' && <div className={s.cta}><Button>开始训练</Button></div>}
+      {rx.kind === 'plan' && <div className={s.cta}><Button glow>开始训练</Button></div>}
       <Nav selected="home" progress={rx.kind === 'plan' ? 0 : null} onSelect={onTab} />
     </Screen>
   );

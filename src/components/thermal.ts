@@ -10,8 +10,9 @@ import type { HeadStat } from '../engine';
 export type ThermalPalette = 'lime' | 'bone';
 export type ThermalStyle = 'bloom' | 'iso' | 'scan';
 export interface Thermal { palette: ThermalPalette; style: ThermalStyle }
-/** null = 现行的四档明暗 + 纹理 */
-export const BodyRender = createContext<Thermal | null>(null);
+/** 2026-10-04 用户选定：T4 的扫描线质感 + 荧光热色板。null = 旧的四档明暗 + 纹理（只在 /lab 对照用） */
+export const THERMAL_DEFAULT: Thermal = { palette: 'lime', style: 'scan' };
+export const BodyRender = createContext<Thermal | null>(THERMAL_DEFAULT);
 
 export const PALETTE: Record<ThermalPalette, string[]> = {
   lime: ['gray-50', 'lime-900', 'lime-700', 'lime-500', 'lime-300'],

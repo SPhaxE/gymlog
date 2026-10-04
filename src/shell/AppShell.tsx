@@ -5,7 +5,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';
 import { App as CapApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
-import { OverlayHost, ToastProvider, ToastViewport, handleBack, type Tab } from '../components';
+import { FluidBackdrop, OverlayHost, ScreenAtmosphere, ToastProvider, ToastViewport, handleBack, type Tab } from '../components';
 import { BodyPage } from '../pages/BodyPage';
 import { HomePage } from '../pages/HomePage';
 import { backAction } from './back';
@@ -41,17 +41,19 @@ function Routed() {
   const now = Number(q.get('now')) || Date.now();
   const onTab = (_: Tab, path: string) => nav(path + loc.search);
   const focus = q.get('focus');
+  // Tab 根页最底层：流体噪点渐变（A4 追加）；训练流程等子页不用
+  const tab = (el: React.ReactNode) => <ScreenAtmosphere.Provider value={<FluidBackdrop />}>{el}</ScreenAtmosphere.Provider>;
   return (
     <Suspense fallback={null}>
     <Routes>
       <Route path="/" element={<Navigate to={'/today' + loc.search} replace />} />
-      <Route path="/today" element={<HomePage scenario={q.get('scenario') ?? 'plain-prescription'} now={now} onTab={onTab} />} />
-      <Route path="/body" element={<BodyPage key={q.get('scenario')} scenario={q.get('scenario') ?? 'done-today'} now={now} onTab={onTab}
-        initialFocus={focus && focus !== "none" ? focus : null} />} />
-      <Route path="/gains" element={<TabStub tab="gains" onTab={onTab} />} />
-      <Route path="/log" element={<TabStub tab="log" onTab={onTab} />} />
-      <Route path="/me" element={<TabStub tab="me" onTab={onTab} />} />
-      <Route path="/patterns/:kind" element={<PatternRoute onTab={onTab} />} />
+      <Route path="/today" element={tab(<HomePage scenario={q.get('scenario') ?? 'plain-prescription'} now={now} onTab={onTab} />)} />
+      <Route path="/body" element={tab(<BodyPage key={q.get('scenario')} scenario={q.get('scenario') ?? 'done-today'} now={now} onTab={onTab}
+        initialFocus={focus && focus !== "none" ? focus : null} />)} />
+      <Route path="/gains" element={tab(<TabStub tab="gains" onTab={onTab} />)} />
+      <Route path="/log" element={tab(<TabStub tab="log" onTab={onTab} />)} />
+      <Route path="/me" element={tab(<TabStub tab="me" onTab={onTab} />)} />
+      <Route path="/patterns/:kind" element={tab(<PatternRoute onTab={onTab} />)} />
       <Route path="/playground" element={<Playground now={now} />} />
       <Route path="/preview" element={<Preview />} />
       <Route path="/lab" element={<Lab now={now} />} />

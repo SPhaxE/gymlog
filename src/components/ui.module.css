@@ -52,9 +52,16 @@ li.listRow + li.listRow::before, .rowItem + .rowItem::before, li.listRow + .rowI
 
 .card, .hero { display: grid; gap: var(--milo-space-xs); padding: var(--milo-space-l); border-radius: var(--milo-radius-l); color: var(--milo-color-text-secondary);
   background-color: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
-.hero { background: radial-gradient(circle at 92% 40%, var(--milo-color-bg-raised-2), var(--milo-color-bg-raised) 62%); }
+/* 主角卡（2026-10-04 用户选定 A4，ref5）：右上角荧光弥散 + 左下一点骨白，颗粒只铺在光里；每屏只有这一张 */
+.hero { position: relative; overflow: hidden; isolation: isolate;
+  background: radial-gradient(110% 95% at 95% 0%, color-mix(in srgb, var(--milo-color-accent-default) 34%, transparent), transparent 62%),
+    radial-gradient(80% 70% at 0% 100%, color-mix(in srgb, var(--milo-prim-bone-500) 12%, transparent), transparent 70%), var(--milo-color-bg-raised); }
+.hero::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit;
+  background-image: var(--grain); background-size: calc(var(--milo-space-5xl) * 3.333); mix-blend-mode: overlay; opacity: calc(var(--milo-opacity-grain) * 2.5);
+  -webkit-mask: radial-gradient(110% 95% at 95% 0%, black, transparent 70%); mask: radial-gradient(110% 95% at 95% 0%, black, transparent 70%); }
 .cardBtn { width: 100%; border: 0; font: inherit; text-align: left; }
-.hero.cardBtn[data-pressed], .hero.cardBtn:active { background: linear-gradient(var(--press-tint), var(--press-tint)), radial-gradient(circle at 92% 40%, var(--milo-color-bg-raised-2), var(--milo-color-bg-raised) 62%); }
+.hero.cardBtn[data-pressed], .hero.cardBtn:active { background: linear-gradient(var(--press-tint), var(--press-tint)),
+  radial-gradient(110% 95% at 95% 0%, color-mix(in srgb, var(--milo-color-accent-default) 34%, transparent), transparent 62%), var(--milo-color-bg-raised); }
 
 .legend { display: flex; flex-wrap: wrap; gap: var(--milo-space-xs) var(--milo-space-l); font-size: var(--milo-font-size-min); color: var(--milo-color-text-secondary); }
 .legend span { display: inline-flex; align-items: center; gap: var(--milo-space-xs); }
@@ -63,3 +70,9 @@ li.listRow + li.listRow::before, .rowItem + .rowItem::before, li.listRow + .rowI
 .tLow { background: var(--milo-color-data-tier-low); }
 .tOk { background: var(--milo-color-data-tier-ok); }
 .tOver { background: repeating-linear-gradient(135deg, var(--milo-color-data-tier-over) 0 var(--milo-stroke-ring-progress), var(--milo-color-data-tier-over-stripe) var(--milo-stroke-ring-progress) calc(var(--milo-stroke-ring-progress) * 1.5)); }
+
+/* 热成像图例：一条色带，两道刻度（最低有效量、适宜量） */
+.heat { display: flex; align-items: center; gap: var(--milo-space-s); font-size: var(--milo-font-size-min); color: var(--milo-color-text-secondary); }
+.heat em { font-style: normal; margin-left: auto; }
+.heatBar { position: relative; flex: 0 1 calc(var(--milo-size-screen-w) * 0.36); height: var(--milo-space-s); border-radius: var(--milo-radius-pill); }
+.heatBar b { position: absolute; top: calc(var(--milo-space-2xs) * -1); bottom: calc(var(--milo-space-2xs) * -1); width: var(--milo-stroke-hairline); background: var(--milo-color-text-primary); }

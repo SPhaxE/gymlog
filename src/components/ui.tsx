@@ -1,5 +1,6 @@
 /** 内容基础件（视觉语言 v2）。字号只用 .milo-text-* 文字样式，颜色、间距、圆角只用 tokens.css。 */
-import type { ReactNode } from 'react';
+import { useContext, type ReactNode } from 'react';
+import { BodyRender, PALETTE } from './thermal';
 import { Icon, type IconName } from './Icon';
 import { cx, forced, type Forced } from './state';
 import s from './ui.module.css';
@@ -101,6 +102,19 @@ export function Card({ children, hero, onClick, label, state }: { children: Reac
 
 /** 容量图例：四档用明暗 + 纹理区分，不只靠色相 */
 export function TierLegend() {
+  const thermal = useContext(BodyRender);
+  if (thermal) {
+    // 热成像色带：0 → 1，上面两道刻度标最低有效量（0.4）与适宜量（0.7），和 thermal.heatOf 一致
+    const stops = PALETTE[thermal.palette].map((k, i, a) => `var(--milo-prim-${k}) ${(i / (a.length - 1)) * 100}%`).join(', ');
+    return (
+      <div className={s.heat} role="img" aria-label="容量图例：越亮越热。未练、不足、达标、超量">
+        <span>未练</span>
+        <i className={s.heatBar} style={{ background: `linear-gradient(90deg, ${stops})` }}><b style={{ left: '40%' }} /><b style={{ left: '70%' }} /></i>
+        <span>超量</span>
+        <em>刻度：最低 · 适宜</em>
+      </div>
+    );
+  }
   return (
     <div className={s.legend}>
       <span><i className={s.tNone} />未练</span><span><i className={s.tLow} />不足</span><span><i className={s.tOk} />达标</span><span><i className={s.tOver} />超量</span>

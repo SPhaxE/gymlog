@@ -4,8 +4,9 @@
  *  trace = iconmotionref1 运动轨迹：同 cut 的线稿，描边从透明渐变到实色，选中时沿路径画出来。 */
 import { createContext } from 'react';
 
-export type IconStyle = 'current' | 'geo' | 'cut' | 'trace';
-export const IconStyleCtx = createContext<IconStyle>('current');
+/** slant = 2026-10-04 用户选定的正式风格：cut 的线稿 + iconref2 的倾斜（skewX）；其余三种只在 /lab 对照里用 */
+export type IconStyle = 'slant' | 'current' | 'geo' | 'cut' | 'trace';
+export const IconStyleCtx = createContext<IconStyle>('slant');
 
 /** 实心几何（fill，evenodd） */
 export const GEO: Record<string, string> = {
@@ -33,4 +34,21 @@ export const CUT: Record<string, string> = {
   back: 'M10 5.5 3.5 12l6.5 6.5M7 12h13.5',
   plus: 'M12 4v6.5M12 14v6M4 12h6.5M14 12h6',
   star: 'M12 3.5l2.3 5.6 6 .5-4.6 3.9 1.4 5.9L12 16.3 6.9 19.4l1.4-5.9-4.6-3.9 6-.5z',
+  close: 'M6 6l12 12M18 6l-4.5 4.5M10 14l-4 4',
+  chevron: 'M9 5l7 7-7 7',
+  minus: 'M5 12h9M17 12h2',
+  more: 'M5 12h.01M12 12h.01M19 12h.01',
+  edit: 'M14 6l4 4M5 19h4L19 9l-4-4L5 15v2M13 20.5h6',
+  trash: 'M4 7h16M9 7V4h6v3M6.5 10l1 10h5M15.5 20h1l1-10',
+  skip: 'M5 6l7 6-7 6M13 6l6 6-6 6',
+  play: 'M8 9V5l11 7-11 7v-6',
+  refresh: 'M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5',
+  calendar: 'M4 9h16M8 3v4M16 3v4M20 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h11',
+  info: 'M12 11v6M12 7.5v.01M19.6 9.5A8 8 0 1 0 20 12',
+  alert: 'M12 3.5l9 16H3l4.5-8M12 10v4M12 17v.01',
+  up: 'M12 19V5M6.5 10.5 12 5l5.5 5.5',
+  down: 'M12 5v14M6.5 13.5 12 19l5.5-5.5',
+  flat: 'M5 9.5h14M5 14.5h9M17 14.5h2',
 };
+/** iconref2 的倾斜：整体 skewX(−11°)，再平移回中心 */
+export const SLANT = 'translate(2.33 0) skewX(-11)';

@@ -37,8 +37,9 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
    - **进度**：导航外圈。
 2. **每屏只能有一处荧光面积**。有荧光按钮时，主角卡不再用荧光，改用骨白点缀（例如增量尺）。
 3. 导航选中项、分段控件选中项、中性按钮一律用骨白，不用荧光。
-4. 容量四档不用荧光：「达标」用中骨，「超量」用骨白底加黑斜纹，免得被读成「好」。
-5. 光晕（`accent/glow`）只跟着那一处荧光走，每屏最多一处。
+4. ~~容量四档不用荧光~~ → **2026-10-04 用户选定热成像（T4 荧光热）**：身体页的人体与胶囊量尺用荧光色带表示「热度」，这是规则 2 的唯一例外，只在身体页；色带明度单调上升，不靠色相也分得出冷热（§5）。
+5. 光晕（`accent/glow`）只跟着那一处荧光走，每屏最多一处；首页「开始训练」的光晕边框（M06）就是这一处。
+6. **氛围（A4）**：主角卡右上角荧光弥散 + 颗粒（只在光里）；Tab 根页最底层是流体噪点渐变（几团主题色光斑缓慢漂移，组件 `FluidBackdrop`）。训练中的页面不用。
 
 ## 2. 文字
 
@@ -101,14 +102,12 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 
 ## 5. 数据图形
 
-- **容量四档**：同时靠明暗和纹理区分，不只靠色相；身体页常驻图例（组件 `TierLegend`）。
-
-  | 档 | 人体与图例 |
-  |---|---|
-  | 未练 | `data/tier-none` + 斜纹 |
-  | 不足 | `data/tier-low`（暗灰） |
-  | 达标 | `data/tier-ok`（中骨） |
-  | 超量 | `data/tier-over`（骨白）+ 黑斜纹 |
+- **容量 = 热成像**（2026-10-04 用户选定 T4 改荧光热，组件 `BodyFigure` / `Capsule` / `TierLegend`，代码 `thermal.ts`）：
+  - 热度 t：没练 0.04；0 → 最低有效量 0.12 → 0.4；→ 适宜量 0.7；→ 最大可恢复量 0.88；超量到 1。
+  - 色带（原色）：`gray-50` → `lime-900` → `lime-700` → `lime-500` → `lime-300`，明度单调上升。
+  - 画法：每块肌肉一个径向渐变（中心热、边缘降到 55%）→ 小半径扩散裁回肌肉轮廓 + 大半径热晕 → SVG 渐变映射上色 → 横向扫描线与颗粒（热像仪质感）。人体仍是 MuscleWiki 真实路径。
+  - 胶囊量尺用同一条色带；图例是一条色带，两道刻度标最低有效量与适宜量。
+  - 旧的四档明暗 + 纹理（`data/tier-*`）只在 `/lab` 对照里保留。
 
 - **胶囊**本身就是量尺：底色按「组数 ÷ 最大可恢复量」从左填充 `data/gauge`；0 组用斜纹并压暗文字。
 - **刻度**只做分隔线和量尺，不做装饰：
@@ -125,8 +124,10 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 | 位置与尺寸 | 左右贴页面边距，离底 `size/nav-bottom`，高 `size/nav-bar-h`；`nav/bg` + 模糊 + `shadow/float` |
 | 五项 | 首页 · 身体 · 增量 · 记录 · 我的，都是「图标（`size/nav-icon`）+ 名称（`Micro`）」 |
 | 选中项 | `nav/pill` 骨白实心，图标与文字 `nav/pill-ink`，高 `size/nav-item-h` |
-| 外圈：今日进度 | `nav/progress` **实线** `stroke/ring-progress`，**从顶边正中顺时针**。null：不画（恢复日、动作池不足、空态）；0：只画轨道 `nav/track`；1：满环（今天已练完） |
-| 休息倒计时 | 选中项的名称换成剩余时间（1:35）；小胶囊**里面**一道 `nav/rest`（暗骨）**内描边虚线**（`stroke/ring-rest-dash` / `-gapdash`）+ 端点圆点，只走剩余比例那一段；向内缩半个线宽 + `space/2xs`，不碰外圈（2026-10-04 用户要求，原先画在胶囊外会和外圈重叠） |
+| 外圈：今日进度（2026-10-04 用户选定 R1 改版） | 从顶边正中顺时针。null 或还没开始：不画。**开始训练后先画一圈暗色待走轨道**（`nav/track`，`motion/slow` × 2），再在上面走 `nav/progress` **轨迹**：尾部 `opacity/trace-min` 渐到实色，**没有端点圆点**；进度变化平滑过渡；1 = 满环 |
+| 休息倒计时 | 选中项的名称换成剩余时间（1:35）；小胶囊**里面**一道 `nav/rest`（暗骨）**实线内描边**，**没有虚线、没有端点**，按剩余比例收短；**按帧平滑走**（结束时间戳驱动，不按秒一格一格跳；减少动态效果时按秒）；向内缩半个线宽 + `space/2xs`，不碰外圈 |
+| 选中切换 | 骨白滑块按 `motion/spring` 滑过去；新选中项的图标先转一圈加载轨迹（iconmotionref1，渐变圆弧），再沿路径画出来 |
+| 图标（I3） | 2 号圆头线稿、故意留缺口（iconref2），整体右倾 `skewX(−11°)`；全部 26 个图标同一套 |
 
 ## 7. 动效
 
@@ -144,6 +145,18 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 
 每个视效都要有「减少动画」降级（`references.md` §9.2）。训练页不放持续动画、光晕和噪点。
 
+弹簧（2026-10-04，8motions 的形式，数值用 Token）：`motion/spring`（420 / 32，几乎不过冲）与 `motion/spring-soft`（252 / 17.6，约 12% 过冲）由 `build_tokens.py` 换算成 CSS `linear()`：`--milo-motion-ease-spring` / `--milo-motion-spring-ms`、`--milo-motion-ease-spring-soft` / `--milo-motion-spring-soft-ms`。
+
+| 动效 | 组件 | 规则 |
+|---|---|---|
+| M02 流体胶囊形变 | `RestDock` | 组间休息小胶囊 ↔ 休息面板，尺寸与圆角一起按软弹簧过渡 |
+| M03 共享元素展开 | `ExpandOverlay` | 列表项原地长成整屏详情，返回缩回；返回键关闭 |
+| M04 磁吸游标 + 码表 | `TrendChart`、`Odometer` | 按住横向拖，游标吸到最近一次并轻振；读数按位滚动 |
+| M05 阻尼底部面板 | `Sheet` | 两档（内容高度，最多 60% / 92%）；拉过上限 ×0.3 阻尼；松手按速度判档，下甩关闭 |
+| M06 光晕边框 | `Button glow` | 只给首页「开始训练」：圆锥渐变描边慢转 + 呼吸光晕；训练中的页面不用 |
+| M07 弹簧交错流 | `Cascade` | 列表依次弹入，错开 `motion/stagger`，总窗口 ≤ `motion/list-max` |
+| M08 按下内阴影 + 回弹 | `interactive.css` | 按下缩到 `motion/press-scale` + 内阴影；松手按弹簧回到 1 |
+
 阶段 5 补充：
 - 导航选中滑块切换 `motion/base`；对话框淡入 + 由 `motion/press-scale` 放大到 1，`motion/base`；轻提示从下方 `space/l` 滑入，停留 `motion/toast-hold`（带「撤销」的加倍）。
 - 组间休息倒计时按**结束时间戳**每 `motion/base` 刷新一次，不累加定时器。
@@ -152,7 +165,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 ## 8. 禁止项
 
 - 编造的英文或中文「技术标签」：OVERLOAD ENG.、NEXT TARGET、SEQ // 01、CALIB-24 之类。界面文案保持中性、克制。
-- 一屏多处荧光；荧光的整片背景；荧光的容量档位。
+- 一屏多处荧光；荧光的整片背景（身体页的热成像人体是唯一例外，§1）。
 - 满屏的出血巨型数字。只有结算页允许一次「大声」（荧光斜带上的「4 项 PR」）。
 - **任何不是 MuscleWiki 素材的人体图**：几何拼的、手画的、AI 生成的都不行。人体只用 `public/bodymap/`，出现的页面要有署名。
 - 人体越过页面边距（§4）。
@@ -167,7 +180,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 | 状态 | 代码里 | 样式 | Playground |
 |---|---|---|---|
 | 默认 | — | — | 默认 |
-| 按下 | `:active` | 缩放 `motion/press-scale` + 当前文字色叠一层 `opacity/press` | `state="pressed"` → `data-pressed` |
+| 按下 | `:active` | 缩放 `motion/press-scale` + 内阴影 + 极淡的当前文字色叠色；松手按 `motion/spring` 回弹（M08） | `state="pressed"` → `data-pressed` |
 | 聚焦 | `:focus-visible` | 骨白描边环 `stroke/focus`，外移 `space/2xs`（键盘、读屏、外接键盘时才出现） | `state="focused"` → `data-focus` |
 | 禁用 | `disabled` / `aria-disabled` | 整体 `opacity/disabled`，不响应按下；要在旁边说明为什么不能点 | 禁用 |
 | 加载 | `aria-busy` | 文字隐去、三点依次亮起（`motion/stagger`），宽度不变，不能重复点 | 加载中 |
@@ -196,8 +209,8 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 
 | 组 | 组件 | 变体轴（`/playground`） | 用法 |
 |---|---|---|---|
-| 基础 | `Icon` | 26 个图标 | 24×24 实心几何，`size/icon` / `size/icon-s`；装饰性 |
-| | `Button` | kind 主操作 / 中性 / 描边 / 危险 × size 大 / 小 × 5 种交互态 | 每屏最多一个 primary；危险只用于删除、清除 |
+| 基础 | `Icon` | 26 个图标 | 倾斜断笔线稿（I3，§6）；`size/icon` / `size/icon-s`；装饰性 |
+| | `Button` | kind 主操作 / 主操作 · 光晕 / 中性 / 描边 / 危险 × size 大 / 小 × 5 种交互态 | 每屏最多一个 primary；光晕只给首页「开始训练」；危险只用于删除、清除 |
 | | `IconButton` | 实底 / 无底 × 4 种交互态 | 必须有 `label` |
 | | `Tag` | 信息 / 强调（只给 PR）/ 虚线（首次、基线、未做）/ 错误 | |
 | | `Num`、`Delta` | 6 档字号；上升 / 下降 / 持平 / 基线 | 方向用形状 + 文字 |
@@ -223,12 +236,16 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 | | `SessionRow` | 普通 / 有 PR / 减量周 × 3 种交互态 | 记录列表 |
 | | `DayCell`、`WeekStrip` | 已练 / 已练 · PR / 休息 / 今天 / 未来 × 默认 / 选中 / 按下 / 聚焦 | 记录页顶部 |
 | | `MediaFrame` | 加载中 / 已加载 / 缺素材 / 加载失败 | 只经 `media` 字段引用，保留署名 |
-| 数据图形 | `Sparkline`、`TrendChart` | 上升 / 下降 / 只有 1 次；多次 / 选中一次 / 只有 1 次 / 没有记录 | 时间按正序画（有单测）；PR 用菱形 |
+| | `StepRing`、`DotCalendar` | 待做 / 进行中 / 已完成；— | E2 训练中的动作序号 + 组数环；E1 记录页近 3 个月点阵 |
+| | `RestDock`、`ExpandOverlay`、`Cascade` | 小胶囊 / 展开 / 结束；展开；— | M02 / M03 / M07（§7） |
+| 数据图形 | `Sparkline`、`TrendChart` | 上升 / 下降 / 只有 1 次；多次 / 选中一次 / 只有 1 次 / 没有记录 | 时间按正序画（有单测）；PR 用菱形；TrendChart 是圆滑曲线 + 渐隐面积 + 拖动吸附 + 码表读数（E5 / M04） |
+| | `WeekBars`、`GiantNumber`、`Odometer` | —；—；3 档字号 | E3 增量页近 8 周组数；E4 结算页唯一一次「大声」；M04 数字按位滚动 |
 | | `IncrementRuler`、`LandmarkRuler`、`PhaseSegments`、`Ticks`、`TierLegend` | 加重 / 保持 / 减重；未练 / 不足 / 达标 / 超量；四个时相 | §5 |
 | 身体 | `Capsule` | 未练 / 不足 / 达标 / 超量 × 静止 / 邻近 / 焦点 | 胶囊即量尺；超量加斜纹 |
 | | `CapsuleRail` | 静止 / 焦点；交互演示里是整张身体页 | 几何在 `capsuleLayout.ts`（有单测） |
 | | `BodyFigure` | 正面 / 背面 × 男 / 女 | §4 半身 |
-| 导航 | `Nav` | 选中 5 项 × 外圈（不画环 / 只有轨道 / 进行中 / 满环 / 休息）+ 未选中项的按下 / 聚焦 | §6；选中滑块切换时滑动 |
+| 导航 | `Nav` | 选中 5 项 × 外圈（不画环 / 已开始 · 0 组 / 进行中 / 满环 / 休息）+ 未选中项的按下 / 聚焦 | §6；选中滑块按弹簧滑动，切换时加载轨迹 |
+| | `FluidBackdrop` | — | Tab 根页最底层的流体噪点渐变（§1 第 6 条）；页面隐藏时停 |
 
 不进矩阵的导出：`Screen`（页面框，见 `/preview` §4）、`OptionGroup`、`ToastViewport`、`Dialog`（都在交互演示里）、`StatusStrip`（`Banner` 的旧名，已弃用）。
 

@@ -1,145 +1,78 @@
-/** /lab：参考图要素的可选预览（docs/refs-elements.md 的实物）。每块带编号，用户按编号挑「借鉴 / 不借鉴」。
- *  这里的东西都还没进规范；选定后再落 Token、写进 DESIGN.md、登记进 /playground。 */
-import { useMemo, useState, type ReactNode } from 'react';
-import { Icon, Nav, ScreenAtmosphere, type IconName, type Tab } from '../components';
-import { IconStyleCtx, type IconStyle } from '../components/iconSets';
-import { BodyRender, PALETTE, type Thermal } from '../components/thermal';
+/** /lab：参考要素的落地记录（docs/refs-elements.md）。2026-10-04 用户选定：
+ *  A4 + 底层流体噪点渐变 · T4 改荧光热 · I3（iconref2 倾斜 + iconmotionref1 加载轨迹）· R1 改版 · E1–E5 · M02–M08。
+ *  这里放的都是组件库里的正式组件，规格以 DESIGN.md 为准；音乐律动只在这里用麦克风演示。 */
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import {
+  Button, Cascade, DotCalendar, ExerciseRow, FluidBackdrop, GiantNumber, Icon, ICONS, Nav, Num, RestDock, ScreenAtmosphere, Sheet, SheetBlock, StepRing, TrendChart,
+  WeekBars, dotMonths, LandmarkRuler, PhaseSegments, clock, type Tab,
+} from '../components';
+import { PALETTE } from '../components/thermal';
 import { BodyPage } from '../pages/BodyPage';
 import { HomePage } from '../pages/HomePage';
 import { fixtures } from '../playground/fixtures';
 import { Stage } from '../playground/Stage';
-import { ATMOSPHERES, Atmosphere, grainTile, type AtmosphereKind } from './Atmosphere';
-import { CompactNav, CursorChart, DotCalendar, GiantNumber, GlassCard, RingNumber, SquareButtons, WeekBars } from './elements';
-import { ConicGlow, FluidMorph, PressOvershoot, RubberSheet, SharedElement, SpringScope, Stagger, TiltGlare } from './motions';
+import { T } from '../styles/tokens.gen';
 import s from './lab.module.css';
 
-function Block({ id, title, src, note, children }: { id: string; title: string; src: string; note?: string; children: ReactNode }) {
+function Block({ id, title, src, children }: { id: string; title: string; src: string; children: ReactNode }) {
   return (
     <figure className={s.block} id={id}>
-      <figcaption><b className="milo-text-heading">{id} · {title}</b><span className="milo-text-caption">{src}</span>{note && <span className={`milo-text-caption ${s.note}`}>{note}</span>}</figcaption>
+      <figcaption><b className="milo-text-heading">{id} · {title}</b><span className="milo-text-caption">{src}</span></figcaption>
       {children}
     </figure>
   );
 }
 
-const THERMALS: [string, string, Thermal | null, string][] = [
-  ['T0', '现行四档', null, '明暗 + 纹理四档（未练 / 不足 / 达标 / 超量）'],
-  ['T1', '荧光热 · 辉光', { palette: 'lime', style: 'bloom' }, '暗 → 橄榄 → 黄绿 → 荧光 → 浅荧光；肌肉带一圈热扩散'],
-  ['T2', '骨白热 · 辉光', { palette: 'bone', style: 'bloom' }, '暗 → 暗骨 → 骨白；只有超过上限的热点才变荧光'],
-  ['T3', '荧光热 · 等温带', { palette: 'lime', style: 'iso' }, '更强的扩散后量化成 5 条等温带，像热像仪的伪彩'],
-  ['T4', '骨白热 · 扫描线', { palette: 'bone', style: 'scan' }, '辉光 + 横向扫描线 + 颗粒，最像热像仪画面'],
-];
-const ICON_SETS: [IconStyle, string, string][] = [
-  ['current', 'I0 现行', '通用实心图标'],
-  ['geo', 'I1 实心几何', 'iconref1：只用三角、圆、方拼形'],
-  ['cut', 'I2 断笔线性', 'iconref2：圆头描边、故意留缺口'],
-  ['trace', 'I3 运动轨迹', 'iconmotionref1：描边从透明渐变到实色，选中时画出来'],
-];
-const ICON_NAMES: IconName[] = ['home', 'body', 'gains', 'log', 'me', 'check', 'timer', 'back', 'plus', 'star'];
+/** 麦克风电平（0–1）：演示「随音乐律动」。网页拿不到别的 App 正在放的音乐，只能听麦克风，见 refs-elements.md */
+function useMicLevel() {
+  const [on, setOn] = useState(false), [err, setErr] = useState('');
+  const level = useRef(0), stop = useRef<() => void>(() => {});
+  const start = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const ac = new AudioContext(), src = ac.createMediaStreamSource(stream), an = ac.createAnalyser();
+      an.fftSize = 512; src.connect(an);
+      const buf = new Uint8Array(an.fftSize);
+      let raf = 0;
+      const loop = () => { an.getByteTimeDomainData(buf); let sum = 0; for (const v of buf) sum += ((v - 128) / 128) ** 2; level.current = Math.min(1, Math.sqrt(sum / buf.length) * 4); raf = requestAnimationFrame(loop); };
+      loop();
+      stop.current = () => { cancelAnimationFrame(raf); stream.getTracks().forEach((t) => t.stop()); void ac.close(); level.current = 0; };
+      setOn(true); setErr('');
+    } catch (e) { setErr(`没拿到麦克风：${(e as Error).message}`); }
+  };
+  useEffect(() => () => stop.current(), []);
+  const read = useMemo(() => () => level.current, []);
+  return { on, err, read, toggle: () => (on ? (stop.current(), setOn(false)) : void start()) };
+}
 
-export function Lab({ now }: { now: number }) {
-  const f = useMemo(() => fixtures(now), [now]);
-  const g = grainTile();
+/** R1：开始训练（轨道画一圈）→ 完成组数推进 → 休息（胶囊内实线平滑收短） */
+function RingDemo() {
+  const [started, setStarted] = useState(false), [done, setDone] = useState(0), [end, setEnd] = useState<number | null>(null), [k, setK] = useState(0);
+  const total = 90 * 1000;
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { if (!end) return; const id = setInterval(() => setNow(Date.now()), T['motion/base']); return () => clearInterval(id); }, [end]);
+  const left = end ? Math.max(0, Math.ceil((end - now) / 1000)) : 0;
+  const rest = end && left > 0 ? clock(left) : undefined;
   return (
-    <SpringScope>
-      <div className={s.page}>
-        <header className={s.hero}>
-          <h1 className="milo-text-title-l">参考要素实验室</h1>
-          <p className={`milo-text-body ${s.muted}`}>docs 里 5 张页面参考、2 张图标参考、1 张图标动效参考和 8motions.md 的要素，按 Milo 的 Token 做成可以上手的预览。
-            每块有编号，对照 docs/refs-elements.md 的说明，告诉我哪些借鉴、哪些不要。这里的东西都还没进规范。</p>
-        </header>
-
-        <section className={s.section}>
-          <h2 className="milo-text-title-m">A · 噪点渐变氛围</h2>
-          <div className={s.row}>
-            {ATMOSPHERES.map(([k, title, src]) => (
-              <Block key={k} id={title.split(' ')[0]} title={title.split(' ').slice(1).join(' ')} src={src}>
-                <div className={k === 'hero' ? s.heroMode : undefined} style={{ ['--grain' as string]: g ? `url(${g})` : 'none' }}>
-                  <ScreenAtmosphere.Provider value={<Atmosphere kind={k as AtmosphereKind} />}>
-                    <Stage tall label={title}><HomePage scenario="plain-prescription" now={now} /></Stage>
-                  </ScreenAtmosphere.Provider>
-                </div>
-              </Block>
-            ))}
-          </div>
-        </section>
-
-        <section className={s.section}>
-          <h2 className="milo-text-title-m">T · 热成像肌群容量</h2>
-          <p className={`milo-text-caption ${s.muted}`}>热度 = 近 7 天组数对照三条地标：没练 → 最低有效量 → 适宜量 → 最大可恢复量 → 超量，明度单调上升（不靠色相也分得出冷热）。胶囊量尺同步用同一条色带。按住胶囊列仍可放大。
-            演示用「恢复日」场景（容量分布最宽）；演示数据里没有超过上限的肌头，色带最热的一端见每张图下方的色条。</p>
-          <div className={s.row}>
-            {THERMALS.map(([id, title, th, note]) => (
-              <Block key={id} id={id} title={title} src={note}>
-                <BodyRender.Provider value={th}>
-                  <Stage tall label={title}><BodyPage scenario="rest-day" now={now} initialFocus={null} /></Stage>
-                </BodyRender.Provider>
-                {th && <Ramp palette={th.palette} />}
-              </Block>
-            ))}
-          </div>
-        </section>
-
-        <section className={s.section}>
-          <h2 className="milo-text-title-m">I · 图标风格</h2>
-          <div className={s.iconTable}>
-            {ICON_SETS.map(([st, title, src]) => (
-              <IconStyleCtx.Provider key={st} value={st}>
-                <div className={s.iconRow} id={title.split(" ")[0]}>
-                  <div className={s.iconHead}><b className="milo-text-body-strong">{title}</b><span className="milo-text-caption">{src}</span></div>
-                  <div className={s.icons}>{ICON_NAMES.map((n) => <span key={n} className={s.iconCell}><Icon name={n} /><i>{n}</i></span>)}</div>
-                  <div className={s.navBox}><NavPick /></div>
-                </div>
-              </IconStyleCtx.Provider>
-            ))}
-          </div>
-        </section>
-
-        <section className={s.section}>
-          <h2 className="milo-text-title-m">R · 进度环轨迹（iconmotionref1）</h2>
-          <div className={s.row}>
-            <Block id="R0" title="现行实线" src="外圈实线，端点平"><div className={s.navBox}><Nav selected="home" progress={8 / 14} /></div></Block>
-            <Block id="R1" title="轨迹尾渐隐" src="尾部从 opacity/trace-min 渐到实色，头部一个圆点：不用动画也有「在走」的感觉"><div className={s.navBox}><Nav selected="home" progress={8 / 14} trace /></div></Block>
-            <Block id="R2" title="轨迹 + 休息" src="与休息虚线同时出现时"><div className={s.navBox}><Nav selected="home" progress={8 / 14} trace rest="1:35" restRatio={0.53} /></div></Block>
-          </div>
-        </section>
-
-        <section className={s.section}>
-          <h2 className="milo-text-title-m">E · 版式元素</h2>
-          <div className={s.row}>
-            <Block id="E1" title="点阵日历" src="ref1：每天一个点，练过的点亮——记录页顶部 / P1 出勤热力图"><div className={s.card}><DotCalendar f={f} /></div></Block>
-            <Block id="E2" title="环中数字" src="ref1「1」「2」：第几个动作 + 组数进度"><div className={s.card}>
-              <RingNumber n={2} p={1 / 3} title={f.items[1]?.name ?? '窄握下拉'} sub="第 1 / 3 组" /><RingNumber n={3} p={0} title={f.items[2]?.name ?? '杠铃硬拉'} sub="待做" /></div></Block>
-            <Block id="E3" title="竖向胶囊量表" src="ref3 Active Cards：近 8 周每周完成组数"><div className={s.card}><WeekBars f={f} /></div></Block>
-            <Block id="E4" title="超大渐变数字" src="ref5「60%」：结算页唯一一次「大声」，数字从骨白渐隐 + 颗粒"><div className={s.card}><GiantNumber value="+5" unit="kg" caption="杠铃深蹲 · 预估 1RM 新高" /></div></Block>
-            <Block id="E5" title="游标气泡 + 渐变面积" src="ref2 / ref4 / ref5：圆滑曲线、竖向游标、面积渐隐（和 M04 合并）"><div className={s.card}><CursorChart f={f} /></div></Block>
-            <Block id="E6" title="磨砂玻璃浮层" src="ref3：卡片浮在内容上，背后模糊"><div className={s.card}><GlassCard f={f} /></div></Block>
-            <Block id="E7" title="只有选中项写名称" src="ref2 Cardy Pay 的导航：其余只留图标"><CompactNav /></Block>
-            <Block id="E8" title="圆角方形图标按钮" src="ref4 / ref5 的返回、更多（对照右边现行圆形）"><div className={s.card}><SquareButtons /></div></Block>
-          </div>
-        </section>
-
-        <section className={s.section}>
-          <h2 className="milo-text-title-m">M · 动效（8motions.md，数值改用 Token 的弹簧）</h2>
-          <div className={s.row}>
-            <Block id="M01" title="3D 倾斜光影" src="按住主角卡移动手指：±5° 微倾 + 高光跟手，松手弹簧回正"><div className={s.card}><TiltGlare f={f} /></div></Block>
-            <Block id="M02" title="流体胶囊形变" src="点「休息」小胶囊：原地长成休息面板"><FluidMorph /></Block>
-            <Block id="M03" title="共享元素展开" src="点一个动作：行原地长成详情，返回缩回"><SharedElement f={f} /></Block>
-            <Block id="M04" title="磁吸游标 + 滚动码表" src="在曲线上横向拖：吸到最近一次，数字按位翻滚"><div className={s.card}><CursorChart f={f} /></div></Block>
-            <Block id="M05" title="阻尼底部面板" src="拖抓手：两档吸附、拉过头有阻尼、下甩关闭"><RubberSheet /></Block>
-            <Block id="M06" title="弥散光晕边框" src="只给每屏唯一的行动焦点：细圆锥渐变描边慢转 + 呼吸光晕"><div className={s.card}><ConicGlow /></div></Block>
-            <Block id="M07" title="弹簧交错流" src="列表按 motion/stagger 依次弹入"><div className={s.card}><Stagger f={f} /></div></Block>
-            <Block id="M08" title="微缩 + 内阴影 + 过冲" src="按住再松手对比"><div className={s.card}><PressOvershoot /></div></Block>
-          </div>
-        </section>
+    <div className={s.card}>
+      <div className={s.navBox}><Nav key={k} selected="home" progress={done / 14} started={started} rest={rest} restEndAt={rest ? end! : undefined} restTotalMs={total} /></div>
+      <div className={s.btnRow}>
+        <button type="button" onClick={() => { setStarted(true); setDone(0); setEnd(null); setK((x) => x + 1); }}>开始训练</button>
+        <button type="button" disabled={!started} onClick={() => { setDone((d) => Math.min(14, d + 1)); setEnd(Date.now() + total); setNow(Date.now()); }}>完成 1 组（{done}/14）</button>
+        <button type="button" onClick={() => { setStarted(false); setDone(0); setEnd(null); setK((x) => x + 1); }}>重置</button>
       </div>
-    </SpringScope>
+    </div>
   );
 }
 
-/** 色带：热度 0 → 1，下面标三条地标的位置 */
-function Ramp({ palette }: { palette: 'lime' | 'bone' }) {
-  const stops = PALETTE[palette].map((k, i, a) => `var(--milo-prim-${k}) ${(i / (a.length - 1)) * 100}%`).join(', ');
+/** I3：点导航切换，选中项先转一圈加载轨迹再画出图标 */
+function NavPick() {
+  const [tab, setTab] = useState<Tab>('home');
+  return <div className={s.navBox}><Nav selected={tab} progress={8 / 14} started onSelect={(x) => setTab(x)} /></div>;
+}
+
+function Ramp() {
+  const stops = PALETTE.lime.map((k, i, a) => `var(--milo-prim-${k}) ${(i / (a.length - 1)) * 100}%`).join(', ');
   return (
     <div className={s.ramp}>
       <i style={{ background: `linear-gradient(90deg, ${stops})` }} />
@@ -148,8 +81,98 @@ function Ramp({ palette }: { palette: 'lime' | 'bone' }) {
   );
 }
 
-/** 点导航切换：trace 风格的图标在选中时沿路径画出来 */
-function NavPick() {
-  const [tab, setTab] = useState<Tab>('home');
-  return <Nav selected={tab} progress={8 / 14} onSelect={(x) => setTab(x)} />;
+function RestDockDemo() {
+  const [open, setOpen] = useState(false);
+  const [end] = useState(() => Date.now() + 95 * 1000);
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const id = setInterval(() => setNow(Date.now()), T['motion/base']); return () => clearInterval(id); }, []);
+  const left = Math.max(0, Math.ceil((end - now) / 1000));
+  return <Stage short label="M02"><div className={s.dockArea}><RestDock remaining={left} total={180} open={open} onToggle={setOpen} onAdjust={() => {}} onSkip={() => setOpen(false)} /></div></Stage>;
+}
+
+function SheetDemo() {
+  const [open, setOpen] = useState(true);
+  return (
+    <Stage label="M05">
+      <div className={s.sheetArea}>
+        {!open && <div className={s.sheetReopen}><Button kind="neutral" size="s" onClick={() => setOpen(true)}>打开面板</Button></div>}
+        {open && <Sheet title="中下胸" meta="大肌群" onClose={() => setOpen(false)}><PhaseSegments phase="recovering" /><SheetBlock label="近 7 天容量"><LandmarkRuler value={7.5} mev={8} mav={16} mrv={22} /></SheetBlock>
+          <p className="milo-text-caption">拖抓手：两档吸附、拉过头越拉越重、快速下甩关闭。</p></Sheet>}
+      </div>
+    </Stage>
+  );
+}
+
+export function Lab({ now }: { now: number }) {
+  const f = useMemo(() => fixtures(now), [now]);
+  const mic = useMicLevel();
+  const [sel, setSel] = useState<number | null>(f.trends.normal.length - 1);
+  const [k, setK] = useState(0);
+  return (
+    <div className={s.page}>
+      <header className={s.hero}>
+        <h1 className="milo-text-title-l">参考要素 · 已选定</h1>
+        <p className={`milo-text-body ${s.muted}`}>2026-10-04 的选择：A4 + 底层流体噪点渐变 · T4 改荧光热 · I3 倾斜图标 + 加载轨迹 · R1 改版 · E1–E5 · M02–M08。
+          下面都是组件库里的正式组件，已经用在 App 和 /playground 里；说明见 docs/refs-elements.md。</p>
+      </header>
+
+      <section className={s.section}>
+        <h2 className="milo-text-title-m">A · 主角卡噪点 + 底层流体背景</h2>
+        <div className={s.row}>
+          <Block id="A4" title="首页（Tab 根页）" src="底层光斑缓慢漂移 + 颗粒；主角卡右上荧光噪点渐变；开始训练带光晕边框（M06）">
+            <ScreenAtmosphere.Provider value={<FluidBackdrop level={mic.on ? mic.read : undefined} />}>
+              <Stage tall label="A4"><HomePage scenario="plain-prescription" now={now} /></Stage>
+            </ScreenAtmosphere.Provider>
+            <div className={s.btnRow}><button type="button" onClick={mic.toggle}>{mic.on ? '停止律动' : '随声音律动（麦克风演示）'}</button></div>
+            {mic.err && <span className="milo-text-caption">{mic.err}</span>}
+          </Block>
+          <Block id="T4" title="荧光热 · 扫描线" src="身体页的正式渲染：热核 + 扩散 + 扫描线与颗粒；胶囊量尺同一条色带；按住胶囊列仍可放大">
+            <Stage tall label="T4"><BodyPage scenario="rest-day" now={now} initialFocus={null} /></Stage>
+            <Ramp />
+          </Block>
+        </div>
+      </section>
+
+      <section className={s.section}>
+        <h2 className="milo-text-title-m">I · 图标（iconref2 倾斜断笔 + iconmotionref1 加载轨迹）</h2>
+        <div className={s.card} id="I3">
+          <div className={s.icons}>{ICONS.map((n) => <span key={n} className={s.iconCell}><Icon name={n} /><i>{n}</i></span>)}</div>
+          <span className="milo-text-caption">点导航切换：选中项先转一圈加载轨迹，再沿路径画出图标</span>
+          <NavPick />
+        </div>
+      </section>
+
+      <section className={s.section}>
+        <h2 className="milo-text-title-m">R · 进度环（R1 改版）</h2>
+        <Block id="R1" title="开始训练 → 轨道 → 进度 → 休息" src="开始后先画一圈暗色待走轨道，再走荧光轨迹（尾淡头实、无端点）；休息时胶囊里一道实线按帧平滑收短"><RingDemo /></Block>
+      </section>
+
+      <section className={s.section}>
+        <h2 className="milo-text-title-m">E · 版式元素</h2>
+        <div className={s.row}>
+          <Block id="E1" title="点阵日历" src="ref1 · 记录页顶部"><div className={s.card}><DotCalendar months={dotMonths(f.trainedDays, f.now)} /></div></Block>
+          <Block id="E2" title="环中数字" src="ref1 · 训练中的动作序号与组数"><div className={s.card}>
+            <StepRing n={1} ratio={1} done title={f.items[0]?.name ?? '杠铃深蹲'} sub="3 / 3 组" />
+            <StepRing n={2} ratio={1 / 3} title={f.items[1]?.name ?? '窄握下拉'} sub="第 2 / 3 组" />
+            <StepRing n={3} ratio={0} title={f.items[2]?.name ?? '杠铃硬拉'} sub="待做" /></div></Block>
+          <Block id="E3" title="竖向胶囊量表" src="ref3 · 增量页近 8 周组数"><div className={s.card}><WeekBars weeks={f.weekBars} /></div></Block>
+          <Block id="E4" title="超大渐变数字" src="ref5 · 结算页"><div className={s.card}><GiantNumber value="+5" unit="kg" caption="杠铃深蹲 · 预估 1RM 新高" /></div></Block>
+          <Block id="E5" title="曲线 + 游标 + 码表（M04）" src="ref2 / ref4 / ref5 · 按住横向拖，吸到最近一次，数字按位滚动"><div className={s.card}><TrendChart points={f.trends.normal} selected={sel} onSelect={setSel} /></div></Block>
+        </div>
+      </section>
+
+      <section className={s.section}>
+        <h2 className="milo-text-title-m">M · 动效</h2>
+        <div className={s.row}>
+          <Block id="M02" title="休息小胶囊 ↔ 面板" src="点小胶囊原地长成面板，「收起」缩回"><RestDockDemo /></Block>
+          <Block id="M05" title="阻尼底部面板" src="两档吸附、橡皮筋、按速度判档"><SheetDemo /></Block>
+          <Block id="M06" title="光晕边框" src="只给首页「开始训练」"><div className={s.card}><div className={s.glowPad}><Button glow>开始训练</Button></div></div></Block>
+          <Block id="M07" title="弹簧交错流" src="列表依次弹入"><div className={s.card}>
+            <div className={s.btnRow}><button type="button" onClick={() => setK((x) => x + 1)}>重放</button></div>
+            <Cascade replayKey={k}>{f.items.map((x) => <ExerciseRow key={x.exerciseId} name={x.name} detail={`${x.sets} × ${x.repRange.join('–')}`} weight={x.suggestion.weightKg} />)}</Cascade></div></Block>
+          <Block id="M08" title="按下内阴影 + 弹簧回弹" src="所有可点的件"><div className={s.card}><Button kind="neutral">完成</Button><Num size="s" value="M03 见 /playground · ExpandOverlay" /></div></Block>
+        </div>
+      </section>
+    </div>
+  );
 }
