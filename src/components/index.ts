@@ -7,7 +7,7 @@ export { Button, IconButton, type ButtonKind } from './Button';
 export { Capsule, CapsuleRail, recoveryLine } from './CapsuleRail';
 export { Sparkline, TrendChart, type Point } from './charts';
 export { DotCalendar, GiantNumber, Odometer, StepRing, WeekBars, dotMonths, type DotMonth } from './dataviz';
-export { Cascade, ExpandOverlay, RestDock } from './motion';
+export { Cascade, RestDock, SharedDetail, sharedName, sharedTransition } from './motion';
 export { Chip, NumberField, OptionCard, OptionGroup, ProgressSteps, Stepper, Switch } from './controls';
 export { Dialog, DialogCard, Skeleton, StateView, Toast, ToastViewport, type SkeletonShape, type StateKind } from './feedback';
 export { IncrementRuler, LandmarkRuler, PhaseSegments } from './Gauges';

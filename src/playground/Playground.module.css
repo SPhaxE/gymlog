@@ -77,4 +77,4 @@
 .navDemoBody { display: grid; gap: var(--milo-space-m); padding: var(--milo-space-2xl) var(--milo-size-gutter); }
 
 .expandList { position: relative; flex: 1; display: grid; align-content: start; gap: var(--milo-space-s); padding: var(--milo-space-l) var(--milo-size-gutter); }
-.expandRow { border-radius: var(--milo-radius-m); background: var(--milo-color-bg-raised); cursor: pointer; }
+.expandList > button { background-color: var(--milo-color-bg-raised); }
