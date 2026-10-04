@@ -3,7 +3,7 @@
  * 假对象按官方 Plugin API 的约束报错：变量 scopes 与类型、别名、documentAccess: dynamic-page 下禁止同步设样式 ID、
  * 改文字前必须先加载字体、只能绑定允许的字段、resize() 会把自动布局改成固定尺寸、实例里不能改尺寸或增删子节点、
  * 矢量路径语法等。它证明不了 Figma 里一定能跑，但能挡住大部分低级错误。
- *   node scripts/test_figma_plugin.js
+ *   node scripts/test_figma_plugin.cjs
  * 场景：① Foundations 首次导入 ② 重跑（幂等）③ 缺字体回退 ④ 仓库删掉的变量会被移除
  *       ⑤ 导入组件 ⑥ 组件重跑（ID 不变）⑦ 生成标杆页 P06 ⑧ 标杆页重跑 */
 'use strict';
@@ -19,7 +19,7 @@ const NODE_FIELDS = ['width', 'height', 'itemSpacing', 'paddingLeft', 'paddingRi
 const TEXTSTYLE_FIELDS = ['fontFamily', 'fontSize', 'fontStyle', 'fontWeight', 'letterSpacing', 'lineHeight', 'paragraphSpacing', 'paragraphIndent'];
 const FONTS = {
   'Inter': ['Regular', 'Medium', 'SemiBold', 'Bold'],
-  'Space Grotesk': ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'],
+  'Barlow Condensed': ['Regular', 'Medium', 'SemiBold', 'Bold', 'ExtraBold', 'Black'],
   'Noto Sans SC': ['Thin', 'Light', 'Regular', 'Medium', 'SemiBold', 'Bold', 'ExtraBold', 'Black'],
   'JetBrains Mono': ['Regular', 'Medium', 'SemiBold', 'Bold', 'ExtraBold'],
 };

@@ -35,7 +35,7 @@
 
 ```bash
 python3 scripts/build_tokens.py        # 校验对比度并重新生成 code.js 和 tokens.css
-node scripts/test_figma_plugin.js      # 用模拟的 Figma API 自检（62 项）
+node scripts/test_figma_plugin.cjs      # 用模拟的 Figma API 自检（62 项）
 ```
 
 ## 字体

@@ -1,5 +1,7 @@
 import '@fontsource-variable/noto-sans-sc';
-import '@fontsource-variable/space-grotesk';
+import '@fontsource/barlow-condensed/500.css';
+import '@fontsource/barlow-condensed/600.css';
+import '@fontsource/barlow-condensed/700.css';
 import '@fontsource-variable/jetbrains-mono';
 import '../design/tokens/tokens.css';
 import './styles/global.css';
