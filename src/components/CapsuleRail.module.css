@@ -3,7 +3,7 @@
 .leader circle { fill: var(--milo-color-text-disabled); }
 .leaderOn polyline { fill: none; stroke: var(--milo-color-accent-default); stroke-width: var(--milo-stroke-focus); }
 .leaderOn circle { fill: var(--milo-color-accent-default); }
-.rail { position: absolute; inset: 0; touch-action: none; }
+.rail { position: absolute; inset: 0; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 
 /* 胶囊：--w 是放大权重（0–1），字号在 Caption 与 Heading 之间插值 */
 .cap, .none, .focus {
@@ -25,7 +25,20 @@
 .focus .val, .focus .val b, .focus .val i { color: var(--milo-color-text-on-accent); }
 .focus .val b { font-size: var(--milo-font-size-l); }
 .focus .val i { font-style: normal; font-family: var(--milo-font-ui); font-size: var(--milo-font-size-caption); }
-.l2 { position: relative; margin-top: var(--milo-space-2xs); font-size: var(--milo-font-size-caption); font-weight: 700; color: var(--milo-color-text-on-accent-secondary); white-space: nowrap; }
+/* 放大镜读数卡：焦点胶囊左边、人体上方的毛玻璃小卡（盖住引线）；左缘一道荧光细条；跟焦点上下走 */
+.readout { position: absolute; z-index: 2; display: flex; flex-direction: column; gap: var(--milo-space-2xs); padding: var(--milo-space-s) var(--milo-space-s) var(--milo-space-s) var(--milo-space-m);
+  border-radius: var(--milo-radius-m); background: var(--milo-color-nav-bg); box-shadow: inset var(--milo-stroke-focus) 0 0 var(--milo-color-accent-default), 0 var(--milo-space-s) var(--milo-space-2xl) var(--milo-color-shadow-float);
+  -webkit-backdrop-filter: blur(var(--milo-space-m)); backdrop-filter: blur(var(--milo-space-m)); pointer-events: none;
+  transition: top var(--milo-motion-fast) var(--milo-motion-ease-standard); animation: readoutIn var(--milo-motion-fast) var(--milo-motion-ease-decelerate) both; }
+@keyframes readoutIn { from { opacity: 0; transform: translateX(var(--milo-space-s)); } }
+.rName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--milo-font-size-body); font-weight: 900; color: var(--milo-color-text-primary); }
+.rBig { display: flex; align-items: baseline; gap: var(--milo-space-2xs); font-family: var(--milo-font-number); color: var(--milo-color-accent-default); }
+.rBig b { font-size: var(--milo-font-size-l); font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.rBig i { font-style: normal; font-size: var(--milo-font-size-body); font-weight: 700; }
+.rBig em { margin-left: auto; font-style: normal; font-family: var(--milo-font-ui); font-size: var(--milo-font-size-min); color: var(--milo-color-text-secondary); }
+.rLine { font-size: var(--milo-font-size-min); color: var(--milo-color-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rLine b { font-family: var(--milo-font-number); color: var(--milo-color-text-primary); }
+@media (prefers-reduced-motion: reduce) { .readout { transition: none; animation: none; } }
 /* 超过最大可恢复量：量尺填满并加斜纹（与人体图「超量」同源），不只靠长度 */
 .gaugeOver { background: repeating-linear-gradient(135deg, var(--milo-color-data-gauge) 0 var(--milo-stroke-ring-progress), var(--milo-color-bg-raised-2) var(--milo-stroke-ring-progress) calc(var(--milo-stroke-ring-progress) * 1.5)); }
 .standalone { position: relative; left: auto !important; top: auto !important; }

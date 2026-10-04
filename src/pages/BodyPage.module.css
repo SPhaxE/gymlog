@@ -2,4 +2,12 @@
 .stage { position: relative; flex: 1; min-height: 0; margin: var(--milo-space-m) 0 var(--nav-clear); }
 /* 人体裁切框：左右各留页面边距，越界部分剪掉（同 V1 body-left-boundary-clip） */
 .figureClip { position: absolute; top: 0; bottom: 0; left: var(--milo-size-gutter); right: var(--milo-size-gutter); overflow: hidden; pointer-events: none; }
+/* 抽卡：被抽走的那张在上面，往 --dir 的反方向滑出、微转、变淡；新的一张从后面（略小、略偏 --dir 一侧）浮上来 */
+.card, .cardWait, .cardIn, .cardOut { position: absolute; inset: 0; transform-origin: 30% 60%; }
+.cardWait { opacity: 0; }
+.cardIn { z-index: 1; animation: cardIn var(--milo-motion-spring-ms) var(--milo-motion-ease-spring) var(--milo-motion-press) both; }
+.cardOut { z-index: 2; animation: cardOut var(--milo-motion-spring-ms) var(--milo-motion-ease-standard) both; }
+@keyframes cardIn { from { opacity: 0; transform: translateX(calc(var(--dir) * 12%)) scale(0.86); } }
+@keyframes cardOut { 45% { opacity: 1; } to { opacity: 0; transform: translateX(calc(var(--dir) * -60%)) translateY(-3%) rotate(calc(var(--dir) * -8deg)) scale(0.94); } }
+@media (prefers-reduced-motion: reduce) { .cardIn, .cardOut { animation: none; } }
 .big { display: flex; align-items: baseline; justify-content: space-between; color: var(--milo-color-text-primary); }

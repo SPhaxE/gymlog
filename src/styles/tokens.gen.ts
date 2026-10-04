@@ -44,6 +44,7 @@ export const T = {
   'size/capsule-gap': 4,
   'size/leader-elbow': 10,
   'size/leader-stagger': 3,
+  'size/readout-min-w': 84,
   'size/tick-minor': 8,
   'size/tick-major': 12,
   'size/tick-pitch': 4,

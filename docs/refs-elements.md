@@ -15,8 +15,8 @@
 |---|---|---|
 | **A4** + 最底层流体动态噪点渐变（希望随系统音乐律动） | 主角卡右上荧光弥散 + 颗粒（所有主角卡）；Tab 根页最底层几团主题色光斑缓慢漂移 + 颗粒，页面隐藏时停、减少动态效果时静止 | `Card hero`、`FluidBackdrop`（壳给 5 个 Tab 根页挂上） |
 | **T4 改荧光热** | 身体页正式渲染：热核 + 扩散 + 扫描线与颗粒，荧光色带；胶囊量尺同一条色带；图例改成色带 | `BodyFigure`、`Capsule`、`TierLegend`、`thermal.ts` |
-| **I3**（倾斜动态感参考 iconref2，选中加载态参考 iconmotionref1） | 26 个图标全部重画成 2 号圆头断笔线稿并整体右倾；导航选中时先转一圈渐变圆弧（加载轨迹）再沿路径画出图标 | `Icon`、`iconSets.tsx`、`Nav` |
-| **R1** 改：无端点；开始后先填一圈暗色待走轨道；休息不用虚线、无端点、平滑走 | 开始训练（`started`）后先画暗色轨道，再走荧光轨迹；休息是胶囊内暗骨实线，按结束时间戳逐帧收短 | `Nav`（`started`、`restEndAt`、`restTotalMs`） |
+| **I3**（倾斜动态感参考 iconref2，选中加载态参考 iconmotionref1） | 26 个图标全部重画成 2 号圆头断笔线稿并整体右倾；导航选中时图标的每一笔由暗到亮画出来（iconmotionref1 的 Motion Trace：尾部透明、笔头实色），画满后提亮定格 | `Icon`、`iconSets.tsx`、`Nav` |
+| **R1** 改：无端点；开始后先填一圈暗色待走轨道；休息不用虚线、无端点、平滑走 | 未开始不画；开始训练（`started`）、0 组是一整圈暗色轨道；每打卡一组荧光实线往前走，最后一组走满；休息是小胶囊里面的暗骨实线（跟着小胶囊滑），按结束时间戳逐帧收短 | `Nav`（`started`、`restEndAt`、`restTotalMs`） |
 | **E1–E5** | 点阵日历、环中数字、竖向胶囊量表、超大渐变数字；E5 并入 `TrendChart`（圆滑曲线 + 渐隐面积 + 游标） | `DotCalendar`、`StepRing`、`WeekBars`、`GiantNumber`、`TrendChart` |
 | **M02–M08** | 休息小胶囊 ↔ 面板、共享元素展开、拖动吸附 + 码表、阻尼面板、光晕边框（只给首页「开始训练」）、交错入场、按下内阴影 + 弹簧回弹；弹簧数值来自 Token | `RestDock`、`ExpandOverlay`、`TrendChart` / `Odometer`、`Sheet`、`Button glow`、`Cascade`、`interactive.css` |
 

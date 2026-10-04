@@ -129,10 +129,11 @@ export function SessionDemo({ f }: { f: Fixtures }) {
     <Note>当前组预填建议值，点「完成」一次就记完；完成后自动开始组间休息（按结束时间戳算，切后台回来仍然准）。休息面板点「收起」缩成小胶囊，再点长回来（M02）。把重量改成 620 看行内报错；已完成的组点铅笔修改。</Note></div>;
 }
 
-/** 导航：点切换（小胶囊滑过去）；+1 组推进外圈；开始休息后小胶囊出现虚线描边与剩余时间 */
+/** 导航：点切换（小胶囊滑过去、图标由暗到亮画出）；开始训练出暗色整圈，+1 组推进荧光；开始休息后小胶囊里出现实线描边与剩余时间 */
 function NavInner() {
   const [tab, setTab] = useState<Tab>('home');
-  const [done, setDone] = useState(5);
+  const [started, setStarted] = useState(false);
+  const [done, setDone] = useState(0);
   const [end, setEnd] = useState<number | null>(null);
   const left = useCountdown(end), total = 120;
   const resting = end != null && left > 0;
@@ -140,13 +141,14 @@ function NavInner() {
     <Screen label="导航演示">
       <div className={s.navDemoBody}>
         <div className={s.demoButtons}>
-          <Button kind="ghost" size="s" onClick={() => setDone((d) => Math.min(14, d + 1))}>完成 1 组（{done}/14）</Button>
-          <Button kind="ghost" size="s" onClick={() => setDone(0)}>清零</Button>
+          {started ? <Button kind="ghost" size="s" disabled={done >= 14} onClick={() => setDone((d) => Math.min(14, d + 1))}>完成 1 组（{done}/14）</Button>
+            : <Button kind="ghost" size="s" onClick={() => setStarted(true)}>开始训练</Button>}
+          <Button kind="ghost" size="s" onClick={() => { setStarted(false); setDone(0); setEnd(null); }}>重置</Button>
           <Button kind="ghost" size="s" onClick={() => setEnd(resting ? null : Date.now() + total * 1000)}>{resting ? '结束休息' : '开始休息 2:00'}</Button>
         </div>
-        <Note>外圈 = 今日训练 {done} / 14 组（实线，从顶边正中顺时针）；休息中选中项写剩余时间，虚线描边按剩余比例收短。</Note>
+        <Note>{started ? `外圈 = 整场训练（暗色整圈），荧光 = 已完成 ${done} / 14 组，最后一组走满` : '还没开始训练：不画外圈'}；休息中选中项写剩余时间，小胶囊里的实线描边跟着小胶囊滑、按剩余比例平滑收短。</Note>
       </div>
-      <Nav selected={tab} onSelect={(t) => setTab(t)} progress={done / 14} started rest={resting ? clock(left) : undefined} restEndAt={resting ? end! : undefined} restTotalMs={total * 1000} />
+      <Nav selected={tab} onSelect={(t) => setTab(t)} progress={done / 14} started={started} rest={resting ? clock(left) : undefined} restEndAt={resting ? end! : undefined} restTotalMs={total * 1000} />
     </Screen>
   );
 }
@@ -159,7 +161,7 @@ export function MagnifierDemo({ f }: { f: Fixtures }) {
   return (
     <div className={s.demoRow}>
       <div className={s.demoCol}><Stage tall label="身体页"><BodyPage scenario="done-today" now={f.now} initialFocus={null} /></Stage>
-        <Note>按住胶囊列 150 ms 进入放大镜，上下滑逐个放大，松手打开详情；轻点直接打开。先动 8 px 算页面滚动。</Note></div>
+        <Note>按住胶囊列 150 ms 进入放大镜，上下滑逐个放大；焦点的恢复度、时相、组数写在左边读数卡里（手指挡不到）。松手只退出，轻点胶囊才打开详情。先动 8 px 算页面滚动。正面 / 背面、男 / 女切换是抽卡。</Note></div>
       <div className={s.demoCol}><Stage tall label="首页"><HomePage scenario="plain-prescription" now={f.now} /></Stage>
         <Note>首页第一屏：今天练什么、第一个动作的建议重量、开始训练（这一屏唯一的荧光）。</Note></div>
     </div>

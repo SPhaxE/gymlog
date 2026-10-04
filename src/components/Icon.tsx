@@ -1,8 +1,10 @@
 /** 图标（2026-10-04 用户选定 I3）：2 号圆头线稿，故意留缺口，整体右倾（iconref2 的动态感）；颜色跟随 currentColor。
- *  默认 size/icon，small 为 size/icon-s。active：选中瞬间的加载态——笔画上跑一段由透明渐到实色的轨迹，跑完图标再显出来（导航选中时用）。
+ *  默认 size/icon，small 为 size/icon-s。active：选中瞬间的加载态（iconmotionref1 的 Motion Trace）——
+ *   每一笔从起点往终点画出来，已画出的那段沿笔画由暗到亮（尾部几乎透明、笔头实色圆头），画满后整枚提亮定格（导航选中时用）。
  *  装饰性，含义由文字或 aria-label 给出。
  *  PATHS 是旧的实心一套，只在 /lab 对照（IconStyleCtx = 'current'）时用。 */
-import { useContext, useId } from 'react';
+import { useContext, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { T } from '../styles/tokens.gen';
 import { CUT, GEO, IconStyleCtx, SLANT } from './iconSets';
 import s from './Icon.module.css';
 
@@ -37,12 +39,42 @@ const PATHS = {
   star: 'M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.3L12 17.1l-5.7 3.1 1.2-6.3L2.8 9.5l6.4-.8z',
 } as const;
 export type IconName = keyof typeof PATHS;
-const COMET = 7; // 彗星的段数：越多尾巴越顺
 export const ICONS = Object.keys(PATHS) as IconName[];
+
+const SEG = 18, TAIL = 0.06; // 每一笔切成的渐变段数；尾部最暗处的不透明度（参考图是 Black 0% → White 100%）
+const easeInOut = (x: number) => (x < 0.5 ? 4 * x ** 3 : 1 - (-2 * x + 2) ** 3 / 2); // 两头慢、中间快：起笔和收笔都看得清
+
+/** 逐帧改每段的虚线和不透明度：段 i 盖住已画部分的第 i/SEG 段（再向前多盖一段防缝），越靠笔头越亮；画满后渐到全实 */
+function runTrace(g: SVGGElement, done: () => void) {
+  const segs = Array.from(g.querySelectorAll<SVGPathElement>('path'));
+  if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) { done(); return () => {}; }
+  const draw = T['motion/slow'] * 2, settle = T['motion/base'], t0 = performance.now();
+  let raf = 0;
+  const frame = (now: number) => {
+    const t = now - t0, h = easeInOut(Math.min(1, t / draw)), u = Math.max(0, Math.min(1, (t - draw) / settle));
+    for (const el of segs) {
+      const i = Number(el.dataset.i), o = TAIL + (1 - TAIL) * ((i + 1) / SEG) ** 1.6;
+      el.style.strokeDasharray = `${(h / SEG) * (i < SEG - 1 ? 2 : 1)} 2`;
+      el.style.strokeDashoffset = `${(-h * i) / SEG}`;
+      el.style.opacity = String(o + (1 - o) * u);
+    }
+    if (u >= 1) done(); else raf = requestAnimationFrame(frame);
+  };
+  raf = requestAnimationFrame(frame);
+  return () => cancelAnimationFrame(raf);
+}
 
 export function Icon({ name, small, className, active }: { name: IconName; small?: boolean; className?: string; active?: boolean }) {
   const style = useContext(IconStyleCtx), gid = useId().replace(/[^a-zA-Z0-9-]/g, '');
   const cls = className ?? (small ? s.small : s.icon);
+  const strokes = useMemo(() => CUT[name]?.split(/(?=M)/) ?? [], [name]);
+  const g = useRef<SVGGElement>(null), [drawn, setDrawn] = useState(false);
+  const tracing = !!active && !drawn;
+  useLayoutEffect(() => {
+    if (!active) { setDrawn(false); return; }
+    if (!g.current) return;
+    return runTrace(g.current, () => setDrawn(true));
+  }, [active, name]);
   if (style === 'geo' && GEO[name]) return <svg className={cls} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d={GEO[name]} fillRule="evenodd" /></svg>;
   if ((style === 'cut' || style === 'trace' || style === 'slant') && CUT[name]) {
     const trace = style === 'trace', tf = style === 'slant' ? SLANT : undefined;
@@ -50,12 +82,15 @@ export function Icon({ name, small, className, active }: { name: IconName; small
     return (
       <svg className={cls} viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
         {trace && <defs><linearGradient id={gid} x1="0" y1="1" x2="1" y2="0"><stop offset="0" stopColor="currentColor" stopOpacity="0.15" /><stop offset="0.75" stopColor="currentColor" /></linearGradient></defs>}
-        <path {...line} stroke={trace ? `url(#${gid})` : 'currentColor'} className={active ? s.settle : undefined} />
-        {/* 加载态（iconmotionref1）：图标自己的线条上跑一段「彗星」——头部实色、尾巴逐段渐隐，沿笔画走完一遍后整枚图标再显出来 */}
-        {active && Array.from({ length: COMET }, (_, k) => (
-          <path key={k} {...line} stroke="currentColor" pathLength={1} className={s.comet}
-            style={{ animationDelay: `calc(var(--comet-step) * ${k})`, opacity: (COMET - k) / COMET }} />
-        ))}
+        {tracing ? (
+          /* 加载态（iconmotionref1）：每一笔各自从起点画到终点，已画出的部分由暗到亮；只有最亮的笔头一段是圆头 */
+          <g ref={g}>
+            {strokes.map((d, j) => Array.from({ length: SEG }, (_, i) => (
+              <path key={`${j}-${i}`} data-i={i} {...line} d={d} stroke="currentColor" pathLength={1} strokeLinecap={i === SEG - 1 ? 'round' : 'butt'}
+                style={{ strokeDasharray: '0 2', opacity: 0 }} />
+            )))}
+          </g>
+        ) : <path {...line} stroke={trace ? `url(#${gid})` : 'currentColor'} />}
       </svg>
     );
   }

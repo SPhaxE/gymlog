@@ -45,9 +45,9 @@ function useMicLevel() {
   return { on, err, read, toggle: () => (on ? (stop.current(), setOn(false)) : void start()) };
 }
 
-/** R1：开始训练（轨道画一圈）→ 完成组数推进 → 休息（胶囊内实线平滑收短） */
+/** R1：未开始（无环）→ 开始训练（画出一整圈暗色轨道 = 整场训练）→ 每完成一组荧光往前走 → 最后一组走满；休息时胶囊内实线平滑收短 */
 function RingDemo() {
-  const [started, setStarted] = useState(false), [done, setDone] = useState(0), [end, setEnd] = useState<number | null>(null), [k, setK] = useState(0);
+  const [started, setStarted] = useState(false), [done, setDone] = useState(0), [end, setEnd] = useState<number | null>(null);
   const total = 90 * 1000;
   const [now, setNow] = useState(Date.now());
   useEffect(() => { if (!end) return; const id = setInterval(() => setNow(Date.now()), T['motion/base']); return () => clearInterval(id); }, [end]);
@@ -55,17 +55,17 @@ function RingDemo() {
   const rest = end && left > 0 ? clock(left) : undefined;
   return (
     <div className={s.card}>
-      <div className={s.navBox}><Nav key={k} selected="home" progress={done / 14} started={started} rest={rest} restEndAt={rest ? end! : undefined} restTotalMs={total} /></div>
+      <div className={s.navBox}><Nav selected="home" progress={done / 14} started={started} rest={rest} restEndAt={rest ? end! : undefined} restTotalMs={total} /></div>
       <div className={s.btnRow}>
-        <button type="button" onClick={() => { setStarted(true); setDone(0); setEnd(null); setK((x) => x + 1); }}>开始训练</button>
-        <button type="button" disabled={!started} onClick={() => { setDone((d) => Math.min(14, d + 1)); setEnd(Date.now() + total); setNow(Date.now()); }}>完成 1 组（{done}/14）</button>
-        <button type="button" onClick={() => { setStarted(false); setDone(0); setEnd(null); setK((x) => x + 1); }}>重置</button>
+        <button type="button" disabled={started} onClick={() => { setStarted(true); setDone(0); setEnd(null); }}>开始训练</button>
+        <button type="button" disabled={!started || done >= 14} onClick={() => { setDone((d) => Math.min(14, d + 1)); setEnd(Date.now() + total); setNow(Date.now()); }}>完成 1 组（{done}/14）</button>
+        <button type="button" onClick={() => { setStarted(false); setDone(0); setEnd(null); }}>重置</button>
       </div>
     </div>
   );
 }
 
-/** I3：点导航切换，选中项先转一圈加载轨迹再画出图标 */
+/** I3：点导航切换，选中项的图标笔画由暗到亮画出来（iconmotionref1） */
 function NavPick() {
   const [tab, setTab] = useState<Tab>('home');
   return <div className={s.navBox}><Nav selected={tab} progress={8 / 14} started onSelect={(x) => setTab(x)} /></div>;
@@ -137,14 +137,14 @@ export function Lab({ now }: { now: number }) {
         <h2 className="milo-text-title-m">I · 图标（iconref2 倾斜断笔 + iconmotionref1 加载轨迹）</h2>
         <div className={s.card} id="I3">
           <div className={s.icons}>{ICONS.map((n) => <span key={n} className={s.iconCell}><Icon name={n} /><i>{n}</i></span>)}</div>
-          <span className="milo-text-caption">点导航切换：选中项先转一圈加载轨迹，再沿路径画出图标</span>
+          <span className="milo-text-caption">点导航切换：选中项的每一笔从起点画到终点，已画出的部分由暗到亮（笔头最亮），画满后整枚提亮定格</span>
           <NavPick />
         </div>
       </section>
 
       <section className={s.section}>
         <h2 className="milo-text-title-m">R · 进度环（R1 改版）</h2>
-        <Block id="R1" title="开始训练 → 轨道 → 进度 → 休息" src="开始后先画一圈暗色待走轨道，再走荧光轨迹（尾淡头实、无端点）；休息时胶囊里一道实线按帧平滑收短"><RingDemo /></Block>
+        <Block id="R1" title="开始训练 → 轨道 → 进度 → 休息" src="未开始不画环；开始训练画出一整圈暗色轨道（= 整场训练）；每完成一组荧光实线往前走一段，最后一组走满；休息时小胶囊里一道实线跟着小胶囊滑、按帧平滑收短"><RingDemo /></Block>
       </section>
 
       <section className={s.section}>

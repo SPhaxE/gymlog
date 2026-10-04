@@ -365,17 +365,17 @@ export const CATALOG: Entry[] = [
   { name: 'TierLegend', group: '数据图形', desc: '容量四档图例：明暗 + 纹理，不只靠色相；和人体图、胶囊同源。', axes: {}, size: 'card', render: () => <TierLegend /> },
   /* ---------------- 身体 ---------------- */
   {
-    name: 'Capsule', group: '身体', desc: '胶囊 = 量尺：底色按「组数 ÷ 最大可恢复量」从左填；0 组斜纹压暗；超量加斜纹。放大镜：邻近按余弦变大，焦点荧光实心、多一行恢复度与时相。',
+    name: 'Capsule', group: '身体', desc: '胶囊 = 量尺：底色按「组数 ÷ 最大可恢复量」从左填；0 组斜纹压暗；超量加斜纹。放大镜：邻近按余弦变大，焦点荧光实心、只一行（恢复度等写在胶囊列左边的读数卡里，手指挡不到）。',
     axes: { tier: ['none', 'low', 'ok', 'over'], size: ['rest', 'near', 'focus'] }, rows: ['tier'], cols: 'size', size: 'm',
     render: (p, f) => cap(f, p.tier, p.size),
   },
   {
-    name: 'CapsuleRail', group: '身体', desc: '胶囊列 + 引线 + 放大镜手势（按住 150 ms 进入，先动 8 px 算滚动；松手选中最近的）。真机手势见下方交互演示。',
+    name: 'CapsuleRail', group: '身体', desc: '胶囊列 + 引线 + 放大镜手势（按住 150 ms 进入，先动 8 px 算滚动；松手只退出，轻点才打开详情）。放大时焦点的恢复度、时相、剩余小时、近 7 天组数写在左边读数卡里，避开手指和焦点肌肉的锚点。真机手势见下方交互演示。',
     axes: { mag: ['rest', 'focus'] }, size: 'card',
     render: (p, f) => {
       const ids = ['upper-pectoralis', 'mid-lower-pectoralis', 'anterior-deltoid', 'lateral-deltoid', 'long-head-bicep', 'upper-abdominals'].filter((id) => f.body.stats.has(id));
       const w = T['size/screen-w'] - T['size/gutter'] * 2, h = ids.length * (T['size/capsule-rest-max-h'] + T['size/capsule-gap']) + T['size/capsule-focus-h'];
-      return <div className={s.railBox} style={{ height: h }}><CapsuleRail ids={ids} stats={f.body.stats} anchors={{}} width={w} height={h} left={T['size/capsule-focus-grow']} right={w}
+      return <div className={s.railBox} style={{ height: h }}><CapsuleRail ids={ids} stats={f.body.stats} anchors={{}} width={w} height={h} left={w * T['ratio/rail-start']} right={w}
         mag={p.mag === 'focus' ? 1 : null} onMag={noop} onSelect={noop} /></div>;
     },
   },
@@ -386,7 +386,7 @@ export const CATALOG: Entry[] = [
   },
   /* ---------------- 导航 ---------------- */
   {
-    name: 'Nav', group: '导航', desc: '5 项「图标 + 名称」，选中项是按弹簧滑动的骨白小胶囊，切换时图标先转一圈加载轨迹再画出来。外圈 = 今日进度：不画（恢复日、未开始）→ 开始训练先画一圈暗色待走轨道 → 荧光轨迹（尾淡头实、无端点）→ 满环。休息：选中项写剩余时间，胶囊里一道实线内描边平滑收短。',
+    name: 'Nav', group: '导航', desc: '5 项「图标 + 名称」，选中项是按弹簧滑动的骨白小胶囊，切换时图标笔画由暗到亮画出来（iconmotionref1）。外圈 = 今日进度：不画（恢复日、未开始）→ 开始训练、0 组：一整圈暗色轨道（= 整场训练）→ 每完成一组荧光实线往前走（无端点）→ 最后一组走满。休息：选中项写剩余时间，小胶囊里一道实线内描边跟着小胶囊滑、平滑收短。',
     axes: { item: ['default', 'pressed', 'focused'], selected: ['home', 'body', 'gains', 'log', 'me'], ring: ['off', 'track', 'partial', 'full', 'rest'] },
     rows: ['item', 'selected'], cols: 'ring', size: 'screen',
     skip: (p) => p.item !== 'default' && !(p.selected === 'home' && p.ring === 'partial'),

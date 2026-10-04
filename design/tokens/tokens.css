@@ -62,7 +62,7 @@
   --milo-color-nav-ink: var(--milo-prim-gray-600);
   --milo-color-nav-pill: var(--milo-prim-bone-100);
   --milo-color-nav-pill-ink: var(--milo-prim-gray-0);
-  --milo-color-nav-track: var(--milo-prim-gray-300);
+  --milo-color-nav-track: var(--milo-prim-gray-400);
   --milo-color-nav-progress: var(--milo-prim-lime-500);
   --milo-color-nav-rest: var(--milo-prim-bone-800);
   --milo-color-shadow-float: var(--milo-prim-black-a80);
@@ -110,6 +110,7 @@
   --milo-size-capsule-gap: 4px;
   --milo-size-leader-elbow: 10px;
   --milo-size-leader-stagger: 3px;
+  --milo-size-readout-min-w: 84px;
   --milo-size-tick-minor: 8px;
   --milo-size-tick-major: 12px;
   --milo-size-tick-pitch: 4px;
