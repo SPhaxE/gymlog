@@ -7,6 +7,7 @@
 产物（都由本脚本生成，勿手改）：
     design/figma-plugin/code.js      插件主程序（src/plugin.js + 内嵌的 Token 与纹理）
     design/tokens/tokens.css         给阶段 5 的 CSS 变量
+    src/styles/tokens.gen.ts         给 JS 的数值（几何计算用）
 校验不过（对比度不达标、引用不存在）时返回 1，不写任何文件。只用标准库。"""
 import base64, json, os, random, struct, subprocess, sys, zlib, datetime
 
@@ -22,7 +23,22 @@ ICONS = {
 }
 PLUGIN_OUT = os.path.join(ROOT, 'design', 'figma-plugin', 'code.js')
 CSS_OUT = os.path.join(ROOT, 'design', 'tokens', 'tokens.css')
+TS_OUT = os.path.join(ROOT, 'src', 'styles', 'tokens.gen.ts')
 BAD_NAME_CHARS = set('.{}$')
+
+
+def spring_linear(spec, mass=1.0):
+    """弹簧（stiffness k, damping c）→ CSS linear() 缓动与时长。欠阻尼解析解，取到误差 < 0.002 为止。"""
+    import math, re
+    k, c = (float(x) for x in re.findall(r'[\d.]+', spec)[:2])
+    w = math.sqrt(k / mass); z = c / (2 * math.sqrt(k * mass)); wd = w * math.sqrt(max(1e-6, 1 - z * z))
+    x = lambda t: 1 - math.exp(-z * w * t) * (math.cos(wd * t) + (z * w / wd) * math.sin(wd * t))
+    T = 0.05
+    while T < 2 and abs(1 - x(T)) + math.exp(-z * w * T) > 0.002:
+        T += 0.01
+    n = 32
+    pts = ', '.join(f'{x(T * i / n):.4f}'.rstrip('0').rstrip('.') or '0' for i in range(n + 1))
+    return f'linear({pts})', round(T * 1000)
 
 
 def hex_rgba(h):
@@ -175,10 +191,10 @@ def main():
         css.append(f'  --milo-color-{k.replace("/", "-")}: var(--milo-prim-{v["ref"]});')
     for k, v in nums.items():
         val = v['value']
-        if k.startswith('opacity/'):
+        if k.startswith('opacity/') or k.startswith('ratio/'):
             out = f'{val / 100:g}'
         elif k.startswith('motion/'):
-            unit = 'ms' if k in ('motion/press', 'motion/fast', 'motion/base', 'motion/slow', 'motion/stagger', 'motion/list-max', 'motion/long-press') else ''
+            unit = 'ms' if k in ('motion/press', 'motion/fast', 'motion/base', 'motion/slow', 'motion/stagger', 'motion/list-max', 'motion/long-press', 'motion/toast-hold') else ''
             out = f'{val / 100:g}' if k.startswith('motion/press-') else f'{val:g}{unit}'
         else:
             out = f'{val:g}px'
@@ -187,6 +203,11 @@ def main():
     for k, v in T['string'].items():
         val = f"'{v['value']}'{fallbacks[k]}" if k in fallbacks else v['value']
         css.append(f'  --milo-{k.replace("/", "-")}: {val};')
+        if k.startswith('motion/spring'):
+            ease, ms = spring_linear(v['value'])
+            name = k.replace('motion/', '')
+            css.append(f'  --milo-motion-ease-{name}: {ease};')
+            css.append(f'  --milo-motion-{name}-ms: {ms}ms;')
     css.append('}')
     # 文字样式 → 类名（与 Figma 的 Milo/ 文字样式一一对应）：.milo-text-number-hero 等
     weight = {'Regular': 400, 'Medium': 500, 'SemiBold': 600, 'Bold': 700, 'ExtraBold': 800, 'Black': 900}
@@ -195,6 +216,17 @@ def main():
         css.append(f".{cls} {{ font-family: var(--milo-{d['family'].replace('/', '-')}); font-weight: {weight[d['style']]}; "
                    f"font-size: var(--milo-{d['size'].replace('/', '-')}); line-height: {d['lineHeight']}px; letter-spacing: {d['letterSpacing'] / 100:g}em; }}")
     open(CSS_OUT, 'w', encoding='utf-8').write('\n'.join(css) + '\n')
+    # 给 JS 用的数值（放大镜、引线等几何计算）：只有 number 部分；opacity/ratio 已换算成 0–1
+    ts = ['// 由 scripts/build_tokens.py 从 design/tokens/tokens.json 生成，勿手改。JS 里的尺寸、时长只从这里取。', 'export const T = {']
+    for k, v in nums.items():
+        val = v['value'] / 100 if k.startswith(('opacity/', 'ratio/')) else v['value']
+        ts.append(f"  '{k}': {val:g},")
+    for k, v in T['string'].items():
+        if k.startswith('motion/spring'):
+            ts.append(f"  '{k}-ms': {spring_linear(v['value'])[1]},")
+    ts.append('} as const;')
+    ts.append('export type TokenKey = keyof typeof T;')
+    open(TS_OUT, 'w', encoding='utf-8').write('\n'.join(ts) + '\n')
     print(f'\n已生成 {os.path.relpath(PLUGIN_OUT, ROOT)}（{os.path.getsize(PLUGIN_OUT) // 1024} KB）与 {os.path.relpath(CSS_OUT, ROOT)}；build {build}')
     return 0
 

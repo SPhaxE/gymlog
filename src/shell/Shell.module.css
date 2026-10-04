@@ -1,0 +1,7 @@
+/* 悬浮层宿主：和 Screen 同一个框（内容最宽 content-max-w，居中，避开系统栏） */
+.layer { position: fixed; z-index: 50; left: 0; right: 0; margin: 0 auto; max-width: var(--milo-size-content-max-w); pointer-events: none;
+  top: var(--safe-area-inset-top, env(safe-area-inset-top)); bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom));
+  --nav-clear: calc(var(--milo-size-nav-bar-h) + var(--milo-size-nav-bottom) + var(--milo-space-s)); }
+.layer > :not([aria-live]) { pointer-events: auto; }
+.stub { flex: 1; display: grid; align-content: start; justify-items: center; gap: var(--milo-space-s); padding: var(--milo-space-2xl) var(--milo-size-gutter) var(--nav-clear); }
+.stubLink { text-decoration: none; }

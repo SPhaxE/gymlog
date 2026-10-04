@@ -1,0 +1,60 @@
+/* Chip：高 size/segment-h，命中区扩到 hit-min */
+.chip { position: relative; height: var(--milo-size-segment-h); padding: 0 var(--milo-space-m); border: 0; border-radius: var(--milo-radius-pill); font: inherit;
+  font-size: var(--milo-font-size-caption); white-space: nowrap; color: var(--milo-color-text-secondary); background-color: var(--milo-color-bg-raised);
+  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
+.chip::after { content: ''; position: absolute; inset: calc((var(--milo-size-segment-h) - var(--milo-size-hit-min)) / 2) 0; }
+.chipOn { background-color: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); font-weight: 700; box-shadow: none; }
+
+/* Switch */
+.switch { position: relative; flex: none; width: var(--milo-size-switch-w); height: var(--milo-size-switch-h); padding: 0; border: 0; border-radius: var(--milo-radius-pill);
+  background-color: var(--milo-color-bg-raised-2); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); color: var(--milo-color-text-primary); }
+.switch::after { content: ''; position: absolute; inset: calc((var(--milo-size-switch-h) - var(--milo-size-hit-min)) / 2) calc((var(--milo-size-switch-w) - var(--milo-size-hit-min)) / 2); }
+.knob { position: absolute; top: calc((var(--milo-size-switch-h) - var(--milo-size-switch-knob)) / 2); left: calc((var(--milo-size-switch-h) - var(--milo-size-switch-knob)) / 2);
+  width: var(--milo-size-switch-knob); height: var(--milo-size-switch-knob); border-radius: var(--milo-radius-pill); background: var(--milo-color-text-secondary);
+  transition: transform var(--milo-motion-fast) var(--milo-motion-ease-standard), background-color var(--milo-motion-fast) var(--milo-motion-ease-standard); }
+.switchOn { background-color: var(--milo-color-control-selected); box-shadow: none; color: var(--milo-color-control-selected-ink); }
+.switchOn .knob { background: var(--milo-color-control-selected-ink); transform: translateX(calc(var(--milo-size-switch-w) - var(--milo-size-switch-h))); }
+
+/* OptionCard */
+.group { display: grid; gap: var(--milo-space-s); }
+.option { display: flex; align-items: center; gap: var(--milo-space-m); width: 100%; min-height: calc(var(--milo-size-hit-min) + var(--milo-space-l)); padding: var(--milo-space-m) var(--milo-space-l);
+  border: 0; border-radius: var(--milo-radius-m); font: inherit; text-align: left; color: var(--milo-color-text-primary); background-color: var(--milo-color-bg-raised);
+  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
+.optionOn { box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-control-selected); background-color: var(--milo-color-bg-raised-2); }
+.optionText { flex: 1; display: grid; gap: var(--milo-space-2xs); }
+.optionText span { color: var(--milo-color-text-secondary); }
+.radio, .check { flex: none; display: grid; place-items: center; width: var(--milo-size-check); height: var(--milo-size-check); box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-line-strong); }
+.radio { border-radius: var(--milo-radius-pill); }
+.check { border-radius: var(--milo-radius-xs); }
+.markOn { background: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); box-shadow: none; }
+.radio.markOn { background: radial-gradient(circle, var(--milo-color-control-selected-ink) 0 28%, var(--milo-color-control-selected) 30%); }
+
+/* Stepper */
+.stepper { display: inline-flex; align-items: center; gap: var(--milo-space-xs); padding: var(--milo-space-xs); border-radius: var(--milo-radius-pill);
+  background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
+.stepBtn { position: relative; display: grid; place-items: center; width: var(--milo-size-button-h-s); height: var(--milo-size-button-h-s); border: 0; border-radius: var(--milo-radius-pill);
+  background-color: var(--milo-color-bg-raised-2); color: var(--milo-color-text-primary); }
+.stepBtn::after { content: ''; position: absolute; inset: calc((var(--milo-size-button-h-s) - var(--milo-size-hit-min)) / 2); }
+.stepVal { display: inline-flex; align-items: baseline; justify-content: center; gap: var(--milo-space-2xs); min-width: calc(var(--milo-space-5xl) * 2); padding: 0 var(--milo-space-s);
+  border-radius: var(--milo-radius-s); color: var(--milo-color-text-primary); font-variant-numeric: tabular-nums; }
+.stepVal i { font-style: normal; font-size: var(--milo-font-size-caption); color: var(--milo-color-text-secondary); }
+
+/* NumberField */
+.field { display: grid; gap: var(--milo-space-xs); color: var(--milo-color-text-secondary); min-width: 0; }
+.fieldBox { display: flex; align-items: baseline; gap: var(--milo-space-xs); height: var(--milo-size-field-h); padding: 0 var(--milo-space-l); border-radius: var(--milo-radius-m);
+  background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); align-items: center;
+  transition: box-shadow var(--milo-motion-fast) var(--milo-motion-ease-standard); }
+.fieldBox:focus-within, .fieldFocus { box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-control-selected); }
+.input { flex: 1; min-width: 0; width: 100%; border: 0; background: none; outline: none; padding: 0; color: var(--milo-color-text-primary);
+  font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-l); font-variant-numeric: tabular-nums; }
+.input::placeholder { color: var(--milo-color-text-disabled); }
+.fieldUnit { font-style: normal; font-size: var(--milo-font-size-caption); }
+.fieldError .fieldBox { box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-feedback-danger); }
+.errorText { display: inline-flex; align-items: center; gap: var(--milo-space-xs); color: var(--milo-color-feedback-danger); }
+.helper { color: var(--milo-color-text-secondary); }
+
+/* ProgressSteps */
+.steps { display: flex; align-items: center; gap: var(--milo-space-m); color: var(--milo-color-text-secondary); }
+.stepBars { flex: 1; display: flex; gap: var(--milo-space-xs); }
+.stepBars i { flex: 1; height: var(--milo-space-xs); border-radius: var(--milo-radius-pill); background: var(--milo-color-data-track); transition: background-color var(--milo-motion-base) var(--milo-motion-ease-standard); }
+.stepBars i.stepOn { background: var(--milo-color-control-selected); }

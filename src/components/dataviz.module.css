@@ -1,0 +1,45 @@
+/* E1 点阵日历：每天一个 space/xs 的点；练过的骨白、今天荧光描边环（进度类用途）、未来压暗 */
+.dots { display: flex; gap: var(--milo-space-l); justify-content: space-between; }
+.dotMonth { display: grid; gap: var(--milo-space-s); justify-items: center; color: var(--milo-color-text-secondary); }
+.dotGrid { display: flex; gap: var(--milo-space-xs); }
+.dotCol { display: grid; gap: var(--milo-space-xs); }
+.dot_rest, .dot_trained, .dot_out, .dot_future, .dot_today { display: block; width: var(--milo-space-xs); height: var(--milo-space-xs); border-radius: var(--milo-radius-pill); background: var(--milo-color-line-strong); }
+.dot_trained { background: var(--milo-color-control-selected); box-shadow: 0 0 0 var(--milo-stroke-hairline) var(--milo-color-control-selected); }
+.dot_out { background: transparent; }
+.dot_future { opacity: var(--milo-opacity-disabled); }
+.dot_today { background: var(--milo-color-bg-base); box-shadow: 0 0 0 var(--milo-stroke-focus) var(--milo-color-accent-default); }
+
+/* E2 环中数字 */
+.ringRow { display: flex; align-items: center; gap: var(--milo-space-m); color: var(--milo-color-text-secondary); }
+.ringText { min-width: 0; }
+.ringText > :first-child { color: var(--milo-color-text-primary); }
+.ringDone { opacity: var(--milo-opacity-done-row); }
+.ring { flex: none; }
+.ringTrack { fill: none; stroke: var(--milo-color-data-track); stroke-width: var(--milo-stroke-ring-progress); }
+.ringProg { fill: none; stroke: var(--milo-color-control-selected); stroke-width: var(--milo-stroke-ring-progress); stroke-linecap: round;
+  transition: stroke-dasharray var(--milo-motion-spring-ms) var(--milo-motion-ease-spring); }
+.ringNum { fill: var(--milo-color-text-primary); font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-l); }
+
+/* E3 竖向胶囊量表：本周骨白，其余量尺底色 */
+.bars { display: grid; gap: var(--milo-space-s); align-items: end; }
+.barCol { display: grid; justify-items: center; gap: var(--milo-space-xs); color: var(--milo-color-text-secondary); }
+.barVal { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-caption); color: var(--milo-color-text-primary); }
+.barTrack { position: relative; width: var(--milo-space-m); height: calc(var(--milo-size-chart-h) * 0.7); border-radius: var(--milo-radius-pill); background: var(--milo-color-data-track); overflow: hidden; }
+.barFill, .barNow { position: absolute; left: 0; right: 0; bottom: 0; border-radius: var(--milo-radius-pill); background: var(--milo-color-data-gauge);
+  transition: height var(--milo-motion-spring-ms) var(--milo-motion-ease-spring); }
+.barNow { background: var(--milo-color-control-selected); }
+
+/* E4 超大渐变数字 */
+.giant { display: grid; gap: var(--milo-space-xs); color: var(--milo-color-text-secondary); }
+.giantNum { font-family: var(--milo-font-number); font-weight: 700; line-height: 0.82; font-size: calc(var(--milo-font-size-hero) * 2.2); letter-spacing: -0.02em;
+  background: linear-gradient(180deg, var(--milo-color-text-primary) 30%, color-mix(in srgb, var(--milo-color-text-primary) 8%, transparent) 100%), var(--grain);
+  -webkit-background-clip: text; background-clip: text; color: transparent; }
+.giantNum i { font-style: normal; font-size: var(--milo-font-size-xl); margin-left: var(--milo-space-xs); }
+
+/* 滚动码表 */
+.odo { display: inline-flex; line-height: 1; color: var(--milo-color-text-primary); font-variant-numeric: tabular-nums; }
+.odoCol { display: inline-block; height: 1em; overflow: hidden; }
+.odoStrip { display: grid; transition: transform var(--milo-motion-spring-ms) var(--milo-motion-ease-spring); }
+.odoStrip i { font-style: normal; height: 1em; line-height: 1; }
+
+@media (prefers-reduced-motion: reduce) { .odoStrip, .ringProg, .barFill, .barNow { transition: none; } }

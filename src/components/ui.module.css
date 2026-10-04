@@ -1,0 +1,78 @@
+.row { display: flex; align-items: center; gap: var(--milo-space-s); }
+.sp { flex: 1; }
+.secondary { color: var(--milo-color-text-secondary); }
+.num { display: inline-flex; align-items: baseline; color: var(--milo-color-text-primary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.unit { font-style: normal; font-size: var(--milo-font-size-caption); color: var(--milo-color-text-secondary); margin-left: var(--milo-space-2xs); }
+
+.delta { display: inline-flex; align-items: center; gap: var(--milo-space-2xs); white-space: nowrap; font-family: var(--milo-font-number); font-weight: 600; font-size: var(--milo-font-size-body); }
+.delta b { font-weight: inherit; }
+.up { color: var(--milo-color-text-primary); }
+.down, .flat { color: var(--milo-color-text-secondary); }
+.baseline { color: var(--milo-color-text-secondary); font-family: var(--milo-font-ui); font-size: var(--milo-font-size-caption); }
+
+/* 页头：上边距 space/l，块间 space/s */
+.header { display: grid; gap: var(--milo-space-s); padding: var(--milo-space-l) var(--milo-size-gutter) 0; }
+.header h1 { margin: 0; }
+.topBar { display: flex; align-items: center; gap: var(--milo-space-s); min-height: var(--milo-size-hit-min); padding: var(--milo-space-s) var(--milo-size-gutter) 0; }
+.topBar h1 { margin: 0; }
+.topTitle { flex: 1; min-width: 0; }
+.back { position: relative; display: grid; place-items: center; width: var(--milo-size-button-h-s); height: var(--milo-size-button-h-s); margin-left: calc(var(--milo-space-s) * -1);
+  border: 0; border-radius: var(--milo-radius-pill); background-color: transparent; color: var(--milo-color-text-primary); }
+.back::after { content: ''; position: absolute; inset: calc((var(--milo-size-button-h-s) - var(--milo-size-hit-min)) / 2); }
+
+.tag { display: inline-flex; align-items: center; gap: var(--milo-space-2xs); white-space: nowrap; font-size: var(--milo-font-size-caption); line-height: 1;
+  padding: var(--milo-space-xs) var(--milo-space-s); border-radius: var(--milo-radius-xs); }
+.tag_neutral { background: var(--milo-color-bg-raised); color: var(--milo-color-text-secondary); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
+.tag_strong { background: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); font-weight: 700; }
+.tag_outline { color: var(--milo-color-text-secondary); outline: var(--milo-stroke-hairline) dashed var(--milo-color-line-strong); outline-offset: calc(var(--milo-stroke-hairline) * -1); }
+.tag_danger { color: var(--milo-color-feedback-danger); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-feedback-danger); }
+
+.banner { display: flex; align-items: center; gap: var(--milo-space-m); padding: var(--milo-space-m) var(--milo-space-l); border-radius: var(--milo-radius-m);
+  background: var(--milo-color-bg-raised); color: var(--milo-color-text-secondary); box-shadow: inset var(--milo-space-xs) 0 0 var(--milo-color-control-selected); }
+.bannerText { flex: 1; display: grid; gap: var(--milo-space-2xs); min-width: 0; }
+.bannerText b { color: var(--milo-color-text-primary); }
+.bannerActions { display: flex; gap: var(--milo-space-s); flex: none; }
+.bannerError { box-shadow: inset var(--milo-space-xs) 0 0 var(--milo-color-feedback-danger); }
+.bannerError > svg { color: var(--milo-color-feedback-danger); }
+
+.list { list-style: none; margin: 0; padding: 0; }
+.rowItem { position: relative; }
+.listRow { position: relative; display: flex; align-items: center; gap: var(--milo-space-m); min-height: var(--milo-size-hit-min); padding: var(--milo-space-s) 0; color: var(--milo-color-text-secondary); }
+li.listRow + li.listRow::before, .rowItem + .rowItem::before, li.listRow + .rowItem::before, .rowItem + li.listRow::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: var(--milo-space-xs);
+  background: repeating-linear-gradient(90deg, var(--milo-color-line-default) 0 var(--milo-stroke-hairline), transparent var(--milo-stroke-hairline) var(--milo-size-tick-pitch)); }
+.rowText { flex: 1; min-width: 0; color: var(--milo-color-text-primary); }
+.rowIcon { display: grid; place-items: center; flex: none; width: var(--milo-size-button-h-s); height: var(--milo-size-button-h-s); border-radius: var(--milo-radius-s); background: var(--milo-color-bg-raised); color: var(--milo-color-text-primary); }
+.rowBtn { width: 100%; border: 0; background-color: transparent; font: inherit; text-align: left; border-radius: var(--milo-radius-s); }
+.rowBtn[data-pressed], .rowBtn:active { transform: none; }
+.rowLabel { cursor: pointer; }
+.rowDanger .rowText { color: var(--milo-color-feedback-danger); }
+
+.section { display: flex; align-items: center; gap: var(--milo-space-s); }
+
+.card, .hero { display: grid; gap: var(--milo-space-xs); padding: var(--milo-space-l); border-radius: var(--milo-radius-l); color: var(--milo-color-text-secondary);
+  background-color: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
+/* 主角卡（2026-10-04 用户选定 A4，ref5）：右上角荧光弥散 + 左下一点骨白，颗粒只铺在光里；每屏只有这一张 */
+.hero { position: relative; overflow: hidden; isolation: isolate;
+  background: radial-gradient(110% 95% at 95% 0%, color-mix(in srgb, var(--milo-color-accent-default) 34%, transparent), transparent 62%),
+    radial-gradient(80% 70% at 0% 100%, color-mix(in srgb, var(--milo-prim-bone-500) 12%, transparent), transparent 70%), var(--milo-color-bg-raised); }
+.hero::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit;
+  background-image: var(--grain); background-size: calc(var(--milo-space-5xl) * 3.333); mix-blend-mode: overlay; opacity: calc(var(--milo-opacity-grain) * 2.5);
+  -webkit-mask: radial-gradient(110% 95% at 95% 0%, black, transparent 70%); mask: radial-gradient(110% 95% at 95% 0%, black, transparent 70%); }
+.cardBtn { width: 100%; border: 0; font: inherit; text-align: left; }
+.hero.cardBtn[data-pressed], .hero.cardBtn:active { background: linear-gradient(var(--press-tint), var(--press-tint)),
+  radial-gradient(110% 95% at 95% 0%, color-mix(in srgb, var(--milo-color-accent-default) 34%, transparent), transparent 62%), var(--milo-color-bg-raised); }
+
+.legend { display: flex; flex-wrap: wrap; gap: var(--milo-space-xs) var(--milo-space-l); font-size: var(--milo-font-size-min); color: var(--milo-color-text-secondary); }
+.legend span { display: inline-flex; align-items: center; gap: var(--milo-space-xs); }
+.legend i { width: var(--milo-space-m); height: var(--milo-space-s); border-radius: var(--milo-radius-xs); }
+.tNone { background: repeating-linear-gradient(135deg, var(--milo-color-line-strong) 0 var(--milo-stroke-focus), var(--milo-color-data-tier-none) var(--milo-stroke-focus) var(--milo-space-xs)); }
+.tLow { background: var(--milo-color-data-tier-low); }
+.tOk { background: var(--milo-color-data-tier-ok); }
+.tOver { background: repeating-linear-gradient(135deg, var(--milo-color-data-tier-over) 0 var(--milo-stroke-ring-progress), var(--milo-color-data-tier-over-stripe) var(--milo-stroke-ring-progress) calc(var(--milo-stroke-ring-progress) * 1.5)); }
+
+/* 热成像图例：一条色带，两道刻度（最低有效量、适宜量） */
+.heat { display: flex; align-items: center; gap: var(--milo-space-s); font-size: var(--milo-font-size-min); color: var(--milo-color-text-secondary); }
+.heat em { font-style: normal; margin-left: auto; }
+.heatBar { position: relative; flex: 0 1 calc(var(--milo-size-screen-w) * 0.36); height: var(--milo-space-s); border-radius: var(--milo-radius-pill); }
+.heatBar b { position: absolute; top: calc(var(--milo-space-2xs) * -1); bottom: calc(var(--milo-space-2xs) * -1); width: var(--milo-stroke-hairline); background: var(--milo-color-text-primary); }

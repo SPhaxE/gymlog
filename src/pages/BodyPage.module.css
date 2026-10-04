@@ -1,0 +1,5 @@
+.kpi { display: flex; align-items: baseline; gap: var(--milo-space-l); color: var(--milo-color-text-secondary); }
+.stage { position: relative; flex: 1; min-height: 0; margin: var(--milo-space-m) 0 var(--nav-clear); }
+/* 人体裁切框：左右各留页面边距，越界部分剪掉（同 V1 body-left-boundary-clip） */
+.figureClip { position: absolute; top: 0; bottom: 0; left: var(--milo-size-gutter); right: var(--milo-size-gutter); overflow: hidden; pointer-events: none; }
+.big { display: flex; align-items: baseline; justify-content: space-between; color: var(--milo-color-text-primary); }

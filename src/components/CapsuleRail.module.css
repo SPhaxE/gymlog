@@ -1,0 +1,31 @@
+.leaders { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+.leader polyline { fill: none; stroke: var(--milo-color-data-leader); stroke-width: var(--milo-stroke-hairline); }
+.leader circle { fill: var(--milo-color-text-disabled); }
+.leaderOn polyline { fill: none; stroke: var(--milo-color-accent-default); stroke-width: var(--milo-stroke-focus); }
+.leaderOn circle { fill: var(--milo-color-accent-default); }
+.rail { position: absolute; inset: 0; touch-action: none; }
+
+/* 胶囊：--w 是放大权重（0–1），字号在 Caption 与 Heading 之间插值 */
+.cap, .none, .focus {
+  position: absolute; overflow: hidden; display: flex; flex-direction: column; justify-content: center; padding: 0 var(--milo-space-m);
+  border-radius: var(--milo-radius-pill); background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default);
+  transition-property: top, height, left, width; transition-duration: var(--milo-motion-fast); transition-timing-function: var(--milo-motion-ease-standard);
+}
+.none { background: repeating-linear-gradient(135deg, var(--milo-color-bg-raised-2) 0 var(--milo-stroke-focus), var(--milo-color-bg-raised) var(--milo-stroke-focus) calc(var(--milo-space-xs) + var(--milo-stroke-hairline))); }
+.none .name, .none .val, .none .val b { color: var(--milo-color-text-disabled); }
+.gauge { position: absolute; left: 0; top: 0; bottom: 0; background: var(--milo-color-data-gauge); }
+.l1 { position: relative; display: flex; align-items: baseline; gap: var(--milo-space-s); white-space: nowrap; }
+.name { overflow: hidden; text-overflow: ellipsis; font-weight: 500; color: var(--milo-color-text-primary);
+  font-size: calc(var(--milo-font-size-caption) + (var(--milo-font-size-heading) - var(--milo-font-size-caption)) * var(--w, 0)); }
+.val { margin-left: auto; font-family: var(--milo-font-number); font-weight: 600; font-size: var(--milo-font-size-caption); color: var(--milo-color-text-secondary); font-variant-numeric: tabular-nums; }
+.val b { font-weight: 700; color: var(--milo-color-text-primary); font-size: calc(var(--milo-font-size-body) + (var(--milo-font-size-m) - var(--milo-font-size-body)) * var(--w, 0)); }
+.focus { padding: 0 var(--milo-space-l); border-radius: var(--milo-radius-l); background: var(--milo-color-accent-default);
+  box-shadow: 0 0 0 var(--milo-stroke-ring-gap) var(--milo-color-accent-glow-ring), 0 var(--milo-space-s) var(--milo-space-2xl) var(--milo-color-shadow-float); }
+.focus .name { font-size: var(--milo-font-size-heading); font-weight: 900; color: var(--milo-color-text-on-accent); }
+.focus .val, .focus .val b, .focus .val i { color: var(--milo-color-text-on-accent); }
+.focus .val b { font-size: var(--milo-font-size-l); }
+.focus .val i { font-style: normal; font-family: var(--milo-font-ui); font-size: var(--milo-font-size-caption); }
+.l2 { position: relative; margin-top: var(--milo-space-2xs); font-size: var(--milo-font-size-caption); font-weight: 700; color: var(--milo-color-text-on-accent-secondary); white-space: nowrap; }
+/* 超过最大可恢复量：量尺填满并加斜纹（与人体图「超量」同源），不只靠长度 */
+.gaugeOver { background: repeating-linear-gradient(135deg, var(--milo-color-data-gauge) 0 var(--milo-stroke-ring-progress), var(--milo-color-bg-raised-2) var(--milo-stroke-ring-progress) calc(var(--milo-stroke-ring-progress) * 1.5)); }
+.standalone { position: relative; left: auto !important; top: auto !important; }

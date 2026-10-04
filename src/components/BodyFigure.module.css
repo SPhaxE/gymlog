@@ -1,0 +1,27 @@
+/* 半身：opacity/figure 压暗作背景；左缘 ratio/figure-fade 渐隐（同 V1），右侧再淡一点让胶囊更清楚 */
+.figure, .measuring { display: block; opacity: var(--milo-opacity-figure); }
+.figure {
+  -webkit-mask: linear-gradient(90deg, transparent 0, black calc(var(--milo-ratio-figure-fade) * 100%), black 60%, color-mix(in srgb, black 45%, transparent));
+  mask: linear-gradient(90deg, transparent 0, black calc(var(--milo-ratio-figure-fade) * 100%), black 60%, color-mix(in srgb, black 45%, transparent));
+}
+.measuring { visibility: hidden; }
+.figure path, .figure line, .measuring path, .measuring line { vector-effect: non-scaling-stroke; }
+.neutral path { fill: var(--milo-color-data-body); stroke: var(--milo-color-line-default); stroke-width: calc(var(--milo-stroke-hairline) * 0.6); }
+.contour path, .contour line { fill: none; stroke: var(--milo-color-line-strong); stroke-linecap: round; stroke-linejoin: round; stroke-width: calc(var(--milo-stroke-hairline) * 0.8); opacity: 0.7; }
+.tNone path { fill: var(--milo-color-data-tier-none); stroke: var(--milo-color-data-tier-none-edge); stroke-width: calc(var(--milo-stroke-hairline) * 0.5); }
+.tLow path { fill: var(--milo-color-data-tier-low); stroke: var(--milo-color-line-strong); stroke-width: calc(var(--milo-stroke-hairline) * 0.5); }
+.tOk path { fill: var(--milo-color-data-tier-ok); stroke: var(--milo-color-line-strong); stroke-width: calc(var(--milo-stroke-hairline) * 0.5); }
+.tOver path { fill: var(--milo-color-data-tier-over); stroke: var(--milo-color-line-strong); stroke-width: calc(var(--milo-stroke-hairline) * 0.5); }
+.tFocus path { stroke: var(--milo-color-accent-default); stroke-width: var(--milo-stroke-focus); }
+
+/* 热成像（/lab 预览中）：不压暗，左缘渐隐与现行一致 */
+.thermal { display: block;
+  -webkit-mask: linear-gradient(90deg, transparent 0, black calc(var(--milo-ratio-figure-fade) * 100%));
+  mask: linear-gradient(90deg, transparent 0, black calc(var(--milo-ratio-figure-fade) * 100%)); }
+.thermal path { vector-effect: non-scaling-stroke; }
+.thermalContour path { fill: none; stroke: var(--milo-color-bg-base); stroke-width: calc(var(--milo-stroke-hairline) * 0.6); opacity: 0.5; }
+.thermalFocus path { fill: none; stroke: var(--milo-color-text-primary); stroke-width: var(--milo-stroke-focus); }
+.scan { mix-blend-mode: multiply; }
+.scanLine { fill: var(--milo-color-bg-base); opacity: 0.35; }
+.grain path { fill: var(--milo-color-text-primary); }
+.grain { opacity: var(--milo-opacity-grain); mix-blend-mode: overlay; }

@@ -1,0 +1,35 @@
+.page { min-height: 100dvh; padding: var(--milo-space-2xl) var(--milo-size-gutter) var(--milo-space-5xl); display: grid; gap: var(--milo-space-4xl);
+  background: var(--milo-color-bg-base); color: var(--milo-color-text-primary); }
+.hero { display: grid; gap: var(--milo-space-s); max-width: calc(var(--milo-size-content-max-w) * 1.8); }
+.hero h1, .section h2 { margin: 0; }
+.muted, .note { color: var(--milo-color-text-secondary); margin: 0; }
+.section { display: grid; gap: var(--milo-space-l); }
+.row { display: flex; flex-wrap: wrap; gap: var(--milo-space-2xl); align-items: flex-start; }
+.block { margin: 0; display: grid; gap: var(--milo-space-s); align-content: start; max-width: var(--milo-size-screen-w); scroll-margin-top: var(--milo-space-l); }
+.block figcaption { display: grid; gap: var(--milo-space-2xs); }
+.block figcaption span { color: var(--milo-color-text-secondary); }
+.card { width: var(--milo-size-screen-w); padding: var(--milo-space-l); border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised);
+  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); display: grid; gap: var(--milo-space-m); overflow: hidden; }
+.demoPad { display: grid; gap: var(--milo-space-m); }
+.navBox { position: relative; width: var(--milo-size-screen-w); height: calc(var(--milo-size-nav-bar-h) + var(--milo-size-nav-bottom) * 2); }
+
+.icons { display: flex; flex-wrap: wrap; gap: var(--milo-space-l); }
+.iconCell { display: grid; justify-items: center; gap: var(--milo-space-xs); width: var(--milo-space-5xl); color: var(--milo-color-text-primary); }
+.iconCell svg { width: calc(var(--milo-size-icon) * 1.4); height: calc(var(--milo-size-icon) * 1.4); }
+.iconCell i { font-style: normal; font-size: var(--milo-font-size-min); color: var(--milo-color-text-secondary); }
+.dockArea { position: absolute; inset: 0; display: grid; align-items: end; padding: var(--milo-space-l) var(--milo-size-gutter); }
+.sheetArea { position: absolute; inset: 0; overflow: hidden; }
+.sheetReopen { display: grid; place-items: center; height: 100%; }
+.glowPad { padding: var(--milo-space-l) var(--milo-space-s); }
+
+.ramp { display: grid; gap: var(--milo-space-2xs); }
+.ramp i { display: block; height: var(--milo-space-s); border-radius: var(--milo-radius-pill); }
+.ramp span { position: relative; height: var(--milo-space-l); color: var(--milo-color-text-secondary); }
+/* 标注位置 = thermal.ts heatOf 的地标：0.04 / 0.4 / 0.7 / 0.88 / 1 */
+.ramp b { position: absolute; font-weight: 400; transform: translateX(-50%); white-space: nowrap; }
+.ramp b:nth-child(1) { left: 4%; transform: none; } .ramp b:nth-child(2) { left: 40%; } .ramp b:nth-child(3) { left: 70%; } .ramp b:nth-child(4) { left: 88%; } .ramp b:nth-child(5) { left: 100%; transform: translateX(-100%); }
+
+.btnRow { display: flex; flex-wrap: wrap; gap: var(--milo-space-s); }
+.btnRow button { height: var(--milo-size-button-h-s); padding: 0 var(--milo-space-l); border: 0; border-radius: var(--milo-radius-pill); font: inherit;
+  font-size: var(--milo-font-size-caption); background: var(--milo-color-bg-raised-2); color: var(--milo-color-text-primary); }
+.btnRow button:disabled { opacity: var(--milo-opacity-disabled); }

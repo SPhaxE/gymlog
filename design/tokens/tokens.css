@@ -64,7 +64,7 @@
   --milo-color-nav-pill-ink: var(--milo-prim-gray-0);
   --milo-color-nav-track: var(--milo-prim-gray-300);
   --milo-color-nav-progress: var(--milo-prim-lime-500);
-  --milo-color-nav-rest: var(--milo-prim-gray-900);
+  --milo-color-nav-rest: var(--milo-prim-bone-800);
   --milo-color-shadow-float: var(--milo-prim-black-a80);
   --milo-radius-xs: 4px;
   --milo-radius-s: 8px;
@@ -84,6 +84,7 @@
   --milo-space-5xl: 48px;
   --milo-size-screen-w: 360px;
   --milo-size-screen-h: 800px;
+  --milo-size-content-max-w: 448px;
   --milo-size-gutter: 16px;
   --milo-size-hit-min: 48px;
   --milo-size-button-h: 52px;
@@ -97,7 +98,36 @@
   --milo-size-capsule-w: 150px;
   --milo-size-capsule-mag-h: 42px;
   --milo-size-capsule-mag-w: 26px;
+  --milo-size-nav-bar-h: 64px;
+  --milo-size-nav-item-h: 52px;
+  --milo-size-nav-icon: 20px;
+  --milo-size-segment-h: 32px;
+  --milo-size-capsule-rest-max-h: 30px;
+  --milo-size-capsule-near-h: 34px;
+  --milo-size-capsule-focus-h: 62px;
+  --milo-size-capsule-near-grow: 10px;
+  --milo-size-capsule-focus-grow: 34px;
+  --milo-size-capsule-gap: 4px;
+  --milo-size-leader-elbow: 10px;
+  --milo-size-leader-stagger: 3px;
+  --milo-size-tick-minor: 8px;
+  --milo-size-tick-major: 12px;
+  --milo-size-tick-pitch: 4px;
+  --milo-size-bp-wide: 900px;
   --milo-size-hero-max-h: 160px;
+  --milo-size-icon: 20px;
+  --milo-size-icon-s: 16px;
+  --milo-size-switch-w: 46px;
+  --milo-size-switch-h: 28px;
+  --milo-size-switch-knob: 22px;
+  --milo-size-check: 22px;
+  --milo-size-field-h: 56px;
+  --milo-size-day-cell: 40px;
+  --milo-size-spark-w: 64px;
+  --milo-size-spark-h: 24px;
+  --milo-size-chart-h: 168px;
+  --milo-size-chart-dot: 4px;
+  --milo-ratio-media-h: 0.75;
   --milo-stroke-hairline: 1px;
   --milo-stroke-focus: 1.6px;
   --milo-stroke-ring-track: 1.2px;
@@ -108,7 +138,13 @@
   --milo-stroke-ring-rest-gapdash: 3px;
   --milo-opacity-done-row: 0.45;
   --milo-opacity-grain: 0.22;
+  --milo-opacity-figure: 0.62;
+  --milo-ratio-figure-crop: 0.42;
+  --milo-ratio-figure-fade: 0.08;
+  --milo-ratio-rail-start: 0.43;
   --milo-opacity-trace-min: 0.3;
+  --milo-opacity-press: 0.12;
+  --milo-opacity-disabled: 0.38;
   --milo-font-size-hero: 64px;
   --milo-font-size-xl: 40px;
   --milo-font-size-l: 30px;
@@ -125,6 +161,7 @@
   --milo-motion-slow: 350ms;
   --milo-motion-stagger: 80ms;
   --milo-motion-list-max: 300ms;
+  --milo-motion-toast-hold: 2800ms;
   --milo-motion-long-press: 150ms;
   --milo-motion-drag-slop: 8;
   --milo-motion-magnifier-radius: 3;
@@ -136,6 +173,11 @@
   --milo-motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --milo-motion-ease-decelerate: cubic-bezier(0, 0, 0, 1);
   --milo-motion-spring: stiffness 420, damping 32;
+  --milo-motion-ease-spring: linear(0, 0.0314, 0.1089, 0.2122, 0.3263, 0.4409, 0.5489, 0.6465, 0.7313, 0.8028, 0.8614, 0.908, 0.944, 0.971, 0.9904, 1.0037, 1.0123, 1.0172, 1.0194, 1.0197, 1.0187, 1.017, 1.0149, 1.0126, 1.0104, 1.0083, 1.0064, 1.0048, 1.0035, 1.0024, 1.0016, 1.0009, 1.0004);
+  --milo-motion-spring-ms: 420ms;
+  --milo-motion-spring-soft: stiffness 252, damping 17.6;
+  --milo-motion-ease-spring-soft: linear(0, 0.0675, 0.2282, 0.4288, 0.6298, 0.8059, 0.9436, 1.0394, 1.0962, 1.1206, 1.1212, 1.1064, 1.0834, 1.0581, 1.0345, 1.015, 1.0005, 0.9912, 0.9862, 0.9848, 0.9858, 0.9882, 0.9912, 0.9943, 0.997, 0.9991, 1.0006, 1.0015, 1.0018, 1.0018, 1.0016, 1.0013, 1.0009);
+  --milo-motion-spring-soft-ms: 800ms;
 }
 .milo-text-number-hero { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-hero); line-height: 60px; letter-spacing: 0em; }
 .milo-text-number-xl { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-xl); line-height: 40px; letter-spacing: 0em; }

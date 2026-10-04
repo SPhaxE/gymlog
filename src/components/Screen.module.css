@@ -1,0 +1,8 @@
+.screen {
+  position: fixed; left: 0; right: 0; margin: 0 auto; max-width: var(--milo-size-content-max-w);
+  top: var(--safe-area-inset-top, env(safe-area-inset-top)); bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; overflow: hidden; background: var(--milo-color-bg-base);
+  --nav-clear: calc(var(--milo-size-nav-bar-h) + var(--milo-size-nav-bottom) + var(--milo-space-s));
+}
+.screen { isolation: isolate; }
+.atm { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
