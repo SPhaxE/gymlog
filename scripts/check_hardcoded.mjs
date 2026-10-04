@@ -6,7 +6,7 @@ import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const root = new URL('..', import.meta.url).pathname;
-const dirs = (process.argv.slice(2).length ? process.argv.slice(2) : ['src/pages', 'src/components', 'src/playground', 'src/shell']).map((d) => join(root, d));
+const dirs = (process.argv.slice(2).length ? process.argv.slice(2) : ['src/pages', 'src/components', 'src/playground', 'src/shell', 'src/lab']).map((d) => join(root, d));
 const rules = [
   [/#[0-9a-fA-F]{3,8}\b/, '颜色字面量（用 var(--milo-color-*)）'],
   [/\b(?:rgba?|hsla?)\s*\(/, '颜色函数（用 var(--milo-color-*)）'],

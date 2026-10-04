@@ -13,3 +13,15 @@
 .tOk path { fill: var(--milo-color-data-tier-ok); stroke: var(--milo-color-line-strong); stroke-width: calc(var(--milo-stroke-hairline) * 0.5); }
 .tOver path { fill: var(--milo-color-data-tier-over); stroke: var(--milo-color-line-strong); stroke-width: calc(var(--milo-stroke-hairline) * 0.5); }
 .tFocus path { stroke: var(--milo-color-accent-default); stroke-width: var(--milo-stroke-focus); }
+
+/* 热成像（/lab 预览中）：不压暗，左缘渐隐与现行一致 */
+.thermal { display: block;
+  -webkit-mask: linear-gradient(90deg, transparent 0, black calc(var(--milo-ratio-figure-fade) * 100%));
+  mask: linear-gradient(90deg, transparent 0, black calc(var(--milo-ratio-figure-fade) * 100%)); }
+.thermal path { vector-effect: non-scaling-stroke; }
+.thermalContour path { fill: none; stroke: var(--milo-color-bg-base); stroke-width: calc(var(--milo-stroke-hairline) * 0.6); opacity: 0.5; }
+.thermalFocus path { fill: none; stroke: var(--milo-color-text-primary); stroke-width: var(--milo-stroke-focus); }
+.scan { mix-blend-mode: multiply; }
+.scanLine { fill: var(--milo-color-bg-base); opacity: 0.35; }
+.grain path { fill: var(--milo-color-text-primary); }
+.grain { opacity: var(--milo-opacity-grain); mix-blend-mode: overlay; }

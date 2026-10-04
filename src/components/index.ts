@@ -11,7 +11,7 @@ export { IncrementRuler, LandmarkRuler, PhaseSegments } from './Gauges';
 export { Icon, ICONS, type IconName } from './Icon';
 export { Nav, TABS, type Tab } from './Nav';
 export { OverlayHost, Portal, ToastProvider, handleBack, useBackHandler, useToast } from './overlay';
-export { Screen } from './Screen';
+export { Screen, ScreenAtmosphere } from './Screen';
 export { Segmented } from './Segmented';
 export { Sheet, SheetBlock } from './Sheet';
 export { forced, type Forced } from './state';

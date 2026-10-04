@@ -1,4 +1,6 @@
 /** 图标：24×24 实心几何，颜色跟随 currentColor；默认 size/icon，small 为 size/icon-s。装饰性（aria-hidden），含义由旁边的文字或 aria-label 给出。 */
+import { useContext, useId } from 'react';
+import { CUT, GEO, IconStyleCtx } from './iconSets';
 import s from './Icon.module.css';
 
 const PATHS = {
@@ -34,7 +36,20 @@ const PATHS = {
 export type IconName = keyof typeof PATHS;
 export const ICONS = Object.keys(PATHS) as IconName[];
 
-export function Icon({ name, small, className }: { name: IconName; small?: boolean; className?: string }) {
+export function Icon({ name, small, className, active }: { name: IconName; small?: boolean; className?: string; active?: boolean }) {
+  const style = useContext(IconStyleCtx), gid = useId().replace(/[^a-zA-Z0-9-]/g, '');
+  const cls = className ?? (small ? s.small : s.icon);
+  if (style === 'geo' && GEO[name]) return <svg className={cls} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d={GEO[name]} fillRule="evenodd" /></svg>;
+  if ((style === 'cut' || style === 'trace') && CUT[name]) {
+    const trace = style === 'trace';
+    return (
+      <svg className={cls} viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+        {trace && <defs><linearGradient id={gid} x1="0" y1="1" x2="1" y2="0"><stop offset="0" stopColor="currentColor" stopOpacity="0.15" /><stop offset="0.75" stopColor="currentColor" /></linearGradient></defs>}
+        <path d={CUT[name]} stroke={trace ? `url(#${gid})` : 'currentColor'} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
+          pathLength={trace ? 1 : undefined} className={trace && active ? s.draw : undefined} />
+      </svg>
+    );
+  }
   return (
     <svg className={className ?? (small ? s.small : s.icon)} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
       <path d={PATHS[name]} fillRule="evenodd" />

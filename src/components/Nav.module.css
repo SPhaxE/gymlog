@@ -25,3 +25,5 @@
   transition: transform var(--milo-motion-base) var(--milo-motion-ease-standard), width var(--milo-motion-base) var(--milo-motion-ease-standard); }
 @media (prefers-reduced-motion: reduce) { .pill { transition: none; } }
 .icon { width: var(--milo-size-nav-icon); height: var(--milo-size-nav-icon); }
+.progressSeg { fill: none; stroke: var(--milo-color-nav-progress); stroke-width: var(--milo-stroke-ring-progress); stroke-linecap: butt; }
+.traceHead { fill: var(--milo-color-nav-progress); }

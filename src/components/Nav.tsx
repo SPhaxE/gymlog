@@ -18,8 +18,12 @@ export function pillPath(x: number, y: number, w: number, h: number) {
 
 /** onSelect：壳里接路由（不整页刷新）；不传时就是普通链接。itemState：在第一个未选中项上强制显示按下 / 聚焦（Playground 用）。
  *  选中项的骨白底是一块独立的滑块，切换时滑过去（motion/base）；减少动态效果时直接到位。 */
-export function Nav({ selected, progress, rest, restRatio, onSelect, itemState }: {
+export function Nav({ selected, progress, rest, restRatio, onSelect, itemState, trace, compact }: {
   selected: Tab; progress: number | null; rest?: string; restRatio?: number; onSelect?: (tab: Tab, path: string) => void; itemState?: Forced;
+  /** /lab 候选（iconmotionref1）：进度环尾部渐隐、头部实色加圆点，像运动轨迹 */
+  trace?: boolean;
+  /** /lab 候选（ref2 Cardy Pay）：只有选中项写名称，其余只有图标 */
+  compact?: boolean;
 }) {
   const nav = useRef<HTMLElement>(null), on = useRef<HTMLAnchorElement>(null), maskId = useId();
   const [geo, setGeo] = useState<{ w: number; h: number; pill: [number, number, number, number] | null }>({ w: 0, h: 0, pill: null });
@@ -43,7 +47,8 @@ export function Nav({ selected, progress, rest, restRatio, onSelect, itemState }
     <nav ref={nav} className={s.nav} aria-label="主导航">
       <svg className={s.ring} aria-hidden="true">
         {progress != null && ring && <path className={s.track} d={ring} />}
-        {progress != null && progress > 0 && ring && <path className={s.progress} d={ring} pathLength={1} style={{ strokeDasharray: `${Math.min(1, progress)} 1` }} />}
+        {progress != null && progress > 0 && ring && !trace && <path className={s.progress} d={ring} pathLength={1} style={{ strokeDasharray: `${Math.min(1, progress)} 1` }} />}
+        {progress != null && progress > 0 && ring && trace && <TraceRing d={ring} p={Math.min(1, progress)} />}
         {restRing && (
           <>
             {/* 休息：虚线只走剩余比例那一段——实线路径做遮罩，虚线路径画在下面 */}
@@ -58,11 +63,25 @@ export function Nav({ selected, progress, rest, restRatio, onSelect, itemState }
         <a key={k} ref={k === selected ? on : undefined} href={href} className={cx('milo-press milo-focus', k === selected ? s.on : s.item)} aria-current={k === selected ? 'page' : undefined}
           aria-label={k === selected && rest ? `${label}，休息剩余 ${rest}` : undefined}
           onClick={(e) => { if (onSelect) { e.preventDefault(); onSelect(k, href); } }} {...(k === firstOff ? forced(itemState) : {})}>
-          <Icon name={k} className={s.icon} />
-          <span>{k === selected && rest ? rest : label}</span>
+          <Icon name={k} className={s.icon} active={k === selected} />
+          {(!compact || k === selected) ? <span>{k === selected && rest ? rest : label}</span> : <span className="milo-sr">{label}</span>}
         </a>
       ))}
     </nav>
+  );
+}
+
+/** 轨迹环：把已走的那段切成若干小段，不透明度从 opacity/trace-min 升到 1（尾淡头实），端点一个实心圆 */
+function TraceRing({ d, p }: { d: string; p: number }) {
+  const n = 28, lo = T['opacity/trace-min'], end = endPoint(d, p);
+  return (
+    <>
+      {Array.from({ length: n }, (_, i) => {
+        const a = (p * i) / n, len = p / n + (i < n - 1 ? p / n : 0); // 每段向前多盖一段，后画的（更实的）压住前一段，不露缝
+        return <path key={i} className={s.progressSeg} d={d} pathLength={1} style={{ strokeDasharray: `${len} 1`, strokeDashoffset: -a, opacity: lo + ((1 - lo) * (i + 1)) / n }} />;
+      })}
+      {end && <circle className={s.traceHead} cx={end[0]} cy={end[1]} r={T['stroke/ring-progress']} />}
+    </>
   );
 }
 

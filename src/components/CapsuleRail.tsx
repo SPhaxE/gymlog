@@ -1,11 +1,12 @@
 /** 胶囊列 + 引线 + 放大镜手势（ia §1.10）：
  *  按住 motion/long-press 进入放大镜；进入前移动超过 motion/drag-slop 视为滚动；上下滑动逐个放大；松手选中最近的肌头；轻点直接选中。
  *  胶囊：名称 · 组数/适宜量；底色按「组数 ÷ 最大可恢复量」从左填充（胶囊本身就是量尺）；0 组为斜纹；焦点为实心荧光 + 黑字，多一行恢复度与时相。 */
-import { useRef } from 'react';
+import { useContext, useRef } from 'react';
 import type { HeadStat } from '../engine';
 import { T } from '../styles/tokens.gen';
 import type { Anchors } from './BodyFigure';
 import { capsuleLayout, indexAt, type CapBox } from './capsuleLayout';
+import { BodyRender, heatCss, heatOf } from './thermal';
 import s from './CapsuleRail.module.css';
 
 const PHASE = { repair: '修复期', recovering: '恢复中', golden: '黄金窗', decayed: '已回落', untrained: '未练过' } as const;
@@ -77,10 +78,12 @@ export function CapsuleRail({ ids, stats, anchors, width, height, left, right, m
 export function Capsule({ h, c, top = 0, standalone }: { h: HeadStat; c: CapBox; top?: number; standalone?: boolean }) {
   const none = !(h.sets7d > 0);
   const fill = Math.min(1, h.sets7d / h.mrv) * 100;
+  const thermal = useContext(BodyRender);
   return (
     <div className={`${c.focus ? s.focus : none ? s.none : s.cap} ${standalone ? s.standalone : ''}`} data-id={h.id} role="option" aria-selected={c.focus}
       style={{ left: c.x, top: top + c.y, width: c.w, height: c.h, ['--w' as string]: c.weight }}>
-      {!c.focus && !none && <div className={`${s.gauge} ${h.sets7d > h.mrv ? s.gaugeOver : ''}`} style={{ width: `${fill}%` }} />}
+      {!c.focus && !none && <div className={`${s.gauge} ${h.sets7d > h.mrv && !thermal ? s.gaugeOver : ''}`}
+        style={{ width: `${fill}%`, ...(thermal ? { background: heatCss(heatOf(h), thermal.palette), opacity: 0.55 } : {}) }} />}
       <div className={s.l1}>
         <span className={s.name}>{h.name}</span>
         <span className={s.val}><b>{fmt(h.sets7d)}</b>/{h.mav}{c.focus && <i> 组</i>}</span>

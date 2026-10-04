@@ -4,3 +4,5 @@
   display: flex; flex-direction: column; overflow: hidden; background: var(--milo-color-bg-base);
   --nav-clear: calc(var(--milo-size-nav-bar-h) + var(--milo-size-nav-bottom) + var(--milo-space-s));
 }
+.screen { isolation: isolate; }
+.atm { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }

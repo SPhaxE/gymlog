@@ -94,8 +94,9 @@ export function SectionLabel({ children, trailing }: { children: ReactNode; trai
 
 /** 卡片：bg/raised + 细描边 + radius/l；hero 变体带一点径向渐变深度。传 onClick 时整卡可点 */
 export function Card({ children, hero, onClick, label, state }: { children: ReactNode; hero?: boolean; onClick?: () => void; label?: string; state?: Forced }) {
-  if (onClick) return <button type="button" aria-label={label} className={cx('milo-press milo-focus', hero ? s.hero : s.card, s.cardBtn)} onClick={onClick} {...forced(state)}>{children}</button>;
-  return <section className={hero ? s.hero : s.card} aria-label={label}>{children}</section>;
+  const h = hero ? { 'data-hero': '' } : {};
+  if (onClick) return <button type="button" aria-label={label} className={cx('milo-press milo-focus', hero ? s.hero : s.card, s.cardBtn)} onClick={onClick} {...h} {...forced(state)}>{children}</button>;
+  return <section className={hero ? s.hero : s.card} aria-label={label} {...h}>{children}</section>;
 }
 
 /** 容量图例：四档用明暗 + 纹理区分，不只靠色相 */
