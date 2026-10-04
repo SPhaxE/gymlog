@@ -232,7 +232,8 @@ export function IconGridBoard() {
       if (!doc.getElementById('app-fonts')) {
         const st = doc.createElement('style');
         st.id = 'app-fonts';
-        st.textContent = `${appFontFaces()}\n:root { --font-ui: 'Noto Sans SC Variable', system-ui, sans-serif; --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace; }`;
+        // 族名已由 vite.config.ts 的 milo-font-alias 去掉「 Variable」后缀，和规范板里写的 'Noto Sans SC' / 'JetBrains Mono' 对得上，不用再改名
+        st.textContent = appFontFaces();
         doc.head.appendChild(st);
       }
       const measure = () => setH(doc.documentElement.scrollHeight);
