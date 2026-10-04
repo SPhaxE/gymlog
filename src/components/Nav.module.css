@@ -11,7 +11,7 @@
 /* 外圈进度：实线；休息：虚线 + 端点圆点（两层靠线型区分，不只靠颜色） */
 .progress { stroke: var(--milo-color-nav-progress); stroke-width: var(--milo-stroke-ring-progress); stroke-linecap: round;
   transition: stroke-dasharray var(--milo-motion-slow) var(--milo-motion-ease-standard); }
-.rest { stroke: var(--milo-color-nav-rest); stroke-width: var(--milo-stroke-ring-rest); stroke-dasharray: var(--milo-stroke-ring-rest-dash) var(--milo-stroke-ring-rest-gapdash); }
+.rest { stroke: var(--milo-color-nav-rest); stroke-width: var(--milo-stroke-ring-rest); stroke-linecap: round; stroke-dasharray: var(--milo-stroke-ring-rest-dash) var(--milo-stroke-ring-rest-gapdash); }
 .restMask { fill: none; stroke: white; stroke-width: calc(var(--milo-stroke-ring-rest) * 3); }
 .restDot { fill: var(--milo-color-nav-rest); }
 .item, .on {
@@ -27,3 +27,6 @@
 .icon { width: var(--milo-size-nav-icon); height: var(--milo-size-nav-icon); }
 .progressSeg { fill: none; stroke: var(--milo-color-nav-progress); stroke-width: var(--milo-stroke-ring-progress); stroke-linecap: butt; }
 .traceHead { fill: var(--milo-color-nav-progress); }
+/* 休息内描边层：在骨白滑块（z 0）之上、文字（z 1，DOM 在后）之下 */
+.restLayer { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.restLayer path { fill: none; }

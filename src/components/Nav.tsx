@@ -1,6 +1,6 @@
 /** 底部导航（ia §1.12，v2）：5 项都是「图标 + 名称」，选中项骨白实心。
  *  外圈 = 今日进度：实线，从顶边正中顺时针；progress null 不画环（恢复日、动作池不足、空态），0 只画轨道，1 满环。
- *  休息：选中项的名称换成剩余时间，小胶囊外加一道虚线描边 + 端点圆点（restRatio = 剩余 ÷ 总时长），与外圈靠线型区分。 */
+ *  休息：选中项的名称换成剩余时间，小胶囊里面一道内描边虚线 + 端点圆点（restRatio = 剩余 ÷ 总时长），与外圈靠线型和位置区分。 */
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { T } from '../styles/tokens.gen';
 import { Icon } from './Icon';
@@ -37,10 +37,11 @@ export function Nav({ selected, progress, rest, restRatio, onSelect, itemState, 
     const ro = new ResizeObserver(measure); ro.observe(el);
     return () => ro.disconnect();
   }, [selected, rest]);
-  const sw = T['stroke/ring-progress'], half = sw / 2, gap = T['stroke/ring-gap'] + T['stroke/ring-rest'] / 2;
+  // 休息描边是小胶囊的内描边：向内缩半个线宽再留 space/2xs，整条线都在骨白里面，不会碰到外圈
+  const sw = T['stroke/ring-progress'], half = sw / 2, inset = T['stroke/ring-rest'] / 2 + T['space/2xs'];
   const ring = geo.w ? pillPath(half, half, geo.w - sw, geo.h - sw) : '';
   const p = geo.pill;
-  const restRing = p && rest && restRatio != null ? pillPath(p[0] - gap, p[1] - gap, p[2] + gap * 2, p[3] + gap * 2) : '';
+  const restRing = p && rest && restRatio != null ? pillPath(p[0] + inset, p[1] + inset, p[2] - inset * 2, p[3] - inset * 2) : '';
   const restEnd = restRing ? endPoint(restRing, restRatio!) : null;
   const firstOff = TABS.find(([k]) => k !== selected)?.[0];
   return (
@@ -49,16 +50,16 @@ export function Nav({ selected, progress, rest, restRatio, onSelect, itemState, 
         {progress != null && ring && <path className={s.track} d={ring} />}
         {progress != null && progress > 0 && ring && !trace && <path className={s.progress} d={ring} pathLength={1} style={{ strokeDasharray: `${Math.min(1, progress)} 1` }} />}
         {progress != null && progress > 0 && ring && trace && <TraceRing d={ring} p={Math.min(1, progress)} />}
-        {restRing && (
-          <>
-            {/* 休息：虚线只走剩余比例那一段——实线路径做遮罩，虚线路径画在下面 */}
-            <mask id={maskId}><path d={restRing} pathLength={1} className={s.restMask} style={{ strokeDasharray: `${Math.max(0, Math.min(1, restRatio!))} 1` }} /></mask>
-            <path className={s.rest} d={restRing} mask={`url(#${maskId})`} />
-          </>
-        )}
-        {restEnd && <circle className={s.restDot} cx={restEnd[0]} cy={restEnd[1]} r={T['stroke/ring-rest']} />}
       </svg>
       {p && <span className={s.pill} aria-hidden="true" style={{ transform: `translate(${p[0]}px, ${p[1]}px)`, width: p[2], height: p[3] }} />}
+      {/* 休息内描边：单独一层，压在骨白滑块上、文字下 */}
+      {restRing && (
+        <svg className={s.restLayer} aria-hidden="true">
+          <mask id={maskId}><path d={restRing} pathLength={1} className={s.restMask} style={{ strokeDasharray: `${Math.max(0, Math.min(1, restRatio!))} 1` }} /></mask>
+          <path className={s.rest} d={restRing} mask={`url(#${maskId})`} />
+          {restEnd && <circle className={s.restDot} cx={restEnd[0]} cy={restEnd[1]} r={T['stroke/ring-rest']} />}
+        </svg>
+      )}
       {TABS.map(([k, label, href]) => (
         <a key={k} ref={k === selected ? on : undefined} href={href} className={cx('milo-press milo-focus', k === selected ? s.on : s.item)} aria-current={k === selected ? 'page' : undefined}
           aria-label={k === selected && rest ? `${label}，休息剩余 ${rest}` : undefined}

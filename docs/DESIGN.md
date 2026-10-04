@@ -126,7 +126,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 | 五项 | 首页 · 身体 · 增量 · 记录 · 我的，都是「图标（`size/nav-icon`）+ 名称（`Micro`）」 |
 | 选中项 | `nav/pill` 骨白实心，图标与文字 `nav/pill-ink`，高 `size/nav-item-h` |
 | 外圈：今日进度 | `nav/progress` **实线** `stroke/ring-progress`，**从顶边正中顺时针**。null：不画（恢复日、动作池不足、空态）；0：只画轨道 `nav/track`；1：满环（今天已练完） |
-| 休息倒计时 | 选中项的名称换成剩余时间（1:35）；小胶囊外加 `nav/rest` **虚线**（`stroke/ring-rest-dash` / `-gapdash`）+ 端点圆点，只走剩余比例那一段；与胶囊之间留 `stroke/ring-gap` 的缝 |
+| 休息倒计时 | 选中项的名称换成剩余时间（1:35）；小胶囊**里面**一道 `nav/rest`（暗骨）**内描边虚线**（`stroke/ring-rest-dash` / `-gapdash`）+ 端点圆点，只走剩余比例那一段；向内缩半个线宽 + `space/2xs`，不碰外圈（2026-10-04 用户要求，原先画在胶囊外会和外圈重叠） |
 
 ## 7. 动效
 
