@@ -3,7 +3,9 @@
 .leader circle { fill: var(--milo-color-text-disabled); }
 .leaderOn polyline { fill: none; stroke: var(--milo-color-accent-default); stroke-width: var(--milo-stroke-focus); }
 .leaderOn circle { fill: var(--milo-color-accent-default); }
-.rail { position: absolute; inset: 0; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.rail { position: absolute; inset: 0; pointer-events: none; -webkit-user-select: none; user-select: none; }
+/* 手势层：胶囊列静止宽度、整列高；竖向滑动交给页面滚动，按住才进放大镜（见 CapsuleRail.tsx） */
+.hit { position: absolute; top: 0; bottom: 0; touch-action: pan-y; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
 
 /* 胶囊：--w 是放大权重（0–1），字号在 Caption 与 Heading 之间插值 */
 .cap, .none, .focus {
@@ -21,24 +23,15 @@
 .val b { font-weight: 700; color: var(--milo-color-text-primary); font-size: calc(var(--milo-font-size-body) + (var(--milo-font-size-m) - var(--milo-font-size-body)) * var(--w, 0)); }
 .focus { padding: 0 var(--milo-space-l); border-radius: var(--milo-radius-l); background: var(--milo-color-accent-default);
   box-shadow: 0 0 0 var(--milo-stroke-ring-gap) var(--milo-color-accent-glow-ring), 0 var(--milo-space-s) var(--milo-space-2xl) var(--milo-color-shadow-float); }
-.focus .name { font-size: var(--milo-font-size-heading); font-weight: 900; color: var(--milo-color-text-on-accent); }
-.focus .val, .focus .val b, .focus .val i { color: var(--milo-color-text-on-accent); }
-.focus .val b { font-size: var(--milo-font-size-l); }
-.focus .val i { font-style: normal; font-family: var(--milo-font-ui); font-size: var(--milo-font-size-caption); }
-/* 放大镜读数卡：焦点胶囊左边、人体上方的毛玻璃小卡（盖住引线）；左缘一道荧光细条；跟焦点上下走 */
-.readout { position: absolute; z-index: 2; display: flex; flex-direction: column; gap: var(--milo-space-2xs); padding: var(--milo-space-s) var(--milo-space-s) var(--milo-space-s) var(--milo-space-m);
-  border-radius: var(--milo-radius-m); background: var(--milo-color-nav-bg); box-shadow: inset var(--milo-stroke-focus) 0 0 var(--milo-color-accent-default), 0 var(--milo-space-s) var(--milo-space-2xl) var(--milo-color-shadow-float);
-  -webkit-backdrop-filter: blur(var(--milo-space-m)); backdrop-filter: blur(var(--milo-space-m)); pointer-events: none;
-  transition: top var(--milo-motion-fast) var(--milo-motion-ease-standard); animation: readoutIn var(--milo-motion-fast) var(--milo-motion-ease-decelerate) both; }
-@keyframes readoutIn { from { opacity: 0; transform: translateX(var(--milo-space-s)); } }
-.rName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--milo-font-size-body); font-weight: 900; color: var(--milo-color-text-primary); }
-.rBig { display: flex; align-items: baseline; gap: var(--milo-space-2xs); font-family: var(--milo-font-number); color: var(--milo-color-accent-default); }
-.rBig b { font-size: var(--milo-font-size-l); font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
-.rBig i { font-style: normal; font-size: var(--milo-font-size-body); font-weight: 700; }
-.rBig em { margin-left: auto; font-style: normal; font-family: var(--milo-font-ui); font-size: var(--milo-font-size-min); color: var(--milo-color-text-secondary); }
-.rLine { font-size: var(--milo-font-size-min); color: var(--milo-color-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.rLine b { font-family: var(--milo-font-number); color: var(--milo-color-text-primary); }
-@media (prefers-reduced-motion: reduce) { .readout { transition: none; animation: none; } }
+/* 焦点：左边信息三行（手指挡不到），名称在最右（手指底下，放大前已看过）；名称最多两行，右对齐 */
+.fRow { position: relative; display: flex; align-items: center; gap: var(--milo-space-s); min-width: 0; }
+.fInfo { display: flex; flex-direction: column; gap: var(--milo-space-2xs); flex: none; color: var(--milo-color-text-on-accent-secondary); }
+.fSets { font-family: var(--milo-font-number); font-weight: 600; font-size: var(--milo-font-size-caption); line-height: 1; color: var(--milo-color-text-on-accent); white-space: nowrap; }
+.fSets b { font-size: var(--milo-font-size-m); font-weight: 700; font-variant-numeric: tabular-nums; }
+.fLine { font-size: var(--milo-font-size-min); font-weight: 700; line-height: 1.25; white-space: nowrap; }
+.fLine b { font-family: var(--milo-font-number); color: var(--milo-color-text-on-accent); }
+.fName { margin-left: auto; min-width: 0; text-align: right; font-size: var(--milo-font-size-body); font-weight: 900; line-height: 1.2; color: var(--milo-color-text-on-accent);
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 /* 超过最大可恢复量：量尺填满并加斜纹（与人体图「超量」同源），不只靠长度 */
 .gaugeOver { background: repeating-linear-gradient(135deg, var(--milo-color-data-gauge) 0 var(--milo-stroke-ring-progress), var(--milo-color-bg-raised-2) var(--milo-stroke-ring-progress) calc(var(--milo-stroke-ring-progress) * 1.5)); }
 .standalone { position: relative; left: auto !important; top: auto !important; }

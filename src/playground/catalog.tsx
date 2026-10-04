@@ -91,7 +91,7 @@ const cap = (f: Fixtures, tier: string, size: string) => {
 export const CATALOG: Entry[] = [
   /* ---------------- 基础 ---------------- */
   {
-    name: 'Icon', group: '基础', desc: '24×24 实心几何，颜色跟随 currentColor；默认 size/icon，小号 size/icon-s。装饰性，含义由文字或 aria-label 给出。',
+    name: 'Icon', group: '基础', desc: 'I3：24u 网格上 2u 圆头断笔线稿，画完整体 skewX(−11°)；颜色跟随 currentColor；默认 size/icon，小号 size/icon-s。导航五个图标按图标网格规范对齐（下方内嵌整页规范板，源文件 design/icon-grid/index.html）。装饰性，含义由文字或 aria-label 给出。',
     axes: { name: ICONS }, size: 'auto',
     render: (p) => <span className={s.iconCell}><Icon name={p.name as IconName} /><span className="milo-text-micro">{p.name}</span></span>,
   },
@@ -365,12 +365,12 @@ export const CATALOG: Entry[] = [
   { name: 'TierLegend', group: '数据图形', desc: '容量四档图例：明暗 + 纹理，不只靠色相；和人体图、胶囊同源。', axes: {}, size: 'card', render: () => <TierLegend /> },
   /* ---------------- 身体 ---------------- */
   {
-    name: 'Capsule', group: '身体', desc: '胶囊 = 量尺：底色按「组数 ÷ 最大可恢复量」从左填；0 组斜纹压暗；超量加斜纹。放大镜：邻近按余弦变大，焦点荧光实心、只一行（恢复度等写在胶囊列左边的读数卡里，手指挡不到）。',
+    name: 'Capsule', group: '身体', desc: '胶囊 = 量尺：底色按「组数 ÷ 最大可恢复量」从左填；0 组斜纹压暗；超量加斜纹。放大镜：邻近按余弦变大；焦点荧光实心，名称挪到最右（手指底下），组数 / 恢复度 · 时相 / 还需几小时三行写在左边（手指挡不到）。',
     axes: { tier: ['none', 'low', 'ok', 'over'], size: ['rest', 'near', 'focus'] }, rows: ['tier'], cols: 'size', size: 'm',
     render: (p, f) => cap(f, p.tier, p.size),
   },
   {
-    name: 'CapsuleRail', group: '身体', desc: '胶囊列 + 引线 + 放大镜手势（按住 150 ms 进入，先动 8 px 算滚动；松手只退出，轻点才打开详情）。放大时焦点的恢复度、时相、剩余小时、近 7 天组数写在左边读数卡里，避开手指和焦点肌肉的锚点。真机手势见下方交互演示。',
+    name: 'CapsuleRail', group: '身体', desc: '胶囊列 + 引线 + 放大镜手势：手势层只盖胶囊列静止宽度（人体在左边另接轻点）；竖向短滑滚动页面，按住 150 ms 不动才进放大镜、进入后锁住滚动；先动 8 px 算滚动；松手只退出，轻点才打开详情。真机手势见下方交互演示。',
     axes: { mag: ['rest', 'focus'] }, size: 'card',
     render: (p, f) => {
       const ids = ['upper-pectoralis', 'mid-lower-pectoralis', 'anterior-deltoid', 'lateral-deltoid', 'long-head-bicep', 'upper-abdominals'].filter((id) => f.body.stats.has(id));

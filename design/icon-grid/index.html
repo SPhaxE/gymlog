@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Milo 图标网格</title>
+<!-- 图标网格规范（I3 倾斜断笔线稿）。导航五个图标的 d 与 src/components/iconSets.tsx 的 CUT 一致（src/components/iconGrid.test.ts 校验），
+     /playground 的 Icon 一节用 iframe 嵌这一页。使用例是导航五个图标按网格对齐后的版本；颜色取自 design/tokens/tokens.css（v2，只有深色）。
+     截图：python3 scripts/shoot_icon_grid.py → screenshots/icon-grid/board.png -->
+<script>
+  // 单独打开时从 Google Fonts 取字体；嵌在 /playground 里（iframe）时不联网，由外层注入 App 自带的字体（离线、APK 里也能显示）
+  if (window.top === window) {
+    const l = document.createElement('link');
+    l.rel = 'stylesheet';
+    l.href = 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap';
+    document.head.appendChild(l);
+  }
+</script>
+<style>
+/* 版式：单栏规范板，章节按「画布 → 关键线 → 笔画 → 倾斜 → 使用例 → 实际尺寸 → 自检」的绘制顺序排；只有深色，和 App 一致 */
+:root {
+  color-scheme: dark;
+  --bg: #0A0A0B;          /* bg/base */
+  --surface: #161618;     /* bg/raised */
+  --surface-2: #1B1B1E;   /* bg/raised-2 */
+  --grid: #232326;        /* 1u 细网格 */
+  --line: #2A2A2E;        /* line/default */
+  --line-strong: #3A3A3F; /* line/strong */
+  --ink: #F3F2EE;         /* text/primary */
+  --ink-2: #8A8A86;       /* text/secondary */
+  --bone: #E9E3D3;        /* 图标笔画：nav/pill 的骨白 */
+  --bone-dim: #9C9585;    /* 关键线 */
+  --bone-deep: #34312A;
+  --lime: #D4FF3A;        /* 只标 I3 的断口 */
+  --nav-bg: #1B1B1EF0;
+  --font-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --font-ui: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.65 var(--font-ui); -webkit-font-smoothing: antialiased; }
+.page { max-width: 1120px; margin: 0 auto; padding-inline: clamp(16px, 4vw, 40px); padding-block: 48px 72px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+p { margin: 0; }
+code, .mono { font-family: var(--font-mono); font-size: .86em; }
+code { color: var(--bone); }
+
+/* 页头 */
+.eyebrow { font: 500 12px/1 var(--font-mono); letter-spacing: .12em; color: var(--ink-2); text-transform: uppercase; }
+.head { display: grid; gap: 16px; }
+.head h1 { font: 700 clamp(44px, 8vw, 72px)/.95 var(--font-display); letter-spacing: .01em; }
+.head h1 span { font-family: var(--font-ui); font-weight: 700; font-size: .62em; margin-left: .25em; letter-spacing: 0; }
+.lede { max-width: 62ch; color: var(--ink-2); }
+.lede b { color: var(--ink); font-weight: 500; }
+.specs { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-top: 12px; }
+.spec { background: var(--bg); padding: 14px 16px 12px; display: grid; gap: 2px; }
+.spec .n { font: 700 34px/1 var(--font-display); color: var(--ink); font-variant-numeric: tabular-nums; }
+.spec .n small { font-size: .5em; color: var(--ink-2); margin-left: 2px; }
+.spec .k { font-size: 12px; color: var(--ink-2); }
+.spec.sig .n { color: var(--lime); }
+.note { font-size: 13px; color: var(--ink-2); border-left: 2px solid var(--line-strong); padding-left: 12px; max-width: 70ch; }
+
+/* 章节 */
+section { margin-top: 72px; display: grid; gap: 24px; }
+.sec-h { display: grid; grid-template-columns: auto 1fr; column-gap: 16px; row-gap: 6px; align-items: baseline; border-top: 1px solid var(--line); padding-top: 20px; }
+.sec-h .no { font: 500 13px/1 var(--font-mono); color: var(--ink-2); }
+.sec-h h2 { font-size: 22px; font-weight: 700; }
+.sec-h p { grid-column: 2; color: var(--ink-2); max-width: 64ch; }
+@media (max-width: 560px) { .sec-h { grid-template-columns: 1fr; } .sec-h p { grid-column: 1; } }
+
+/* 图 */
+figure { margin: 0; display: grid; gap: 10px; align-content: start; min-width: 0; }
+figcaption { font-size: 13px; color: var(--ink-2); line-height: 1.55; }
+figcaption b { color: var(--ink); font-weight: 500; }
+svg.fig { display: block; width: 100%; height: auto; max-width: 100%; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+
+/* SVG 部件：网格与参考线用 1px 发丝线（不随缩放变粗），图标笔画是真实的 2u */
+.g-minor { stroke: var(--grid); stroke-width: 1px; vector-effect: non-scaling-stroke; fill: none; }
+.g-axis { stroke: var(--line-strong); stroke-width: 1px; vector-effect: non-scaling-stroke; fill: none; }
+.g-canvas { stroke: var(--line-strong); stroke-width: 1px; vector-effect: non-scaling-stroke; fill: none; }
+.g-live { stroke: var(--ink-2); stroke-width: 1px; vector-effect: non-scaling-stroke; fill: none; stroke-dasharray: 3 3; }
+.pad { fill: url(#hatch); }
+.kl { stroke: var(--bone-dim); stroke-width: 1px; vector-effect: non-scaling-stroke; fill: none; opacity: .38; }
+.kl.on { opacity: 1; stroke-width: 1.5px; }
+.kl.diag { opacity: .22; }
+.ic { fill: none; stroke: var(--bone); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ic.ghost { opacity: .26; }
+.ic.old { stroke: var(--ink-2); opacity: .4; }
+.ctr { fill: none; stroke: var(--bone); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+.ctr.old { stroke: var(--ink-2); stroke-dasharray: 2 2; }
+.anc { fill: var(--bg); stroke: var(--ink); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+.cen { stroke: var(--ink-2); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+.gap { fill: none; stroke: var(--lime); stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
+.gap-dot { fill: var(--lime); }
+.dim { stroke: var(--ink-2); stroke-width: 1px; vector-effect: non-scaling-stroke; fill: none; }
+.dim.sig { stroke: var(--lime); }
+.t { fill: var(--ink-2); font-family: var(--font-mono); font-size: .9px; }
+.t.ink { fill: var(--ink); }
+.t.sig { fill: var(--lime); }
+.t.mid { text-anchor: middle; }
+.t.end { text-anchor: end; }
+
+/* §1 */
+.s1 { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+.legend { display: grid; gap: 10px; font-size: 13px; color: var(--ink-2); margin: 0; padding: 0; list-style: none; }
+.legend li { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: center; }
+.legend b { color: var(--ink); font-weight: 500; }
+.sw { width: 28px; height: 14px; display: block; }
+.sw.hatch { border: 1px solid var(--line-strong); background: repeating-linear-gradient(45deg, var(--line) 0 2px, var(--surface) 2px 6px); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 500; color: var(--ink-2); font-size: 12px; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); white-space: nowrap; }
+.tbl { overflow-x: auto; }
+@media (max-width: 820px) { .s1 { grid-template-columns: 1fr; } }
+
+/* §2 关键线 */
+.kls { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.kls figcaption .mono { color: var(--ink); }
+@media (max-width: 820px) { .kls { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* §3 笔画 */
+.strokes { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 16px; }
+@media (max-width: 820px) { .strokes { grid-template-columns: 1fr; } }
+
+/* §4 倾斜 */
+.slant { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; }
+.slant .arrow { font: 500 13px/1.4 var(--font-mono); color: var(--ink-2); text-align: center; }
+@media (max-width: 680px) { .slant { grid-template-columns: 1fr; } .slant .arrow { transform: rotate(90deg); justify-self: center; } }
+
+/* §5 使用例 */
+.uses { display: grid; gap: 16px; }
+.use { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+.use-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.use-h h3 { font-size: 20px; font-weight: 700; }
+.use-h .key { font: 500 13px/1 var(--font-mono); color: var(--ink-2); }
+.badge { font-size: 12px; color: var(--bone); border: 1px solid var(--bone-deep); border-radius: 999px; padding: 2px 10px; }
+.use-body { display: grid; gap: 16px; align-content: start; min-width: 0; }
+.finals { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.final { display: grid; gap: 6px; justify-items: center; font: 400 11px/1 var(--font-mono); color: var(--ink-2); }
+.final .box { display: grid; place-items: center; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; }
+.final .box.big { width: 88px; height: 88px; }
+.final .box.sm { width: 52px; height: 88px; }
+.final .box.cmp { width: 88px; height: 88px; }
+.final svg { display: block; overflow: visible; }
+.rules { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; }
+.rules li { display: grid; grid-template-columns: 4.5em 1fr; gap: 12px; }
+.rules li > span:first-child { color: var(--ink-2); font-size: 12px; padding-top: 2px; }
+.rules .mono { color: var(--bone); }
+.rules .sig { color: var(--lime); }
+@media (max-width: 720px) { .use { grid-template-columns: 1fr; } .use > figure { max-width: 320px; } }
+
+/* §6 实际尺寸 */
+.navs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: end; }
+.stage { background: var(--bg); border: 1px solid var(--line); border-radius: 16px; padding: 28px 16px 20px; display: grid; gap: 14px; justify-items: center; overflow: hidden; }
+.stage .cap { font-size: 12px; color: var(--ink-2); }
+.navbar { width: 328px; max-width: 100%; height: 64px; border-radius: 999px; background: var(--nav-bg); display: grid; grid-template-columns: repeat(5, 1fr); align-items: center; padding: 0 8px; box-shadow: 0 8px 32px #000000B3; }
+.navbar .it { height: 52px; margin: 0 2px; border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--ink-2); font-size: 11px; line-height: 1; }
+.navbar .it.on { background: var(--bone); color: var(--bg); font-weight: 700; }
+.navbar svg { width: 20px; height: 20px; display: block; }
+.navbar.big { width: min(100%, 460px); height: 88px; padding: 0 10px; }
+.navbar.big .it { height: 72px; gap: 6px; font-size: 15px; }
+.navbar.big svg { width: 30px; height: 30px; }
+.ladder { overflow-x: auto; }
+.ladder table td { vertical-align: middle; }
+.ladder svg { display: block; color: var(--bone); }
+@media (max-width: 820px) { .navs { grid-template-columns: 1fr; } }
+
+/* §7 自检 */
+.check { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 32px; counter-reset: c; }
+.check li { counter-increment: c; display: grid; grid-template-columns: 2em 1fr; gap: 8px; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.check li::before { content: counter(c); font: 500 13px/1.6 var(--font-mono); color: var(--ink-2); }
+@media (max-width: 720px) { .check { grid-template-columns: 1fr; } }
+footer { margin-top: 56px; font-size: 12px; color: var(--ink-2); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <pattern id="hatch" width="0.8" height="0.8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="0.8" height="0.8" fill="#161618"/>
+      <path d="M0 0V0.8" stroke="#2A2A2E" stroke-width="0.3"/>
+    </pattern>
+  </defs>
+</svg>
+
+<main class="page">
+  <header class="head">
+    <div class="eyebrow">慢牛 Milo · 图标规范 I3</div>
+    <h1>24u<span>图标网格</span></h1>
+    <p class="lede">图标在一张 <b>24 × 24</b> 的网格上画：先在正交网格里贴着关键线落笔，留出断口，最后整体向右倾斜 11°。这一页把这套网格拆开讲，用导航的五个图标（首页、身体、增量、记录、我的）做使用例。</p>
+    <div class="specs" aria-label="核心参数">
+      <div class="spec"><span class="n">24<small>u</small></span><span class="k">画布</span></div>
+      <div class="spec"><span class="n">2<small>u</small></span><span class="k">安全边距（活动区 20u）</span></div>
+      <div class="spec"><span class="n">2<small>u</small></span><span class="k">笔宽 · 圆头圆角</span></div>
+      <div class="spec sig"><span class="n">2<small>u</small></span><span class="k">断口可见宽度</span></div>
+      <div class="spec"><span class="n">−11<small>°</small></span><span class="k">整体倾斜 skewX</span></div>
+      <div class="spec"><span class="n">20<small>px</small></span><span class="k">出图 · 小号 16px</span></div>
+    </div>
+    <p class="note">App 的导航五个图标就是下面使用例里的版本（<code>src/components/iconSets.tsx</code>，测试保证两边一致）；「对照」里的灰线是对齐前的旧版。</p>
+  </header>
+
+  <!-- §1 -->
+  <section aria-labelledby="s1">
+    <div class="sec-h"><span class="no">§1</span><h2 id="s1">画布与网格</h2>
+      <p>1 格 = 1u。外圈 2u 是安全边距，笔画的外缘不进去；中间 20 × 20 是活动区。四条关键线叠在一起就是下面这张底图。</p></div>
+    <div class="s1">
+      <figure class="panel"><svg class="fig" id="fig-master" viewBox="-3.2 -3 30.4 28" role="img" aria-label="24u 画布：安全边距、活动区与四条关键线叠加"></svg></figure>
+      <div style="display:grid;gap:28px;min-width:0">
+        <ul class="legend">
+          <li><span class="sw hatch"></span><span><b>安全边距 2u</b>：只留给倾斜后翘出的尖角，笔画外缘不进</span></li>
+          <li><svg class="sw" viewBox="0 0 28 14"><path d="M0 7H28" stroke="#8A8A86" stroke-dasharray="3 3"/></svg><span><b>活动区 20u</b>：图标的最大外框</span></li>
+          <li><svg class="sw" viewBox="0 0 28 14"><path d="M0 7H28" stroke="#9C9585" stroke-width="1.5"/></svg><span><b>关键线</b>：圆、方、竖长方、横长方，量的是笔画外缘（§2）</span></li>
+          <li><svg class="sw" viewBox="0 0 28 14"><path d="M0 7H28" stroke="#3A3A3F"/></svg><span><b>中轴 x = 12、y = 12</b>：倾斜也以 y = 12 为轴（§4）</span></li>
+        </ul>
+        <div class="tbl">
+          <table>
+            <thead><tr><th>出图</th><th>Token</th><th>1u</th><th>笔宽 2u</th><th>用在</th></tr></thead>
+            <tbody>
+              <tr><td class="num">20px</td><td><code>size/icon</code> · <code>size/nav-icon</code></td><td class="num">0.83px</td><td class="num">1.67px</td><td>导航、按钮、列表</td></tr>
+              <tr><td class="num">16px</td><td><code>size/icon-s</code></td><td class="num">0.67px</td><td class="num">1.33px</td><td>标签、行内说明</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">出图尺寸都不是 24 的整数倍，像素对齐做不到，所以锚点只要求落在 0.5u 网格上，不追求整像素。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- §2 -->
+  <section aria-labelledby="s2">
+    <div class="sec-h"><span class="no">§2</span><h2 id="s2">关键线</h2>
+      <p>按图标的大致轮廓挑一条关键线，让笔画外缘贴上去。四种形状外框不同，但看起来一样大。锚点量的是中心线，比关键线往里收 1u。</p></div>
+    <div class="kls" id="kls"></div>
+  </section>
+
+  <!-- §3 -->
+  <section aria-labelledby="s3">
+    <div class="sec-h"><span class="no">§3</span><h2 id="s3">笔画、断口与短笔</h2>
+      <p>I3 的辨识度来自「断笔」：一笔走到头不接死，空出一段再接一小截。断口和间距都按笔宽算，图标缩到 16px 也还看得出来。</p></div>
+    <div class="strokes">
+      <figure class="panel"><svg class="fig" id="fig-gap" viewBox="0 0 30 12" role="img" aria-label="断口与短笔的尺寸"></svg>
+        <figcaption><b>断口 = 1 个笔宽</b>：两个端点的圆心相距 4u，减去两侧圆头各 1u，看得见的空隙是 2u。断口后面可以接一截<b>短笔</b>，中心线长约 2u，延续原来的走向。每个图标 1–2 处断口。</figcaption></figure>
+      <figure class="panel"><svg class="fig" id="fig-stroke" viewBox="0 0 16 12" role="img" aria-label="笔宽、圆头与圆角连接"></svg>
+        <figcaption><b>笔宽 2u</b>，端点圆头，转角圆角连接（外缘半径 1u）。不填色，不加粗细变化。</figcaption></figure>
+      <figure class="panel"><svg class="fig" id="fig-counter" viewBox="0 0 16 12" role="img" aria-label="两笔之间的最小空隙"></svg>
+        <figcaption><b>内空 ≥ 2u</b>：两笔之间看得见的空隙至少一个笔宽，即中心线相距 ≥ 4u。两笔在夹角处汇合时不算。</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- §4 -->
+  <section aria-labelledby="s4">
+    <div class="sec-h"><span class="no">§4</span><h2 id="s4">倾斜</h2>
+      <p>所有对齐都在正交网格上完成，画完再整体 <code>skewX(−11°)</code>，以 y = 12 为轴：横笔不动，竖笔右倾。代码里是 <code>translate(2.33 0) skewX(-11)</code>。</p></div>
+    <div class="slant">
+      <figure class="panel"><svg class="fig" id="fig-up" viewBox="-3 -3 30 30" role="img" aria-label="正交网格上的首页图标"></svg><figcaption><b>① 正交网格上画</b>：关键线、断口、间距都在这一步对齐。</figcaption></figure>
+      <div class="arrow" aria-hidden="true">skewX<br>−11°<br>→</div>
+      <figure class="panel"><svg class="fig" id="fig-sk" viewBox="-3 -3 30 30" role="img" aria-label="整体倾斜后的首页图标与网格"></svg><figcaption><b>② 整体倾斜</b>：活动区顶边右移 1.94u、底边左移 1.94u，尖角可以翘进安全边距，但不出 24u 画布。竖笔的垂直笔宽变成 2·cos 11° ≈ 1.96u，不做补偿。</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- §5 -->
+  <section aria-labelledby="s5">
+    <div class="sec-h"><span class="no">§5</span><h2 id="s5">使用例：导航五图标</h2>
+      <p>左边是正交网格上的构造图：灰色宽带是 2u 笔画，细线是中心线，方点是锚点，<span style="color:var(--lime)">荧光圈</span>标出断口。右边是倾斜后的成品和对照。</p></div>
+    <div class="uses" id="uses"></div>
+  </section>
+
+  <!-- §6 -->
+  <section aria-labelledby="s6">
+    <div class="sec-h"><span class="no">§6</span><h2 id="s6">实际尺寸</h2>
+      <p>放回导航里看：图标 20px，选中项在骨白小胶囊上反成深色。最后在 16px 下检查一遍，断口和内空都要还在。</p></div>
+    <div class="navs">
+      <div class="stage"><div class="navbar" id="nav1"></div><span class="cap">1× · 导航高 64px，图标 20px</span></div>
+      <div class="stage"><div class="navbar big" id="nav2"></div><span class="cap">放大看（图标 30px）· 选中「增量」</span></div>
+    </div>
+    <div class="panel ladder"><table id="ladder"></table></div>
+  </section>
+
+  <!-- §7 -->
+  <section aria-labelledby="s7">
+    <div class="sec-h"><span class="no">§7</span><h2 id="s7">新图标自检</h2>
+      <p>画新图标或改旧图标时，按这个顺序过一遍。</p></div>
+    <ol class="check">
+      <li>在正交网格上画，最后整体 skewX(−11°)，以 y = 12 为轴。不要在倾斜后的网格上画。</li>
+      <li>按轮廓挑一条关键线贴齐外缘：圆 Ø20、方 18、竖 16 × 20、横 20 × 16。</li>
+      <li>笔宽 2u，圆头、圆角连接；不填色，不改笔宽。</li>
+      <li>直线端点和转角落在 0.5u 网格；圆弧用圆心加半径定义，断口端点由 2u 反算。</li>
+      <li>1–2 处断口，看得见的宽度 2u（端点圆心相距 4u）。</li>
+      <li>两笔之间的空隙 ≥ 2u，夹角汇合处除外。</li>
+      <li>短笔中心线长约 2u，只接在断口后面，顺着原来的走向。</li>
+      <li>在 20px 和 16px 各看一次：断口看得见，内空没有糊成一片。</li>
+    </ol>
+  </section>
+
+  <footer>慢牛 Milo · 图标网格 · 2026-10 · 导航五个图标已按这一页落进 App，/playground 的 Icon 一节内嵌本页</footer>
+</main>
+
+<script>
+(() => {
+  const SLANT = 'translate(2.33 0) skewX(-11)';
+  const KL = {
+    circle:    { name: '圆形', size: 'Ø20', el: '<circle cx="12" cy="12" r="10"/>', for: '计时、信息、刷新这类圆形图标', uses: [] },
+    square:    { name: '方形', size: '18 × 18', el: '<rect x="3" y="3" width="18" height="18"/>', for: '', uses: ['首页', '我的'] },
+    portrait:  { name: '竖长方形', size: '16 × 20', el: '<rect x="4" y="2" width="16" height="20"/>', for: '', uses: ['身体', '记录'] },
+    landscape: { name: '横长方形', size: '20 × 16', el: '<rect x="2" y="4" width="20" height="16"/>', for: '', uses: ['增量'] },
+  };
+  // 导航五图标：网格对齐版（d，= src/components/iconSets.tsx 的 CUT），对齐前的旧版（old）
+  const ICONS = [
+    { key: 'home', name: '首页', kl: 'square',
+      d: 'M4 11 12 4l8 7M6 14.5V20h4v-4h4v4h4v-5.5',
+      old: 'M3.5 11.5 12 4l8.5 7.5M6 14v6h4.5M14.5 20H18v-6M10.5 20v-4h3v4',
+      anchors: [[4,11],[12,4],[20,11],[6,14.5],[6,20],[10,20],[10,16],[14,16],[14,20],[18,20],[18,14.5]],
+      gaps: [[5,12.75],[19,12.75]],
+      rules: [['关键线', '方形 18：屋檐两端与屋脊外缘、地线外缘正好贴四边'], ['断口', '<span class="sig">2 处</span>：墙顶停在屋檐下，墙顶端点到屋檐端点 <span class="mono">4.03u</span>'], ['内空', '门洞中心线宽 <span class="mono">4u</span>，看得见 2u；墙到门框同样 2u'], ['对照', '屋檐 3.5 / 20.5 → 4 / 20，墙顶 14 → 14.5，门洞 3u → 4u，门和地线并成一笔']] },
+    { key: 'body', name: '身体', kl: 'portrait',
+      d: 'M15.5 6A3 3 0 1 0 10.38 8.12L11 10H5v11M15 10h4l-9.5 11',
+      old: 'M13.6 4.4A2.3 2.3 0 1 0 12 8M7 21l1.8-9.5h6.4L17 21M6 13.5l3-2M18 13.5l-3-2',
+      anchors: [[15.5,6],[10.38,8.12],[11,10],[5,10],[5,21],[15,10],[19,10],[9.5,21]], centers: [[12.5,6]],
+      gaps: [[13,10],[15.25,8]],
+      rules: [['关键线', '竖长方形 16 × 20：头顶外缘贴顶边，左侧竖线与右肩外缘贴左右，左脚与斜线末端贴底边'], ['笔画', '两笔：头 r <span class="mono">3</span> 从正右起逆时针绕过头顶，到左下 135° 折进颈部 (11, 10)，再折成左肩、左侧竖线；右肩 (15, 10)–(19, 10) 后斜下到 (9.5, 21)'], ['断口', '<span class="sig">2 处</span>：颈部与右肩之间 <span class="mono">4u</span>（看得见 2u）；头的开口端点 (15.5, 6) 到右肩起点 (15, 10) 约 <span class="mono">4u</span>'], ['对照', '2026-10-04 换成用户给的参考图：站姿小人 → 开口头 + 三角躯干；底边左脚 x 5 与斜线末端 x 9.5 空 <span class="mono">2.5u</span>']] },
+    { key: 'gains', name: '增量', kl: 'landscape',
+      d: 'M3 17l6-6 4 4 4-4M15 7h6v6',
+      old: 'M3.5 18l5-5.5 4 3.5 6.5-8M14.5 7.5h5v5',
+      anchors: [[3,17],[9,11],[13,15],[17,11],[15,7],[21,7],[21,13]],
+      gaps: [[19,9]],
+      rules: [['关键线', '横长方形 20 × 16：左右贴满，上下各留 2u，整体垂直居中'], ['断口', '<span class="sig">1 处</span>：箭杆停在箭头前，离两条箭翼各 <span class="mono">4u</span>，断口正好在前进方向上'], ['斜笔', '折线三段都是 45°，箭杆延长线正指箭头转角 (21, 7)'], ['对照', '现行箭杆直接连到箭头、折线角度不一；现在断开并统一成 45°']] },
+    { key: 'log', name: '记录', kl: 'portrait',
+      d: 'M13.5 3H5v18h14V8.5M17.5 3 19 4.5M9 10h6M9 14h3',
+      old: 'M14 3.5H6v17h12v-12M9 11.5h6M9 15.5h3.5M17 3.5l1 1',
+      anchors: [[13.5,3],[5,3],[5,21],[19,21],[19,8.5],[17.5,3],[19,4.5],[9,10],[15,10],[9,14],[12,14]],
+      gaps: [[15.5,3],[19,6.5]],
+      rules: [['关键线', '竖长方形 16 × 20：外框外缘贴满'], ['断口', '<span class="sig">2 处</span>：右上折角是一截 <span class="mono">2.1u</span> 的短笔，两侧各空 2u'], ['内空', '两行字离外框都是 <span class="mono">4u</span>，行距 4u，上下对称'], ['对照', '外框 6–18 → 5–19；折角短笔 1.4u → 2.1u；两行 11.5 / 15.5 → 10 / 14']] },
+    { key: 'me', name: '我的', kl: 'square',
+      d: 'M8.55 8.12A3.5 3.5 0 1 1 11.38 10.95M4 20A8 5 0 0 1 16.17 15.73M19.4 18.09A8 5 0 0 1 20 20',
+      old: 'M9.4 9.3A3.4 3.4 0 1 1 12 10.8M4.5 20.5c.9-3.6 3.9-5.8 7.5-5.8 1.6 0 3.1.4 4.3 1.2M19 18.5l.5 2',
+      anchors: [[8.55,8.12],[11.38,10.95],[4,20],[16.17,15.73],[19.4,18.09],[20,20]], centers: [[12,7.5],[12,20]],
+      gaps: [[9.97,9.54],[17.78,16.91]],
+      rules: [['关键线', '方形 18：头顶外缘贴顶边，肩的两端贴左右与底边'], ['断口', '<span class="sig">2 处</span>：头 r <span class="mono">3.5</span> 左下开口；肩是 8 × 5 的椭圆弧，右端断出一截短笔'], ['间距', '头底 y 11 到肩顶 y 15，空 <span class="mono">2u</span>'], ['对照', '头 r 3.4 → 3.5；肩从手调曲线改成椭圆弧，短笔沿同一条弧断出']] },
+  ];
+
+  const grid = () => { let s = ''; for (let i = 0; i <= 24; i++) s += `<path class="g-minor" d="M${i} 0V24M0 ${i}H24"/>`; return s; };
+  const pad = () => '<path class="pad" fill-rule="evenodd" d="M0 0H24V24H0zM2 2V22H22V2z"/><rect class="g-canvas" width="24" height="24"/><rect class="g-live" x="2" y="2" width="20" height="20"/>';
+  const axes = () => '<path class="g-axis" d="M12 0V24M0 12H24"/>';
+  const keylines = (on) => '<path class="kl diag" d="M2 2 22 22M22 2 2 22"/>' + Object.entries(KL).map(([k, v]) => v.el.replace('/>', ` class="kl${k === on ? ' on' : ''}"/>`)).join('');
+  const anchors = (pts) => pts.map(([x, y]) => `<rect class="anc" x="${x - .3}" y="${y - .3}" width=".6" height=".6"/>`).join('');
+  const centers = (pts = []) => pts.map(([x, y]) => `<path class="cen" d="M${x - .6} ${y}H${x + .6}M${x} ${y - .6}V${y + .6}"/>`).join('');
+  const gaps = (pts) => pts.map(([x, y]) => `<circle class="gap" cx="${x}" cy="${y}" r="1.5"/><circle class="gap-dot" cx="${x}" cy="${y}" r=".22"/>`).join('');
+  const icon = (d, cls = 'ic', tf = '') => `<path class="${cls}" d="${d}"${tf ? ` transform="${tf}"` : ''}/>`;
+  const svgIcon = (d, px, color, old) => `<svg width="${px}" height="${px}" viewBox="0 0 24 24" aria-hidden="true" style="color:${color || 'currentColor'}">${old ? icon(old, 'ic old', SLANT) : ''}<path d="${d}" transform="${SLANT}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const $ = (id) => document.getElementById(id);
+
+  // §1 底图
+  $('fig-master').innerHTML = pad() + grid() + axes() + keylines('') +
+    '<path class="dim" d="M0 -1.6H24M0 -2.1V-1.1M24 -2.1V-1.1"/><text class="t mid ink" x="12" y="-2.1">24u 画布</text>' +
+    '<path class="dim" d="M25.4 0V2M25.4 22V24M24.9 0H25.9M24.9 2H25.9M24.9 22H25.9M24.9 24H25.9"/><text class="t" x="26.1" y="1.35">2u</text><text class="t" x="26.1" y="23.35">2u</text>' +
+    '<path class="dim" d="M-1.4 2V22M-1.9 2H-.9M-1.9 22H-.9"/><text class="t mid ink" transform="translate(-1.9 12) rotate(-90)">20u 活动区</text>';
+
+  // §2 关键线
+  $('kls').innerHTML = Object.entries(KL).map(([k, v]) => `
+    <figure class="panel"><svg class="fig" viewBox="-1 -1 26 26" role="img" aria-label="${v.name}关键线 ${v.size}">${pad()}${grid()}${axes()}${keylines(k)}</svg>
+      <figcaption><b>${v.name}</b> <span class="mono">${v.size}</span><br>中心线 <span class="mono">${k === 'circle' ? 'r 9' : v.size.split(' × ').map((n) => n - 2).join(' × ')}</span> · ${v.uses.length ? '用在 ' + v.uses.join('、') : v.for}</figcaption></figure>`).join('');
+
+  // §3 断口与短笔
+  $('fig-gap').innerHTML =
+    '<path class="ic" d="M3 6H16"/><path class="ic" d="M20 6H22"/>' +
+    '<path class="ctr" d="M3 6H16M20 6H22"/>' + anchors([[3,6],[16,6],[20,6],[22,6]]) +
+    '<path class="dim" d="M16 2.6H20M16 2.1V3.1M20 2.1V3.1"/><text class="t mid" x="18" y="1.8">圆心距 4u</text>' +
+    '<path class="dim sig" d="M17 9.4H19M17 8.9V9.9M19 8.9V9.9"/><text class="t mid sig" x="18" y="11">断口 2u</text>' +
+    '<path class="dim" d="M20 2.6H22M20 2.1V3.1M22 2.1V3.1"/><text class="t" x="22.4" y="2.95">短笔 2u</text>' +
+    '<path class="dim" d="M1.4 5V7M.9 5H1.9M.9 7H1.9"/><text class="t" x=".4" y="9.6">笔宽 2u</text>';
+  $('fig-stroke').innerHTML =
+    '<path class="ic" d="M3 9V3H13"/><path class="ctr" d="M3 9V3H13"/>' + anchors([[3,9],[3,3],[13,3]]) +
+    '<circle class="dim" cx="3" cy="3" r="1"/><text class="t" x="5" y="6">圆角连接</text><text class="t" x="5" y="7.2">外缘 r 1u</text>' +
+    '<path class="dim" d="M14.6 2V4M14.1 2H15.1M14.1 4H15.1"/><text class="t end" x="13" y="1.3">圆头</text>';
+  $('fig-counter').innerHTML =
+    '<path class="ic" d="M3 10V2M7 10V2"/><path class="ctr" d="M3 10V2M7 10V2"/>' + anchors([[3,10],[3,2],[7,10],[7,2]]) +
+    '<path class="dim sig" d="M4 6H6M4 5.5V6.5M6 5.5V6.5"/><text class="t sig" x="9" y="5.6">空隙 ≥ 2u</text>' +
+    '<path class="dim" d="M3 11.3H7"/><text class="t" x="9" y="7.2">中心线 ≥ 4u</text>';
+
+  // §4 倾斜
+  const home = ICONS[0];
+  $('fig-up').innerHTML = pad() + grid() + axes() + `<rect class="kl on" x="3" y="3" width="18" height="18"/>` + icon(home.d, 'ic');
+  $('fig-sk').innerHTML = '<rect class="g-canvas" width="24" height="24" style="stroke-dasharray:2 2"/>' +
+    `<g transform="${SLANT}">${pad()}${grid()}<rect class="kl on" x="3" y="3" width="18" height="18"/></g>` +
+    '<path class="g-axis" d="M-1.5 12H25.5" style="stroke:#9C9585"/><text class="t" x="-2.8" y="11.6">y 12</text>' + icon(home.d, 'ic', SLANT) +
+    '<path class="dim" d="M22 1H23.94"/><text class="t" x="22.1" y=".4">+1.94</text><path class="dim" d="M0.06 23H2"/><text class="t" x="-.4" y="24.4">−1.94</text>';
+
+  // §5 使用例
+  $('uses').innerHTML = ICONS.map((ic) => `
+    <article class="use">
+      <figure><svg class="fig" viewBox="-1 -1 26 26" role="img" aria-label="${ic.name}的构造图">${pad()}${grid()}${axes()}${keylines(ic.kl)}${icon(ic.d, 'ic ghost')}<path class="ctr" d="${ic.d}"/>${centers(ic.centers)}${anchors(ic.anchors)}${gaps(ic.gaps)}</svg></figure>
+      <div class="use-body">
+        <div class="use-h"><h3>${ic.name}</h3><span class="key">${ic.key}</span><span class="badge">${KL[ic.kl].name} ${KL[ic.kl].size}</span></div>
+        <div class="finals">
+          <div class="final"><div class="box big">${svgIcon(ic.d, 64, 'var(--bone)')}</div>64px</div>
+          <div class="final"><div class="box sm">${svgIcon(ic.d, 20, 'var(--bone)')}</div>20px</div>
+          <div class="final"><div class="box sm">${svgIcon(ic.d, 16, 'var(--bone)')}</div>16px</div>
+          <div class="final"><div class="box cmp">${svgIcon(ic.d, 64, 'var(--bone)', ic.old)}</div>对照 · 灰 = 旧版</div>
+        </div>
+        <ul class="rules">${ic.rules.map(([k, v]) => `<li><span>${k}</span><span>${v}</span></li>`).join('')}</ul>
+      </div>
+    </article>`).join('');
+
+  // §6 实际尺寸
+  const nav = (sel) => ICONS.map((ic) => `<div class="it${ic.key === sel ? ' on' : ''}">${svgIcon(ic.d, 20)}<span>${ic.name}</span></div>`).join('');
+  $('nav1').innerHTML = nav('home');
+  $('nav2').innerHTML = nav('gains');
+  const sizes = [48, 32, 24, 20, 16];
+  $('ladder').innerHTML = `<thead><tr><th></th>${ICONS.map((ic) => `<th>${ic.name}</th>`).join('')}</tr></thead><tbody>` +
+    sizes.map((px) => `<tr><td class="num">${px}px</td>${ICONS.map((ic) => `<td>${svgIcon(ic.d, px)}</td>`).join('')}</tr>`).join('') + '</tbody>';
+})();
+</script>
+</body>
+</html>

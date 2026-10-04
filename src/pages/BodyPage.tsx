@@ -1,6 +1,9 @@
 /** 身体页（P06，线框 W3 + 视觉语言 v2）：压暗的 MuscleWiki 半身作背景（在内容区内，左缘渐隐），右侧胶囊列叠在上面。
  *  正面 / 背面、男 / 女切换是「抽卡」（2026-10-04 用户第二轮反馈）：当前人体像最上面一张卡被抽走（往一侧滑出、微转、变淡），
- *  下一张从后面浮上来；方向跟分段选择器的方向一致。新的一张量完锚点再开始浮上来，胶囊引线才对得上。 */
+ *  下一张从后面浮上来；方向跟分段选择器的方向一致。新的一张量完锚点再开始浮上来，胶囊引线才对得上。
+ *  抽卡全程都在人体自己那一层里（figureClip 隔离层叠），不会盖到引线和胶囊上面。
+ *  轻点人体上的肌肉 = 轻点那颗胶囊：打开详情；人体与胶囊列的命中区左右分开，不重叠。
+ *  页面可以竖向滚动：胶囊列至少保留每颗 capsule-rest-max-h 的高度，放不下就滚；胶囊列上竖向短滑也是滚动，按住才进放大镜。 */
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Banner, BodyFigure, CapsuleRail, LandmarkRuler, Nav, Num, PageHeader, PhaseSegments, Screen, Segmented, Sheet, SheetBlock, Ticks, TierLegend, type Anchors, type Tab } from '../components';
 import { ago, bodyData, fmt, REGION_NAME } from '../data/demo';
@@ -42,6 +45,9 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario: str
   }, [ids, initialFocus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const g = T['size/gutter'], contentW = box.w - 2 * g;
+  // 胶囊列的最小高度：每颗都按静止上限排开（再矮就挤得看不清），屏幕放不下时页面滚动
+  const railMin = ids.length ? ids.length * T['size/capsule-rest-max-h'] + (ids.length - 1) * T['size/capsule-gap'] : 0;
+  const pick = useCallback((id: string) => { if (data.stats.has(id)) { setMag(null); setSheet(id); } }, [data]);
   const k = data.kpi;
   const reset = () => { setMag(null); setSheet(null); };
   const swap = (next: Partial<Pick<Card, 'view' | 'gender'>>, dir: number) => {
@@ -59,6 +65,7 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario: str
   const cardCls = { still: s.card, wait: s.cardWait, in: s.cardIn, out: s.cardOut };
   return (
     <Screen label="身体">
+      <div className={s.scroll}>
       <PageHeader title="身体" trailing={<>
         <Segmented label="视图" items={[['front', '正面'], ['back', '背面']]} value={view} onChange={(v) => v !== view && swap({ view: v }, v === 'back' ? 1 : -1)} />
         <Segmented label="体型示意" items={[['male', '男'], ['female', '女']]} value={gender} onChange={(v) => v !== gender && swap({ gender: v }, v === 'female' ? 1 : -1)} />
@@ -72,7 +79,7 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario: str
         <TierLegend />
       </PageHeader>
 
-      <div ref={stage} className={s.stage}>
+      <div ref={stage} className={s.stage} style={{ minHeight: railMin }}>
         {/* 人体只在内容区里（左缘 = 页面边距），不越过组件最外层 */}
         <div className={s.figureClip}>
           {cards.map((c) => {
@@ -80,13 +87,14 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario: str
             return (
               <div key={c.key} className={cardCls[c.st]} style={{ '--dir': c.dir } as CSSProperties} onAnimationEnd={settle(c.key)}>
                 <BodyFigure gender={c.gender} view={c.view} stats={data.stats} focus={live ? (mag != null ? ids[Math.round(mag)] ?? null : sheet) : null}
-                  height={box.h} onAnchors={live ? onAnchors : noop} relativeTo={stage} />
+                  height={box.h} onAnchors={live ? onAnchors : noop} relativeTo={stage} onPick={live && c.st === 'still' ? pick : undefined} />
               </div>
             );
           })}
         </div>
-        <CapsuleRail ids={ids} stats={data.stats} anchors={anchors} width={box.w} height={box.h} readoutLeft={g}
+        <CapsuleRail ids={ids} stats={data.stats} anchors={anchors} width={box.w} height={box.h}
           left={g + contentW * T['ratio/rail-start']} right={g + contentW} mag={mag} onMag={setMag} onSelect={setSheet} />
+      </div>
       </div>
 
       {sheet && <HeadSheet h={data.stats.get(sheet)!} onClose={reset} />}

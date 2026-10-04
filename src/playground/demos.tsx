@@ -1,5 +1,5 @@
 /** Playground 的交互演示：真实状态、真实动效（矩阵里是静态展示）。每个演示挂在一个组件小节下面。 */
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   Banner, Button, Cascade, Dialog, ExerciseRow, RestDock, SharedDetail, sharedTransition, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
   LandmarkRuler, PhaseSegments, Num, Screen, SetRow, clock, useCountdown, useToast, type Tab,
@@ -161,7 +161,7 @@ export function MagnifierDemo({ f }: { f: Fixtures }) {
   return (
     <div className={s.demoRow}>
       <div className={s.demoCol}><Stage tall label="身体页"><BodyPage scenario="done-today" now={f.now} initialFocus={null} /></Stage>
-        <Note>按住胶囊列 150 ms 进入放大镜，上下滑逐个放大；焦点的恢复度、时相、组数写在左边读数卡里（手指挡不到）。松手只退出，轻点胶囊才打开详情。先动 8 px 算页面滚动。正面 / 背面、男 / 女切换是抽卡。</Note></div>
+        <Note>胶囊列上竖向短滑 = 滚动页面；按住 150 ms 不动进入放大镜，上下滑逐个放大，焦点胶囊左边写组数、恢复度与时相，名称在右（手指底下）。松手只退出；轻点胶囊或人体上的肌肉打开详情。正面 / 背面、男 / 女切换是抽卡。</Note></div>
       <div className={s.demoCol}><Stage tall label="首页"><HomePage scenario="plain-prescription" now={f.now} /></Stage>
         <Note>首页第一屏：今天练什么、第一个动作的建议重量、开始训练（这一屏唯一的荧光）。</Note></div>
     </div>
@@ -214,7 +214,39 @@ function ExpandInner({ f }: { f: Fixtures }) {
   );
 }
 
+/** 外层（App）已加载的 @font-face 规则：注入规范板，让它用 App 自带的字体，不去连 Google Fonts */
+function appFontFaces() {
+  return [...document.styleSheets].flatMap((sh) => { try { return [...sh.cssRules]; } catch { return []; } })
+    .filter((r) => r instanceof CSSFontFaceRule).map((r) => r.cssText).join('\n');
+}
+
+/** 图标网格规范板（design/icon-grid/index.html）整页内嵌：同源 iframe，高度跟着内容走；字体用 App 自带的 */
+export function IconGridBoard() {
+  const ref = useRef<HTMLIFrameElement>(null), [h, setH] = useState(0);
+  useEffect(() => {
+    const el = ref.current!;
+    let ro: ResizeObserver | null = null;
+    const fit = () => {
+      const doc = el.contentDocument;
+      if (!doc?.body) return;
+      if (!doc.getElementById('app-fonts')) {
+        const st = doc.createElement('style');
+        st.id = 'app-fonts';
+        // 族名已由 vite.config.ts 的 milo-font-alias 去掉「 Variable」后缀，和规范板里写的 'Noto Sans SC' / 'JetBrains Mono' 对得上，不用再改名
+        st.textContent = appFontFaces();
+        doc.head.appendChild(st);
+      }
+      const measure = () => setH(doc.documentElement.scrollHeight);
+      measure(); ro?.disconnect(); ro = new ResizeObserver(measure); ro.observe(doc.body);
+    };
+    el.addEventListener('load', fit); fit();
+    return () => { el.removeEventListener('load', fit); ro?.disconnect(); };
+  }, []);
+  return <iframe ref={ref} className={s.gridFrame} src="/design/icon-grid/index.html" title="图标网格规范" style={h ? { height: h } : undefined} />;
+}
+
 export const DEMOS: Record<string, (f: Fixtures) => ReactNode> = {
+  Icon: () => <IconGridBoard />,
   ExerciseRow: (f) => <CascadeDemo f={f} />,
   SharedDetail: (f) => <div className={s.demoCol}><Stage tall label="共享元素演示"><ExpandInner f={f} /></Stage><Note>点一个动作：卡片原地长满屏，名称和重量飞到详情的位置并放大；点返回变回去。</Note></div>,
   Button: () => <ButtonDemo />,

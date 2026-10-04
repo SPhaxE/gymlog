@@ -78,3 +78,5 @@
 
 .expandList { position: relative; flex: 1; display: grid; align-content: start; gap: var(--milo-space-s); padding: var(--milo-space-l) var(--milo-size-gutter); }
 .expandList > button { background-color: var(--milo-color-bg-raised); }
+/* 图标网格规范板：整页 iframe，宽随演示区，高度由 IconGridBoard 按内容设定 */
+.gridFrame { display: block; width: 100%; min-height: var(--milo-size-screen-h); border: 0; border-radius: var(--milo-radius-l); background: var(--milo-color-bg-base); }

@@ -19,9 +19,11 @@ const load = (g: string) => {
 };
 export type Anchors = Record<string, [number, number]>;
 
-export function BodyFigure({ gender, view, stats, focus, height, onAnchors, relativeTo }: {
+export function BodyFigure({ gender, view, stats, focus, height, onAnchors, relativeTo, onPick }: {
   gender: 'male' | 'female'; view: 'front' | 'back'; stats: Map<string, HeadStat>; focus: string | null; height: number;
   onAnchors: (a: Anchors) => void; relativeTo: React.RefObject<HTMLElement | null>;
+  /** 轻点某块肌肉（只有带 data-head 的肌头可点；其余部分不接触摸，页面照常滚动） */
+  onPick?: (id: string) => void;
 }) {
   const [data, setData] = useState<BodyMap | null>(null);
   const [vb, setVb] = useState<number[] | null>(null);
@@ -60,15 +62,16 @@ export function BodyFigure({ gender, view, stats, focus, height, onAnchors, rela
 
   if (!data) return null;
   const v = data[view];
+  const pick = onPick && ((e: React.MouseEvent) => { const id = (e.target as Element).closest?.('g[data-head]')?.getAttribute('data-head'); if (id) onPick(id); });
   const box = vb ?? (data.viewBox ?? '0 0 676.49 1203.49').split(' ').map(Number);
   const tier = (id: string) => {
     const h = stats.get(id);
     if (!h || !(h.sets7d > 0)) return s.tNone;
     return h.level === 'over' ? s.tOver : h.level === 'ok' ? s.tOk : s.tLow;
   };
-  if (thermal) return <ThermalSvg {...{ svgRef: svg, vb, box, height, v, stats, focus, fid, thermal }} />;
+  if (thermal) return <ThermalSvg {...{ svgRef: svg, vb, box, height, v, stats, focus, fid, thermal, pick }} />;
   return (
-    <svg ref={svg} className={vb ? s.figure : s.measuring} viewBox={box.join(' ')} height={height} width={(height * box[2]) / box[3]} preserveAspectRatio="xMinYMin meet" aria-hidden="true">
+    <svg ref={svg} className={`${vb ? s.figure : s.measuring} ${pick ? s.pickable : ''}`} onClick={pick} viewBox={box.join(' ')} height={height} width={(height * box[2]) / box[3]} preserveAspectRatio="xMinYMin meet" aria-hidden="true">
       <g className={s.neutral}>{NEUTRAL.flatMap((k) => (v[k]?.paths ?? []).map((p, i) => <path key={k + i} d={p.d} />))}</g>
       {Object.keys(v).filter((k) => !NEUTRAL.includes(k) && k !== 'body').map((k) => (
         <g key={k} data-head={k} className={`${tier(k)} ${k === focus ? s.tFocus : ''}`}>
@@ -85,16 +88,16 @@ export function BodyFigure({ gender, view, stats, focus, height, onAnchors, rela
 
 /** 热成像：每块肌肉先按热度画成灰阶，再整体做一次「扩散（模糊）+ 渐变映射」。
  *  bloom：清晰的肌肉叠在自己的辉光上；iso：更强的扩散后量化成等温带，裁回人体轮廓；scan：bloom + 横向扫描线与颗粒，像热像仪画面。 */
-function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal }: {
+function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pick }: {
   svgRef: React.RefObject<SVGSVGElement | null>; vb: number[] | null; box: number[]; height: number; v: Record<string, Part>; stats: Map<string, HeadStat>;
-  focus: string | null; fid: string; thermal: { palette: 'lime' | 'bone'; style: 'bloom' | 'iso' | 'scan' };
+  focus: string | null; fid: string; thermal: { palette: 'lime' | 'bone'; style: 'bloom' | 'iso' | 'scan' }; pick?: (e: React.MouseEvent) => void;
 }) {
   const [r, g, b] = tables(thermal.palette), iso = thermal.style === 'iso', unit = box[3] / 100;
   const gray = (t: number) => `color-mix(in srgb, white ${Math.round(t * 100)}%, black)`;
   const heads = Object.keys(v).filter((k) => !NEUTRAL.includes(k) && k !== 'body');
   const fn = iso ? 'discrete' : 'table';
   return (
-    <svg ref={svgRef} className={vb ? s.thermal : s.measuring} viewBox={box.join(' ')} height={height} width={(height * box[2]) / box[3]} preserveAspectRatio="xMinYMin meet" aria-hidden="true">
+    <svg ref={svgRef} className={`${vb ? s.thermal : s.measuring} ${pick ? s.pickable : ''}`} onClick={pick} viewBox={box.join(' ')} height={height} width={(height * box[2]) / box[3]} preserveAspectRatio="xMinYMin meet" aria-hidden="true">
       <defs>
         {/* 每块肌肉一个径向渐变：中心是它的热度，边缘降到 55%，看起来是一团热而不是一块颜色 */}
         {heads.map((k) => { const h = heatOf(stats.get(k)); return (
