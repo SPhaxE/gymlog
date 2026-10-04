@@ -4,12 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Milo 图标网格</title>
-<!-- 图标网格规范（I3 倾斜断笔线稿）· 仅作视觉演示：App 不引用这一页，现行图标仍以 src/components/iconSets.tsx 为准。
-     使用例是导航五个图标按网格对齐后的版本；颜色取自 design/tokens/tokens.css（v2，只有深色）。
+<!-- 图标网格规范（I3 倾斜断笔线稿）。导航五个图标的 d 与 src/components/iconSets.tsx 的 CUT 一致（src/components/iconGrid.test.ts 校验），
+     /playground 的 Icon 一节用 iframe 嵌这一页。使用例是导航五个图标按网格对齐后的版本；颜色取自 design/tokens/tokens.css（v2，只有深色）。
      截图：python3 scripts/shoot_icon_grid.py → screenshots/icon-grid/board.png -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<script>
+  // 单独打开时从 Google Fonts 取字体；嵌在 /playground 里（iframe）时不联网，由外层注入 App 自带的字体（离线、APK 里也能显示）
+  if (window.top === window) {
+    const l = document.createElement('link');
+    l.rel = 'stylesheet';
+    l.href = 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap';
+    document.head.appendChild(l);
+  }
+</script>
 <style>
 /* 版式：单栏规范板，章节按「画布 → 关键线 → 笔画 → 倾斜 → 使用例 → 实际尺寸 → 自检」的绘制顺序排；只有深色，和 App 一致 */
 :root {
@@ -192,7 +198,7 @@ footer { margin-top: 56px; font-size: 12px; color: var(--ink-2); }
       <div class="spec"><span class="n">−11<small>°</small></span><span class="k">整体倾斜 skewX</span></div>
       <div class="spec"><span class="n">20<small>px</small></span><span class="k">出图 · 小号 16px</span></div>
     </div>
-    <p class="note">仅作视觉演示：App 没有引用这一页，现行图标仍以 <code>src/components/iconSets.tsx</code> 为准。下面的使用例是按网格对齐后的版本，和现行的差异在每个使用例的「对照」里。</p>
+    <p class="note">App 的导航五个图标就是下面使用例里的版本（<code>src/components/iconSets.tsx</code>，测试保证两边一致）；「对照」里的灰线是对齐前的旧版。</p>
   </header>
 
   <!-- §1 -->
@@ -288,7 +294,7 @@ footer { margin-top: 56px; font-size: 12px; color: var(--ink-2); }
     </ol>
   </section>
 
-  <footer>慢牛 Milo · 图标网格 · 2026-10 · 视觉演示，不进 App</footer>
+  <footer>慢牛 Milo · 图标网格 · 2026-10 · 导航五个图标已按这一页落进 App，/playground 的 Icon 一节内嵌本页</footer>
 </main>
 
 <script>
@@ -300,7 +306,7 @@ footer { margin-top: 56px; font-size: 12px; color: var(--ink-2); }
     portrait:  { name: '竖长方形', size: '16 × 20', el: '<rect x="4" y="2" width="16" height="20"/>', for: '', uses: ['身体', '记录'] },
     landscape: { name: '横长方形', size: '20 × 16', el: '<rect x="2" y="4" width="20" height="16"/>', for: '', uses: ['增量'] },
   };
-  // 导航五图标：网格对齐版（d），现行版（old，src/components/iconSets.tsx 的 CUT）
+  // 导航五图标：网格对齐版（d，= src/components/iconSets.tsx 的 CUT），对齐前的旧版（old）
   const ICONS = [
     { key: 'home', name: '首页', kl: 'square',
       d: 'M4 11 12 4l8 7M6 14.5V20h4v-4h4v4h4v-5.5',
@@ -309,11 +315,11 @@ footer { margin-top: 56px; font-size: 12px; color: var(--ink-2); }
       gaps: [[5,12.75],[19,12.75]],
       rules: [['关键线', '方形 18：屋檐两端与屋脊外缘、地线外缘正好贴四边'], ['断口', '<span class="sig">2 处</span>：墙顶停在屋檐下，墙顶端点到屋檐端点 <span class="mono">4.03u</span>'], ['内空', '门洞中心线宽 <span class="mono">4u</span>，看得见 2u；墙到门框同样 2u'], ['对照', '屋檐 3.5 / 20.5 → 4 / 20，墙顶 14 → 14.5，门洞 3u → 4u，门和地线并成一笔']] },
     { key: 'body', name: '身体', kl: 'portrait',
-      d: 'M13.5 7.5A2.5 2.5 0 1 1 13.5 3.5M7 21l2-9h6l2 9M5 14l4-2M19 14l-4-2',
+      d: 'M15.5 6A3 3 0 1 0 10.38 8.12L11 10H5v11M15 10h4l-9.5 11',
       old: 'M13.6 4.4A2.3 2.3 0 1 0 12 8M7 21l1.8-9.5h6.4L17 21M6 13.5l3-2M18 13.5l-3-2',
-      anchors: [[13.5,7.5],[13.5,3.5],[7,21],[9,12],[15,12],[17,21],[5,14],[19,14]], centers: [[12,5.5]],
-      gaps: [[13.5,5.5]],
-      rules: [['关键线', '竖长方形 16 × 20：头顶外缘贴顶边，脚底贴底边，手臂外端贴左右'], ['断口', '<span class="sig">1 处</span>：头 r <span class="mono">2.5</span>，开口朝右，端点落在 (13.5, 3.5) 与 (13.5, 7.5)'], ['间距', '头底 y 8 到肩线 y 12，空 <span class="mono">2u</span>'], ['对照', '头 r 2.3 → 2.5，开口约 130° → 106°；肩线 11.5 → 12；手臂外端 6 / 18 → 5 / 19']] },
+      anchors: [[15.5,6],[10.38,8.12],[11,10],[5,10],[5,21],[15,10],[19,10],[9.5,21]], centers: [[12.5,6]],
+      gaps: [[13,10],[15.25,8]],
+      rules: [['关键线', '竖长方形 16 × 20：头顶外缘贴顶边，左侧竖线与右肩外缘贴左右，左脚与斜线末端贴底边'], ['笔画', '两笔：头 r <span class="mono">3</span> 从正右起逆时针绕过头顶，到左下 135° 折进颈部 (11, 10)，再折成左肩、左侧竖线；右肩 (15, 10)–(19, 10) 后斜下到 (9.5, 21)'], ['断口', '<span class="sig">2 处</span>：颈部与右肩之间 <span class="mono">4u</span>（看得见 2u）；头的开口端点 (15.5, 6) 到右肩起点 (15, 10) 约 <span class="mono">4u</span>'], ['对照', '2026-10-04 换成用户给的参考图：站姿小人 → 开口头 + 三角躯干；底边左脚 x 5 与斜线末端 x 9.5 空 <span class="mono">2.5u</span>']] },
     { key: 'gains', name: '增量', kl: 'landscape',
       d: 'M3 17l6-6 4 4 4-4M15 7h6v6',
       old: 'M3.5 18l5-5.5 4 3.5 6.5-8M14.5 7.5h5v5',
@@ -391,7 +397,7 @@ footer { margin-top: 56px; font-size: 12px; color: var(--ink-2); }
           <div class="final"><div class="box big">${svgIcon(ic.d, 64, 'var(--bone)')}</div>64px</div>
           <div class="final"><div class="box sm">${svgIcon(ic.d, 20, 'var(--bone)')}</div>20px</div>
           <div class="final"><div class="box sm">${svgIcon(ic.d, 16, 'var(--bone)')}</div>16px</div>
-          <div class="final"><div class="box cmp">${svgIcon(ic.d, 64, 'var(--bone)', ic.old)}</div>对照 · 灰 = 现行</div>
+          <div class="final"><div class="box cmp">${svgIcon(ic.d, 64, 'var(--bone)', ic.old)}</div>对照 · 灰 = 旧版</div>
         </div>
         <ul class="rules">${ic.rules.map(([k, v]) => `<li><span>${k}</span><span>${v}</span></li>`).join('')}</ul>
       </div>

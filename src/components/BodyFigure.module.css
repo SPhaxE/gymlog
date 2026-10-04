@@ -25,3 +25,5 @@
 .scanLine { fill: var(--milo-color-bg-base); opacity: 0.35; }
 .grain path { fill: var(--milo-color-text-primary); }
 .grain { opacity: var(--milo-opacity-grain); mix-blend-mode: overlay; }
+/* 可点：只有肌头接触摸（父层 pointer-events: none 时也生效），扫描线、颗粒、轮廓不接；按下给一点反馈 */
+.pickable g[data-head] { pointer-events: visiblePainted; cursor: pointer; -webkit-tap-highlight-color: transparent; }

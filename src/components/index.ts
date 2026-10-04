@@ -4,7 +4,7 @@ import './interactive.css';
 export { FluidBackdrop, grainTile, installGrain } from './atmosphere';
 export { BodyFigure, type Anchors } from './BodyFigure';
 export { Button, IconButton, type ButtonKind } from './Button';
-export { Capsule, CapsuleRail, recoveryLine } from './CapsuleRail';
+export { Capsule, CapsuleRail } from './CapsuleRail';
 export { Sparkline, TrendChart, type Point } from './charts';
 export { DotCalendar, GiantNumber, Odometer, StepRing, WeekBars, dotMonths, type DotMonth } from './dataviz';
 export { Cascade, RestDock, SharedDetail, sharedName, sharedTransition } from './motion';

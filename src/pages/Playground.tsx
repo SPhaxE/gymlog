@@ -80,6 +80,7 @@ export function Playground({ now }: { now: number }) {
           <div className={s.tocGroup}>
             <p className={`milo-text-label ${s.muted}`}>规范与页面</p>
             <a className={`milo-text-caption ${s.tocLink}`} href="/preview">基础规范（颜色、文字、间距、版式）</a>
+            <a className={`milo-text-caption ${s.tocLink}`} href="#Icon">图标网格规范（Icon 一节）</a>
             <a className={`milo-text-caption ${s.tocLink}`} href="/today">App（5 个 Tab）</a>
           </div>
         </nav>

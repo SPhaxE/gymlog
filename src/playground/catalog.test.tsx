@@ -14,7 +14,7 @@ const NOW = Date.UTC(2026, 9, 3, 10);
 // 人体图在 jsdom 里从 public/ 读
 vi.stubGlobal('fetch', async (url: string) => ({ json: async () => JSON.parse(readFileSync(resolve(process.cwd(), 'public', String(url).replace(/^\//, '')), 'utf8')) }));
 
-const NOT_COMPONENTS = new Set(['ScreenAtmosphere', 'BodyRender', 'heatCss', 'heatOf', 'grainTile', 'installGrain', 'dotMonths', 'ICONS', 'TABS', 'OverlayHost', 'Portal', 'ToastProvider', 'handleBack', 'useBackHandler', 'useToast', 'useCountdown', 'forced', 'clock', 'recoveryLine']);
+const NOT_COMPONENTS = new Set(['ScreenAtmosphere', 'BodyRender', 'heatCss', 'heatOf', 'grainTile', 'installGrain', 'dotMonths', 'ICONS', 'TABS', 'OverlayHost', 'Portal', 'ToastProvider', 'handleBack', 'useBackHandler', 'useToast', 'useCountdown', 'forced', 'clock']);
 
 describe('Playground 目录', () => {
   it('覆盖 components/index.ts 的每个组件', () => {

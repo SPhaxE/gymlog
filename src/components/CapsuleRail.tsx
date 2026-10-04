@@ -1,10 +1,12 @@
 /** 胶囊列 + 引线 + 放大镜手势（ia §1.10）：
- *  按住 motion/long-press 进入放大镜；进入前移动超过 motion/drag-slop 视为滚动；上下滑动逐个放大；
+ *  手势只在胶囊列的静止宽度 [left, right] 里接（hit 层），人体在它左边，轻点肌肉打开详情，两块命中区不重叠。
+ *  竖向短滑 = 滚动页面（hit 层 touch-action: pan-y）；按住 motion/long-press 不动才进入放大镜，进入后锁住页面滚动；
+ *  进入前移动超过 motion/drag-slop 或浏览器开始滚动（pointercancel）都取消。上下滑动逐个放大；
  *  松手只是退出放大镜，不打开详情（2026-10-04 用户改）；要看详情就轻点胶囊。
- *  胶囊：名称 · 组数/适宜量；底色按「组数 ÷ 最大可恢复量」从左填充（胶囊本身就是量尺）；0 组为斜纹；焦点为实心荧光 + 黑字，只一行。
- *  放大镜读数（2026-10-04 用户第二轮反馈：手指按在胶囊列上必然挡住右侧）：恢复度、时相、剩余小时、近 7 天组数
- *   不再写在焦点胶囊里，而是放在胶囊列左边、人体上方的读数卡里，跟着焦点上下走，并避开焦点肌肉的锚点。 */
-import { useContext, useLayoutEffect, useRef, useState } from 'react';
+ *  胶囊：名称 · 组数/适宜量；底色按「组数 ÷ 最大可恢复量」从左填充（胶囊本身就是量尺）；0 组为斜纹。
+ *  焦点（2026-10-04 用户第三轮反馈：无必要勿增实体）：还是那颗胶囊，实心荧光；名称挪到最右（手指按着的地方，放大前已经看过名称），
+ *   组数 / 恢复度 / 时相 / 还需几小时写在左边，手指挡不到。 */
+import { useContext, useEffect, useRef } from 'react';
 import type { HeadStat } from '../engine';
 import { T } from '../styles/tokens.gen';
 import type { Anchors } from './BodyFigure';
@@ -15,15 +17,8 @@ import s from './CapsuleRail.module.css';
 const PHASE = { repair: '修复期', recovering: '恢复中', golden: '黄金窗', decayed: '已回落', untrained: '未练过' } as const;
 const fmt = (x: number) => String(Math.round(x * 10) / 10);
 
-export function recoveryLine(h: HeadStat) {
-  if (h.recovery == null) return '未练过';
-  return `恢复 ${Math.round(h.recovery * 100)}% · ${PHASE[h.phase]}${h.hoursLeft > 0.5 ? ` · 还需 ${Math.round(h.hoursLeft)} 小时` : ''}`;
-}
-
-export function CapsuleRail({ ids, stats, anchors, width, height, left, right, readoutLeft = 0, mag, onMag, onSelect }: {
+export function CapsuleRail({ ids, stats, anchors, width, height, left, right, mag, onMag, onSelect }: {
   ids: string[]; stats: Map<string, HeadStat>; anchors: Anchors; width: number; height: number; left: number; right: number;
-  /** 读数卡的左缘（身体页 = 页面边距）；右缘在焦点胶囊的引线拐点左边 */
-  readoutLeft?: number;
   mag: number | null; onMag: (f: number | null) => void; onSelect: (id: string) => void;
 }) {
   const n = ids.length;
@@ -31,11 +26,19 @@ export function CapsuleRail({ ids, stats, anchors, width, height, left, right, r
   const still = capsuleLayout(n, height, left, right, null);
   const span = still.caps.length ? still.caps[n - 1].y + still.caps[n - 1].h : height;
   const g = useRef<{ x: number; y: number; timer: number; on: boolean } | null>(null);
-  const rail = useRef<HTMLDivElement>(null);
+  const rail = useRef<HTMLDivElement>(null), hit = useRef<HTMLDivElement>(null);
   const fAt = (clientY: number) => indexAt(clientY - rail.current!.getBoundingClientRect().top - still.top, span, n);
 
+  // 放大镜开着时拦下 touchmove，页面不跟着滚；没开时不拦，竖向短滑照常滚动页面（必须是非 passive 的原生监听）
+  useEffect(() => {
+    const el = hit.current!;
+    const stop = (e: TouchEvent) => { if (g.current?.on) e.preventDefault(); };
+    el.addEventListener('touchmove', stop, { passive: false });
+    return () => el.removeEventListener('touchmove', stop);
+  }, []);
+
   const down = (e: React.PointerEvent) => {
-    e.currentTarget.setPointerCapture(e.pointerId);
+    if (e.pointerType === 'mouse') e.currentTarget.setPointerCapture(e.pointerId);
     const cy = e.clientY;
     g.current = { x: e.clientX, y: cy, on: false, timer: window.setTimeout(() => { if (g.current) { g.current.on = true; onMag(fAt(cy)); } }, T['motion/long-press']) };
   };
@@ -55,13 +58,11 @@ export function CapsuleRail({ ids, stats, anchors, width, height, left, right, r
     const i = Math.round(fAt(e.clientY));
     if (ids[i]) onSelect(ids[i]);
   };
-  const cancel = () => { if (g.current) clearTimeout(g.current.timer); g.current = null; };
+  // 浏览器接管成滚动（触屏竖向滑过它自己的阈值）时会发 pointercancel：取消长按；万一已在放大镜里也一并退出
+  const cancel = () => { const st = g.current; g.current = null; if (!st) return; clearTimeout(st.timer); if (st.on) onMag(null); };
 
-  const fk = caps.findIndex((c) => c.focus), fc = caps[fk];
   return (
     <>
-      {fc && <Readout h={stats.get(ids[fk])!} left={readoutLeft} right={fc.x - T['space/s']}
-        cy={top + fc.y + fc.h / 2} anchorY={anchors[ids[fk]]?.[1]} height={height} />}
       <svg className={s.leaders} width={width} height={height} aria-hidden="true">
         {caps.map((c, k) => {
           const a = anchors[ids[k]];
@@ -75,10 +76,12 @@ export function CapsuleRail({ ids, stats, anchors, width, height, left, right, r
           );
         })}
       </svg>
-      <div ref={rail} className={s.rail} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={cancel}
-        role="listbox" aria-label="肌头容量（按住上下滑动放大）">
+      <div ref={rail} className={s.rail} role="listbox" aria-label="肌头容量（轻点看详情，按住上下滑动放大）">
         {caps.map((c, k) => <Capsule key={ids[k]} h={stats.get(ids[k])!} c={c} top={top} />)}
       </div>
+      {/* 手势层：只盖胶囊列的静止宽度；人体在它左边另有轻点命中 */}
+      <div ref={hit} className={s.hit} style={{ left, width: right - left }} aria-hidden="true"
+        onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={cancel} onContextMenu={(e) => e.preventDefault()} />
     </>
   );
 }
@@ -93,32 +96,27 @@ export function Capsule({ h, c, top = 0, standalone }: { h: HeadStat; c: CapBox;
       style={{ left: c.x, top: top + c.y, width: c.w, height: c.h, ['--w' as string]: c.weight }}>
       {!c.focus && !none && <div className={`${s.gauge} ${h.sets7d > h.mrv && !thermal ? s.gaugeOver : ''}`}
         style={{ width: `${fill}%`, ...(thermal ? { background: heatCss(heatOf(h), thermal.palette), opacity: 0.55 } : {}) }} />}
-      <div className={s.l1}>
-        <span className={s.name}>{h.name}</span>
-        <span className={s.val}><b>{fmt(h.sets7d)}</b>/{h.mav}{c.focus && <i> 组</i>}</span>
-      </div>
+      {c.focus ? <FocusBody h={h} /> : (
+        <div className={s.l1}>
+          <span className={s.name}>{h.name}</span>
+          <span className={s.val}><b>{fmt(h.sets7d)}</b>/{h.mav}</span>
+        </div>
+      )}
     </div>
   );
 }
 
-/** 放大镜读数卡：在焦点胶囊左边、紧挨着它（手指按在右侧胶囊上，挡不到这里），盖在引线上面。竖直方向跟焦点胶囊对齐；
- *  会盖住焦点肌肉的锚点时，挪到锚点上方或下方（哪边地方大去哪边）。 */
-function Readout({ h, left, right, cy, anchorY, height }: { h: HeadStat; left: number; right: number; cy: number; anchorY?: number; height: number }) {
-  const el = useRef<HTMLDivElement>(null), [rh, setRh] = useState(0);
-  useLayoutEffect(() => { if (el.current) setRh(el.current.offsetHeight); }, [h]);
-  if (right - left < T['size/readout-min-w']) return null;
-  const gap = T['space/m'];
-  let top = cy - rh / 2;
-  if (anchorY != null && anchorY > top - gap && anchorY < top + rh + gap) top = anchorY > height / 2 ? anchorY - gap - rh : anchorY + gap;
-  top = Math.max(0, Math.min(height - rh, top));
+/** 焦点胶囊的内容：左边三行（组数 / 恢复度 · 时相 / 还需几小时），名称在最右（手指底下） */
+function FocusBody({ h }: { h: HeadStat }) {
   const pct = h.recovery == null ? null : Math.round(h.recovery * 100);
   return (
-    <div ref={el} className={s.readout} style={{ left, width: right - left, top }} aria-live="polite">
-      <span className={s.rName}>{h.name}</span>
-      <span className={s.rBig}><b>{pct ?? '—'}</b>{pct != null && <i>%</i>}<em>恢复</em></span>
-      <span className={s.rLine}>{h.recovery == null ? '未练过' : PHASE[h.phase]}</span>
-      {h.recovery != null && <span className={s.rLine}>{h.hoursLeft > 0.5 ? <>还需 <b>{Math.round(h.hoursLeft)}</b> 小时</> : '已恢复'}</span>}
-      <span className={s.rLine}>7 天 <b>{fmt(h.sets7d)}</b>/{h.mav} 组</span>
+    <div className={s.fRow}>
+      <div className={s.fInfo}>
+        <span className={s.fSets}><b>{fmt(h.sets7d)}</b>/{h.mav} 组</span>
+        <span className={s.fLine}>{pct == null ? '未练过' : <>恢复 <b>{pct}</b>% · {PHASE[h.phase]}</>}</span>
+        {pct != null && <span className={s.fLine}>{h.hoursLeft > 0.5 ? <>还需 <b>{Math.round(h.hoursLeft)}</b> 小时</> : '已恢复'}</span>}
+      </div>
+      <span className={s.fName}>{h.name}</span>
     </div>
   );
 }
