@@ -12,4 +12,6 @@
 | `logo-m-variants.jpg` / `logo-bars-horn.jpg` / `logo-head.jpg` | 其他 Logo 尝试 | — |
 | `state-*.jpg` | 状态 Logo 模板的尝试 | 用户「没太看懂」，由 Claude 定 |
 
-第一轮的矢量实现在 `/brand`（`src/components/Mascot.tsx`、`src/components/Logo.tsx`），截图在 `screenshots/brand/`。
+第二轮（2026-10-05）：IP 按 `ip2-geo-b-selected.jpg` 的画法逐块重描，每个成长阶段都有全部状态，动效分层参考 [pet-forge](https://github.com/rullerzhou-afk/pet-forge) 的 SVG 约定（分层母版、显式支点、循环首尾帧相同、多层异步周期）；Logo 定为 `logo-bars-vhead-selected.jpg`（B 递增条牛头）。
+
+矢量实现在 `/brand`（`src/components/Mascot.tsx`、`src/components/Logo.tsx`），截图在 `screenshots/brand/`。

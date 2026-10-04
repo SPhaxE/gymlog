@@ -20,15 +20,16 @@ with sync_playwright() as p:
     for sec in ['ip-stages', 'ip-moods', 'ip-small', 'logo', 'states', 'inuse']:
         el = pg.locator(f'#{sec}'); el.scroll_into_view_if_needed(); pg.wait_for_timeout(300)
         el.screenshot(path=os.path.join(OUT, f'{sec}.png')); print('saved', f'screenshots/brand/{sec}.png')
-    # 状态 Logo 动图：约 4 秒、每帧 100 ms
-    el = pg.locator('#states'); el.scroll_into_view_if_needed(); pg.wait_for_timeout(200)
-    frames = []
-    for _ in range(40):
-        im = Image.open(io.BytesIO(el.screenshot())).convert('RGB')
-        frames.append(im.resize((im.width // 2, im.height // 2)))
-        pg.wait_for_timeout(60)
-    frames[0].save(os.path.join(OUT, 'states.gif'), save_all=True, append_images=frames[1:], duration=100, loop=0, optimize=True)
-    print('saved screenshots/brand/states.gif')
+    # 动图：状态 Logo（约 4 秒）与 IP 每个阶段的状态（约 5 秒），每帧 100 ms
+    for sec, n, shrink in [('states', 40, 2), ('ip-moods', 50, 3)]:
+        el = pg.locator(f'#{sec}'); el.scroll_into_view_if_needed(); pg.wait_for_timeout(200)
+        frames = []
+        for _ in range(n):
+            im = Image.open(io.BytesIO(el.screenshot())).convert('RGB')
+            frames.append(im.resize((im.width // shrink, im.height // shrink)))
+            pg.wait_for_timeout(60)
+        frames[0].save(os.path.join(OUT, f'{sec}.gif'), save_all=True, append_images=frames[1:], duration=100, loop=0, optimize=True)
+        print(f'saved screenshots/brand/{sec}.gif')
     b.close()
 if errors:
     print('页面错误：', *errors, sep='\n  '); sys.exit(1)
