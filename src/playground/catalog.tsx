@@ -4,7 +4,7 @@
  *  按下 / 聚焦在代码里是 :active / :focus-visible，这里经 state 强制显示（state.ts）。 */
 import { useRef, type ReactNode } from 'react';
 import {
-  Banner, BodyFigure, DotCalendar, ExpandOverlay, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
+  Banner, BodyFigure, DotCalendar, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
   ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProgressSteps, RestBar, SectionLabel, Segmented,
   SessionRow, SetRow, Sheet, SheetBlock, Skeleton, Sparkline, StateView, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
   type Forced, type IconName, type NumSize, type SkeletonShape, type Tab, type TagTone,
@@ -299,9 +299,10 @@ export const CATALOG: Entry[] = [
     render: (p) => <RestDock remaining={p.state === 'done' ? 0 : 95} total={180} open={p.state === 'open'} onToggle={noop} />,
   },
   {
-    name: 'ExpandOverlay', group: '训练与记录', desc: 'M03 共享元素展开：列表项原地长成整屏详情，返回时缩回原位；返回键 / 按钮关闭。真实动画见下方交互演示。',
-    axes: { state: ['open'] }, size: 'screen',
-    render: () => <div className={s.sheetBox}><ExpandOverlay origin={{ x: 0, y: 0, w: 1, h: 1 }} open onClose={noop} onClosed={noop} title="杠铃深蹲"><Num size="hero" value="85" unit="kg" /></ExpandOverlay></div>,
+    name: 'SharedDetail', group: '训练与记录', desc: 'M03 共享元素展开（View Transitions）：列表行（ExerciseRow sharedId）的卡片底、名称、重量与详情同名，点开时原地变形成整屏详情——卡片长满屏、名称与数字飞到新位置并放大，正文随后淡入；返回时变回去。真实动画见下方交互演示。',
+    axes: { state: ['open'] }, size: 'screen', covers: ['sharedName', 'sharedTransition'],
+    render: () => <div className={s.sheetBox}><SharedDetail id="demo" title="杠铃深蹲" sub="下肢 · 3 × 6–8" hero={<Num size="hero" value="85" unit="kg" />} onBack={noop}>
+      <span className="milo-text-caption">上次 8/8/8 全部顶到 8 次上限 → +5 kg</span></SharedDetail></div>,
   },
   {
     name: 'StepRing', group: '训练与记录', desc: 'E2 环中数字（ref1）：序号在进度环里，环 = 这个动作已完成的组数比例；完成后整行降到 opacity/done-row。',

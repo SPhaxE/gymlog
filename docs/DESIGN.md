@@ -126,7 +126,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 | 选中项 | `nav/pill` 骨白实心，图标与文字 `nav/pill-ink`，高 `size/nav-item-h` |
 | 外圈：今日进度（2026-10-04 用户选定 R1 改版） | 从顶边正中顺时针。null 或还没开始：不画。**开始训练后先画一圈暗色待走轨道**（`nav/track`，`motion/slow` × 2），再在上面走 `nav/progress` **轨迹**：尾部 `opacity/trace-min` 渐到实色，**没有端点圆点**；进度变化平滑过渡；1 = 满环 |
 | 休息倒计时 | 选中项的名称换成剩余时间（1:35）；小胶囊**里面**一道 `nav/rest`（暗骨）**实线内描边**，**没有虚线、没有端点**，按剩余比例收短；**按帧平滑走**（结束时间戳驱动，不按秒一格一格跳；减少动态效果时按秒）；向内缩半个线宽 + `space/2xs`，不碰外圈 |
-| 选中切换 | 骨白滑块按 `motion/spring` 滑过去；新选中项的图标先转一圈加载轨迹（iconmotionref1，渐变圆弧），再沿路径画出来 |
+| 选中切换 | 骨白滑块按 `motion/spring` 滑过去；新选中项的图标在**自己的笔画上**跑一段由透明渐到实色的轨迹（iconmotionref1 的加载态，7 段错开、头实尾虚），跑完图标再定格；不在图标外加圈（2026-10-04 用户改） |
 | 图标（I3） | 2 号圆头线稿、故意留缺口（iconref2），整体右倾 `skewX(−11°)`；全部 26 个图标同一套 |
 
 ## 7. 动效
@@ -150,7 +150,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 | 动效 | 组件 | 规则 |
 |---|---|---|
 | M02 流体胶囊形变 | `RestDock` | 组间休息小胶囊 ↔ 休息面板，尺寸与圆角一起按软弹簧过渡 |
-| M03 共享元素展开 | `ExpandOverlay` | 列表项原地长成整屏详情，返回缩回；返回键关闭 |
+| M03 共享元素展开 | `SharedDetail`、`sharedTransition`、`ExerciseRow sharedId` | View Transitions：列表行的卡片底、名称、主数字与详情同名，点开时原地变形（卡片长满屏，名称和数字飞到新位置并放大），正文随后淡入；返回变回去。不支持时直接切换 |
 | M04 磁吸游标 + 码表 | `TrendChart`、`Odometer` | 按住横向拖，游标吸到最近一次并轻振；读数按位滚动 |
 | M05 阻尼底部面板 | `Sheet` | 两档（内容高度，最多 60% / 92%）；拉过上限 ×0.3 阻尼；松手按速度判档，下甩关闭 |
 | M06 光晕边框 | `Button glow` | 只给首页「开始训练」：圆锥渐变描边慢转 + 呼吸光晕；训练中的页面不用 |
@@ -237,7 +237,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 | | `DayCell`、`WeekStrip` | 已练 / 已练 · PR / 休息 / 今天 / 未来 × 默认 / 选中 / 按下 / 聚焦 | 记录页顶部 |
 | | `MediaFrame` | 加载中 / 已加载 / 缺素材 / 加载失败 | 只经 `media` 字段引用，保留署名 |
 | | `StepRing`、`DotCalendar` | 待做 / 进行中 / 已完成；— | E2 训练中的动作序号 + 组数环；E1 记录页近 3 个月点阵 |
-| | `RestDock`、`ExpandOverlay`、`Cascade` | 小胶囊 / 展开 / 结束；展开；— | M02 / M03 / M07（§7） |
+| | `RestDock`、`SharedDetail`、`Cascade` | 小胶囊 / 展开 / 结束；展开；— | M02 / M03 / M07（§7） |
 | 数据图形 | `Sparkline`、`TrendChart` | 上升 / 下降 / 只有 1 次；多次 / 选中一次 / 只有 1 次 / 没有记录 | 时间按正序画（有单测）；PR 用菱形；TrendChart 是圆滑曲线 + 渐隐面积 + 拖动吸附 + 码表读数（E5 / M04） |
 | | `WeekBars`、`GiantNumber`、`Odometer` | —；—；3 档字号 | E3 增量页近 8 周组数；E4 结算页唯一一次「大声」；M04 数字按位滚动 |
 | | `IncrementRuler`、`LandmarkRuler`、`PhaseSegments`、`Ticks`、`TierLegend` | 加重 / 保持 / 减重；未练 / 不足 / 达标 / 超量；四个时相 | §5 |

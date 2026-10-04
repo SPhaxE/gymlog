@@ -5,7 +5,7 @@
  *   - 进度是轨迹：尾部淡（opacity/trace-min）、头部实，没有端点圆点；1 = 满环。
  *  休息：选中项的名称换成剩余时间；小胶囊里面一道实线内描边按剩余比例收短（没有虚线、没有端点），
  *   给 restEndAt + restTotalMs 时按帧平滑走（不按秒一格一格跳）；只给 restRatio 时是静态（Playground）。
- *  选中切换时：图标先出一圈短暂的「加载」轨迹（iconmotionref1），再沿路径画出来。 */
+ *  选中切换时：图标自己的笔画上跑一段由透明渐到实色的轨迹（iconmotionref1 的加载态），跑完再定格，不在图标外加圈。 */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { T } from '../styles/tokens.gen';
 import { Icon } from './Icon';
@@ -20,6 +20,9 @@ export function pillPath(x: number, y: number, w: number, h: number) {
   const r = Math.min(h / 2, w / 2), cx = x + w / 2;
   return `M${cx},${y} H${x + w - r} A${r},${r} 0 0 1 ${x + w},${y + r} V${y + h - r} A${r},${r} 0 0 1 ${x + w - r},${y + h} H${x + r} A${r},${r} 0 0 1 ${x},${y + h - r} V${y + r} A${r},${r} 0 0 1 ${x + r},${y} Z`;
 }
+
+/** 跨页面记住上一个 Nav 的选中项和滑块位置（模块级，App 里同一时刻只有一个 Nav 在屏上） */
+const memo: { tab: Tab | null; pill: [number, number, number, number] | null } = { tab: null, pill: null };
 
 const reduced = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
@@ -47,18 +50,31 @@ export function Nav({ selected, progress, started, rest, restRatio, restEndAt, r
 }) {
   const nav = useRef<HTMLElement>(null), on = useRef<HTMLAnchorElement>(null);
   const [geo, setGeo] = useState<{ w: number; h: number; pill: [number, number, number, number] | null }>({ w: 0, h: 0, pill: null });
+  // App 里每个 Tab 页各有一个 Nav，切 Tab 时 Nav 是新挂载的：从上一个 Nav 留下的选中项与滑块位置接着动，滑块才会滑、图标才会放加载态
+  const [cameFrom] = useState(() => (memo.tab && memo.tab !== selected && memo.pill ? { tab: memo.tab, pill: memo.pill } : null));
+  const slid = useRef(false);
   useLayoutEffect(() => {
     const el = nav.current!;
     const measure = () => {
       const a = el.getBoundingClientRect(), b = on.current?.getBoundingClientRect();
-      setGeo({ w: a.width, h: a.height, pill: b ? [b.left - a.left, b.top - a.top, b.width, b.height] : null });
+      const g = { w: a.width, h: a.height, pill: b ? [b.left - a.left, b.top - a.top, b.width, b.height] as [number, number, number, number] : null };
+      memo.pill = g.pill; memo.tab = selected;
+      setGeo(g);
     };
-    measure();
-    const ro = new ResizeObserver(measure); ro.observe(el);
-    return () => ro.disconnect();
+    const from = slid.current ? null : cameFrom;
+    let raf = 0, ready = !from;
+    if (from) {
+      // 先按旧位置画一帧，下一帧再量新位置，滑块的 transform 过渡才会生效；在那之前忽略 ResizeObserver 的首次回调
+      const a = el.getBoundingClientRect();
+      setGeo({ w: a.width, h: a.height, pill: from.pill });
+      // 严格模式下副作用会跑两遍：只有真的滑过一次才记 slid，第二遍照样从旧位置起滑
+      raf = requestAnimationFrame(() => requestAnimationFrame(() => { ready = true; slid.current = true; measure(); }));
+    } else measure();
+    const ro = new ResizeObserver(() => { if (ready) measure(); }); ro.observe(el);
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); };
   }, [selected, rest]);
-  // 选中切换计数：首屏不放加载动效，之后每次切换放一次
-  const prevSel = useRef(selected), [switches, setSwitches] = useState(0);
+  // 选中切换计数：首屏不放加载动效；同一个 Nav 里切换、或从另一页的 Nav 切过来，都放一次
+  const prevSel = useRef(selected), [switches, setSwitches] = useState(() => (memo.tab && memo.tab !== selected ? 1 : 0));
   useEffect(() => { if (prevSel.current !== selected) { prevSel.current = selected; setSwitches((n) => n + 1); } }, [selected]);
 
   const rr = useRestRatio(restEndAt, restTotalMs, restRatio);
@@ -85,24 +101,13 @@ export function Nav({ selected, progress, started, rest, restRatio, restEndAt, r
         <a key={k} ref={k === selected ? on : undefined} href={href} className={cx('milo-press milo-focus', k === selected ? s.on : s.item)} aria-current={k === selected ? 'page' : undefined}
           aria-label={k === selected && rest ? `${label}，休息剩余 ${rest}` : undefined}
           onClick={(e) => { if (onSelect) { e.preventDefault(); onSelect(k, href); } }} {...(k === firstOff ? forced(itemState) : {})}>
-          <span key={k === selected ? `on${switches}` : k} className={cx(s.iconWrap, k === selected && switches > 0 && s.loading)}>
-            {k === selected && switches > 0 && <Loader />}
+          <span key={k === selected ? `on${switches}` : k} className={s.iconWrap}>
             <Icon name={k} className={s.icon} active={k === selected && switches > 0} />
           </span>
           <span>{k === selected && rest ? rest : label}</span>
         </a>
       ))}
     </nav>
-  );
-}
-
-/** 选中瞬间的加载轨迹（iconmotionref1）：一段从透明渐到实色的圆弧绕图标转一圈后淡出 */
-function Loader() {
-  return (
-    <svg className={s.loader} viewBox="0 0 24 24" aria-hidden="true">
-      <defs><linearGradient id="navLoaderGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="currentColor" stopOpacity="0" /><stop offset="1" stopColor="currentColor" /></linearGradient></defs>
-      <path d="M12 2.5a9.5 9.5 0 1 1-9.5 9.5" fill="none" stroke="url(#navLoaderGrad)" strokeWidth={2} strokeLinecap="round" />
-    </svg>
   );
 }
 

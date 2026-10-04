@@ -1,7 +1,7 @@
 /** Playground 的交互演示：真实状态、真实动效（矩阵里是静态展示）。每个演示挂在一个组件小节下面。 */
 import { useState, type ReactNode } from 'react';
 import {
-  Banner, Button, Cascade, Dialog, ExerciseRow, ExpandOverlay, RestDock, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
+  Banner, Button, Cascade, Dialog, ExerciseRow, RestDock, SharedDetail, sharedTransition, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
   LandmarkRuler, PhaseSegments, Num, Screen, SetRow, clock, useCountdown, useToast, type Tab,
 } from '../components';
 import { BodyPage } from '../pages/BodyPage';
@@ -189,34 +189,32 @@ function CascadeDemo({ f }: { f: Fixtures }) {
   );
 }
 
-/** M03 共享元素展开：点一行，原地长成详情；返回缩回 */
+/** M03 共享元素展开：点一行，卡片、名称、重量原地变形成详情；返回变回去 */
 function ExpandInner({ f }: { f: Fixtures }) {
-  const [sel, setSel] = useState<{ i: number; r: { x: number; y: number; w: number; h: number }; open: boolean } | null>(null);
-  const items = f.items.slice(0, 4), it = sel ? items[sel.i] : null;
+  const [open, setOpen] = useState<string | null>(null);
+  const items = f.items.slice(0, 4), it = items.find((x) => x.exerciseId === open);
   return (
     <Screen label="共享元素">
       <div className={s.expandList}>
-        {items.map((x, i) => (
-          <div key={x.exerciseId} className={s.expandRow} style={{ visibility: sel?.i === i ? 'hidden' : undefined }}
-            onClick={(e) => { const b = e.currentTarget.parentElement!.getBoundingClientRect(), r = e.currentTarget.getBoundingClientRect();
-              setSel({ i, r: { x: r.left - b.left, y: r.top - b.top, w: r.width, h: r.height }, open: true }); }}>
-            <ExerciseRow name={x.name} detail={`${x.sets} × ${x.repRange.join('–')}`} weight={x.suggestion.weightKg} />
-          </div>
+        {items.map((x) => (
+          <ExerciseRow key={x.exerciseId} name={x.name} detail={`${x.sets} × ${x.repRange.join('–')}`} weight={x.suggestion.weightKg}
+            sharedId={open === x.exerciseId ? undefined : x.exerciseId} onClick={() => sharedTransition(() => setOpen(x.exerciseId))} />
         ))}
-        {sel && it && (
-          <ExpandOverlay origin={sel.r} open={sel.open} title={it.name} onClose={() => setSel((x) => x && { ...x, open: false })} onClosed={() => setSel(null)}>
-            {it.suggestion.weightKg != null ? <Num size="hero" value={it.suggestion.weightKg} unit="kg" /> : <span className="milo-text-title-l">首次</span>}
-            <span className="milo-text-caption">{it.suggestion.reason.text || `选一个能干净做完 ${it.repRange[0]} 次的重量`}</span>
-          </ExpandOverlay>
-        )}
       </div>
+      {it && (
+        <SharedDetail id={it.exerciseId} title={it.name} sub={`${it.sets} × ${it.repRange.join('–')} · 休息 ${clock(it.restSec ?? 180)}`}
+          hero={it.suggestion.weightKg != null ? <Num size="hero" value={it.suggestion.weightKg} unit="kg" /> : undefined}
+          onBack={() => sharedTransition(() => setOpen(null))}>
+          <span className="milo-text-body">{it.suggestion.reason.text || `选一个能干净做完 ${it.repRange[0]} 次的重量`}</span>
+        </SharedDetail>
+      )}
     </Screen>
   );
 }
 
 export const DEMOS: Record<string, (f: Fixtures) => ReactNode> = {
   ExerciseRow: (f) => <CascadeDemo f={f} />,
-  ExpandOverlay: (f) => <div className={s.demoCol}><Stage tall label="共享元素演示"><ExpandInner f={f} /></Stage></div>,
+  SharedDetail: (f) => <div className={s.demoCol}><Stage tall label="共享元素演示"><ExpandInner f={f} /></Stage><Note>点一个动作：卡片原地长满屏，名称和重量飞到详情的位置并放大；点返回变回去。</Note></div>,
   Button: () => <ButtonDemo />,
   OptionCard: () => <FormDemo />,
   DialogCard: () => <FeedbackDemo />,

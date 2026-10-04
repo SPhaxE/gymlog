@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { T } from '../styles/tokens.gen';
 import { Button, IconButton } from './Button';
 import { IncrementRuler } from './Gauges';
+import { sharedName } from './motion';
 import { Icon } from './Icon';
 import { cx, forced, type Forced } from './state';
 import { Card, Num, Tag } from './ui';
@@ -15,15 +16,18 @@ export const clock = (sec: number) => `${Math.floor(Math.max(0, sec) / 60)}:${St
 
 /* ---------- 处方行（P01「接下来」、P03 动作列表） ---------- */
 export type ExerciseStatus = 'todo' | 'current' | 'done' | 'skipped';
-export function ExerciseRow({ name, detail, weight, status = 'todo', sets, onClick, state }: {
+export function ExerciseRow({ name, detail, weight, status = 'todo', sets, onClick, state, sharedId }: {
   name: string; detail: string; weight: number | null; status?: ExerciseStatus; sets?: [number, number]; onClick?: () => void; state?: Forced;
+  /** M03：给卡片、名称、重量起共享名，点开时原地变形成 SharedDetail（详情打开时传 undefined，避免同名） */
+  sharedId?: string;
 }) {
   const trailing = status === 'skipped' ? <Tag tone="outline">未做</Tag>
     : status === 'done' ? <span className={s.doneMark}><Num size="s" value={`${sets?.[0] ?? 0}/${sets?.[1] ?? 0}`} unit="组" /><Icon name="check" small /></span>
-    : weight != null ? <Num value={fmt(weight)} unit="kg" /> : <Tag tone="outline">首次</Tag>;
+    : weight != null ? <span style={sharedId ? sharedName('num', sharedId) : undefined}><Num value={fmt(weight)} unit="kg" /></span> : <Tag tone="outline">首次</Tag>;
   return (
-    <button type="button" className={cx('milo-press milo-focus', s.exRow, s[`ex_${status}`])} onClick={onClick} aria-current={status === 'current' ? 'step' : undefined} {...forced(state)}>
-      <span className={s.exText}><b className="milo-text-body-strong">{name}</b><span className="milo-text-caption">{status === 'current' && sets ? `进行中 · 第 ${sets[0] + 1} 组 · ` : ''}{detail}</span></span>
+    <button type="button" className={cx('milo-press milo-focus', s.exRow, s[`ex_${status}`])} onClick={onClick} aria-current={status === 'current' ? 'step' : undefined}
+      style={sharedId ? sharedName('card', sharedId) : undefined} {...forced(state)}>
+      <span className={s.exText}><b className="milo-text-body-strong" style={sharedId ? { ...sharedName('title', sharedId), width: 'fit-content' } : undefined}>{name}</b><span className="milo-text-caption">{status === 'current' && sets ? `进行中 · 第 ${sets[0] + 1} 组 · ` : ''}{detail}</span></span>
       {trailing}
     </button>
   );

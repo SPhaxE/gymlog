@@ -1,5 +1,6 @@
 /** 胶囊列 + 引线 + 放大镜手势（ia §1.10）：
- *  按住 motion/long-press 进入放大镜；进入前移动超过 motion/drag-slop 视为滚动；上下滑动逐个放大；松手选中最近的肌头；轻点直接选中。
+ *  按住 motion/long-press 进入放大镜；进入前移动超过 motion/drag-slop 视为滚动；上下滑动逐个放大；
+ *  松手只是退出放大镜，不打开详情（2026-10-04 用户改）；要看详情就轻点胶囊。
  *  胶囊：名称 · 组数/适宜量；底色按「组数 ÷ 最大可恢复量」从左填充（胶囊本身就是量尺）；0 组为斜纹；焦点为实心荧光 + 黑字，多一行恢复度与时相。 */
 import { useContext, useRef } from 'react';
 import type { HeadStat } from '../engine';
@@ -45,8 +46,9 @@ export function CapsuleRail({ ids, stats, anchors, width, height, left, right, m
     g.current = null;
     if (!st) return;
     clearTimeout(st.timer);
-    const i = Math.round(st.on && mag != null ? mag : fAt(e.clientY));
-    onMag(i);
+    // 放大镜里松手：只退出放大镜，胶囊回到静止；没进放大镜（轻点）才打开详情
+    if (st.on) { onMag(null); return; }
+    const i = Math.round(fAt(e.clientY));
     if (ids[i]) onSelect(ids[i]);
   };
   const cancel = () => { if (g.current) clearTimeout(g.current.timer); g.current = null; };

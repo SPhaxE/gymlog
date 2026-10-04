@@ -1,5 +1,6 @@
 /** 图标（2026-10-04 用户选定 I3）：2 号圆头线稿，故意留缺口，整体右倾（iconref2 的动态感）；颜色跟随 currentColor。
- *  默认 size/icon，small 为 size/icon-s。active：沿路径画出来（导航选中时，配合 Nav 的加载轨迹）。装饰性，含义由文字或 aria-label 给出。
+ *  默认 size/icon，small 为 size/icon-s。active：选中瞬间的加载态——笔画上跑一段由透明渐到实色的轨迹，跑完图标再显出来（导航选中时用）。
+ *  装饰性，含义由文字或 aria-label 给出。
  *  PATHS 是旧的实心一套，只在 /lab 对照（IconStyleCtx = 'current'）时用。 */
 import { useContext, useId } from 'react';
 import { CUT, GEO, IconStyleCtx, SLANT } from './iconSets';
@@ -36,6 +37,7 @@ const PATHS = {
   star: 'M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.3L12 17.1l-5.7 3.1 1.2-6.3L2.8 9.5l6.4-.8z',
 } as const;
 export type IconName = keyof typeof PATHS;
+const COMET = 7; // 彗星的段数：越多尾巴越顺
 export const ICONS = Object.keys(PATHS) as IconName[];
 
 export function Icon({ name, small, className, active }: { name: IconName; small?: boolean; className?: string; active?: boolean }) {
@@ -43,12 +45,17 @@ export function Icon({ name, small, className, active }: { name: IconName; small
   const cls = className ?? (small ? s.small : s.icon);
   if (style === 'geo' && GEO[name]) return <svg className={cls} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d={GEO[name]} fillRule="evenodd" /></svg>;
   if ((style === 'cut' || style === 'trace' || style === 'slant') && CUT[name]) {
-    const trace = style === 'trace';
+    const trace = style === 'trace', tf = style === 'slant' ? SLANT : undefined;
+    const line = { d: CUT[name], strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, transform: tf };
     return (
       <svg className={cls} viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
         {trace && <defs><linearGradient id={gid} x1="0" y1="1" x2="1" y2="0"><stop offset="0" stopColor="currentColor" stopOpacity="0.15" /><stop offset="0.75" stopColor="currentColor" /></linearGradient></defs>}
-        <path d={CUT[name]} stroke={trace ? `url(#${gid})` : 'currentColor'} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
-          transform={style === 'slant' ? SLANT : undefined} pathLength={active ? 1 : undefined} className={active ? s.draw : undefined} />
+        <path {...line} stroke={trace ? `url(#${gid})` : 'currentColor'} className={active ? s.settle : undefined} />
+        {/* 加载态（iconmotionref1）：图标自己的线条上跑一段「彗星」——头部实色、尾巴逐段渐隐，沿笔画走完一遍后整枚图标再显出来 */}
+        {active && Array.from({ length: COMET }, (_, k) => (
+          <path key={k} {...line} stroke="currentColor" pathLength={1} className={s.comet}
+            style={{ animationDelay: `calc(var(--comet-step) * ${k})`, opacity: (COMET - k) / COMET }} />
+        ))}
       </svg>
     );
   }

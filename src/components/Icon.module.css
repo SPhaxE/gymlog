@@ -1,6 +1,11 @@
 .icon { width: var(--milo-size-icon); height: var(--milo-size-icon); flex: none; }
 .small { width: var(--milo-size-icon-s); height: var(--milo-size-icon-s); flex: none; }
-/* trace 风格选中时：沿路径画出来（motion/slow），减少动态效果时直接显示 */
-.draw { stroke-dasharray: 1; animation: draw var(--milo-motion-slow) var(--milo-motion-ease-decelerate) both; }
-@keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-@media (prefers-reduced-motion: reduce) { .draw { animation: none; } }
+/* 选中瞬间的加载态（iconmotionref1）：每段彗星是一小截虚线（pathLength 1 上占 --comet-len），从笔画起点跑到终点；
+   段与段错开 --comet-step、不透明度递减，叠起来就是「头实尾虚」的轨迹。跑过大半，整枚图标淡入定格。 */
+.comet { --comet-len: 0.28; stroke-dasharray: var(--comet-len) 1; stroke-dashoffset: var(--comet-len);
+  animation: comet calc(var(--milo-motion-slow) * 1.6) var(--milo-motion-ease-standard) both; }
+@keyframes comet { to { stroke-dashoffset: -1; } }
+.settle { animation: settle var(--milo-motion-base) var(--milo-motion-ease-standard) calc(var(--milo-motion-slow) * 1.2) both; }
+@keyframes settle { from { opacity: 0; } }
+:root { --comet-step: calc(var(--milo-motion-stagger) * 0.35); }
+@media (prefers-reduced-motion: reduce) { .comet { display: none; } .settle { animation: none; } }

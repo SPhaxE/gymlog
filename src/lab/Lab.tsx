@@ -170,7 +170,7 @@ export function Lab({ now }: { now: number }) {
           <Block id="M07" title="弹簧交错流" src="列表依次弹入"><div className={s.card}>
             <div className={s.btnRow}><button type="button" onClick={() => setK((x) => x + 1)}>重放</button></div>
             <Cascade replayKey={k}>{f.items.map((x) => <ExerciseRow key={x.exerciseId} name={x.name} detail={`${x.sets} × ${x.repRange.join('–')}`} weight={x.suggestion.weightKg} />)}</Cascade></div></Block>
-          <Block id="M08" title="按下内阴影 + 弹簧回弹" src="所有可点的件"><div className={s.card}><Button kind="neutral">完成</Button><Num size="s" value="M03 见 /playground · ExpandOverlay" /></div></Block>
+          <Block id="M08" title="按下内阴影 + 弹簧回弹" src="所有可点的件"><div className={s.card}><Button kind="neutral">完成</Button><Num size="s" value="M03 见 /playground · SharedDetail" /></div></Block>
         </div>
       </section>
     </div>

@@ -25,6 +25,7 @@
   position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--milo-space-2xs);
   height: var(--milo-size-nav-item-h); margin: 0 var(--milo-space-2xs); color: var(--milo-color-nav-ink); text-decoration: none; background-color: transparent;
   font-size: var(--milo-font-size-min); line-height: 1; border-radius: var(--milo-radius-pill);
+  transition: color var(--milo-motion-base) var(--milo-motion-ease-standard) var(--milo-motion-fast);
 }
 .on { color: var(--milo-color-nav-pill-ink); font-weight: 700; }
 /* 选中滑块：独立一层，切换时按弹簧滑过去 */
@@ -32,16 +33,7 @@
   transition: transform var(--milo-motion-spring-ms) var(--milo-motion-ease-spring), width var(--milo-motion-spring-ms) var(--milo-motion-ease-spring); }
 .iconWrap { position: relative; display: grid; place-items: center; width: var(--milo-size-nav-icon); height: var(--milo-size-nav-icon); }
 .icon { width: var(--milo-size-nav-icon); height: var(--milo-size-nav-icon); }
-/* 选中瞬间：加载轨迹转一圈后淡出，图标随后画出来 */
-.loader { position: absolute; inset: calc(var(--milo-space-xs) * -1); width: calc(100% + var(--milo-space-s)); height: calc(100% + var(--milo-space-s));
-  animation: spin calc(var(--milo-motion-slow) * 1.4) var(--milo-motion-ease-standard) both, fadeOut var(--milo-motion-base) var(--milo-motion-ease-standard) calc(var(--milo-motion-slow) * 1.1) both; }
-@keyframes spin { from { transform: rotate(-90deg); } to { transform: rotate(270deg); } }
-@keyframes fadeOut { to { opacity: 0; } }
-.loading .icon { animation: iconIn var(--milo-motion-base) var(--milo-motion-ease-decelerate) calc(var(--milo-motion-slow) * 0.6) both; }
-@keyframes iconIn { from { opacity: 0; transform: scale(var(--milo-motion-press-scale)); } }
-
 @media (prefers-reduced-motion: reduce) {
   .pill, .progressSeg { transition: none; }
-  .track, .trace, .loading .icon { animation: none; }
-  .loader { display: none; }
+  .track, .trace { animation: none; }
 }

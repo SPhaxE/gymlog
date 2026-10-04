@@ -35,3 +35,8 @@
   .milo-press:active:not(:disabled), .milo-press[data-pressed] { transform: none; }
   .milo-dots i { animation: none; opacity: 1; }
 }
+
+/* M03 共享元素转场（View Transitions）：变形按 motion/spring；整页不做交叉淡化；新旧快照不拉伸（按比例裁切） */
+::view-transition-group(*) { animation-duration: var(--milo-motion-spring-ms); animation-timing-function: var(--milo-motion-ease-spring); }
+::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+::view-transition-old(*), ::view-transition-new(*) { height: 100%; object-fit: cover; overflow: clip; }
