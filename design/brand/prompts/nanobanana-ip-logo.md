@@ -1,7 +1,7 @@
 # 慢牛 Milo · IP 形象与 Logo 意向图提示词（Nano Banana 2）
 
 > 2026-10-04 · 用途：用户用 Nano Banana 2 出**意向图**，挑感觉、定方向。出图只用来定方向，不当最终素材：定稿后按图标网格规范（`design/icon-grid/index.html`）重画成矢量。
-> 范围见 `docs/brief-v1.4-draft.md` §5。
+> 范围见 `docs/brief.md`「增长与商业化层」§5。
 
 ## 用法
 
