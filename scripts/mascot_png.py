@@ -16,7 +16,8 @@
    - Milo 的源图换成 docs/B5-noglow.jpg（2026-10-05）：B5 的泛光贴着牛身、越近越亮，阈值法和 BiRefNet（试过，2026-10-05）都扣不干净，
      用户用 Nano Banana 出了无泛光、品红纯色底的版本（角和眼改成最亮的荧光，提示词 nanobanana-ip-hd.md §D）。
      它本身就是 B5 的 4 倍大小，跳过超分，和其余牛龄走同一套抠图。光晕由 App 叠加。
-4. 规整：同一牛龄的 6 张用同一个比例、同一条地面线、同一块画布（换状态不跳）；各牛龄的大小按 A 的相对身高。
+4. 规整：同一牛龄的 6 张用同一个比例、同一条地面线、同一块画布（换状态不跳）；各牛龄的大小按 A 的相对身高；
+   最后在成品尺寸上把边缘羽化一点（α 高斯 σ = 0.7 像素）。
 5. 导出：public/mascot/<牛龄>-<状态>.webp（App 用）和 design/brand/mascot/<牛龄>-<状态>.png（PNG 母版），
    非 Milo 另出 public/mascot/<牛龄>-<状态>-lime.webp（只有荧光的角，App 用它叠微光），
    以及 src/components/mascotAssets.ts（画布尺寸、地面线、头像裁切框）。
@@ -158,6 +159,21 @@ def matte(sr, bg, member, hi, lo, key=None):
     return np.dstack([np.clip(rgb, 0, 255), np.clip(a * 255, 0, 255)]).astype(np.uint8)
 
 
+FEATHER = 0.7  # 边缘羽化（成品像素，高斯 σ）：用户 2026-10-05「边缘加一点点羽化」，在最终尺寸上做，5 种牛龄软硬一致
+
+
+def feather(rgba, sigma=FEATHER):
+    """α 轻微高斯模糊；新长出来的半透明像素颜色取最近的不透明像素（不带黑边）"""
+    a = rgba[:, :, 3].astype(np.float32)
+    solid = (a > 127).astype(np.uint8)
+    _, lab = cv2.distanceTransformWithLabels(1 - solid, cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)
+    ys, xs = np.nonzero(solid); lut = np.zeros((lab.max() + 1, 3), np.uint8); lut[1:len(ys) + 1] = rgba[ys, xs, :3]
+    out = rgba.copy()
+    out[:, :, :3] = np.where(solid[..., None].astype(bool), rgba[:, :, :3], lut[lab])
+    out[:, :, 3] = np.clip(cv2.GaussianBlur(a, (0, 0), sigma), 0, 255).astype(np.uint8)
+    return out
+
+
 def heights_from_A():
     """A 里 5 种牛龄（平常）的身高，返回相对公牛的比例"""
     img = cv2.imread(os.path.join(ROOT, 'docs', 'A.jpg'))
@@ -245,6 +261,7 @@ def main(sheet):
             canvas = np.zeros((CH, CW, 4), np.uint8)
             M = np.float32([[1, 0, gx - c], [0, 1, gy - g]])
             canvas = cv2.warpAffine(im, M, (CW, CH), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 0))
+            canvas = feather(canvas)
             name = f'{stage}-{MOODS[k]}'
             pil = Image.fromarray(cv2.cvtColor(canvas, cv2.COLOR_BGRA2RGBA))
             pil.save(os.path.join(out_png, name + '.png'), optimize=True)
