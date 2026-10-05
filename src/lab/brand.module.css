@@ -5,7 +5,7 @@
 .section { display: grid; gap: var(--milo-space-l); }
 .secHead { display: grid; gap: var(--milo-space-xs); border-top: var(--milo-stroke-hairline) solid var(--milo-color-line-default); padding-top: var(--milo-space-l); }
 
-.stageRow { display: flex; align-items: flex-end; gap: var(--milo-space-m); overflow-x: auto; }
+.stageRow { display: flex; align-items: flex-end; gap: var(--milo-space-m); overflow-x: auto; padding-block: var(--milo-space-2xl); }
 .stageCell, .moodCell { margin: 0; flex: 1 1 0; min-width: calc(var(--milo-size-hit-min) * 3); display: grid; gap: var(--milo-space-xs); }
 .stageCell figcaption, .moodCell figcaption { display: grid; gap: var(--milo-space-2xs); text-align: center; }
 .stageCell figcaption span, .moodCell figcaption span { color: var(--milo-color-text-secondary); font-size: var(--milo-font-size-caption); }

@@ -398,12 +398,12 @@ export const CATALOG: Entry[] = [
   },
   /* ---------------- 品牌（阶段 5.5b，2026-10-05） ---------------- */
   {
-    name: 'Mascot', group: '品牌', desc: 'IP 小牛：牛犊与公牛由 scripts/trace_mascot.py 从意向图 3_27AM 一比一矢量化（正负叠片检查），米洛 = 公牛换荧光色；3 个形态 × 6 种状态。平常 / 专注用原图的眼，其余状态换眼与姿态；恢复日是同一只牛裁掉站立的腿、落地、嘴贴地。动效按 pet-forge 的 SVG 分层约定：身体 / 头 / 眼 / 尾四层显式支点，呼吸、甩尾、眨眼周期错开；减少动态效果时静止。只出现在品牌位置（引导、奖励、牛龄、空态、商城、会员）。',
+    name: 'Mascot', group: '品牌', desc: 'IP 小牛：牛犊与公牛按用户手绘的体块布尔参考重建——每个部件都是几个圆的外切包络加少量交 / 差（躯干 = 两圆包络、头 = 三圆包络、角 = 外圆 − 内圆 ∪ 圆头），参数对意向图拟合（scripts/mascot_geo.py）；米洛 = 最高等级，公牛换最亮的荧光色 + 外发光 + 扫光 + 星光；3 个形态 × 6 种状态。平常 / 专注用原图的眼，其余状态换眼与姿态；恢复日是同一只牛裁掉站立的腿、落地、嘴贴地。动效按 pet-forge 的 SVG 分层约定：身体组 / 头组 / 眼 / 尾显式支点，呼吸、甩尾、眨眼周期错开；减少动态效果时静止。只出现在品牌位置（引导、奖励、牛龄、空态、商城、会员）。',
     axes: { stage: ['newborn', 'bull', 'milo'], mood: ['m-idle', 'm-focused', 'm-happy', 'm-sleep', 'm-pr', 'm-tired'] }, rows: ['stage'], cols: 'mood', size: 'card',
     render: (p) => <div className={s.mascotCell}><Mascot stage={p.stage as MascotStage} mood={p.mood.slice(2) as MascotMood} animate title="慢牛小牛" /></div>,
   },
   {
-    name: 'MascotHead', group: '品牌', desc: '只有头：16–48 像素的头像、通知、Toast、牛龄徽章。取描出来的头层，画布裁到头的外框。',
+    name: 'MascotHead', group: '品牌', desc: '只有头：16–48 像素的头像、通知、Toast、牛龄徽章。取头组（耳、头、眼、角、鼻），画布裁到头的外框。',
     axes: { stage: ['newborn', 'bull', 'milo'], mood: ['m-idle', 'm-happy', 'm-pr', 'm-sleep', 'm-tired'] }, rows: ['stage'], cols: 'mood', size: 'auto',
     render: (p) => <MascotHead stage={p.stage as MascotStage} mood={p.mood.slice(2) as MascotMood} className={s.mascotHead} />,
   },

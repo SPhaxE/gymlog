@@ -1,9 +1,9 @@
 /** /brand：阶段 5.5b · IP 小牛与 Logo（2026-10-05，第四轮）。
- *  IP：牛犊与公牛由 scripts/trace_mascot.py 从意向图 docs/brand-refs/ip2-geo-b-selected.jpg 一比一矢量化，米洛 = 公牛换荧光色；
- *  ?trace=newborn|bull 只按原图像素大小渲染一只（给 trace_mascot.py --check 做正负叠片用）。Logo 为 B 递增条牛头（3_44AM）。
+ *  IP：牛犊与公牛由 scripts/mascot_geo.py 按用户手绘的体块布尔参考用圆的外切包络 + 交 / 差搭出来，参数对意向图 docs/brand-refs/ip2-geo-b-selected.jpg 拟合；米洛 = 公牛换荧光色；
+ *  ?trace=newborn|bull|milo(&mood=…) 只按原图像素大小渲染一只（给 mascot_geo.py --check 做正负叠片与缺口检查用）。Logo 为 B 递增条牛头（3_44AM）。
  *  这一页只给用户评审用：同一组件在不同尺寸、底色、状态下的样子，以及放进启动页和奖励弹窗的样子。 */
 import { Fragment } from 'react';
-import { TRACE } from '../components/mascotTrace';
+import { GEO } from '../components/mascotGeo';
 import { AppIcon, Lockup, LogoGlyph, LOGO_STATE_NAME, type LogoState } from '../components/Logo';
 import { MASCOT_STAGES, Mascot, MascotHead, MOOD_NAME, STAGE_NAME, type MascotMood } from '../components/Mascot';
 import s from './brand.module.css';
@@ -18,7 +18,7 @@ const STATE_WHERE: Record<LogoState, string> = {
   rest: '恢复日的首页标题位',
   deload: '减量周的首页标题位（内侧条收回一半、虚影标出原长度：量减了，余量还在）',
 };
-const STAGE_RULE = { newborn: '意向图 Newborn Calf 一比一矢量化 · 角芽 · 侧脸', bull: '意向图 Full-grown Bull 一比一矢量化 · 大角 · 肩峰 · 怒眼', milo: '公牛整只换成荧光色，角反过来用骨白' } as const;
+const STAGE_RULE = { newborn: '臀圆、肚圆、头圆、胶囊腿 · 水滴角芽', bull: '肩峰大圆、三圆头、新月角、锥形腿 · 怒眼', milo: '最高等级：最亮的荧光 · 外发光 · 扫光 · 星光' } as const;
 
 
 function Section({ id, title, sub, children }: { id: string; title: string; sub: string; children: React.ReactNode }) {
@@ -31,19 +31,21 @@ function Section({ id, title, sub, children }: { id: string; title: string; sub:
 }
 
 export function Brand() {
-  const trace = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('trace') : null;
-  if (trace === 'newborn' || trace === 'bull') {
-    return <div className={s.traceOnly} data-trace={trace} style={{ width: TRACE[trace].w }}><Mascot stage={trace} className={s.traceSvg} /></div>;
+  const q = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const trace = q?.get('trace');
+  if (trace === 'newborn' || trace === 'bull' || trace === 'milo') {
+    const mood = (MOODS as string[]).includes(q?.get('mood') ?? '') ? q?.get('mood') as MascotMood : 'idle';
+    return <div className={s.traceOnly} data-trace={trace} style={{ width: GEO[trace === 'newborn' ? 'newborn' : 'bull'].w }}><Mascot stage={trace} mood={mood} className={s.traceSvg} /></div>;
   }
   return (
     <div className={s.page}>
       <header className={s.hero}>
-        <p className={`milo-text-label ${s.muted}`}>阶段 5.5b · 第四轮 · 2026-10-05</p>
+        <p className={`milo-text-label ${s.muted}`}>阶段 5.5b · 第七轮 · 2026-10-05</p>
         <h1 className="milo-text-title-l">IP 小牛与 Logo</h1>
-        <p className={`milo-text-body ${s.muted}`}>第四轮：少做一些、做精一点。牛犊与公牛直接从意向图 3_27AM 一比一矢量化（按平涂色分层、potrace 描线），用正负叠片逐像素检查；米洛是公牛换成荧光色。Logo 的破纪录与减量周状态重新设计。</p>
+        <p className={`milo-text-body ${s.muted}`}>第七轮：牛犊与公牛按用户手绘的体块布尔参考重建——几个圆的外切包络 + 少量交 / 差，参数对意向图 3_27AM 拟合；按远近逐层画，正负叠片与品红底缺口检查验证。米洛是最高等级——最亮的荧光、外发光、扫光和星光。Logo 的破纪录与减量周状态已重做。</p>
       </header>
 
-      <Section id="ip-stages" title="IP · 三个形态" sub="牛犊 → 公牛 → 米洛。形状直接来自意向图（不是手描），所以和原图一比一；颜色换成原色 Token。">
+      <Section id="ip-stages" title="IP · 三个形态" sub="牛犊 → 公牛 → 米洛。按用户手绘的体块布尔参考搭出来：每个部件都是几个圆的外切包络加少量交 / 差（躯干 = 两圆包络、头 = 三圆包络、角 = 外圆 − 内圆 ∪ 圆头……），位置大小对原图拟合；按远近逐层画、每层垫到上一层底下，没有缺口、动起来不穿帮。米洛是最高等级。">
         <div className={s.stageRow}>
           {MASCOT_STAGES.map((st) => (
             <figure key={st} className={s.stageCell}>
@@ -54,9 +56,9 @@ export function Brand() {
         </div>
       </Section>
 
-      <Section id="ip-check" title="正负叠片检查" sub="scripts/trace_mascot.py --check：把矢量按原图像素大小渲染，与原图做正负叠片（原图 + 反相渲染各一半，完全重合处是均匀中灰）和逐像素差值。叠片图含意向图裁片，不随网页发布，存在仓库 screenshots/brand/trace-check-*.png。">
+      <Section id="ip-check" title="正负叠片检查" sub="scripts/mascot_geo.py --check：把矢量按原图像素大小渲染，与原图做正负叠片（原图 + 反相渲染各一半，完全重合处是均匀中灰）和逐像素差值；再在品红底上放大渲染每种状态找缺口。叠片图含意向图裁片，不随网页发布，存在仓库 screenshots/brand/trace-check-*.png。">
         <div className={s.checkCol}>
-          <p className="milo-text-body"><b>牛犊</b> 角色区域内差异像素 2.91%　·　<b>公牛</b> 2.07%（阈值 48/255）。剩下的差异只在 1 像素宽的抗锯齿边缘上，形状、分色、眼与角的位置全部重合。</p>
+          <p className="milo-text-body"><b>牛犊</b> 角色区域内差异像素 4.72%　·　<b>公牛</b> 4.46%（阈值 48/255）：剪影与原图基本重合，差异是几何体块把原图手绘的微小不规则拉直了。<b>缺口检查</b>：品红底、3 倍放大渲染 6 种状态，被角色包住的品红像素两只牛 12 个姿态基本为 0（牛犊趴下时 2 像素）。</p>
         </div>
       </Section>
 

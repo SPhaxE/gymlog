@@ -15,12 +15,24 @@
 .line { fill: none; stroke: var(--milo-prim-gray-0); stroke-linecap: round; }
 .zz { fill: var(--milo-prim-lime-500); font-family: var(--milo-font-number); font-weight: 700; font-style: italic; }
 
-/* 米洛 = 公牛整只换成荧光色：骨白 → 浅荧光、灰 → 深荧光、米色 → 两者之间；角反过来用骨白 */
-.milo .bone { fill: var(--milo-prim-lime-300); }
-.milo .far { fill: color-mix(in srgb, var(--milo-prim-lime-300) 45%, var(--milo-prim-lime-700)); }
-.milo .mid { fill: color-mix(in srgb, var(--milo-prim-lime-700) 70%, var(--milo-prim-lime-900)); }
+/* 米洛 = 最高等级：公牛整只换成荧光色，主色用最亮的 lime-500；灰 → 深荧光、米色 → 两者之间；角反过来用骨白。
+   外发光（两层 drop-shadow，一近一远）+ 斜光扫过 + 四角星闪烁——在深色底上一眼就是「最亮的那只」 */
+.milo { --milo-glow: calc(var(--fig-w) * var(--mascot-unit, 0.04em) * 0.025);
+  filter: drop-shadow(0 0 var(--milo-glow) color-mix(in srgb, var(--milo-prim-lime-500) 70%, transparent))
+          drop-shadow(0 0 calc(var(--milo-glow) * 4) color-mix(in srgb, var(--milo-prim-lime-500) 35%, transparent)); }
+.milo .bone { fill: var(--milo-prim-lime-500); }
+.milo .far { fill: color-mix(in srgb, var(--milo-prim-lime-500) 72%, var(--milo-prim-lime-700)); }
+.milo .mid { fill: color-mix(in srgb, var(--milo-prim-lime-700) 80%, var(--milo-prim-lime-900)); }
 .milo .grey { fill: var(--milo-prim-lime-700); }
 .milo .horn { fill: var(--milo-prim-bone-100); }
+.sheen { transform-box: view-box; mix-blend-mode: screen; }
+.alive .sheen { animation: sheen calc(var(--milo-motion-slow) * 11) var(--milo-motion-ease-standard) infinite; }
+.sheenMid { stop-color: var(--milo-prim-bone-100); stop-opacity: 0.85; }
+.sheenEdge { stop-color: var(--milo-prim-bone-100); stop-opacity: 0; }
+@keyframes sheen { 0% { transform: translateX(0); } 32%, 100% { transform: translateX(150%); } }
+.sparks path { fill: var(--milo-prim-lime-300); transform-box: fill-box; transform-origin: center; }
+.alive .sparks path { animation: spark calc(var(--milo-motion-slow) * 5.7) ease-in-out calc(var(--k) * var(--milo-motion-slow) * -1.3) infinite; }
+@keyframes spark { 0%, 100% { opacity: 0.25; transform: scale(0.55) rotate(0deg); } 50% { opacity: 1; transform: scale(1.1) rotate(45deg); } }
 
 /* ---------- 动效（animate）：参考 pet-forge 的 SVG 约定 ----------
    - 每层显式支点（transform-box: view-box + 行内 transform-origin），不靠浏览器默认原点；
