@@ -1,11 +1,11 @@
 {
   "now": 1791050400000,
-  "variants": 405,
-  "components": 56,
+  "variants": 506,
+  "components": 68,
   "checks": [
     {
       "ok": true,
-      "check": "变体数：页面 405 = 目录 405"
+      "check": "变体数：页面 506 = 目录 506"
     },
     {
       "ok": true,
@@ -46,6 +46,18 @@
     {
       "ok": true,
       "check": "对话框：关闭后焦点回到「删除训练」"
+    },
+    {
+      "ok": true,
+      "check": "奖励弹窗：升段打开"
+    },
+    {
+      "ok": true,
+      "check": "奖励弹窗：Esc 关闭"
+    },
+    {
+      "ok": true,
+      "check": "奖励弹窗：引擎算出下一个奖励并弹出"
     },
     {
       "ok": true,

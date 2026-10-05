@@ -27,3 +27,5 @@ export {
   type DayProps, type DayStatus, type ExerciseStatus, type MediaState, type SetStatus, type SetType,
 } from './training';
 export { Banner, Card, Delta, List, ListRow, Num, PageHeader, SectionLabel, StatusStrip, Tag, TierLegend, TopBar, type DeltaDir, type NumSize, type TagTone } from './ui';
+export { RewardCard, RewardModal, REWARD_NAME, type Reward, type RewardKind } from './Reward';
+export { AgeBadge, Coupon, FreezeCard, GrowthBar, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, ProductCard, StreakBar, type StreakStatus } from './growth';
