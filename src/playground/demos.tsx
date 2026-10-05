@@ -1,5 +1,6 @@
 /** Playground 的交互演示：真实状态、真实动效（矩阵里是静态展示）。每个演示挂在一个组件小节下面。 */
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { flushSync } from 'react-dom';
 import {
   Banner, Button, Cascade, Dialog, ExerciseRow, RestDock, SharedDetail, sharedTransition, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
   LandmarkRuler, PhaseSegments, Num, Screen, SetRow, clock, useCountdown, useToast, type Tab,
@@ -101,7 +102,11 @@ function SessionInner({ f }: { f: Fixtures }) {
   const [end, setEnd] = useState<number | null>(null), [dockOpen, setDockOpen] = useState(true);
   const left = useCountdown(end);
   const cur = sets.findIndex((x) => !x.done);
-  const err = (x: SetState) => { const n = Number(x.weight); return x.weight && (!/^\d+(\.\d+)?$/.test(x.weight) || n > 500) ? '重量范围 0–500 kg' : x.reps && (!/^\d+$/.test(x.reps) || Number(x.reps) < 1 || Number(x.reps) > 100) ? '次数范围 1–100' : undefined; };
+  const err = (x: SetState): { msg: string; field: 'weight' | 'reps' } | undefined => {
+    const n = Number(x.weight);
+    if (x.weight && (!/^\d+(\.\d+)?$/.test(x.weight) || n > 500)) return { msg: '最多 500 kg', field: 'weight' };
+    if (x.reps && (!/^\d+$/.test(x.reps) || Number(x.reps) < 1 || Number(x.reps) > 100)) return { msg: '1–100 次', field: 'reps' };
+  };
   const patch = (i: number, k: 'weight' | 'reps', v: string) => setSets((xs) => xs.map((x, j) => j === i ? { ...x, [k]: v } : x));
   const done = (i: number) => {
     setSets((xs) => xs.map((x, j) => j === i ? { ...x, done: true } : x));
@@ -117,7 +122,7 @@ function SessionInner({ f }: { f: Fixtures }) {
         <ExerciseRow name={it?.name ?? '杠铃卧推'} detail={`${it?.sets ?? 3} × ${(it?.repRange ?? [6, 8]).join('–')} · 休息 ${clock(rest)}`} weight={it?.suggestion.weightKg ?? null}
           status={cur < 0 ? 'done' : 'current'} sets={[sets.filter((x) => x.done).length, sets.length]} />
         {sets.map((x, i) => (
-          <SetRow key={i} index={i + 1} weight={x.weight} reps={x.reps} error={err(x)}
+          <SetRow key={i} index={i + 1} weight={x.weight} reps={x.reps} error={err(x)?.msg} errorField={err(x)?.field}
             status={editing === i ? 'editing' : x.done ? 'done' : i === cur ? 'current' : 'todo'}
             onChange={(k, v) => patch(i, k, v)} onDone={() => done(i)} onEdit={() => setEditing(i)} />
         ))}
@@ -198,13 +203,15 @@ function CascadeDemo({ f }: { f: Fixtures }) {
 /** M03 共享元素展开：点一行，卡片、名称、重量原地变形成详情；返回变回去 */
 function ExpandInner({ f }: { f: Fixtures }) {
   const [open, setOpen] = useState<string | null>(null);
+  const [active, setActive] = useState<string | null>(null);  // 只有正在展开 / 收起的那一行有共享名
   const items = f.items.slice(0, 4), it = items.find((x) => x.exerciseId === open);
   return (
     <Screen label="共享元素">
       <div className={s.expandList}>
         {items.map((x) => (
           <ExerciseRow key={x.exerciseId} name={x.name} detail={`${x.sets} × ${x.repRange.join('–')}`} weight={x.suggestion.weightKg}
-            sharedId={open === x.exerciseId ? undefined : x.exerciseId} onClick={() => sharedTransition(() => setOpen(x.exerciseId))} />
+            sharedId={active === x.exerciseId && open !== x.exerciseId ? x.exerciseId : undefined}
+            onClick={() => { flushSync(() => setActive(x.exerciseId)); sharedTransition(() => setOpen(x.exerciseId)); }} />
         ))}
       </div>
       {it && (

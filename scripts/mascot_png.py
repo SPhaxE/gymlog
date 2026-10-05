@@ -126,25 +126,31 @@ def figures(img, n=6, thr=34):
 
 
 # ---------- 抠图 ----------
-def matte(sr, bg, member, hi, lo, key=None):
+def matte(sr, bg, member, hi, lo, key=None, shrink=0, open_bg_holes=False):
     """sr = 4 倍超分后的裁切图；member = 这只牛（已放大到同尺寸，并外扩过）；
     hi = 实心阈值（和背景的色差）；lo = 牛身外面一圈的底色水平（背景噪点）。
     key = 只看一个通道（品红底用绿色通道 1：底色绿 ≈ 7，牛身最暗的蹄子也有 ≈ 86；生成图在牛身外缘有一道暗品红描边，
     按最大色差算它会被当成牛身，按绿色通道算它就是底）"""
     H, W = sr.shape[:2]
-    gap = (lambda px: px[..., key].astype(np.float32) - bg[key]) if key is not None else (lambda px: dist(px, bg))
+    if key == 'magenta':  # 品红键（像绿幕）：品红度 = min(R, B) − G，底 ≈ 240，黑 / 骨白 / 荧光都在 30 以下；混合像素按品红度线性反解
+        mg = lambda px: np.minimum(px[..., 0], px[..., 2]).astype(np.float32) - px[..., 1]
+        gap = lambda px: mg(np.asarray(bg, np.float32)[None, None]) - mg(px.astype(np.float32))
+    elif key is not None: gap = lambda px: px[..., key].astype(np.float32) - bg[key]
+    else: gap = lambda px: dist(px, bg)
     d = gap(sr)
     core = (d > hi) & member
     core = cv2.morphologyEx(core.astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8)).astype(bool)
-    if key is not None:  # 品红底的过渡像素绿色也够高，会被当实心、带着品红原色留下来（一圈粉线）：实心区往里收 2 像素，边上一律用最近的牛身色
-        core = cv2.erode(core.astype(np.uint8), np.ones((5, 5), np.uint8)).astype(bool)
+    if shrink:  # 品红底：过渡像素和底色差也够大，会被当实心、带着品红原色留下来（一圈粉线）：实心区往里收 shrink 像素，边上一律用最近的实心色
+        core = cv2.erode(core.astype(np.uint8), np.ones((2 * shrink + 1,) * 2, np.uint8)).astype(bool)
     # 被实心区包住的洞：小的（眼睛、鼻孔、星星眼）算实心；大的（腿缝、尾巴圈住的背景）还是背景
     holes = (~core).astype(np.uint8); cv2.floodFill(holes, np.zeros((H + 2, W + 2), np.uint8), (0, 0), 0)
     cnt, cc, st, _ = cv2.connectedComponentsWithStats(holes, connectivity=8)
     fill = np.zeros((H, W), bool)
     ys, xs = np.nonzero(core); fig_area = (ys.max() - ys.min()) * (xs.max() - xs.min())
     for j in range(1, cnt):
-        if st[j, cv2.CC_STAT_AREA] < 0.008 * fig_area: fill |= cc == j  # 眼睛最大约 0.5%，尾巴圈住的背景约 1% 以上
+        # 眼睛最大约 0.5%，尾巴圈住的背景约 1% 以上。open_bg_holes：被围住、但颜色就是底色的小块（助力带 8 字交叉处）不填
+        # （小牛不能开：它的眼睛和深色底一样黑）
+        if st[j, cv2.CC_STAT_AREA] < 0.008 * fig_area and not (open_bg_holes and np.median(d[cc == j]) < hi / 2): fill |= cc == j
     solid = core | fill
     # 边缘：像素 = α·F + (1−α)·底，F 取最近的实心像素颜色（换掉边上混进去的底色，不留黑边 / 绿边）
     _, lab = cv2.distanceTransformWithLabels((~core).astype(np.uint8), cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)
@@ -238,7 +244,7 @@ def main(sheet):
             mem = member[Y0:Y1, X0:X1].astype(np.uint8)
             mem = cv2.dilate(mem, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11 * SR // k4,) * 2))
             mem = cv2.resize(mem, (sr.shape[1], sr.shape[0]), interpolation=cv2.INTER_NEAREST).astype(bool)
-            rgba = matte(sr, bg, mem, hi=58, lo=12, key=1) if stage in NATIVE else matte(sr, bg, mem, hi=58, lo=7)  # 品红底：绿色通道当键，噪点 ≤ 8
+            rgba = matte(sr, bg, mem, hi=58, lo=12, key=1, shrink=2) if stage in NATIVE else matte(sr, bg, mem, hi=58, lo=7)  # 品红底：绿色通道当键，噪点 ≤ 8
             bx0, by0, bx1, by1 = body
             ground = (by1 - Y0) * k4                       # 牛身最低点 = 地面线
             cxb = ((bx0 + bx1) / 2 - X0) * k4               # 牛身横向中心

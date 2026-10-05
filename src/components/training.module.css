@@ -18,7 +18,6 @@
 /* 组行：序号 | 重量 × 次数 | 操作；第二行是提示 */
 .set { display: grid; grid-template-columns: var(--milo-space-3xl) 1fr auto; align-items: center; column-gap: var(--milo-space-m); row-gap: var(--milo-space-xs);
   min-height: var(--milo-size-hit-min); padding: var(--milo-space-s) var(--milo-space-m); border-radius: var(--milo-radius-m); color: var(--milo-color-text-primary); }
-.set > .err, .set > .hint { grid-column: 2 / -1; }
 .idx { display: grid; place-items: center; width: var(--milo-space-3xl); height: var(--milo-space-3xl); border-radius: var(--milo-radius-pill);
   font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-body); color: var(--milo-color-text-secondary);
   box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); }
@@ -31,9 +30,11 @@
 .set_current, .set_editing { background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
 .set_current .idx { background: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); box-shadow: none; }
 .set_done .idx { background: var(--milo-color-data-gauge); color: var(--milo-color-text-primary); box-shadow: none; }
-.setError { box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-feedback-danger); }
-.inputs { display: flex; align-items: center; gap: var(--milo-space-s); min-width: 0; }
-.setInput { display: flex; align-items: baseline; gap: var(--milo-space-2xs); flex: 1; min-width: 0; height: var(--milo-size-button-h-s); padding: 0 var(--milo-space-s);
+.inputs { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; column-gap: var(--milo-space-s); row-gap: var(--milo-space-2xs); min-width: 0; }
+/* 提示在出错 / 缺值的那一格正下方、和它同宽 */
+.fieldNote { grid-column: 1; grid-row: 2; text-wrap: balance; }
+.fieldNoteReps { grid-column: 3; }
+.setInput { display: flex; align-items: baseline; gap: var(--milo-space-2xs); min-width: 0; height: var(--milo-size-button-h-s); padding: 0 var(--milo-space-s);
   border-radius: var(--milo-radius-s); background: var(--milo-color-bg-raised-2); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); align-items: center; }
 .setInput:focus-within { box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-control-selected); }
 .setInputBad, .setInputBad:focus-within { box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-feedback-danger); }

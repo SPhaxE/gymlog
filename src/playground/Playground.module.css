@@ -82,6 +82,7 @@
 .gridFrame { display: block; width: 100%; min-height: var(--milo-size-screen-h); border: 0; border-radius: var(--milo-radius-l); background: var(--milo-color-bg-base); }
 /* 品牌：小牛按原图相对大小显示（--mascot-unit），Logo / 图标 / 头像的展示尺寸 */
 .mascotCell { display: grid; place-items: end center; min-height: calc(var(--milo-size-hit-min) * 2.6); --mascot-unit: calc(var(--milo-stroke-hairline) * 0.26); }
+.propGlyph { display: block; width: calc(var(--milo-size-hit-min) * 1.4); height: auto; overflow: visible; }
 .mascotHead { display: block; width: var(--milo-size-hit-min); height: var(--milo-size-hit-min); overflow: visible; }
 .logoL { display: block; width: calc(var(--milo-size-hit-min) * 1.33); height: calc(var(--milo-size-hit-min) * 1.33); overflow: visible; }
 .logoS { display: block; width: calc(var(--milo-size-icon) * 1.2); height: calc(var(--milo-size-icon) * 1.2); overflow: visible; }

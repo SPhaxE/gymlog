@@ -46,7 +46,7 @@ const deloadBottom = (horn: number, b: number) => horn + (b - horn) * 0.5;
 /** 破纪录：最长的中间条变荧光，下面再接一节荧光短条（隔一个条间距）——「每次只多一点」的下一步 */
 const PR_STEP = 6;
 
-function MarkBars({ small, state }: { small?: boolean; state?: LogoState }) {
+export function MarkBars({ small, state }: { small?: boolean; state?: LogoState }) {
   const bars = small ? BARS_S : BARS, w = small ? BAR_W_S : BAR_W, gap = small ? BAR_GAP_S : BAR_GAP, x0 = small ? BAR_X0_S : BAR_X0;
   const n = bars.length, mid = (n - 1) / 2, horn = bars[0][1];
   const deload = state === 'deload';

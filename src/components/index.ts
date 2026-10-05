@@ -13,6 +13,7 @@ export { Dialog, DialogCard, Skeleton, StateView, Toast, ToastViewport, type Ske
 export { IncrementRuler, LandmarkRuler, PhaseSegments } from './Gauges';
 export { Icon, ICONS, type IconName } from './Icon';
 export { AppIcon, Lockup, LogoGlyph, LOGO_STATE_NAME, type LogoMark, type LogoState } from './Logo';
+export { PropGlyph, PROP_NAME, type PropKind } from './PropGlyph';
 export { Mascot, MascotHead, MASCOT_MOODS, MASCOT_STAGES, MOOD_NAME, STAGE_NAME, type MascotMood, type MascotStage } from './Mascot';
 export { Nav, TABS, type Tab } from './Nav';
 export { OverlayHost, Portal, ToastProvider, handleBack, useBackHandler, useToast } from './overlay';

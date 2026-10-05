@@ -1,11 +1,12 @@
 /** 增长层组件（阶段 5.5c，brief「增长与商业化层」，ia §1.14–§1.17）。
  *  品牌位置（牛龄徽章、付费墙、开通成功）放 IP 小牛，功能位置（连胜、流水、卡券、商品）不放，遵守「语气分工」。
  *  数字全部由调用方从引擎（growth.ts）算好传进来；这里只管怎么显示和各个状态。 */
-import type { CSSProperties, ReactNode } from 'react';
+import { useState, type CSSProperties, type ReactNode } from 'react';
 import { Button } from './Button';
 import { Icon } from './Icon';
 import { Odometer } from './dataviz';
 import { Mascot, MascotHead, STAGE_NAME, type MascotStage } from './Mascot';
+import { PropGlyph, type PropKind } from './PropGlyph';
 import { cx } from './state';
 import s from './growth.module.css';
 
@@ -92,7 +93,7 @@ export function StreakBar({ weeks, done, target, status, freeze = 0 }: { weeks: 
 export function FreezeCard({ count, state, cost, onRedeem }: { count: number; state: 'have' | 'none' | 'used'; cost: number; onRedeem?: () => void }) {
   return (
     <div className={cx(s.freeze, state === 'used' && s.freezeUsed)}>
-      <span className={s.ice} aria-hidden="true"><i /></span>
+      <PropGlyph kind="freeze" used={state === 'used'} dim={state === 'none'} className={s.ice} />
       <div className={s.freezeText}>
         <b className="milo-text-body-strong">{state === 'used' ? '冻结卡已自动使用' : `连胜冻结卡 ×${count}`}</b>
         <span className="milo-text-caption">{state === 'have' ? '生病、出差时保住连胜：断档那周的周一自动用一张' : state === 'none' ? `${cost} 牛劲兑换一张，或开通 Pro 每月送 2 张` : `上周没练够，连胜保住了。还剩 ${count} 张`}</span>
@@ -126,6 +127,7 @@ export function LedgerRow({ label, amount, date, pro }: { label: string; amount:
 }
 
 const COUPON_MARK: Record<'merchant' | 'shipping' | 'trial' | 'freeze', string> = { merchant: '¥30', shipping: '免邮', trial: '7天', freeze: '冻结' };
+const COUPON_PROP: Record<'merchant' | 'shipping' | 'trial' | 'freeze', PropKind> = { merchant: 'merchant', shipping: 'shipping', trial: 'trial', freeze: 'freeze' };
 /** 卡券：票根造型（两侧缺口 + 虚线）。可用 / 已用 / 过期；兑换态显示所需牛劲，余额不够时按钮不可用并写明还差多少 */
 export function Coupon({ type, title, detail, state, cost, balance, onRedeem }: {
   type: 'merchant' | 'shipping' | 'trial' | 'freeze'; title: string; detail: string; state: 'redeem' | 'available' | 'used' | 'expired'; cost?: number; balance?: number; onRedeem?: () => void;
@@ -133,7 +135,7 @@ export function Coupon({ type, title, detail, state, cost, balance, onRedeem }: 
   const short = state === 'redeem' && cost != null && balance != null && balance < cost;
   return (
     <div className={cx(s.coupon, s[`cp_${state}`])}>
-      <span className={s.stub}><b className="milo-text-heading">{COUPON_MARK[type]}</b></span>
+      <span className={s.stub}><PropGlyph kind={COUPON_PROP[type]} dim={state === 'used' || state === 'expired'} className={s.stubGlyph} /><b className="milo-text-label">{COUPON_MARK[type]}</b></span>
       <span className={s.couponBody}>
         <b className="milo-text-body-strong">{title}</b>
         <span className="milo-text-caption">{detail}</span>
@@ -176,13 +178,19 @@ export function KnowledgeTip({ title, why, when, how, supplement, variant, onOpe
 }
 
 /** 商品卡：普通 / 会员价 / 牛劲抵扣 / 已下架。商品图用几何品类图标代替（不放真实商品图） */
-export function ProductCard({ name, merchant, spec, price, member, category, state, off, onClick }: {
-  name: string; merchant: string; spec: string; price: number; member: number; category: '护具' | '补给'; state: 'normal' | 'member' | 'niujin' | 'off'; off?: number; onClick?: () => void;
+/** 商品卡。商品图：public/shop/<id>.webp（用户按 design/brand/prompts/nanobanana-shop.md 出图、scripts/shop_png.py 抠图）；
+ *  图加载好之前 / 没有图时显示占位（护具 = 横条、补给 = 罐子），不出现破图 */
+export function ProductCard({ id, name, merchant, spec, price, member, category, state, off, onClick }: {
+  id?: string; name: string; merchant: string; spec: string; price: number; member: number; category: '护具' | '补给'; state: 'normal' | 'member' | 'niujin' | 'off'; off?: number; onClick?: () => void;
 }) {
   const final = state === 'member' ? member : state === 'niujin' ? price - (off ?? 0) : price;
+  const [img, setImg] = useState(false);
   return (
     <button type="button" className={cx(s.product, state === 'off' && s.productOff, 'milo-press milo-focus')} onClick={onClick} disabled={state === 'off'}>
-      <span className={cx(s.pic, category === '补给' ? s.picSupp : s.picGear)} aria-hidden="true"><i /></span>
+      <span className={cx(s.pic, !img && (category === '补给' ? s.picSupp : s.picGear))} aria-hidden="true">
+        {!img && <i />}
+        {id && <img className={cx(s.picImg, !img && s.picImgWait)} src={`${import.meta.env.BASE_URL}shop/${id}.webp`} alt="" draggable={false} onLoad={() => setImg(true)} onError={() => setImg(false)} />}
+      </span>
       <span className={s.productText}>
         <span className={cx('milo-text-caption', s.muted)}>{merchant} · {category}</span>
         <b className="milo-text-body-strong">{name}</b>
@@ -253,7 +261,7 @@ export function Paywall({ plan, member, success, onPlan, onBuy }: { plan: 'month
 
 /** 「我的」→ 消息里的一行：合并的奖励 / 冻结卡已自动使用 / 降级说明（删除训练后重算） */
 export function MessageRow({ kind, title, detail, date, unread }: { kind: 'reward' | 'freeze' | 'demote'; title: string; detail: string; date: string; unread?: boolean }) {
-  const mark: ReactNode = kind === 'reward' ? <Icon name="star" small /> : kind === 'freeze' ? <span className={s.iceS} /> : <Icon name="down" small />;
+  const mark: ReactNode = kind === 'reward' ? <Icon name="star" small /> : kind === 'freeze' ? <PropGlyph kind="freeze" className={s.iceS} /> : <Icon name="down" small />;
   return (
     <div className={cx(s.msg, s[`msg_${kind}`])}>
       <span className={s.msgMark} aria-hidden="true">{mark}</span>

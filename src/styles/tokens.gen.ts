@@ -42,8 +42,6 @@ export const T = {
   'size/capsule-near-grow': 10,
   'size/capsule-focus-grow': 34,
   'size/capsule-gap': 4,
-  'size/leader-elbow': 10,
-  'size/leader-stagger': 3,
   'size/tick-minor': 8,
   'size/tick-major': 12,
   'size/tick-pitch': 4,

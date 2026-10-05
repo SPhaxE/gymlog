@@ -6,7 +6,9 @@
  *  - 6 种状态：平常 / 专注 / 开心 / 恢复日 / 破纪录 / 减量周。图里只有牛本身；特效由代码生成（用户 2026-10-05）：
  *    专注 = 身后速度线，恢复日 = 头顶飘 z，破纪录 = 头边一圈碎屑，Milo = 泛光 + 四角星 + 扫光。位置按 mascotAssets 里的头像框和牛身外框算。
  *  - 荧光微光（用户 2026-10-05）：非 Milo 的荧光只在角上，脚本另出一张只有角的 -lime.webp，模糊后垫在图下面当微光；Milo 是全身泛光。
- *  - animate：整只按状态做呼吸、前压、小跳、深呼吸、欢呼、叹气（以地面线为支点）；系统开启「减少动态效果」时静止。 */
+ *  - animate：整只按状态做呼吸、前压、小跳、深呼吸、欢呼、叹气（以地面线为支点）；系统开启「减少动态效果」时静止。
+ *    只有牛身（.body）在动；速度线、z、碎屑、四角星挂在不动的那一层（.fig），自己的动画不跟牛的动画叠在一起
+ *    （用户 2026-10-05：粒子绑在牛身上，跳的时候碎屑跟着一起跳，不自然）。扫光贴在牛身表面，跟牛走。 */
 import type { CSSProperties } from 'react';
 import { MASCOT_ASSETS, type MascotMood, type MascotStage } from './mascotAssets';
 import s from './Mascot.module.css';
@@ -41,9 +43,11 @@ export function Mascot({ stage = 'newborn', mood = 'idle', animate, className, t
     <span className={`${s.root} ${className ?? s.mascot} ${milo ? s.milo : ''} ${animate ? `${s.alive} ${s[`m_${mood}`]}` : ''}`} style={style}
       role={title ? 'img' : undefined} aria-label={title} aria-hidden={title ? undefined : true}>
       <span className={s.fig}>
-        {!milo && <img className={s.lime} src={src(stage, mood, '-lime')} alt="" draggable={false} />}
-        <img className={s.img} src={url} alt="" width={a.w} height={a.h} draggable={false} />
-        {milo && <span className={s.sheen} />}
+        <span className={s.body}>
+          {!milo && <img className={s.lime} src={src(stage, mood, '-lime')} alt="" draggable={false} />}
+          <img className={s.img} src={url} alt="" width={a.w} height={a.h} draggable={false} />
+          {milo && <span className={s.sheen} />}
+        </span>
         {/* 代码生成的特效：只在图之上叠，位置都是画布的百分比 */}
         {mood === 'focused' && [0.12, 0.26, 0.4].map((f, i) => (
           <span key={i} className={s.speed} style={{ left: X(bx0 + bw * (0.02 + i * 0.03)), top: Y(by0 + bh * f), width: X(bw * (0.12 - i * 0.02)), height: Y(bh * 0.035), '--k': i } as CSSProperties} />

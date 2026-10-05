@@ -55,21 +55,26 @@ export function PrescriptionHero({ order, region, name, weight, sets, reps, reas
 /* ---------- 组行（P03 记组） ---------- */
 export type SetType = 'work' | 'warmup' | 'drop';
 export type SetStatus = 'todo' | 'current' | 'done' | 'editing';
-export function SetRow({ index, type = 'work', status, weight, reps, rpe, error, onDone, onEdit, onChange, state }: {
-  index: number; type?: SetType; status: SetStatus; weight: string; reps: string; rpe?: string; error?: string;
+/** 报错只落在出错的那一格：红圈只圈那个输入框，红字就在它正下方、和它同宽（用户 2026-10-05：红字与警告项一比一，不再整行描红） */
+export function SetRow({ index, type = 'work', status, weight, reps, rpe, error, errorField = 'weight', onDone, onEdit, onChange, state }: {
+  index: number; type?: SetType; status: SetStatus; weight: string; reps: string; rpe?: string; error?: string; errorField?: 'weight' | 'reps';
   onDone?: () => void; onEdit?: () => void; onChange?: (f: 'weight' | 'reps', v: string) => void; state?: Forced;
 }) {
   const idx = type === 'warmup' ? '热' : type === 'drop' ? '递' : String(index);
   const missing = !weight.trim() ? '重量' : !reps.trim() ? '次数' : null;
   const editable = status === 'current' || status === 'editing';
+  // 提示落在哪一格：报错落在出错的那格；缺值落在缺的那格
+  const noteField = error ? errorField : missing === '重量' ? 'weight' : missing ? 'reps' : null;
+  const note = editable && noteField && <span className={cx('milo-text-caption', s.fieldNote, noteField === 'reps' && s.fieldNoteReps, error ? s.err : s.hint)} role={error ? 'alert' : undefined}>{error ?? `先填${missing}`}</span>;
   return (
-    <div className={cx(s.set, s[`set_${status}`], error && s.setError)} role="group" aria-label={`第 ${index} 组${type === 'warmup' ? '（热身，不计入）' : type === 'drop' ? '（递减）' : ''}`}>
+    <div className={cx(s.set, s[`set_${status}`])} role="group" aria-label={`第 ${index} 组${type === 'warmup' ? '（热身，不计入）' : type === 'drop' ? '（递减）' : ''}`}>
       <span className={cx(s.idx, type !== 'work' && s.idxType)}>{status === 'done' && type === 'work' ? <Icon name="check" small /> : idx}</span>
       {editable ? (
         <span className={s.inputs}>
-          <SetInput label="重量" unit="kg" value={weight} onChange={(v) => onChange?.('weight', v)} invalid={!!error} />
+          <SetInput label="重量" unit="kg" value={weight} onChange={(v) => onChange?.('weight', v)} invalid={!!error && errorField === 'weight'} />
           <i className={s.times}>×</i>
-          <SetInput label="次数" unit="次" value={reps} onChange={(v) => onChange?.('reps', v)} mode="numeric" />
+          <SetInput label="次数" unit="次" value={reps} onChange={(v) => onChange?.('reps', v)} mode="numeric" invalid={!!error && errorField === 'reps'} />
+          {note}
         </span>
       ) : (
         <span className={s.vals}>
@@ -83,7 +88,6 @@ export function SetRow({ index, type = 'work', status, weight, reps, rpe, error,
         {status === 'editing' && <Button kind="ghost" size="s" onClick={onDone} disabled={!!missing || !!error} state={state}>保存</Button>}
         {status === 'done' && <IconButton kind="plain" icon="edit" label={`修改第 ${index} 组`} onClick={onEdit} state={state} />}
       </span>
-      {(error || (editable && missing)) && <span className={cx('milo-text-caption', error ? s.err : s.hint)}>{error ?? `填好${missing}才能完成`}</span>}
     </div>
   );
 }

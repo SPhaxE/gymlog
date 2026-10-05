@@ -1,7 +1,7 @@
 .leaders { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
-.leader polyline { fill: none; stroke: var(--milo-color-data-leader); stroke-width: var(--milo-stroke-hairline); }
+.leader line { fill: none; stroke: var(--milo-color-data-leader); stroke-width: var(--milo-stroke-hairline); }
 .leader circle { fill: var(--milo-color-text-disabled); }
-.leaderOn polyline { fill: none; stroke: var(--milo-color-accent-default); stroke-width: var(--milo-stroke-focus); }
+.leaderOn line { fill: none; stroke: var(--milo-color-accent-default); stroke-width: var(--milo-stroke-focus); }
 .leaderOn circle { fill: var(--milo-color-accent-default); }
 .rail { position: absolute; inset: 0; pointer-events: none; -webkit-user-select: none; user-select: none; }
 /* 手势层：胶囊列静止宽度、整列高；竖向滑动交给页面滚动，按住才进放大镜（见 CapsuleRail.tsx） */
@@ -11,7 +11,7 @@
 .cap, .none, .focus {
   position: absolute; overflow: hidden; display: flex; flex-direction: column; justify-content: center; padding: 0 var(--milo-space-m);
   border-radius: var(--milo-radius-pill); background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default);
-  transition-property: top, height, left, width; transition-duration: var(--milo-motion-fast); transition-timing-function: var(--milo-motion-ease-standard);
+  /* 几何不走 CSS 过渡：放大程度在 JS 里逐帧补间，胶囊和引线同一帧到位 */
 }
 .none { background: repeating-linear-gradient(135deg, var(--milo-color-bg-raised-2) 0 var(--milo-stroke-focus), var(--milo-color-bg-raised) var(--milo-stroke-focus) calc(var(--milo-space-xs) + var(--milo-stroke-hairline))); }
 .none .name, .none .val, .none .val b { color: var(--milo-color-text-disabled); }
