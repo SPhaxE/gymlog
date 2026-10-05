@@ -36,6 +36,17 @@ describe('首次打开（阶段 6a）', () => {
   });
 });
 
+describe('/demo（第一版实机演示）', () => {
+  it('窄屏：清空数据后全屏进故事引导', async () => {
+    store.update((x) => ({ ...x, profile: DEFAULT_PROFILE }));
+    window.history.pushState({}, '', '/demo');
+    render(<App />);
+    expect(await screen.findByText('两千五百年前，有个扛牛的人')).toBeInTheDocument();
+    expect(window.location.pathname).toBe('/onboarding');
+    expect(store.get().profile).toBeNull();
+  });
+});
+
 describe('App 壳：5 个 Tab', () => {
   beforeEach(() => store.update((s) => ({ ...s, profile: DEFAULT_PROFILE, draft: null })));
   it('根路径进首页，导航有 5 项且首页为当前页', async () => {

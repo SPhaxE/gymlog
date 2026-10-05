@@ -7,6 +7,7 @@ import { App as CapApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { Banner, Button, FluidBackdrop, OverlayHost, ScreenAtmosphere, ToastProvider, ToastViewport, handleBack, type Tab } from '../components';
 import { BodyPage } from '../pages/BodyPage';
+import { DemoPage } from '../pages/DemoPage';
 import { HomePage } from '../pages/HomePage';
 import { OnboardingPage } from '../pages/OnboardingPage';
 import { SessionPage } from '../pages/SessionPage';
@@ -59,6 +60,7 @@ function Routed() {
       actions={<Button kind="ghost" size="s" onClick={() => store.retry()}>重试</Button>} /></div>}
     <Routes>
       <Route path="/" element={<Navigate to={'/today' + loc.search} replace />} />
+      <Route path="/demo" element={<DemoPage />} />
       <Route path="/onboarding" element={st.profile ? <Navigate to="/today" replace /> : <OnboardingPage now={now} />} />
       <Route path="/session" element={<SessionPage />} />
       <Route path="/summary/:id" element={<SummaryPage />} />

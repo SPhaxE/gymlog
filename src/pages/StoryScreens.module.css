@@ -144,7 +144,7 @@
 
 /* ---------- 文字 ---------- */
 .text { position: absolute; z-index: 3; left: var(--milo-size-gutter); right: var(--milo-size-gutter); top: calc(var(--stage-h) + var(--milo-space-s)); display: grid; gap: var(--milo-space-s); pointer-events: none; }
-.text h1, .text p { margin: 0; }
+.text h1, .text p { margin: 0; text-wrap: balance; }
 .text h1 { animation: fadeUp calc(var(--milo-motion-slow) * 2) var(--milo-motion-ease-standard) calc(var(--milo-motion-slow) * 0.6) both; }
 .text p { color: var(--milo-color-text-secondary); animation: fadeUp calc(var(--milo-motion-slow) * 2) var(--milo-motion-ease-standard) calc(var(--milo-motion-slow) * 1.6) both; }
 .text b { color: var(--milo-prim-lime-500); font-weight: 900; }

@@ -1,0 +1,73 @@
+/* /demo：左讲解 + 右手机（iframe 里是 App 本体）。深色舞台、两团慢慢呼吸的荧光余晖、米洛站在手机后面 */
+.page { position: relative; isolation: isolate; min-height: 100vh; display: grid; grid-template-columns: minmax(26rem, 34rem) auto; justify-content: center; align-items: center;
+  gap: calc(var(--milo-space-4xl) * 1.5); padding: var(--milo-space-2xl) var(--milo-space-4xl); overflow: hidden; background: var(--milo-color-bg-base); color: var(--milo-color-text-primary); }
+.aura { position: absolute; z-index: -1; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(40% 50% at 78% 45%, color-mix(in srgb, var(--milo-prim-lime-500) 14%, transparent), transparent 70%),
+    radial-gradient(35% 45% at 12% 90%, color-mix(in srgb, var(--milo-prim-lime-900) 60%, transparent), transparent 70%);
+  animation: aura calc(var(--milo-motion-slow) * 18) ease-in-out infinite alternate; }
+@keyframes aura { to { filter: hue-rotate(-8deg) brightness(1.15); transform: scale(1.04); } }
+
+/* ---------- 左：讲解 ---------- */
+.copy { display: grid; gap: var(--milo-space-l); align-content: center; animation: rise var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(var(--milo-space-xl)); } }
+.lockup { font-size: calc(var(--milo-font-size-heading) * 1.4); }
+.eyebrow { display: inline-flex; align-items: center; gap: var(--milo-space-s); color: var(--milo-color-text-secondary); font-size: var(--milo-font-size-caption); letter-spacing: 0.08em; }
+.eyebrow i { width: var(--milo-space-s); height: var(--milo-space-s); border-radius: 50%; background: var(--milo-color-accent-default); box-shadow: 0 0 var(--milo-space-m) var(--milo-color-accent-glow);
+  animation: pulse calc(var(--milo-motion-slow) * 4) ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: 0.35; transform: scale(0.7); } }
+.title { margin: 0; font-size: calc(var(--milo-font-size-heading) * 1.9); line-height: 1.12; font-weight: 900; letter-spacing: -0.01em; }
+.title em { font-style: normal; color: var(--milo-color-accent-default); text-shadow: 0 0 var(--milo-space-2xl) var(--milo-color-accent-glow); }
+.lead { margin: 0; color: var(--milo-color-text-secondary); font-size: var(--milo-font-size-body); line-height: 1.7; }
+.lead b { color: var(--milo-color-text-primary); }
+
+/* 演示路线：手机当前在哪一步，那一行亮起（左侧荧光竖条 + 编号变荧光） */
+.route { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--milo-space-2xs); }
+.route li { position: relative; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--milo-space-m); padding: var(--milo-space-s) var(--milo-space-m);
+  border-radius: var(--milo-radius-m); transition: background var(--milo-motion-base) var(--milo-motion-ease-standard);
+  animation: rise var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring) calc(var(--i) * var(--milo-motion-stagger) + var(--milo-motion-slow)) both; }
+.route li::before { content: ''; position: absolute; left: 0; top: 22%; bottom: 22%; width: var(--milo-stroke-focus); border-radius: var(--milo-radius-pill); background: var(--milo-color-accent-default);
+  box-shadow: 0 0 var(--milo-space-m) var(--milo-color-accent-glow); transform: scaleY(0); transition: transform var(--milo-motion-base) var(--milo-motion-ease-spring); }
+.route li.on { background: var(--milo-color-bg-raised); }
+.route li.on::before { transform: scaleY(1); }
+.n { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-m); color: var(--milo-color-text-secondary); transition: color var(--milo-motion-base); }
+.on .n { color: var(--milo-color-accent-default); }
+.route li > div { display: grid; gap: var(--milo-space-2xs); }
+.route b { font-size: var(--milo-font-size-body); }
+.route span:not(.n) { color: var(--milo-color-text-secondary); font-size: var(--milo-font-size-caption); line-height: 1.5; }
+.route button, .reset { cursor: pointer; border: 0; border-radius: var(--milo-radius-pill); padding: var(--milo-space-xs) var(--milo-space-m); white-space: nowrap;
+  background: transparent; color: var(--milo-color-text-primary); font: inherit; font-size: var(--milo-font-size-caption);
+  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); transition: background var(--milo-motion-fast), color var(--milo-motion-fast); }
+.route button:hover, .reset:hover { background: var(--milo-color-text-primary); color: var(--milo-color-bg-base); }
+.foot { margin: 0; color: var(--milo-color-text-secondary); font-size: var(--milo-font-size-caption); }
+.foot a { color: var(--milo-color-text-primary); text-underline-offset: var(--milo-space-2xs); }
+
+/* ---------- 右：手机 ---------- */
+.stage { position: relative; display: grid; grid-template-columns: auto auto; align-items: end; justify-items: center; column-gap: 0; row-gap: var(--milo-space-m); }
+.stage > .phoneWrap { grid-column: 2; grid-row: 1; }
+.stage > .reset { grid-column: 2; }
+.phoneWrap { --bezel: var(--milo-space-s); --pw: calc(var(--milo-size-screen-w) + var(--bezel) * 2); --ph: calc(var(--milo-size-screen-h) + var(--bezel) * 2);
+  width: calc(var(--pw) * var(--k)); height: calc(var(--ph) * var(--k));
+  animation: phoneIn calc(var(--milo-motion-spring-soft-ms) * 1.6) var(--milo-motion-ease-spring) var(--milo-motion-slow) both; }
+@keyframes phoneIn { from { opacity: 0; transform: translateY(6%) rotate(2deg) scale(0.94); } }
+.phone { width: var(--pw); height: var(--ph); padding: var(--bezel); transform: scale(var(--k)); transform-origin: top left; border-radius: calc(var(--milo-radius-xl) * 2.2);
+  background: linear-gradient(160deg, var(--milo-color-bg-raised-2), var(--milo-color-bg-base) 40%, var(--milo-color-bg-raised));
+  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong), 0 0 0 var(--milo-stroke-hairline) var(--milo-color-bg-base),
+    0 var(--milo-space-3xl) calc(var(--milo-space-4xl) * 2) color-mix(in srgb, var(--milo-color-bg-base) 80%, transparent), 0 0 calc(var(--milo-space-4xl) * 1.5) color-mix(in srgb, var(--milo-prim-lime-500) 12%, transparent); }
+.screen { display: block; width: 100%; height: 100%; border: 0; border-radius: calc(var(--milo-radius-xl) * 1.8); background: var(--milo-color-bg-base); }
+/* 米洛（故事里扛公牛那张）站在手机左后方，压暗一点当背景，脚下一圈荧光地面光 */
+.milo { position: relative; z-index: -1; grid-column: 1; grid-row: 1; height: 54vh; margin-right: -12%; margin-bottom: 4%; filter: brightness(0.7) saturate(0.9);
+  animation: miloIn calc(var(--milo-motion-spring-soft-ms) * 2) var(--milo-motion-ease-spring) calc(var(--milo-motion-slow) * 3) both; }
+.milo img { display: block; height: 100%; width: auto; animation: bob calc(var(--milo-motion-slow) * 12) ease-in-out infinite; transform-origin: 50% 100%; }
+.milo::after { content: ''; position: absolute; left: 10%; right: 10%; bottom: -3%; height: 6%; border-radius: 50%; background: radial-gradient(closest-side, var(--milo-color-accent-glow), transparent); }
+@keyframes miloIn { from { opacity: 0; transform: translateX(-12%); } }
+@keyframes bob { 50% { transform: scaleY(0.985) translateY(0.6%); } }
+.reset { justify-self: center; }
+
+/* 窄一些的电脑屏：米洛让位，讲解收窄 */
+@media (max-width: 80rem) { .milo { display: none; } .page { gap: var(--milo-space-4xl); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .aura, .eyebrow i { animation: none; }
+  .copy, .route li, .phoneWrap, .milo { animation: none; }
+}
