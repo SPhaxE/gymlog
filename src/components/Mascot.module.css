@@ -1,10 +1,11 @@
 /* IP 小牛的颜色（意向图 3_27AM）：骨白 + 暖灰 + 两档灰米色；荧光只给角（和极少的庆祝点缀）。
    中间色用 color-mix 从原色 Token 调出来，不新增色值 */
-.mascot { display: block; width: calc(var(--fig-w) * var(--mascot-unit, 0.1em)); max-width: 100%; height: auto; overflow: visible; }
+.mascot { display: block; width: calc(var(--fig-w) * var(--mascot-unit, 0.04em)); max-width: 100%; height: auto; overflow: visible; }
 .head { display: block; width: var(--milo-size-icon); height: var(--milo-size-icon); overflow: visible; }
 .bone { fill: var(--milo-prim-bone-100); }
 .grey { fill: color-mix(in srgb, var(--milo-prim-gray-600) 82%, var(--milo-prim-bone-100)); }
 .far { fill: color-mix(in srgb, var(--milo-prim-bone-100) 78%, var(--milo-prim-gray-600)); }
+.mid { fill: color-mix(in srgb, var(--milo-prim-bone-100) 45%, var(--milo-prim-gray-600)); }
 .ear { fill: color-mix(in srgb, var(--milo-prim-bone-100) 58%, var(--milo-prim-gray-600)); }
 .hoof { fill: color-mix(in srgb, var(--milo-prim-gray-600) 88%, var(--milo-prim-gray-500)); }
 .nose { fill: color-mix(in srgb, var(--milo-prim-gray-500) 55%, var(--milo-prim-gray-0)); }
@@ -12,9 +13,14 @@
 .horn { fill: var(--milo-prim-lime-500); }
 .tail { fill: none; stroke: var(--milo-prim-bone-100); stroke-linecap: round; }
 .line { fill: none; stroke: var(--milo-prim-gray-0); stroke-linecap: round; }
-.thinLine path { fill: none; stroke: var(--milo-prim-gray-0); stroke-width: 7; stroke-linecap: round; }
-.thick path { fill: none; stroke: var(--milo-prim-gray-0); stroke-width: 18; stroke-linecap: butt; }
 .zz { fill: var(--milo-prim-lime-500); font-family: var(--milo-font-number); font-weight: 700; font-style: italic; }
+
+/* 米洛 = 公牛整只换成荧光色：骨白 → 浅荧光、灰 → 深荧光、米色 → 两者之间；角反过来用骨白 */
+.milo .bone { fill: var(--milo-prim-lime-300); }
+.milo .far { fill: color-mix(in srgb, var(--milo-prim-lime-300) 45%, var(--milo-prim-lime-700)); }
+.milo .mid { fill: color-mix(in srgb, var(--milo-prim-lime-700) 70%, var(--milo-prim-lime-900)); }
+.milo .grey { fill: var(--milo-prim-lime-700); }
+.milo .horn { fill: var(--milo-prim-bone-100); }
 
 /* ---------- 动效（animate）：参考 pet-forge 的 SVG 约定 ----------
    - 每层显式支点（transform-box: view-box + 行内 transform-origin），不靠浏览器默认原点；

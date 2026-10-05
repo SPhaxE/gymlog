@@ -246,15 +246,15 @@ export function IconGridBoard() {
   return <iframe ref={ref} className={s.gridFrame} src="/design/icon-grid/index.html" title="图标网格规范" style={h ? { height: h } : undefined} />;
 }
 
-/** 小牛交互演示：切阶段、切状态，看动效 */
+/** 小牛交互演示（用户 2026-10-05：只保留牛犊与米洛）：切形态、切状态，看动效 */
 function MascotDemo() {
-  const [stage, setStage] = useState<MascotStage>(1), [mood, setMood] = useState<MascotMood>('idle');
+  const [stage, setStage] = useState<MascotStage>('newborn'), [mood, setMood] = useState<MascotMood>('idle');
   return (
     <div className={s.demoPad}>
-      <div className={s.demoButtons}>{STAGE_NAME.map((n, i) => <Button key={n} kind={stage === i ? 'neutral' : 'ghost'} size="s" onClick={() => setStage(i as MascotStage)}>{n}</Button>)}</div>
+      <div className={s.demoButtons}>{(['newborn', 'milo'] as MascotStage[]).map((st) => <Button key={st} kind={stage === st ? 'neutral' : 'ghost'} size="s" onClick={() => setStage(st)}>{STAGE_NAME[st]}</Button>)}</div>
       <div className={s.demoButtons}>{(Object.keys(MOOD_NAME) as MascotMood[]).map((m) => <Button key={m} kind={mood === m ? 'neutral' : 'ghost'} size="s" onClick={() => setMood(m)}>{MOOD_NAME[m]}</Button>)}</div>
       <div className={s.mascotStage}><Mascot stage={stage} mood={mood} animate title={`${STAGE_NAME[stage]} · ${MOOD_NAME[mood]}`} /></div>
-      <Note>同一只牛随牛龄长大；状态只换眼睛、头的姿态与点缀，恢复日是这一阶段自己趴下。系统开启「减少动态效果」时静止。</Note>
+      <Note>牛犊与米洛（公牛换荧光色）；状态只换眼睛、头的姿态与点缀，恢复日是同一只牛趴下。系统开启「减少动态效果」时静止。</Note>
     </div>
   );
 }
