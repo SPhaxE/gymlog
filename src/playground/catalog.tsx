@@ -6,7 +6,7 @@ import { useRef, type ReactNode } from 'react';
 import {
   Banner, BodyFigure, DotCalendar, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
   ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProgressSteps, RestBar, SectionLabel, Segmented,
-  SessionRow, SetRow, NumPad, Sheet, SheetBlock, Skeleton, Sparkline, StateView, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
+  SessionRow, SetEditor, SetLine, SetRow, NumPad, Sheet, Tilt, SheetBlock, Skeleton, Sparkline, StateView, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
   AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, PropGlyph, type PropKind, RewardCard, AgeBadge, Coupon, FreezeCard, GrowthBar, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, ProductCard, StreakBar,
   type LogoState, type MascotMood, type MascotStage, type StreakStatus,
   type Forced, type IconName, type NumSize, type SkeletonShape, type Tab, type TagTone,
@@ -269,6 +269,37 @@ export const CATALOG: Entry[] = [
     desc: '训练页自带数字键盘（Stitch s6 V2 + V1 的「下一组」键）：输入框不弹系统键盘；上面一排是步进（重量 ±2.5 kg，次数 ±1）；右下「下一组」= 完成当前这一组（唯一入口），缺值或超范围时不可用。',
     axes: { state: ['np-ready', 'np-blocked'] }, size: 'card',
     render: (p) => <NumPad onKey={() => {}} onStep={() => {}} step={2.5} unit="kg" onNext={() => {}} nextDisabled={p.state === 'np-blocked'} />,
+  },
+  {
+    name: 'SetLine', group: '训练与记录',
+    desc: '首页即打卡（2026-10-06）的组行：一整行就是按钮（命中区整行、不低于 hit-min），点开改数面板（SetEditor），行里没有输入框。当前组选中描边；首次动作重量空时写「填重量」，不预先报红；已打卡的序号换成勾、数字变灰。',
+    axes: { status: ['sl-current', 'sl-empty', 'sl-done', 'sl-todo'] }, size: 'card',
+    render: (p) => {
+      const m: Record<string, ReactNode> = {
+        'sl-current': <SetLine index={2} weight="82.5" reps="6" status="current" />, 'sl-empty': <SetLine index={1} weight="" reps="10" status="current" />,
+        'sl-done': <SetLine index={1} weight="80" reps="7" status="done" />, 'sl-todo': <SetLine index={3} weight="82.5" reps="6" status="todo" />,
+      };
+      return m[p.status];
+    },
+  },
+  {
+    name: 'SetEditor', group: '训练与记录',
+    desc: '改数面板（放在 Sheet 里，M05）：重量 / 次数两块大格子，点一下切换正在改的那格；数字用滚动码表（M04），±2.5 时按位滚；提示行永远占位，提示、报错不挤动格子和键盘；主键「打卡」（从主按钮「填重量」进来）或「好了」（改已有的组）。',
+    axes: { state: ['se-weight', 'se-first', 'se-error'] }, size: 'screen',
+    render: (p) => {
+      const m: Record<string, ReactNode> = {
+        'se-weight': <SetEditor weight="82.5" reps="6" field="weight" onField={noop} onKey={noop} onStep={noop} step={2.5} hint="建议 82.5 kg · 步进 ±2.5" onDone={noop} doneLabel="好了" />,
+        'se-first': <SetEditor weight="" reps="10" field="weight" onField={noop} onKey={noop} onStep={noop} step={2.5} hint="首次：选一个能干净做完 10 次的重量" onDone={noop} doneLabel="打卡" doneDisabled />,
+        'se-error': <SetEditor weight="620" reps="6" field="weight" onField={noop} onKey={noop} onStep={noop} step={2.5} error="最多 500 kg" onDone={noop} doneLabel="好了" doneDisabled />,
+      };
+      return <div className={s.sheetBox}>{m[p.state]}</div>;
+    },
+  },
+  {
+    name: 'Tilt', group: '训练与记录',
+    desc: 'M01 3D 倾斜光影：按住核心卡片移动时随触点俯仰微倾（±5°），一道径向高光跟手，松手弹簧回正；竖滑交给页面滚动。只给「这一刻的主角」——结算页的新纪录卡。在这里按住卡片拖一拖。',
+    axes: {}, size: 'card',
+    render: () => <Tilt><Card hero><span className="milo-text-caption">新纪录 · 杠铃卧推</span><Num size="hero" value="102.5" unit="kg" /></Card></Tilt>,
   },
   {
     name: 'SetRow', group: '训练与记录', desc: '记组。当前组预填建议值，「完成」是唯一入口（一次点击记完一组）；缺值时禁用、在缺的那格下面说明；超范围只圈出错的那一格，红字就在它正下方、同宽（不整行描红）。热身组不计入。',

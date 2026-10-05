@@ -17,7 +17,8 @@
 .bars .barDone::after { transform: scaleX(1); }
 .bars .barNow::after { animation: fillBar var(--ms) linear both; animation-play-state: inherit; }
 @keyframes fillBar { to { transform: scaleX(1); } }
-.skip { position: absolute; z-index: 8; top: calc(var(--milo-space-s) + var(--milo-space-m)); right: var(--milo-size-gutter); border: 0; background: none; padding: var(--milo-space-xs) var(--milo-space-s);
+.skip { position: absolute; z-index: 8; top: var(--milo-space-m); right: calc(var(--milo-size-gutter) - var(--milo-space-s)); display: grid; place-items: center;
+  min-width: var(--milo-size-hit-min); min-height: var(--milo-size-hit-min); border: 0; background: none; padding: 0 var(--milo-space-s);
   font: inherit; font-size: var(--milo-font-size-body); color: var(--milo-color-text-secondary); }
 .tap { position: absolute; z-index: 1; inset: 0; -webkit-tap-highlight-color: transparent; }
 

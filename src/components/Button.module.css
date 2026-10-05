@@ -1,6 +1,8 @@
 .btn { position: relative; display: inline-grid; place-items: center; border: 0; font: inherit; font-weight: 900; white-space: nowrap; border-radius: var(--milo-radius-pill); }
 .l { width: 100%; height: var(--milo-size-button-h); font-size: var(--milo-font-size-heading); padding: 0 var(--milo-space-2xl); }
 .s { height: var(--milo-size-button-h-s); font-size: var(--milo-font-size-body); font-weight: 700; padding: 0 var(--milo-space-l); }
+/* 小按钮看起来 44 高，命中区上下各外扩到 hit-min（DESIGN §9.6 命中区） */
+.s::after { content: ''; position: absolute; left: 0; right: 0; top: calc((var(--milo-size-button-h-s) - var(--milo-size-hit-min)) / 2); bottom: calc((var(--milo-size-button-h-s) - var(--milo-size-hit-min)) / 2); }
 .label { display: inline-flex; align-items: center; gap: var(--milo-space-s); }
 .hidden { visibility: hidden; }
 .dots { position: absolute; }

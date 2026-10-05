@@ -5,7 +5,7 @@
 .q h2, .q p { margin: 0; }
 .q p { color: var(--milo-color-text-secondary); }
 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--milo-space-s); }
-.more { justify-self: start; padding: var(--milo-space-xs) 0; border: 0; background: none; font: inherit; font-size: var(--milo-font-size-caption);
+.more { justify-self: start; min-height: var(--milo-size-hit-min); padding: 0; border: 0; background: none; font: inherit; font-size: var(--milo-font-size-caption);
   color: var(--milo-color-text-secondary); text-decoration: underline; text-underline-offset: var(--milo-space-xs); }
 .minutes { display: grid; gap: var(--milo-space-m); justify-items: start; }
 .minutes p { margin: 0; color: var(--milo-color-text-secondary); }

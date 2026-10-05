@@ -10,7 +10,6 @@ import { BodyPage } from '../pages/BodyPage';
 import { DemoPage } from '../pages/DemoPage';
 import { HomePage } from '../pages/HomePage';
 import { OnboardingPage } from '../pages/OnboardingPage';
-import { SessionPage } from '../pages/SessionPage';
 import { SummaryPage } from '../pages/SummaryPage';
 import { store, useStore } from '../data/store';
 import { backAction } from './back';
@@ -62,7 +61,8 @@ function Routed() {
       <Route path="/" element={<Navigate to={'/today' + loc.search} replace />} />
       <Route path="/demo" element={<DemoPage />} />
       <Route path="/onboarding" element={st.profile ? <Navigate to="/today" replace /> : <OnboardingPage now={now} />} />
-      <Route path="/session" element={<SessionPage />} />
+      {/* 训练在首页打卡（2026-10-06 取消独立训练页）；旧地址回首页 */}
+      <Route path="/session" element={<Navigate to="/today" replace />} />
       <Route path="/summary/:id" element={<SummaryPage />} />
       <Route path="/today" element={needProfile ?? tab(<HomePage scenario={scenario} now={now} onTab={onTab} />)} />
       <Route path="/body" element={needProfile ?? tab(<BodyPage key={scenario} scenario={scenario} now={now} onTab={onTab}

@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import tokens from '../design/tokens/tokens.json';
 import { App } from './App';
-import { DEFAULT_PROFILE, store } from './data/store';
+import { DEFAULT_PROFILE, demoState, store } from './data/store';
 
 describe('M1 管线检查页（/check）', () => {
   it('渲染标题、每个语义色和每个文字样式', async () => {
@@ -33,6 +33,35 @@ describe('首次打开（阶段 6a）', () => {
     expect(window.location.pathname).toBe('/today');
     expect(store.get().profile).toEqual(DEFAULT_PROFILE);
     expect(store.get().draft).toBeNull();
+  });
+});
+
+describe('首页即打卡（2026-10-06：取消独立训练页）', () => {
+  it('开始训练留在首页；主按钮打卡一组 → 休息开始、导航写剩余时间；结束 → 结算页', async () => {
+    store.clear();
+    store.update((x) => ({ ...x, ...demoState(Date.now()), draft: null }));
+    window.history.pushState({}, '', '/today');
+    render(<App />);
+    (await screen.findByRole('button', { name: '开始训练' })).click();
+    const check = await screen.findByRole('button', { name: /^打卡 · 第 1 组/ });
+    expect(window.location.pathname).toBe('/today');
+    check.click();
+    await screen.findByRole('button', { name: /^打卡 · 第 2 组/ });
+    expect(store.get().active?.entries[0].rows[0].done).toBe(true);
+    expect(store.get().rest).not.toBeNull();
+    expect(screen.getByRole('navigation', { name: '主导航' }).querySelector('[aria-current="page"]')?.getAttribute('aria-label')).toMatch(/休息剩余/);
+    screen.getByRole('button', { name: '结束' }).click();
+    (await screen.findByRole('button', { name: '结束并结算' })).click();
+    await screen.findByText('练完了');
+    expect(window.location.pathname).toMatch(/^\/summary\//);
+    expect(store.get().active).toBeNull();
+  });
+  it('旧地址 /session 回首页', async () => {
+    store.update((x) => ({ ...x, profile: DEFAULT_PROFILE, draft: null }));
+    window.history.pushState({}, '', '/session');
+    render(<App />);
+    await screen.findByRole('navigation', { name: '主导航' });
+    expect(window.location.pathname).toBe('/today');
   });
 });
 

@@ -1,4 +1,5 @@
-.link { color: var(--milo-color-text-secondary); font-size: var(--milo-font-size-caption); text-underline-offset: var(--milo-space-xs); }
+.link { display: inline-flex; align-items: center; min-height: var(--milo-size-hit-min); padding: 0 var(--milo-space-s); margin-right: calc(var(--milo-space-s) * -1);
+  border: 0; background: none; font: inherit; color: var(--milo-color-text-secondary); font-size: var(--milo-font-size-caption); text-decoration: underline; text-underline-offset: var(--milo-space-xs); }
 .tags { display: flex; flex-wrap: wrap; gap: var(--milo-space-s); }
 /* 内容区：左右 gutter；底部给开始按钮和导航留空，可滚动 */
 .body { flex: 1; min-height: 0; overflow: auto; display: grid; align-content: start; grid-auto-rows: max-content; gap: var(--milo-space-m);
@@ -37,3 +38,31 @@
   background: linear-gradient(90deg, color-mix(in srgb, var(--milo-prim-bone-100) 35%, transparent), var(--milo-prim-bone-100) 85%, var(--milo-color-accent-default));
   animation: fill calc(var(--milo-motion-slow) * 3) var(--milo-motion-ease-standard) both; }
 @keyframes fill { from { transform: scaleX(0); } }
+
+/* ---------- 训练中（首页即打卡） ---------- */
+.progress { display: flex; align-items: baseline; gap: var(--milo-space-xs); color: var(--milo-color-text-primary); }
+.grow { flex: 1; text-align: right; color: var(--milo-color-text-secondary); }
+.heroTop { display: flex; align-items: center; justify-content: space-between; gap: var(--milo-space-s); }
+.muted { color: var(--milo-color-text-secondary); margin: 0; }
+/* 组行整行可点；往两边伸出卡片内边距的一半，点得到、也和卡片里的文字对齐 */
+.lines { display: grid; gap: var(--milo-space-2xs); margin: var(--milo-space-xs) calc(var(--milo-space-m) * -1) 0; }
+.heroActions { display: flex; flex-wrap: wrap; gap: var(--milo-space-s); margin-top: var(--milo-space-xs); }
+/* 休息胶囊和主按钮同一排、在它左边（拇指区，不压在列表上）；点开向上、向右流体形变成整宽面板（M02），点别处缩回 */
+.restDock { position: absolute; z-index: 10; left: var(--milo-size-gutter); bottom: calc(var(--nav-clear) + var(--milo-space-s) + (var(--milo-size-button-h) - var(--milo-size-hit-min)) / 2);
+  transition: bottom var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring-soft); }
+.restDock > div { margin: 0; }
+.restDockOpen { right: var(--milo-size-gutter); bottom: calc(var(--nav-clear) + var(--milo-size-button-h) + var(--milo-space-m)); }
+.restDockOpen > div { margin: 0 auto; }
+.ctaBeside { left: calc(var(--milo-size-gutter) + var(--milo-space-5xl) * 3 + var(--milo-space-s)); }
+.cta { transition: left var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring-soft); }
+/* 训练中底部叠了「休息 + 主按钮 + 导航」：内容区底部留够，最后一行能滚到休息胶囊上面 */
+.body[data-training] { padding-bottom: calc(var(--nav-clear) + var(--milo-size-button-h) + var(--milo-space-3xl)); }
+/* 底部「休息 + 主按钮 + 导航」后面垫一层渐隐底色：滚上来的列表在这里淡出，不和按钮抢 */
+.scrim { position: absolute; z-index: 8; left: 0; right: 0; bottom: 0; height: calc(var(--nav-clear) + var(--milo-size-button-h) + var(--milo-space-3xl)); pointer-events: none;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--milo-color-bg-base) 92%, transparent) 45%); }
+/* 处方依据面板 */
+.why { display: grid; gap: var(--milo-space-l); padding-bottom: var(--milo-space-l); }
+.why p { margin: 0; color: var(--milo-color-text-secondary); }
+.whyHeads { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--milo-space-xs); }
+.whyHeads li { display: flex; align-items: center; gap: var(--milo-space-s); flex-wrap: wrap; color: var(--milo-color-text-primary); }
+.scrimLow { composes: scrim; height: calc(var(--nav-clear) + var(--milo-size-button-h) + var(--milo-space-3xl)); }

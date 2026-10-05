@@ -88,13 +88,13 @@ export function GiantNumber({ value, unit, caption }: { value: string; unit?: st
 }
 
 /* ---------- 滚动码表 ---------- */
-/** 每一位数字是一条 0–9 的竖带，按弹簧滚到目标位；非数字字符原样显示 */
+/** 每一位数字是一条 0–9 的竖带，按弹簧滚到目标位；非数字字符原样显示。按「从右数第几位」配对，97.5 → 100 时个位、十位各自滚，不会整体错位 */
 export function Odometer({ value, size = 'xl' }: { value: string; size?: 'xl' | 'l' | 'm' }) {
   return (
     <span className={cx(s.odo, `milo-text-number-${size}`)} aria-label={value}>
       {[...value].map((ch, i) => /\d/.test(ch)
-        ? <span key={i} className={s.odoCol} aria-hidden="true"><span className={s.odoStrip} style={{ transform: `translateY(${-Number(ch) * 10}%)` }}>{'0123456789'.split('').map((d) => <i key={d}>{d}</i>)}</span></span>
-        : <span key={i} aria-hidden="true">{ch}</span>)}
+        ? <span key={value.length - i} className={s.odoCol} aria-hidden="true"><span className={s.odoStrip} style={{ transform: `translateY(${-Number(ch) * 10}%)` }}>{'0123456789'.split('').map((d) => <i key={d}>{d}</i>)}</span></span>
+        : <span key={`c${value.length - i}`} aria-hidden="true">{ch}</span>)}
     </span>
   );
 }

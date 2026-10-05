@@ -1,11 +1,11 @@
 {
   "now": 1791050400000,
-  "variants": 524,
-  "components": 70,
+  "variants": 532,
+  "components": 73,
   "checks": [
     {
       "ok": true,
-      "check": "变体数：页面 524 = 目录 524"
+      "check": "变体数：页面 532 = 目录 532"
     },
     {
       "ok": true,

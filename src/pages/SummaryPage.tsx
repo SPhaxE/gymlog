@@ -6,7 +6,7 @@
  *  - 「完成」回首页（替换历史，不能返回到结算）。 */
 import { useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
-import { AgeBadge, Button, Delta, GrowthBar, Num, RewardModal, Screen, SectionLabel, TopBar } from '../components';
+import { AgeBadge, Button, Delta, GrowthBar, Num, Odometer, RewardModal, Screen, SectionLabel, Tilt, TopBar } from '../components';
 import { dateLabel, env, fmt, REGION_NAME } from '../data/demo';
 import { rewardOf } from '../data/growth';
 import { setExertion } from '../data/session';
@@ -49,16 +49,16 @@ export function SummaryPage() {
       <TopBar title="练完了" sub={`${dateLabel(ses.startMs)} · ${d.regions.join(' · ')}`} />
       <div className={s.body}>
         {best ? (
-          <div className={s.hero}>
+          <Tilt><div className={s.hero}>
             <div className={s.heroTop}><span className={s.pr}>PR</span><span className="milo-text-label">新纪录 · {name(best.exerciseId)}</span>
               {best.prevE1rm != null && <span className={s.prev}>上次 {fmt(best.prevE1rm)} kg</span>}</div>
             <div className={s.heroNum}><span className="milo-text-caption">预估 1RM</span><Num size="hero" value={fmt(best.e1rm ?? 0)} unit="kg" />{best.delta != null && <span className={s.plus}>+{fmt(best.delta)} kg</span>}</div>
             <HeroTicks />
-          </div>
+          </div></Tilt>
         ) : (
           <div className={s.heroQuiet}>
             <span className="milo-text-label">{sum.first ? '第一次训练 · 作为基线' : '这次没有新纪录'}</span>
-            <Num size="hero" value={fmt(sum.load)} unit="kg" />
+            <span className={s.odo}><Odometer value={fmt(sum.load)} size="xl" /><i>kg</i></span>
             <span className="milo-text-caption">总负荷</span>
           </div>
         )}
@@ -98,7 +98,8 @@ export function SummaryPage() {
         </div>
         {d.slow && <p className="milo-text-caption">下次：{d.slow.region}约 {Math.max(1, Math.round(d.slow.hours))} 小时后恢复 · 下一份处方已经更新</p>}
       </div>
-      <div className={s.cta}><Button kind={best ? 'neutral' : undefined} onClick={() => nav('/today', { replace: true })}>完成</Button></div>
+      {/* 从首页来的就退回首页（「今天已练完」）；直接打开的结算页替换成首页 */}
+      <div className={s.cta}><Button kind={best ? 'neutral' : undefined} onClick={() => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav('/today', { replace: true }))}>完成</Button></div>
       <RewardModal reward={reward} queued={d.queued} onClose={() => setReward(null)} />
     </Screen>
   );

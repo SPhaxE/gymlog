@@ -13,13 +13,12 @@ type Step = { id: string; t: string; d: string; go?: { label: string; run: () =>
 
 /** 手机里的地址 → 路线上的第几步 */
 function stepOf(path: string): string {
-  if (path.startsWith('/onboarding')) {
-    try { return JSON.parse(localStorage.getItem(STORE_KEY) ?? '{}').draft ? 'setup' : 'story'; } catch { return 'story'; }
-  }
-  if (path.startsWith('/session')) return 'session';
+  let st: { draft?: unknown; active?: unknown } = {};
+  try { st = JSON.parse(localStorage.getItem(STORE_KEY) ?? '{}'); } catch { /* 读不到当没有 */ }
+  if (path.startsWith('/onboarding')) return st.draft ? 'setup' : 'story';
   if (path.startsWith('/summary')) return 'summary';
   if (path.startsWith('/body')) return 'body';
-  if (path.startsWith('/today')) return 'today';
+  if (path.startsWith('/today')) return st.active ? 'session' : 'today';
   return '';
 }
 
@@ -56,8 +55,8 @@ export function DemoPage() {
   const steps: Step[] = [
     { id: 'story', t: '初见引导 · 米洛（Milo）的故事', d: '8 幕动画讲清渐进超负荷与超量恢复；第 5 幕光点进荧光段时点「练」。', go: { label: '从头开始', run: reset } },
     { id: 'setup', t: '建档 · 三步', d: '最后一步选「载入演示数据」：一个练了 30 周的进阶用户。', go: { label: '跳过故事', run: () => { store.clear(); store.update((x) => ({ ...x, draft: { step: 1, profile: { ...DEFAULT_PROFILE } } })); return '/onboarding'; } } },
-    { id: 'today', t: '今日处方', d: '引擎现算：练哪几个动作、每个加多少；增量尺画出「上次 → 这次」。', go: { label: '载入演示数据', run: withDemo('/today') } },
-    { id: 'session', t: '训练中', d: '自带数字键盘、±2.5 kg 步进，「下一组」一键记完；休息倒计时在顶部。' },
+    { id: 'today', t: '今日处方', d: '引擎现算：练哪几个动作、每个加多少；增量尺画出「上次 → 这次」，「为什么是这些」看依据。', go: { label: '载入演示数据', run: withDemo('/today') } },
+    { id: 'session', t: '就在首页打卡', d: '点「开始训练」，主角卡原地展开成组行；拇指区一个「打卡」，休息在导航里走；点组行才拉出键盘改数。' },
     { id: 'summary', t: '结算 → 今天已练完', d: '破纪录卡、力竭度、牛龄成长；回到首页是「今天已练完」和恢复进度。' },
     { id: 'body', t: '身体', d: '半身肌肉图 + 容量胶囊，长按胶囊放大，看哪块进了黄金窗。', go: { label: '打开身体页', run: withDemo('/body') } },
   ];

@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { T } from '../styles/tokens.gen';
 import { Button, IconButton } from './Button';
+import { Odometer } from './dataviz';
 import { IncrementRuler } from './Gauges';
 import { sharedName } from './motion';
 import { Icon } from './Icon';
@@ -16,8 +17,10 @@ export const clock = (sec: number) => `${Math.floor(Math.max(0, sec) / 60)}:${St
 
 /* ---------- 处方行（P01「接下来」、P03 动作列表） ---------- */
 export type ExerciseStatus = 'todo' | 'current' | 'done' | 'skipped';
-export function ExerciseRow({ name, detail, weight, status = 'todo', sets, onClick, state, sharedId }: {
+export function ExerciseRow({ name, detail, weight, status = 'todo', sets, dots, onClick, state, sharedId }: {
   name: string; detail: string; weight: number | null; status?: ExerciseStatus; sets?: [number, number]; onClick?: () => void; state?: Forced;
+  /** 训练中：每组一个点（● 已打卡 / ○ 待做），一眼看到这个动作做到哪（2026-10-06 首页即打卡，线框 checkin W2 的组格子） */
+  dots?: [number, number];
   /** M03：给卡片、名称、重量起共享名，点开时原地变形成 SharedDetail（详情打开时传 undefined，避免同名） */
   sharedId?: string;
 }) {
@@ -27,7 +30,8 @@ export function ExerciseRow({ name, detail, weight, status = 'todo', sets, onCli
   return (
     <button type="button" className={cx('milo-press milo-focus', s.exRow, s[`ex_${status}`])} onClick={onClick} aria-current={status === 'current' ? 'step' : undefined}
       style={sharedId ? sharedName('card', sharedId) : undefined} {...forced(state)}>
-      <span className={s.exText}><b className="milo-text-body-strong" style={sharedId ? { ...sharedName('title', sharedId), width: 'fit-content' } : undefined}>{name}</b><span className="milo-text-caption">{status === 'current' && sets ? `进行中 · 第 ${sets[0] + 1} 组 · ` : ''}{detail}</span></span>
+      <span className={s.exText}><b className="milo-text-body-strong" style={sharedId ? { ...sharedName('title', sharedId), width: 'fit-content' } : undefined}>{name}</b><span className="milo-text-caption">{status === 'current' && sets ? `进行中 · 第 ${sets[0] + 1} 组 · ` : ''}{detail}</span>
+        {dots && <span className={s.dots} aria-label={`已打卡 ${dots[0]} / ${dots[1]} 组`}>{Array.from({ length: dots[1] }, (_, i) => <i key={i} className={i < dots[0] ? s.dotOn : undefined} />)}</span>}</span>
       {trailing}
     </button>
   );
@@ -67,7 +71,8 @@ export function SetRow({ index, type = 'work', status, weight, reps, rpe, error,
   const editable = status === 'current' || status === 'editing';
   // 提示落在哪一格：报错落在出错的那格；缺值落在缺的那格
   const noteField = error ? errorField : missing === '重量' ? 'weight' : missing ? 'reps' : null;
-  const note = editable && noteField && <span className={cx('milo-text-caption', s.fieldNote, noteField === 'reps' && s.fieldNoteReps, error ? s.err : s.hint)} role={error ? 'alert' : undefined}>{error ?? `先填${missing}`}</span>;
+  // 提示在出错 / 缺值的那一格正下方、和它同宽；它是组行的第二行，不参与第一行的对齐（2026-10-06 真机：提示把输入框往上顶、序号和按钮对不齐）
+  const note = editable && noteField && <span className={s.noteRow}><span className={cx('milo-text-caption', s.fieldNote, noteField === 'reps' && s.fieldNoteReps, error ? s.err : s.hint)} role={error ? 'alert' : undefined}>{error ?? `先填${missing}`}</span></span>;
   return (
     <div className={cx(s.set, s[`set_${status}`])} role="group" aria-label={`第 ${index} 组${type === 'warmup' ? '（热身，不计入）' : type === 'drop' ? '（递减）' : ''}`}>
       <span className={cx(s.idx, type !== 'work' && s.idxType)}>{status === 'done' && type === 'work' ? <Icon name="check" small /> : idx}</span>
@@ -78,7 +83,6 @@ export function SetRow({ index, type = 'work', status, weight, reps, rpe, error,
           <i className={s.times}>×</i>
           <SetInput label="次数" unit="次" value={reps} onChange={(v) => onChange?.('reps', v)} mode="numeric" invalid={!!error && errorField === 'reps'}
             pad={keypad && { on: keypad.field === 'reps', focus: () => keypad.onFocus('reps') }} />
-          {note}
         </span>
       ) : (
         <span className={s.vals}>
@@ -92,6 +96,7 @@ export function SetRow({ index, type = 'work', status, weight, reps, rpe, error,
         {status === 'editing' && <Button kind="ghost" size="s" onClick={onDone} disabled={!!missing || !!error} state={state}>保存</Button>}
         {status === 'done' && <IconButton kind="plain" icon="edit" label={`修改第 ${index} 组`} onClick={onEdit} state={state} />}
       </span>
+      {note}
     </div>
   );
 }
@@ -116,7 +121,7 @@ export function NumPad({ onKey, onStep, step, unit, onNext, nextDisabled, nextLa
   const key = (k: string, label: ReactNode = k, extra?: string) => (
     <button key={k} type="button" className={cx('milo-press milo-focus', s.key, extra)} onClick={() => onKey(k)} aria-label={k === 'del' ? '删除' : undefined}>{label}</button>
   );
-  const stepKey = (d: number) => <button type="button" className={cx('milo-press milo-focus', s.key, s.keyStep)} onClick={() => onStep(d)}>{d > 0 ? '+' : '−'}{Math.abs(d)}<small>{unit}</small></button>;
+  const stepKey = (d: number) => <button type="button" className={cx('milo-press milo-focus', s.key, s.keyStep)} onClick={() => onStep(d)} aria-label={`${d > 0 ? '加' : '减'} ${Math.abs(d)} ${unit}`}>{d > 0 ? '+' : '−'}{Math.abs(d)}<small>{unit}</small></button>;
   // 4 列：1 2 3 −步进 / 4 5 6 +步进 / 7 8 9 退格 / . 0 下一组（占两格）
   return (
     <div className={s.pad} role="group" aria-label="数字键盘">
@@ -125,6 +130,47 @@ export function NumPad({ onKey, onStep, step, unit, onNext, nextDisabled, nextLa
       {key('7')}{key('8')}{key('9')}{key('del', <Icon name="back" small />)}
       {key('.')}{key('0')}
       <button type="button" className={cx('milo-press milo-focus', s.key, s.keyNext)} onClick={onNext} disabled={nextDisabled}>{nextLabel}</button>
+    </div>
+  );
+}
+
+/* ---------- 组行（首页即打卡，2026-10-06） ---------- */
+/** 一组 = 一整行按钮（命中区整行、不低于 hit-min）：序号 | 重量 × 次数 | 状态。点一下打开改数面板（SetEditor），不在行里放输入框。
+ *  current：当前要打的这一组，选中描边；重量空（首次动作）时写「填重量」，不预先报红。done：序号换成勾，数字变灰。 */
+export function SetLine({ index, weight, reps, status, onClick, state }: {
+  index: number; weight: string; reps: string; status: 'done' | 'current' | 'todo'; onClick?: () => void; state?: Forced;
+}) {
+  const empty = !weight.trim();
+  return (
+    <button type="button" className={cx('milo-press milo-focus', s.line, s[`line_${status}`])} onClick={onClick} {...forced(state)}
+      aria-label={`第 ${index} 组，${empty ? '还没填重量' : `${weight} 千克`} ${reps || '—'} 次，${status === 'done' ? '已打卡，点开修改' : '点开修改'}`}>
+      <span className={s.lineIdx}>{status === 'done' ? <Icon name="check" small /> : index}</span>
+      <span className={s.lineVals}>
+        {empty ? <span className={s.lineEmpty}>填重量</span> : <Num size="m" value={weight} unit="kg" />}
+        <i className={s.times}>×</i><Num size="m" value={reps || '—'} unit="次" />
+      </span>
+      <Icon name="edit" small />
+    </button>
+  );
+}
+
+/** 改数面板的内容（放在 Sheet 里，M05 阻尼抽屉）：两块大格子（重量 / 次数，点一下切换正在改的那格）+ 一行提示 + 数字键盘。
+ *  提示行永远占位（空也占一行），出现提示、报错都不挤动格子和键盘（DESIGN §9.6 提示不位移）。数字用滚动码表（M04），±步进时按位滚动。 */
+export function SetEditor({ weight, reps, field, onField, onKey, onStep, step, hint, error, onDone, doneLabel, doneDisabled }: {
+  weight: string; reps: string; field: 'weight' | 'reps'; onField: (f: 'weight' | 'reps') => void; onKey: (k: string) => void; onStep: (d: number) => void; step: number;
+  hint?: string; error?: string; onDone: () => void; doneLabel: string; doneDisabled?: boolean;
+}) {
+  const tile = (f: 'weight' | 'reps', v: string, unit: string, label: string) => (
+    <button type="button" className={cx('milo-press milo-focus', s.tile, field === f && s.tileOn, error && field === f && s.tileBad)} onClick={() => onField(f)} aria-pressed={field === f} aria-label={`${label} ${v || '未填'} ${unit}`}>
+      <span className="milo-text-caption">{label}</span>
+      <span className={s.tileNum}>{v ? <Odometer value={v} size="xl" /> : <b className={s.tileEmpty}>—</b>}<i>{unit}</i></span>
+    </button>
+  );
+  return (
+    <div className={s.editor}>
+      <div className={s.tiles}>{tile('weight', weight, 'kg', '重量')}<i className={s.times}>×</i>{tile('reps', reps, '次', '次数')}</div>
+      <p className={cx('milo-text-caption', s.editorNote, error ? s.err : s.hint)} role={error ? 'alert' : undefined}>{error ?? hint ?? ' '}</p>
+      <NumPad onKey={onKey} onStep={onStep} step={field === 'weight' ? step : 1} unit={field === 'weight' ? 'kg' : '次'} onNext={onDone} nextDisabled={doneDisabled} nextLabel={doneLabel} />
     </div>
   );
 }

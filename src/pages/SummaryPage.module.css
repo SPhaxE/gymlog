@@ -23,6 +23,8 @@
 .ticks i { width: var(--milo-stroke-hairline); height: 40%; background: color-mix(in srgb, var(--milo-color-text-on-accent) 45%, transparent); }
 .ticks .tickL { height: 90%; background: var(--milo-color-text-on-accent); }
 .heroQuiet > span:first-child, .heroQuiet > span:last-child { color: var(--milo-color-text-secondary); }
+.odo { display: flex; align-items: baseline; gap: var(--milo-space-xs); }
+.odo > i { font-style: normal; font-size: var(--milo-font-size-body); color: var(--milo-color-text-secondary); }
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--milo-space-s); }
 .stats > div { display: grid; gap: var(--milo-space-2xs); padding: var(--milo-space-m); border-radius: var(--milo-radius-m); background: var(--milo-color-bg-raised); }
 .stats span { color: var(--milo-color-text-secondary); }
@@ -32,8 +34,8 @@
 .val { display: flex; align-items: baseline; gap: var(--milo-space-s); }
 .muted { color: var(--milo-color-text-secondary); }
 .exertion { display: flex; align-items: center; justify-content: space-between; gap: var(--milo-space-m); }
-/* 力竭度：十格一排（Stitch s6 V2），选中骨白实心 */
-.rate { display: grid; grid-template-columns: repeat(10, 1fr); gap: var(--milo-space-2xs); }
+/* 力竭度：十格（Stitch s6 V2），选中骨白实心。360 宽里一排十格每格不到 30，比手指窄 → 两排各五格，每格不低于命中区（DESIGN §9.6） */
+.rate { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--milo-space-s); }
 .rate button { height: var(--milo-size-hit-min); border: 0; border-radius: var(--milo-radius-s); background: var(--milo-color-bg-raised); color: var(--milo-color-text-secondary);
   font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-body); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
 .rate .rateOn { background: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); box-shadow: none; }

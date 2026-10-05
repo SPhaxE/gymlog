@@ -4,7 +4,7 @@
 @keyframes rise { from { opacity: 0; transform: translateY(var(--milo-space-2xl)); } }
 
 /* M02 休息小胶囊 ↔ 面板：同一个容器，宽高与圆角按软弹簧过渡 */
-.dock { margin: 0 auto; overflow: hidden; width: calc(var(--milo-space-5xl) * 3); height: var(--milo-size-button-h-s); border-radius: var(--milo-radius-pill);
+.dock { margin: 0 auto; overflow: hidden; width: calc(var(--milo-space-5xl) * 3); height: var(--milo-size-hit-min); border-radius: var(--milo-radius-pill);
   background: var(--milo-color-bg-raised-2); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong), 0 var(--milo-space-s) var(--milo-space-2xl) var(--milo-color-shadow-float);
   transition: width var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring-soft), height var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring-soft),
     border-radius var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring-soft); }
@@ -16,7 +16,7 @@
 .pill b { font-family: var(--milo-font-number); font-weight: 700; font-variant-numeric: tabular-nums; }
 .dockBody { display: grid; gap: var(--milo-space-2xs); padding: var(--milo-space-xs); animation: fadeIn var(--milo-motion-base) var(--milo-motion-ease-standard) var(--milo-motion-fast) both; }
 .dockBody > div { box-shadow: none; }
-.collapse { justify-self: center; border: 0; background: none; color: var(--milo-color-text-secondary); font: inherit; font-size: var(--milo-font-size-caption); padding: var(--milo-space-2xs) var(--milo-space-m); }
+.collapse { justify-self: center; min-height: var(--milo-size-hit-min); border: 0; background: none; color: var(--milo-color-text-secondary); font: inherit; font-size: var(--milo-font-size-caption); padding: 0 var(--milo-space-xl); }
 @keyframes fadeIn { from { opacity: 0; } }
 
 /* M03 共享元素展开：整屏详情；卡片、标题、数字由 View Transitions 从列表行变形过来，正文随后淡入 */
@@ -33,3 +33,14 @@
   .dock { transition: none; }
   .detailBody { animation: none; }
 }
+
+/* M01 3D 倾斜光影：透视微倾 + 跟手径向高光；按住时跟得快，松手按弹簧回正 */
+.tilt { position: relative; isolation: isolate; border-radius: var(--milo-radius-l); touch-action: pan-y;
+  transform: perspective(calc(var(--milo-size-screen-w) * 2)) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform var(--milo-motion-spring-ms) var(--milo-motion-ease-spring); will-change: transform; }
+.tilt[data-tilting] { transition-duration: var(--milo-motion-fast); }
+.glare { position: absolute; inset: 0; z-index: 1; border-radius: inherit; pointer-events: none; opacity: 0; mix-blend-mode: soft-light;
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), color-mix(in srgb, var(--milo-prim-bone-100) 75%, transparent), transparent 55%);
+  transition: opacity var(--milo-motion-base) var(--milo-motion-ease-standard); }
+.tilt[data-tilting] .glare { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .tilt { transform: none; transition: none; } .glare { display: none; } }
