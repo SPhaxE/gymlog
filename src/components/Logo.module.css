@@ -1,0 +1,65 @@
+/* Logo：骨白主体 + 荧光角；状态动效只用 motion Token */
+.glyph { display: block; width: var(--milo-size-icon); height: var(--milo-size-icon); overflow: visible; }
+.mark { --logo-base: var(--milo-prim-bone-100); --logo-lit: var(--milo-prim-lime-500); }
+.body, .bar { fill: var(--logo-base); }
+.hornL, .hornR, .barHorn { fill: var(--logo-lit); }
+.trace { fill: none; stroke: var(--milo-prim-lime-500); stroke-width: 1.4; stroke-linejoin: round; stroke-dasharray: 0 1; opacity: 0; }
+.pose { transform-origin: 50% 85%; transform-box: view-box; }
+
+/* 加载：M 沿轮廓画一圈荧光；条形依次从下往上长出来（每次多一点） */
+.loading .trace { opacity: 1; animation: trace calc(var(--milo-motion-slow) * 4) var(--milo-motion-ease-standard) infinite; }
+@keyframes trace { from { stroke-dasharray: 0 1; } 70% { stroke-dasharray: 1 0; opacity: 1; } to { stroke-dasharray: 1 0; opacity: 0; } }
+.loading .body { opacity: 0.35; }
+.loading .bar, .loading .barHorn { transform-origin: center bottom; transform-box: fill-box;
+  animation: grow calc(var(--milo-motion-slow) * 4) var(--milo-motion-ease-spring) calc(var(--i) * var(--milo-motion-stagger)) infinite both; }
+@keyframes grow { from { transform: scaleY(0.15); opacity: 0.3; } 35%, 100% { transform: scaleY(1); opacity: 1; } }
+
+/* 训练中：再往前压一点，左侧有速度线 */
+.training .pose { animation: lean calc(var(--milo-motion-slow) * 2) var(--milo-motion-ease-standard) infinite alternate; }
+@keyframes lean { from { transform: skewX(-4deg) translateX(2%); } to { transform: skewX(-9deg) translateX(4%); } }
+.speed path { fill: none; stroke: var(--milo-prim-lime-500); stroke-width: 1.4; stroke-linecap: round; animation: speed calc(var(--milo-motion-slow) * 2) linear infinite; }
+@keyframes speed { from { stroke-dasharray: 0 10; stroke-dashoffset: 0; } 50% { stroke-dasharray: 6 10; } to { stroke-dasharray: 0 10; stroke-dashoffset: -8; } }
+
+/* 破纪录：条从两角往中间依次点亮（--d = 离角条的距离），中间最长的条亮着不灭、再往下长出一节荧光 = 比纪录多一点；
+   回归型循环：长出 → 停住 → 收回，0% = 100%。M 标志仍是角发光 */
+.pr .hornL, .pr .hornR { animation: glow calc(var(--milo-motion-slow) * 3) var(--milo-motion-ease-standard) infinite; }
+@keyframes glow { 0%, 100% { filter: drop-shadow(0 0 0 var(--milo-prim-lime-500)); } 40% { filter: drop-shadow(0 0 var(--milo-stroke-ring-progress) var(--milo-prim-lime-500)); } }
+.pr .bar { animation: lit calc(var(--milo-motion-slow) * 6) var(--milo-motion-ease-standard) calc(var(--d) * var(--milo-motion-stagger)) infinite; }
+/* 中间最长的条 = 纪录本身：点亮后保持荧光，和新长出的一节一起停住 */
+.pr .barPeak { animation-name: peak; }
+@keyframes peak { 0%, 100% { fill: var(--logo-base); } 8%, 82% { fill: var(--logo-lit); } 96% { fill: var(--logo-base); } }
+@keyframes lit { 0%, 100% { fill: var(--logo-base); } 8% { fill: var(--logo-lit); } 24% { fill: var(--logo-base); } }
+.prStep { fill: var(--logo-lit); transform-origin: center top; transform-box: fill-box;
+  animation: step calc(var(--milo-motion-slow) * 6) var(--milo-motion-ease-spring) infinite; }
+@keyframes step { 0%, 20% { transform: scaleY(0.2); opacity: 0; } 22% { opacity: 1; } 38%, 82% { transform: scaleY(1); opacity: 1; } 96%, 100% { transform: scaleY(0.2); opacity: 0; } }
+
+/* 恢复日：整体变暗、慢慢呼吸，右上两个 z */
+.rest .pose { opacity: 0.5; animation: breathe calc(var(--milo-motion-slow) * 8) ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { transform: scale(0.97); } 50% { transform: scale(1); } }
+.zz { fill: var(--milo-prim-lime-500); font-family: var(--milo-font-number); font-style: italic; font-weight: 700; animation: zz calc(var(--milo-motion-slow) * 8) ease-in-out infinite; }
+@keyframes zz { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+/* 减量周：内侧条收回约一半（V 变浅、仍然递增），原长度留一道虚影 = 余量还在；虚影慢慢呼吸。M 标志收小一圈 */
+.ghost { fill: var(--logo-base); opacity: 0.16; animation: ghost calc(var(--milo-motion-slow) * 10) ease-in-out infinite; }
+@keyframes ghost { 0%, 100% { opacity: 0.12; } 50% { opacity: 0.24; } }
+.deload .body, .deload .hornL, .deload .hornR { transform-origin: 50% 60%; transform-box: view-box; transform: scale(0.86); }
+
+@media (prefers-reduced-motion: reduce) {
+  .glyph *, .appGlyph *, .lockGlyph * { animation: none !important; }
+}
+
+/* App 图标：近黑圆角方形；light = 骨白底（商店图 / 浅色背景） */
+.appIcon { display: grid; place-items: center; width: var(--milo-size-hit-min); height: var(--milo-size-hit-min); border-radius: 22%; background: var(--milo-prim-gray-150);
+  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-prim-gray-300); }
+.appIconLight { background: var(--milo-prim-bone-100); }
+.appIconLight .appGlyph { --logo-base: var(--milo-prim-gray-0); --logo-lit: var(--milo-prim-lime-700); }
+.appGlyph { display: block; width: 72%; height: 72%; overflow: visible; }
+
+/* 横排组合 */
+.lockup { display: inline-flex; align-items: center; gap: 0.35em; font-size: var(--milo-font-size-l); line-height: 1; color: var(--milo-prim-bone-100); }
+.lockGlyph { display: block; width: 1.25em; height: 1.25em; overflow: visible; }
+.word { display: inline-flex; align-items: baseline; gap: 0.18em; transform: skewX(-11deg); }
+.cn { font-family: var(--milo-font-ui); font-weight: 900; letter-spacing: -0.02em; }
+.en { display: inline-flex; align-items: baseline; font-family: var(--milo-font-number); font-weight: 700; font-size: 1.12em; letter-spacing: 0.005em; }
+.mInline { width: 0.98em; height: 0.89em; overflow: visible; transform: skewX(11deg) translateY(0.02em); margin-right: 0.02em; }
+.mono .lockGlyph { --logo-lit: var(--milo-prim-bone-100); }

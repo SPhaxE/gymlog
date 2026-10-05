@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   Banner, Button, Cascade, Dialog, ExerciseRow, RestDock, SharedDetail, sharedTransition, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
   LandmarkRuler, PhaseSegments, Num, Screen, SetRow, clock, useCountdown, useToast, type Tab,
+  Mascot, MASCOT_MOODS, MASCOT_STAGES, MOOD_NAME, STAGE_NAME, type MascotMood, type MascotStage,
 } from '../components';
 import { BodyPage } from '../pages/BodyPage';
 import { HomePage } from '../pages/HomePage';
@@ -245,7 +246,21 @@ export function IconGridBoard() {
   return <iframe ref={ref} className={s.gridFrame} src="/design/icon-grid/index.html" title="图标网格规范" style={h ? { height: h } : undefined} />;
 }
 
+/** 小牛交互演示：切牛龄、切状态，看动效 */
+function MascotDemo() {
+  const [stage, setStage] = useState<MascotStage>('newborn'), [mood, setMood] = useState<MascotMood>('idle');
+  return (
+    <div className={s.demoPad}>
+      <div className={s.demoButtons}>{MASCOT_STAGES.map((st) => <Button key={st} kind={stage === st ? 'neutral' : 'ghost'} size="s" onClick={() => setStage(st)}>{STAGE_NAME[st]}</Button>)}</div>
+      <div className={s.demoButtons}>{MASCOT_MOODS.map((m) => <Button key={m} kind={mood === m ? 'neutral' : 'ghost'} size="s" onClick={() => setMood(m)}>{MOOD_NAME[m]}</Button>)}</div>
+      <div className={s.mascotStage}><Mascot stage={stage} mood={mood} animate title={`${STAGE_NAME[stage]} · ${MOOD_NAME[mood]}`} /></div>
+      <Note>5 种牛龄 × 6 种状态（PNG）。前四种单眼，米洛双眼发光；速度线、z、碎屑、米洛的泛光 / 星光 / 扫光都由代码生成；换状态时比例与地面线不变。系统开启「减少动态效果」时静止。</Note>
+    </div>
+  );
+}
+
 export const DEMOS: Record<string, (f: Fixtures) => ReactNode> = {
+  Mascot: () => <MascotDemo />,
   Icon: () => <IconGridBoard />,
   ExerciseRow: (f) => <CascadeDemo f={f} />,
   SharedDetail: (f) => <div className={s.demoCol}><Stage tall label="共享元素演示"><ExpandInner f={f} /></Stage><Note>点一个动作：卡片原地长满屏，名称和重量飞到详情的位置并放大；点返回变回去。</Note></div>,

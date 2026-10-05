@@ -17,6 +17,7 @@ import s from './Shell.module.css';
 const Playground = lazy(() => import('../pages/Playground').then((m) => ({ default: m.Playground })));
 const Preview = lazy(() => import('../pages/Preview').then((m) => ({ default: m.Preview })));
 const Lab = lazy(() => import('../lab/Lab').then((m) => ({ default: m.Lab })));
+const Brand = lazy(() => import('../lab/Brand').then((m) => ({ default: m.Brand })));
 const TokenCheck = lazy(() => import('../pages/TokenCheck').then((m) => ({ default: m.TokenCheck })));
 
 function useBackButton() {
@@ -57,6 +58,7 @@ function Routed() {
       <Route path="/playground" element={<Playground now={now} />} />
       <Route path="/preview" element={<Preview />} />
       <Route path="/lab" element={<Lab now={now} />} />
+      <Route path="/brand" element={<Brand />} />
       <Route path="/check" element={<TokenCheck />} />
       {/* 旧地址（阶段 3 的高保真探索）：/explore/home → /today，其余 → /body；保留 focus 默认值以便对照旧截图 */}
       <Route path="/explore/home" element={<Navigate to={'/today' + loc.search} replace />} />

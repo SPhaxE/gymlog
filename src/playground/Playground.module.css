@@ -80,3 +80,10 @@
 .expandList > button { background-color: var(--milo-color-bg-raised); }
 /* 图标网格规范板：整页 iframe，宽随演示区，高度由 IconGridBoard 按内容设定 */
 .gridFrame { display: block; width: 100%; min-height: var(--milo-size-screen-h); border: 0; border-radius: var(--milo-radius-l); background: var(--milo-color-bg-base); }
+/* 品牌：小牛按原图相对大小显示（--mascot-unit），Logo / 图标 / 头像的展示尺寸 */
+.mascotCell { display: grid; place-items: end center; min-height: calc(var(--milo-size-hit-min) * 2.6); --mascot-unit: calc(var(--milo-stroke-hairline) * 0.26); }
+.mascotHead { display: block; width: var(--milo-size-hit-min); height: var(--milo-size-hit-min); overflow: visible; }
+.logoL { display: block; width: calc(var(--milo-size-hit-min) * 1.33); height: calc(var(--milo-size-hit-min) * 1.33); overflow: visible; }
+.logoS { display: block; width: calc(var(--milo-size-icon) * 1.2); height: calc(var(--milo-size-icon) * 1.2); overflow: visible; }
+.appIcon { display: grid; place-items: center; width: calc(var(--milo-size-hit-min) * 1.5); height: calc(var(--milo-size-hit-min) * 1.5); border-radius: 22%; background: var(--milo-prim-gray-150); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-prim-gray-300); }
+.mascotStage { display: grid; place-items: end center; min-height: calc(var(--milo-size-hit-min) * 5); padding: var(--milo-space-xl); border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised); --mascot-unit: calc(var(--milo-stroke-hairline) * 0.5); }
