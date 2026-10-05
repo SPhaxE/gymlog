@@ -3,7 +3,7 @@
  *
  *  双轨：
  *  - 牛龄 = 成长值，只因「变强」上涨：预估 1RM 创新高的相对增幅（按动作分量加权、每动作每周封顶）+ PR + 完成训练周期。
- *    5 段 × 3 小级 = 15 级，门槛由等级曲线模拟定（growth.sim.ts，2026-10-05 用户拍板：按百分比、小牛≈2 月 / 壮牛≈6 月 / 公牛≈12 月 / 米洛≈24 月、一律从牛犊起步）。
+ *    5 段 × 3 小级 = 15 级，门槛由等级曲线模拟定（growth.sim.ts，2026-10-05 用户拍板：按百分比、小牛≈2 月 / 壮牛≈6 月 / 公牛≈12 月 / Milo≈24 月、一律从牛犊起步）。
  *  - 守约周连胜 = 粘性：一周（周一到周日）按处方练够次数，且没在某肌头恢复度 < 50% 时练它；减量周按计划完成也算；断档时有冻结卡自动用一张。
  *  牛劲：完成训练 / PR / 守约周 / 连胜里程碑 / 升级 / 周期完成，会员 ×1.5；兑换卡券时扣除。 */
 import type { Env } from './env';
@@ -21,7 +21,7 @@ export interface GrowthConfig {
   cyclePoints: number;
   /** 两个周期之间至少几周正常训练 */
   cycleMinWeeks: number;
-  /** 15 级的累计成长值门槛，levels[0] = 0（牛犊 1）…levels[14]（米洛 3） */
+  /** 15 级的累计成长值门槛，levels[0] = 0（牛犊 1）…levels[14]（Milo 3） */
   levels: number[];
   /** 牛劲（brief §4） */
   niujin: { session: number; pr: number; week: number; level: number; stage: number; cycle: number; proRate: number; milestones: Record<number, number> };
@@ -289,7 +289,7 @@ export function growth(env: Env, input: GrowthInput): GrowthState {
   };
 }
 
-export const STAGE_LABEL: Record<Stage, string> = { newborn: '牛犊', young: '小牛', sturdy: '壮牛', bull: '公牛', milo: '米洛' };
+export const STAGE_LABEL: Record<Stage, string> = { newborn: '牛犊', young: '小牛', sturdy: '壮牛', bull: '公牛', milo: 'Milo' };
 
 /** 奖励弹窗优先级（brief §4）：升段 > PR > 连胜里程碑 > 升小级 > 周期完成；守约周、冻结卡、降级只进消息 */
 export const REWARD_PRIORITY: EventKind[] = ['stage', 'pr', 'streak', 'level', 'cycle'];

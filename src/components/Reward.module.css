@@ -39,8 +39,8 @@
 
 /* ---------- 舞台：光芒、光晕、冲击波、碎屑、小牛 ---------- */
 .stageArea { position: relative; display: grid; place-items: end center; width: 100%; height: calc(var(--milo-space-5xl) * 4); margin-top: calc(var(--milo-space-s) * -1);
-  --mascot-unit: calc(var(--milo-stroke-hairline) * 0.27); }
-.card[data-kind='level'] .stageArea, .card[data-kind='cycle'] .stageArea { height: calc(var(--milo-space-5xl) * 3.4); }
+  --mascot-unit: calc(var(--milo-stroke-hairline) * 0.27); --mascot-max-h: calc(var(--milo-space-5xl) * 4 * 0.86); }
+.card[data-kind='level'] .stageArea, .card[data-kind='cycle'] .stageArea { height: calc(var(--milo-space-5xl) * 3.4); --mascot-max-h: calc(var(--milo-space-5xl) * 3.4 * 0.86); }
 .rays { position: absolute; left: 50%; top: 46%; width: 190%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; pointer-events: none; z-index: -1;
   background: repeating-conic-gradient(from var(--spin), color-mix(in srgb, var(--milo-prim-lime-500) 22%, transparent) 0 6deg, transparent 6deg 18deg);
   -webkit-mask: radial-gradient(closest-side, black 8%, transparent 70%); mask: radial-gradient(closest-side, black 8%, transparent 70%);

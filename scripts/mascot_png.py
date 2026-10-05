@@ -6,17 +6,22 @@
       docs/A.jpg（5 种牛龄的平常状态排一排，只用来量各牛龄的相对身高）。
 
 流程：
-1. 切图：按颜色和背景的距离找连通块，每格最大的一块是牛身——只要牛本身，z、碎屑、速度线、星光、米洛的泛光都不要
+1. 切图：按颜色和背景的距离找连通块，每格最大的一块是牛身——只要牛本身，z、碎屑、速度线、星光、Milo 的泛光都不要
    （用户 2026-10-05：特效进 App 时由代码生成）；状态板里的英文标签自然也不在里面。
 2. 高清化：Real-ESRGAN（RealESRGAN_x4plus_anime_6B，专门给平涂插画用的 4 倍超分）——去掉 JPEG 的块状噪点，边缘变锐。
    CPU 跑，分块推理；结果缓存在 .cache/mascot/，权重第一次运行时自动下载。
 3. 抠图（在 4 倍图上做）：
    - 实心区 = 和背景色差够大的像素；被实心区包住的暗色小洞（眼睛、鼻孔、四角星眼）也算实心；
    - 边缘按「像素 = α·前景 + (1−α)·背景」反解 α，前景色取最近的实心像素（去掉黑边）；
-   - 米洛外面那圈泛光当作底色扣掉（只留牛身），光晕由 App 叠加。
-4. 规整：同一牛龄的 6 张用同一个比例、同一条地面线、同一块画布（换状态不跳）；各牛龄的大小按 A 的相对身高。
+   - Milo 的源图换成 docs/B5-noglow.jpg（2026-10-05）：B5 的泛光贴着牛身、越近越亮，阈值法和 BiRefNet（试过，2026-10-05）都扣不干净，
+     用户用 Nano Banana 出了无泛光、品红纯色底的版本（角和眼改成最亮的荧光，提示词 nanobanana-ip-hd.md §D）。
+     它本身就是 B5 的 4 倍大小，跳过超分，和其余牛龄走同一套抠图。光晕由 App 叠加。
+4. 规整：同一牛龄的 6 张用同一个比例、同一条地面线、同一块画布（换状态不跳）；各牛龄的大小按 A 的相对身高；
+   最后在成品尺寸上把边缘羽化一点（α 高斯 σ = 0.7 像素）。
 5. 导出：public/mascot/<牛龄>-<状态>.webp（App 用）和 design/brand/mascot/<牛龄>-<状态>.png（PNG 母版），
+   非 Milo 另出 public/mascot/<牛龄>-<状态>-lime.webp（只有荧光的角，App 用它叠微光），
    以及 src/components/mascotAssets.ts（画布尺寸、地面线、头像裁切框）。
+   头像框是逐张标定的「头 + 角」外框（HEAD，画布像素），导出时外扩成正方形、留出圆形裁切的余量。
 
   python3 scripts/mascot_png.py            # 全流程（第一次要几分钟：超分在 CPU 上跑）
   python3 scripts/mascot_png.py --sheet    # 另出检查图 screenshots/brand/mascot-sheet-*.png
@@ -29,7 +34,8 @@ CACHE = os.path.join(ROOT, '.cache', 'mascot')
 WEIGHTS_URL = 'https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth'
 STAGES = ['newborn', 'young', 'sturdy', 'bull', 'milo']
 MOODS = ['idle', 'focused', 'happy', 'rest', 'pr', 'deload']  # 状态板里的顺序：上排 3 个、下排 3 个
-SHEET = {s: f'docs/B{i + 1}.jpg' for i, s in enumerate(STAGES)}
+SHEET = {**{s: f'docs/B{i + 1}.jpg' for i, s in enumerate(STAGES)}, 'milo': 'docs/B5-noglow.jpg'}
+NATIVE = {'milo'}  # 源图已是 4 倍大小，不再超分
 SR = 4
 OUT_H = {'bull': 560}  # 公牛平常状态的身高（像素）；其余牛龄按 A 的比例换算
 
@@ -120,13 +126,18 @@ def figures(img, n=6, thr=34):
 
 
 # ---------- 抠图 ----------
-def matte(sr, bg, member, hi, lo):
+def matte(sr, bg, member, hi, lo, key=None):
     """sr = 4 倍超分后的裁切图；member = 这只牛（已放大到同尺寸，并外扩过）；
-    hi = 实心阈值（和背景的色差）；lo = 牛身外面一圈的底色水平（一般是背景 ≈ 7；米洛外面是泛光 ≈ 60，把光当底扣掉）"""
+    hi = 实心阈值（和背景的色差）；lo = 牛身外面一圈的底色水平（背景噪点）。
+    key = 只看一个通道（品红底用绿色通道 1：底色绿 ≈ 7，牛身最暗的蹄子也有 ≈ 86；生成图在牛身外缘有一道暗品红描边，
+    按最大色差算它会被当成牛身，按绿色通道算它就是底）"""
     H, W = sr.shape[:2]
-    d = dist(sr, bg)
+    gap = (lambda px: px[..., key].astype(np.float32) - bg[key]) if key is not None else (lambda px: dist(px, bg))
+    d = gap(sr)
     core = (d > hi) & member
     core = cv2.morphologyEx(core.astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8)).astype(bool)
+    if key is not None:  # 品红底的过渡像素绿色也够高，会被当实心、带着品红原色留下来（一圈粉线）：实心区往里收 2 像素，边上一律用最近的牛身色
+        core = cv2.erode(core.astype(np.uint8), np.ones((5, 5), np.uint8)).astype(bool)
     # 被实心区包住的洞：小的（眼睛、鼻孔、星星眼）算实心；大的（腿缝、尾巴圈住的背景）还是背景
     holes = (~core).astype(np.uint8); cv2.floodFill(holes, np.zeros((H + 2, W + 2), np.uint8), (0, 0), 0)
     cnt, cc, st, _ = cv2.connectedComponentsWithStats(holes, connectivity=8)
@@ -139,13 +150,28 @@ def matte(sr, bg, member, hi, lo):
     _, lab = cv2.distanceTransformWithLabels((~core).astype(np.uint8), cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)
     cy, cx = np.nonzero(core); lut = np.zeros((lab.max() + 1, 3), np.float32); lut[1:len(cy) + 1] = sr[cy, cx]
     Fc = lut[lab]
-    dF = np.abs(Fc - bg).max(-1)
+    dF = gap(Fc)
     a = np.clip((d - lo) / np.maximum(dF - lo, 1), 0, 1)
     near = cv2.dilate(solid.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))).astype(bool)
     a = np.where(solid, 1.0, np.where(near & member, a, 0.0))
     rgb = np.where(solid[..., None], sr.astype(np.float32), Fc)
     a = cv2.GaussianBlur(a.astype(np.float32), (0, 0), 0.5) * (~solid) + solid
     return np.dstack([np.clip(rgb, 0, 255), np.clip(a * 255, 0, 255)]).astype(np.uint8)
+
+
+FEATHER = 0.7  # 边缘羽化（成品像素，高斯 σ）：用户 2026-10-05「边缘加一点点羽化」，在最终尺寸上做，5 种牛龄软硬一致
+
+
+def feather(rgba, sigma=FEATHER):
+    """α 轻微高斯模糊；新长出来的半透明像素颜色取最近的不透明像素（不带黑边）"""
+    a = rgba[:, :, 3].astype(np.float32)
+    solid = (a > 127).astype(np.uint8)
+    _, lab = cv2.distanceTransformWithLabels(1 - solid, cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)
+    ys, xs = np.nonzero(solid); lut = np.zeros((lab.max() + 1, 3), np.uint8); lut[1:len(ys) + 1] = rgba[ys, xs, :3]
+    out = rgba.copy()
+    out[:, :, :3] = np.where(solid[..., None].astype(bool), rgba[:, :, :3], lut[lab])
+    out[:, :, 3] = np.clip(cv2.GaussianBlur(a, (0, 0), sigma), 0, 255).astype(np.uint8)
+    return out
 
 
 def heights_from_A():
@@ -159,19 +185,30 @@ def heights_from_A():
     return {s: h[s] / h['bull'] for s in STAGES}
 
 
-def head_box(rgba, stage):
-    """头像裁切框：以角为锚（非米洛的角是荧光，米洛的角是骨白），往下取一个正方形"""
-    rgb = rgba[:, :, :3].astype(int); a = rgba[:, :, 3] > 200
-    b, g, r = rgb[..., 0], rgb[..., 1], rgb[..., 2]
-    if stage == 'milo': horn = a & (r > 205) & (g > 200) & (b > 170) & (np.abs(r - g) < 22) & (g - b < 48)
-    else: horn = a & (g > 200) & (r > 150) & (b < 140) & (g - b > 90)
-    cnt, cc, st, _ = cv2.connectedComponentsWithStats(horn.astype(np.uint8), connectivity=8)
-    keep = list(np.argsort(-st[1:, cv2.CC_STAT_AREA])[:2] + 1)  # 最大的两块是两只角（荧光碎屑都比角小）
-    ys, xs = np.nonzero(np.isin(cc, keep))
-    span = xs.max() - xs.min()
-    side = {'newborn': 1.55, 'young': 1.45, 'sturdy': 1.3, 'bull': 1.25, 'milo': 1.25}[stage] * span
-    cx = (xs.min() + xs.max()) / 2 + (0.08 * side if stage in ('newborn', 'young') else 0)  # 小牛的嘴更往右伸
-    return [int(cx - side / 2), int(ys.min() - 0.04 * side), int(side), int(side)]
+# 头像框：逐张标定的「头 + 角」外框 [x, y, 边长]（画布像素，2026-10-05 按 --sheet 检查图量的）。
+# 旧算法以角为锚往下取正方形，侧身的小牛会把肩、腿框进来（用户：头像蒙版出错），所以改成人工标定。
+HEAD = {
+    'newborn': {'idle': [212, 38, 180], 'focused': [222, 60, 180], 'happy': [192, 8, 185], 'rest': [215, 95, 180], 'pr': [195, 8, 175], 'deload': [210, 48, 180]},
+    'young': {'idle': [300, 37, 230], 'focused': [380, 98, 240], 'happy': [300, 0, 230], 'rest': [352, 185, 225], 'pr': [312, 24, 235], 'deload': [330, 97, 230]},
+    'sturdy': {'idle': [407, 65, 320], 'focused': [510, 138, 320], 'happy': [395, 13, 310], 'rest': [441, 249, 310], 'pr': [395, 0, 300], 'deload': [413, 109, 310]},
+    'bull': {'idle': [365, 26, 360], 'focused': [496, 145, 340], 'happy': [365, 5, 340], 'rest': [430, 270, 335], 'pr': [392, 26, 290], 'deload': [405, 137, 320]},
+    'milo': {'idle': [393, 6, 410], 'focused': [490, 118, 400], 'happy': [410, -8, 400], 'rest': [448, 240, 395], 'pr': [405, -14, 385], 'deload': [396, 77, 400]},
+}
+HEAD_PAD = 1.12  # 圆形裁切：正方形的内切圆要装下头和角，外扩一点
+
+
+def head_box(stage, mood):
+    x, y, side = HEAD[stage][mood]; cx, cy = x + side / 2, y + side / 2
+    side *= HEAD_PAD
+    return [int(round(cx - side / 2)), int(round(cy - side / 2)), int(round(side)), int(round(side))]
+
+
+def lime_layer(rgba):
+    """只留荧光（非 Milo 的角）：荧光度按 G − B 算，乘原图 α；App 把它模糊后垫在图下面，当微光"""
+    rgb = rgba[:, :, :3].astype(np.float32); b, g, r = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+    lime = np.clip((g - b - 70) / 50, 0, 1) * np.clip((g - 150) / 40, 0, 1) * (rgba[:, :, 3] / 255.0)
+    out = np.zeros_like(rgba); out[:, :, :3] = rgba[:, :, :3]; out[:, :, 3] = np.clip(lime * 255, 0, 255).astype(np.uint8)
+    return out
 
 
 def main(sheet):
@@ -184,26 +221,28 @@ def main(sheet):
     for stage in STAGES:
         img = cv2.imread(os.path.join(ROOT, SHEET[stage]))
         milo = stage == 'milo'
-        figs, bg = figures(img, thr=85 if milo else 34)  # 米洛外面有泛光：阈值抬高，只取牛身
+        k4 = 1 if stage in NATIVE else SR
+        figs, bg = figures(img, thr=34 * (2 if stage in NATIVE else 1))
         mats = []
         for k, ((x0, y0, x1, y1), member, body) in enumerate(figs):
-            m = 14
+            m = 14 * (SR // k4)
             X0, Y0, X1, Y1 = max(0, x0 - m), max(0, y0 - m), min(img.shape[1], x1 + m), min(img.shape[0], y1 + m)
             crop = img[Y0:Y1, X0:X1]
             key = hashlib.md5(crop.tobytes()).hexdigest()[:12]
             cp = os.path.join(CACHE, f'{stage}-{MOODS[k]}-{key}.png')
-            if os.path.exists(cp): sr = cv2.imread(cp)
+            if stage in NATIVE: sr = crop
+            elif os.path.exists(cp): sr = cv2.imread(cp)
             else:
                 if sr_run is None: sr_run = load_sr()
                 print('  超分', stage, MOODS[k], crop.shape[1], '×', crop.shape[0]); sr = sr_run(crop); cv2.imwrite(cp, sr)
             mem = member[Y0:Y1, X0:X1].astype(np.uint8)
-            mem = cv2.dilate(mem, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11, 11)))
+            mem = cv2.dilate(mem, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11 * SR // k4,) * 2))
             mem = cv2.resize(mem, (sr.shape[1], sr.shape[0]), interpolation=cv2.INTER_NEAREST).astype(bool)
-            rgba = matte(sr, bg, mem, hi=85 if milo else 58, lo=60 if milo else 7)
+            rgba = matte(sr, bg, mem, hi=58, lo=12, key=1) if stage in NATIVE else matte(sr, bg, mem, hi=58, lo=7)  # 品红底：绿色通道当键，噪点 ≤ 8
             bx0, by0, bx1, by1 = body
-            ground = (by1 - Y0) * SR                       # 牛身最低点 = 地面线
-            cxb = ((bx0 + bx1) / 2 - X0) * SR               # 牛身横向中心
-            hb = (by1 - by0) * SR
+            ground = (by1 - Y0) * k4                       # 牛身最低点 = 地面线
+            cxb = ((bx0 + bx1) / 2 - X0) * k4               # 牛身横向中心
+            hb = (by1 - by0) * k4
             mats.append((rgba, ground, cxb, hb))
         # 同一牛龄：同比例（按平常状态的身高）、同地面线、同画布
         s = OUT_H['bull'] * ratio[stage] / mats[0][3]
@@ -222,14 +261,19 @@ def main(sheet):
             canvas = np.zeros((CH, CW, 4), np.uint8)
             M = np.float32([[1, 0, gx - c], [0, 1, gy - g]])
             canvas = cv2.warpAffine(im, M, (CW, CH), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 0))
+            canvas = feather(canvas)
             name = f'{stage}-{MOODS[k]}'
             pil = Image.fromarray(cv2.cvtColor(canvas, cv2.COLOR_BGRA2RGBA))
             pil.save(os.path.join(out_png, name + '.png'), optimize=True)
             pil.save(os.path.join(out_pub, name + '.webp'), quality=92, method=6)
+            if not milo:
+                Image.fromarray(cv2.cvtColor(lime_layer(canvas), cv2.COLOR_BGRA2RGBA)).save(os.path.join(out_pub, name + '-lime.webp'), quality=80, method=6)
             ys, xs = np.nonzero(canvas[:, :, 3] > 128)
-            meta[stage]['moods'][MOODS[k]] = {'head': head_box(canvas, stage), 'body': [int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1]}
+            body = [int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1]
+            meta[stage]['moods'][MOODS[k]] = {'head': head_box(stage, MOODS[k]), 'body': body}
         print(stage, CW, '×', CH, 'ground', round(gy), 'scale', round(s, 3))
     ts = ['/** 由 scripts/mascot_png.py 生成，勿手改：IP 小牛 PNG 素材的画布尺寸（像素）、地面线 y、各状态的头像裁切框 [x, y, 边长]。',
+          ' *  头像框是逐张标定的「头 + 角」，已外扩成能放进圆形的正方形。非 Milo 另有 <牛龄>-<状态>-lime.webp（只有荧光的角，叠微光用）。',
           ' *  body = 牛身外框 [x0, y0, x1, y1]（App 按它和头像框摆放代码生成的特效）。图片在 public/mascot/<牛龄>-<状态>.webp（PNG 母版在 design/brand/mascot/）。同一牛龄 6 张同画布、同比例、同地面线。 */',
           "export type MascotStage = 'newborn' | 'young' | 'sturdy' | 'bull' | 'milo';",
           "export type MascotMood = 'idle' | 'focused' | 'happy' | 'rest' | 'pr' | 'deload';",
@@ -240,7 +284,7 @@ def main(sheet):
 
 
 def contact(meta):
-    """检查图：每种牛龄 6 张贴在棋盘格（透明）和深色底上，头像框画红线"""
+    """检查图：每种牛龄 6 张贴在棋盘格（透明）和深色底上，头像（圆形裁切）画红圈"""
     out = os.path.join(ROOT, 'screenshots', 'brand'); os.makedirs(out, exist_ok=True)
     for bgname, bgc in (('dark', (11, 10, 10)), ('checker', None)):
         rows = []
@@ -253,7 +297,7 @@ def contact(meta):
                     yy, xx = np.mgrid[0:h, 0:w]; base = np.where(((yy // 16 + xx // 16) % 2)[..., None] == 0, 205, 245).astype(np.float32).repeat(3, -1)
                 else: base = np.full((h, w, 3), bgc, np.float32)
                 a = im[:, :, 3:4] / 255.0; t = (im[:, :, :3] * a + base * (1 - a)).astype(np.uint8)
-                x, y, sd, _ = meta[stage]['moods'][mood]['head']; cv2.rectangle(t, (x, y), (x + sd, y + sd), (60, 60, 255), 2)
+                x, y, sd, _ = meta[stage]['moods'][mood]['head']; cv2.circle(t, (x + sd // 2, y + sd // 2), sd // 2, (60, 60, 255), 2)
                 cv2.line(t, (0, int(meta[stage]['ground'])), (w, int(meta[stage]['ground'])), (255, 120, 0), 1)
                 tiles.append(cv2.resize(t, (int(w * 260 / h), 260)))
             rows.append(np.concatenate(tiles, 1))

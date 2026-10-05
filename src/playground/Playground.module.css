@@ -90,7 +90,8 @@
 .rewardLog { display: grid; gap: var(--milo-space-2xs); padding: var(--milo-space-s); border-radius: var(--milo-radius-m); background: var(--milo-color-bg-raised); color: var(--milo-color-text-secondary); }
 .rewardLog p { margin: 0; }
 .growCol { display: grid; gap: var(--milo-space-xs); width: 100%; }
-.ageStage { display: grid; place-items: end center; height: calc(var(--milo-space-5xl) * 4); border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised); --mascot-unit: calc(var(--milo-stroke-hairline) * 0.32); }
+.ageStage { display: grid; place-items: end center; height: calc(var(--milo-space-5xl) * 4); padding-bottom: var(--milo-space-s); border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised); overflow: hidden;
+  --mascot-unit: calc(var(--milo-stroke-hairline) * 0.26); --mascot-max-h: calc(var(--milo-space-5xl) * 4 * 0.8); }
 .ageRange { width: 100%; accent-color: var(--milo-color-accent-default); }
 .curve { width: 100%; height: auto; overflow: visible; font-family: var(--milo-font-ui); }
 .curveGrid { stroke: var(--milo-color-line-default); stroke-width: 0.5; }

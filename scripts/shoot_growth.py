@@ -14,7 +14,7 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 OUT = os.path.join(ROOT, 'screenshots', 'growth')
 os.makedirs(OUT, exist_ok=True)
 NOW = 1791050400000
-CLIPS = [('升段', 'stage', 3.4), ('升段 · 米洛', 'milo', 3.4), ('破纪录', 'pr', 2.6), ('连胜里程碑', 'streak', 2.6), ('升级', 'level', 2.2)]
+CLIPS = [('升段', 'stage', 3.4), ('升段 · Milo', 'milo', 3.4), ('破纪录', 'pr', 2.6), ('连胜里程碑', 'streak', 2.6), ('升级', 'level', 2.2)]
 
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path=args.chromium if os.path.exists(args.chromium) else None)

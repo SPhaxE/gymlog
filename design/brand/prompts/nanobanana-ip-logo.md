@@ -12,7 +12,7 @@
 
 ## 共同设定（每段已内置，这里只供参考）
 
-- **名字与故事**：慢牛 / Milo，Slogan「慢慢变牛」。古希腊力士米洛每天扛起一头刚出生的小牛，直到它长成公牛，这就是渐进超负荷。
+- **名字与故事**：慢牛 / Milo，Slogan「慢慢变牛」。古希腊力士米洛（Milo）每天扛起一头刚出生的小牛，直到它长成公牛，这就是渐进超负荷。
   - IP 就是那头小牛，用户越练越强，它就跟着长大。
   - 成长阶段：牛犊 → 小牛 → 壮牛 → 公牛。
 - **品牌色**（只有深色）：
@@ -86,7 +86,7 @@ No real brand logos on the gear, no realistic cow, no cow spots, no red cape, no
 
 ### IP5 · 复古运动俱乐部吉祥物
 
-感觉：像美式大学球队或老派举重俱乐部的徽章吉祥物，故事感和「传承」感最强（米洛典故）；适合做徽章、等级勋章、周边。
+感觉：像美式大学球队或老派举重俱乐部的徽章吉祥物，故事感和「传承」感最强（Milo 典故）；适合做徽章、等级勋章、周边。
 
 ```text
 Character design sheet for the mascot of a Chinese strength-training app called "慢牛 Milo" (slogan: "slowly become strong"). The mascot is the calf from the legend of Milo of Croton — he carried it every day until it became a bull. The character should feel like a classic athletic-club mascot with a bit of ancient Greek heritage.

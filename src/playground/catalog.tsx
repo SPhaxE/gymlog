@@ -65,9 +65,9 @@ export const CN: Record<string, string> = {
   track: '已开始 · 0 组', partial: '进行中', full: '满环', home: '首页', body: '身体', gains: '增量', log: '记录', me: '我的', success: '成功', undo: '可撤销',
   suggest: '建议减量', week: '减量周', quiet: '一行小字', 'pool-empty': '动作池不足', resume: '继续上次训练', info: '信息', page: '子页', session: '训练中',
   eyebrow: '带日期与附件', pill: '小胶囊', open: '展开', loadingState: '加载中',
-  newborn: '牛犊', young: '小牛', sturdy: '壮牛', bull: '公牛', milo: '米洛', 'm-idle': '平常', 'm-focused': '专注', 'm-happy': '开心', 'm-rest': '恢复日', 'm-pr': '破纪录', 'm-deload': '减量周', idle: '平常', training: '训练中',
-  'r-stage': '升段', 'r-milo': '升段 · 米洛', 'r-pr': '破纪录', 'r-streak': '连胜里程碑', 'r-level': '升小级', 'r-cycle': '周期完成', free: '免费', pro: 'Pro 会员',
-  'b-compact': '紧凑（「我的」顶部）', 'b-full': '完整（牛龄页头）', 'g-normal': '进行中', 'g-near': '快升级', 'g-stage': '下一级是升段', 'g-max': '米洛满级',
+  newborn: '牛犊', young: '小牛', sturdy: '壮牛', bull: '公牛', milo: 'Milo', 'm-idle': '平常', 'm-focused': '专注', 'm-happy': '开心', 'm-rest': '恢复日', 'm-pr': '破纪录', 'm-deload': '减量周', idle: '平常', training: '训练中',
+  'r-stage': '升段', 'r-milo': '升段 · Milo', 'r-pr': '破纪录', 'r-streak': '连胜里程碑', 'r-level': '升小级', 'r-cycle': '周期完成', free: '免费', pro: 'Pro 会员',
+  'b-compact': '紧凑（「我的」顶部）', 'b-full': '完整（牛龄页头）', 'g-normal': '进行中', 'g-near': '快升级', 'g-stage': '下一级是升段', 'g-max': 'Milo 满级',
   's-zero': '0 周', 's-open': '本周进行中', 's-kept': '本周已守约', 's-risk': '快断了', 's-frozen': '用了冻结卡', 's-deload': '减量周', 's-milestone': '里程碑周',
   'f-have': '有卡', 'f-none': '没卡', 'f-used': '刚自动使用', 'c-merchant': '商家券', 'c-shipping': '免邮券', 'c-trial': '会员体验', 'c-freeze': '冻结卡',
   'c-redeem': '可兑换', 'c-short': '牛劲不够', 'c-available': '可用', 'c-used': '已用', 'c-expired': '已过期', belt: '腰带', straps: '助力带', protein: '蛋白质与睡眠', creatine: '肌酸', knee: '护膝',
@@ -408,7 +408,7 @@ export const CATALOG: Entry[] = [
   },
   /* ---------------- 品牌（阶段 5.5b，2026-10-05） ---------------- */
   {
-    name: 'Mascot', group: '品牌', desc: 'IP 小牛（PNG）：用户按意向图 3_27AM 用 Nano Banana 高清重制，scripts/mascot_png.py 切图、Real-ESRGAN 4 倍超分、抠图（边缘反解透明度不留黑边，只留牛本身）。5 种牛龄（牛犊 · 小牛 · 壮牛 · 公牛 · 米洛）× 6 种状态；前四种单眼，米洛双眼发光。特效由代码生成：专注 = 速度线、恢复日 = 飘 z、破纪录 = 碎屑、米洛 = 泛光 + 四角星 + 扫光。同一牛龄同比例、同地面线，换状态不跳；动效以地面线为支点整只呼吸 / 前压 / 小跳 / 欢呼 / 叹气，减少动态效果时静止。只出现在品牌位置（引导、奖励、牛龄、空态、商城、会员）。',
+    name: 'Mascot', group: '品牌', desc: 'IP 小牛（PNG）：用户按意向图 3_27AM 用 Nano Banana 高清重制，scripts/mascot_png.py 切图、Real-ESRGAN 4 倍超分、抠图（边缘反解透明度不留黑边，只留牛本身；Milo 用无泛光的品红底源图，泛光由代码生成）。5 种牛龄（牛犊 · 小牛 · 壮牛 · 公牛 · Milo）× 6 种状态；前四种单眼，Milo 双眼发光。特效由代码生成：专注 = 速度线、恢复日 = 飘 z、破纪录 = 碎屑、Milo = 全身泛光 + 四角星 + 扫光；其余牛龄的荧光角带一圈会呼吸的微光。同一牛龄同比例、同地面线，换状态不跳；动效以地面线为支点整只呼吸 / 前压 / 小跳 / 欢呼 / 叹气，减少动态效果时静止。只出现在品牌位置（引导、奖励、牛龄、空态、商城、会员）。',
     axes: { stage: ['newborn', 'young', 'sturdy', 'bull', 'milo'], mood: ['m-idle', 'm-focused', 'm-happy', 'm-rest', 'm-pr', 'm-deload'] }, rows: ['stage'], cols: 'mood', size: 'card',
     render: (p) => <div className={s.mascotCell}><Mascot stage={p.stage as MascotStage} mood={p.mood.slice(2) as MascotMood} animate title="慢牛小牛" /></div>,
   },
@@ -424,13 +424,13 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'AgeBadge', group: '增长',
-    desc: '牛龄徽章：紧凑 = 「我的」根页顶部一行（头像 + 段名小级 + 连胜周数）；完整 = 牛龄页头（荧光圈头像 + 段名 + 三颗小级）。米洛的圈更亮。',
+    desc: '牛龄徽章：紧凑 = 「我的」根页顶部一行（头像 + 段名小级 + 连胜周数）；完整 = 牛龄页头（荧光圈头像 + 段名 + 三颗小级）。Milo 的圈更亮。',
     axes: { stage: ['newborn', 'young', 'sturdy', 'bull', 'milo'], size: ['b-compact', 'b-full'] }, rows: ['stage'], cols: 'size', size: 'card',
     render: (p) => <AgeBadge stage={p.stage as MascotStage} sub={p.stage === 'milo' ? 3 : 2} size={p.size === 'b-compact' ? 'compact' : 'full'} streak={p.size === 'b-compact' ? growthSample().streak.weeks : undefined} />,
   },
   {
     name: 'GrowthBar', group: '增长',
-    desc: '成长条：离下一级还差多少，用能照着做的说法（主项预估 1RM 再涨几 kg，或再完成几个周期），由引擎反推；快升级时发光扫光；下一级是升段时标出；米洛 3 级满级。',
+    desc: '成长条：离下一级还差多少，用能照着做的说法（主项预估 1RM 再涨几 kg，或再完成几个周期），由引擎反推；快升级时发光扫光；下一级是升段时标出；Milo 3 级满级。',
     axes: { state: ['g-normal', 'g-near', 'g-stage', 'g-max'] }, size: 'card',
     render: (p) => {
       const g = growthSample(), n = g.next!;
@@ -488,7 +488,7 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'Paywall', group: '增长',
-    desc: '会员付费墙（演示不拦截）：免费 vs Pro 对比 + 月度 / 年度（省 40%）/ 试用 7 天；已是会员显示到期与管理；开通成功是米洛庆祝。全程标「演示模式」，支付走假成功，不收集支付信息。',
+    desc: '会员付费墙（演示不拦截）：免费 vs Pro 对比 + 月度 / 年度（省 40%）/ 试用 7 天；已是会员显示到期与管理；开通成功是 Milo 庆祝。全程标「演示模式」，支付走假成功，不收集支付信息。',
     axes: { state: ['w-month', 'w-year', 'w-trial', 'w-member', 'w-success'] }, size: 'screen',
     render: (p) => <Paywall plan={p.state === 'w-year' ? 'year' : p.state === 'w-trial' ? 'trial' : 'month'} member={p.state === 'w-member'} success={p.state === 'w-success'} />,
   },
@@ -508,7 +508,7 @@ export const CATALOG: Entry[] = [
     },
   },
   {
-    name: 'MascotHead', group: '品牌', desc: '只有头：16–48 像素的头像、通知、Toast、牛龄徽章。同一张 PNG 按头像框（以角为锚取正方形）裁出来。',
+    name: 'MascotHead', group: '品牌', desc: '只有头：16–48 像素的头像、通知、Toast、牛龄徽章。同一张 PNG 按逐张标定的头像框（头 + 角）裁成圆形；非 Milo 的角带一圈荧光微光，Milo 整只泛光。',
     axes: { stage: ['newborn', 'young', 'sturdy', 'bull', 'milo'], mood: ['m-idle', 'm-happy', 'm-pr', 'm-rest', 'm-deload'] }, rows: ['stage'], cols: 'mood', size: 'auto',
     render: (p) => <MascotHead stage={p.stage as MascotStage} mood={p.mood.slice(2) as MascotMood} className={s.mascotHead} />,
   },

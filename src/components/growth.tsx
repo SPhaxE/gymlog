@@ -50,7 +50,7 @@ export function GrowthBar({ stage, sub, progress, lift, cycles }: { stage: Masco
         <span className={s.fill} style={{ '--p': max ? 1 : progress } as CSSProperties} />
       </div>
       <p className={cx('milo-text-caption', s.hint)}>
-        {max ? '米洛满级。接下来比的只有昨天的自己。'
+        {max ? 'Milo 满级。接下来比的只有昨天的自己。'
           : <>{lift ? <>{lift.name}预估 1RM 再涨 <b>{lift.kg} kg</b></> : '再创一次纪录'}{cycles ? <>，或再完成 <b>{cycles} 个周期</b></> : null}{near ? ' · 快到了' : ''}</>}
       </p>
     </div>
@@ -213,7 +213,7 @@ const PERKS: [string, string, string][] = [
 ];
 const PLANS: Record<'month' | 'year' | 'trial', [string, string, string]> = { month: ['月度', '¥18', '/ 月'], year: ['年度', '¥128', '/ 年 · 约 ¥10.7 / 月'], trial: ['试用', '7 天', '到期前提醒，不自动扣费'] };
 
-/** 付费墙：免费 vs Pro 对比 + 方案（月度 / 年度 / 试用 7 天）；会员态显示到期与管理；success = 开通成功（米洛庆祝）。全程标「演示模式」，支付走假成功 */
+/** 付费墙：免费 vs Pro 对比 + 方案（月度 / 年度 / 试用 7 天）；会员态显示到期与管理；success = 开通成功（Milo 庆祝）。全程标「演示模式」，支付走假成功 */
 export function Paywall({ plan, member, success, onPlan, onBuy }: { plan: 'month' | 'year' | 'trial'; member?: boolean; success?: boolean; onPlan?: (p: 'month' | 'year' | 'trial') => void; onBuy?: () => void }) {
   if (success) return (
     <div className={cx(s.paywall, s.paySuccess)}>

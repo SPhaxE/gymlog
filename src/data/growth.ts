@@ -42,7 +42,7 @@ export function afterSession(i: number, pro = false) {
   return { g, session: s, popup: popup ? rewardOf(popup, g) : null, messages, week: Math.floor((s.startMs - SIM_START) / (7 * DAY)) + 1 };
 }
 
-/** 目录矩阵用的样例：每种奖励各取演示用户身上第一次真实发生的那一个（米洛要跑到第 110 周） */
+/** 目录矩阵用的样例：每种奖励各取演示用户身上第一次真实发生的那一个（Milo 要跑到第 110 周） */
 let samples: Record<'stage' | 'milo' | 'pr' | 'streak' | 'level' | 'cycle', Reward> | null = null;
 export function sampleRewards() {
   if (samples) return samples;
