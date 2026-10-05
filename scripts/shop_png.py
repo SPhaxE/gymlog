@@ -2,8 +2,8 @@
 """商城商品图（2026-10-05）：用户按 design/brand/prompts/nanobanana-shop.md 用 Nano Banana 出图（品红纯色底、无阴影），这里抠图、裁成正方形导出。
 
 来源：docs/shop/<商品 id>.png 或 .jpg（id 与 src/data/growth.ts 的 PRODUCTS 一致：belt-10 / straps / whey / creatine / knee）。
-流程：找最大的一块（商品本身）→ 和小牛同一套抠图（scripts/mascot_png.py 的 matte：边缘按「像素 = α·前景 + (1−α)·底」反解 α，
-      实心区往里收 2 像素防品红边）→ 等比放进正方形、四周留 6% → 成品尺寸上轻微羽化。
+流程：找最大的一块（商品本身）→ 和小牛同一套抠图（scripts/mascot_png.py 的 matte：边缘按「像素 = α·前景 + (1−α)·底」反解 α），
+      用品红键（min(R, B) − G，像绿幕：黑、骨白、荧光的边缘都能准确反解），实心区往里收 1 像素防品红边→ 等比放进正方形、四周留 6% → 成品尺寸上轻微羽化。
 导出：public/shop/<id>.webp（App 用，512 × 512）、design/brand/shop/<id>.png（母版，1024 × 1024）。ProductCard 有图就显示，没有就显示占位。
 
   python3 scripts/shop_png.py            # 处理 docs/shop/ 里所有的图
@@ -27,7 +27,7 @@ def cutout(path):
     k = 1 + int(np.argmax(st[1:, cv2.CC_STAT_AREA]))
     x, y, w, h = st[k, 0], st[k, 1], st[k, 2], st[k, 3]
     mem = cv2.dilate((cc == k).astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (25, 25))).astype(bool)
-    rgba = matte(img, bg, mem, hi=58, lo=12, shrink=2)
+    rgba = matte(img, bg, mem, hi=200, lo=12, key='magenta', shrink=1, open_bg_holes=True)  # 品红键量程 ≈ 240：实心要 200 以上，半混的边缘像素不算实心
     m2 = 16
     return rgba[max(0, y - m2):y + h + m2, max(0, x - m2):x + w + m2]
 

@@ -482,7 +482,7 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'ProductCard', group: '增长',
-    desc: '商品卡：商家、品类、规格、价格；会员价（划掉原价 + Pro 价）；牛劲抵扣（100 牛劲抵 1 元，单笔最多 20%）；已下架不可点。商家与品牌全部虚构，价格为示例；商品图用几何品类图标。',
+    desc: '商品卡：商家、品类、规格、价格；会员价（划掉原价 + Pro 价）；牛劲抵扣（100 牛劲抵 1 元，单笔最多 20%）；已下架不可点。商家与品牌全部虚构，价格为示例；商品图是用户按提示词出的实物图（品红底抠图，public/shop/<id>.webp），没有图时显示几何品类占位。',
     axes: { product: PRODUCTS.map((x) => x.id), state: ['p-normal', 'p-member', 'p-niujin', 'p-off'] }, rows: ['product'], cols: 'state', size: 'card',
     render: (p) => { const x = PRODUCTS.find((y) => y.id === p.product)!; return <ProductCard {...x} state={p.state.slice(2) as 'normal' | 'member' | 'niujin' | 'off'} off={niujinOff(x.price, growthSample().niujin.balance)} />; },
   },
