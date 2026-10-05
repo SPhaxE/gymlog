@@ -76,10 +76,28 @@ export function useStore(): AppState {
   return useSyncExternalStore(store.subscribe, store.get, store.get);
 }
 
-/** 演示数据：进阶用户、每周 4 练，练到昨天为止的 30 周（成长引擎同一套模拟，数字全部实算） */
+/** 演示数据的辅助动作：成长模拟只排了主项，处方引擎会优先补没练过的肌头（小腿、斜方、后束……），
+ *  演示时就会一排「首次」。这里按训练日给每次训练加 3–4 个辅助动作，重量随周数线性涨约 20%。
+ *  [动作, 起始重量 kg, 次数, 组数]，下标 = 一周里的第几练 */
+const ACCESSORY: [string, number, number, number][][] = [
+  [['barbell-calf-raises-210', 90, 12, 3], ['barbell-seated-calf-raise-350', 50, 15, 2], ['cable-seated-leg-extension-999', 40, 12, 3]],
+  [['barbell-close-grip-bench-press-211', 60, 8, 3], ['dumbbell-rear-delt-row-319', 17.5, 12, 3], ['cable-rope-pushdown-241', 27.5, 12, 2], ['dumbbell-bench-press-377', 30, 10, 2]],
+  [['barbell-shrug-351', 100, 10, 3], ['dumbbell-hammer-curl-3', 15, 10, 2], ['cable-rope-kneeling-face-pull-1001', 22.5, 15, 2], ['barbell-rack-pull-1818', 140, 5, 2], ['barbell-wrist-curl-52', 30, 15, 2]],
+  [['dumbbell-chest-fly-379', 15, 12, 3], ['cable-rope-skullcrusher-243', 22.5, 12, 2], ['cable-rope-kneeling-crunch-1004', 40, 15, 3], ['smith-machine-hanging-knee-tuck-936', 10, 12, 3], ['dumbbell-bench-wrist-extension-1061', 7.5, 15, 2]],
+];
+
+/** 演示数据：进阶用户、每周 4 练，练到昨天为止的 30 周（成长引擎同一套模拟，数字全部实算），每次训练再加辅助动作 */
 export function demoState(now: number, profile?: Profile): Pick<AppState, 'profile' | 'history' | 'deload' | 'demo'> {
   const start = startOfDay(now) - DEMO_WEEKS * 7 * DAY;
   const u = simulateUser('intermediate', DEMO_WEEKS, start);
-  const history = u.history.filter((s) => s.startMs < startOfDay(now));
+  const history = u.history.filter((s) => s.startMs < startOfDay(now)).map((s) => {
+    const [, , w, i] = s.id.split('-').map(Number);
+    const deload = (s.exertion ?? 8) < 8, grow = 1 + 0.2 * (w / DEMO_WEEKS);
+    const extra = ACCESSORY[i % ACCESSORY.length].map(([exerciseId, kg, reps, sets]) => ({
+      exerciseId, skipped: false,
+      sets: Array.from({ length: deload ? Math.max(1, Math.round(sets / 2)) : sets }, () => ({ type: 'work' as const, weightKg: Math.round((deload ? 0.9 : 1) * kg * grow / 2.5) * 2.5, reps, rpe: deload ? 6 : 8 })),
+    }));
+    return { ...s, exercises: [...s.exercises, ...extra] };
+  });
   return { profile: profile ?? u.profile, history, deload: { status: 'none', atMs: 0 }, demo: true };
 }

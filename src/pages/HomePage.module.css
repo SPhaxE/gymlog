@@ -9,3 +9,31 @@
 .restList li { display: flex; align-items: baseline; justify-content: space-between; gap: var(--milo-space-s); font-size: var(--milo-font-size-caption); color: var(--milo-color-text-primary); }
 /* 处方行自带 space/m 的内边距（按下时的底色范围），列表整体向外扩同样的量，文字与页边距对齐 */
 .rows { display: grid; margin: 0 calc(var(--milo-space-m) * -1); }
+
+/* 今天已练完：一整块暗卡，左上一团荧光余晖，睡着的小牛靠右；只有勾和余晖是荧光（开始按钮不出现） */
+.done { position: relative; overflow: hidden; isolation: isolate; display: grid; gap: var(--milo-space-m); padding: var(--milo-space-l); border-radius: var(--milo-radius-l);
+  background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); animation: doneIn var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring) both; }
+@keyframes doneIn { from { opacity: 0; transform: translateY(8%) scale(0.97); } }
+.doneGlow { position: absolute; z-index: -1; inset: -30% 30% 40% -30%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, var(--milo-color-accent-glow), transparent); animation: breathe calc(var(--milo-motion-slow) * 9) ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { opacity: 0.55; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1.05); } }
+.doneFig { position: absolute; z-index: -1; right: calc(var(--milo-space-l) * -0.5); top: var(--milo-space-m); width: 46%; --mascot-max-h: calc(var(--milo-size-button-h) * 2.6); text-align: right; opacity: 0.95; }
+.doneText { display: grid; gap: var(--milo-space-xs); max-width: 62%; }
+.doneText p { margin: 0; color: var(--milo-color-text-secondary); }
+.doneTick { display: grid; place-items: center; width: var(--milo-size-hit-min); height: var(--milo-size-hit-min); border-radius: 50%;
+  background: var(--milo-color-accent-default); color: var(--milo-color-text-on-accent); box-shadow: 0 0 var(--milo-space-xl) var(--milo-color-accent-glow);
+  animation: tickIn var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring) var(--milo-motion-slow) both; }
+@keyframes tickIn { from { opacity: 0; transform: scale(0.4) rotate(-30deg); } }
+.doneStats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--milo-space-s); }
+.doneStats > div { display: grid; gap: var(--milo-space-2xs); padding: var(--milo-space-s) var(--milo-space-m); border-radius: var(--milo-radius-m); background: color-mix(in srgb, var(--milo-color-bg-base) 60%, transparent); }
+.doneStats span { color: var(--milo-color-text-secondary); }
+.done > button { justify-self: start; }
+/* 恢复进度：名称 · 细条（满 = 黄金窗，条头一点荧光）· 小时 */
+.recover { list-style: none; margin: 0; padding: 0; display: grid; }
+.recover li { display: grid; grid-template-columns: 7em 1fr auto; align-items: center; gap: var(--milo-space-m); min-height: var(--milo-size-hit-min);
+  border-bottom: var(--milo-stroke-hairline) solid var(--milo-color-line-default); font-size: var(--milo-font-size-caption); }
+.bar { position: relative; height: var(--milo-space-2xs); border-radius: var(--milo-radius-pill); background: var(--milo-color-line-default); overflow: hidden; }
+.bar::after { content: ''; position: absolute; inset: 0; transform-origin: left; transform: scaleX(var(--p)); border-radius: inherit;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--milo-prim-bone-100) 35%, transparent), var(--milo-prim-bone-100) 85%, var(--milo-color-accent-default));
+  animation: fill calc(var(--milo-motion-slow) * 3) var(--milo-motion-ease-standard) both; }
+@keyframes fill { from { transform: scaleX(0); } }

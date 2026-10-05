@@ -40,3 +40,7 @@
 .exertion > div { display: grid; gap: var(--milo-space-2xs); color: var(--milo-color-text-primary); }
 .body > p { margin: 0; }
 .cta { position: absolute; z-index: 9; left: var(--milo-size-gutter); right: var(--milo-size-gutter); bottom: var(--milo-space-2xl); display: grid; }
+/* 按钮下面垫一层渐隐的底色，滚动时文字不会从按钮下面透出来 */
+.cta { isolation: isolate; }
+.cta::before { content: ''; position: absolute; z-index: -1; pointer-events: none; left: calc(var(--milo-size-gutter) * -1); right: calc(var(--milo-size-gutter) * -1);
+  top: calc(var(--milo-space-3xl) * -1); bottom: calc(var(--milo-space-2xl) * -1); background: linear-gradient(to bottom, transparent, var(--milo-color-bg-base) 55%); }

@@ -1,7 +1,7 @@
 /** 演示数据：全部来自 TS 引擎在演示场景（mock/）上的实算值，不手填数字。页面与预览页共用。 */
 import { buildScenario, demoEnv } from '../engine/demo';
-import { DAY, deloadSignal, deloadView, exerciseRecords, headStats, prescribe, sessionStats, startOfDay } from '../engine';
-import type { DeloadView, HeadStat, Prescription } from '../engine';
+import { DAY, deloadSignal, deloadView, exerciseRecords, growth, headStats, prescribe, sessionStats, startOfDay } from '../engine';
+import type { DeloadView, HeadStat, Prescription, Stage } from '../engine';
 import type { DeloadState, Profile, Region, Session } from '../engine/types';
 
 export const env = demoEnv();
@@ -32,7 +32,9 @@ export function bodyData(scenario: string | Source, now: number): BodyData {
   return { stats, kpi: { load, sets, days: days.size }, gender: profile?.gender === 'female' ? 'female' : 'male', trainedToday };
 }
 
-export interface HomeData { rx: Prescription; dv: DeloadView; hits: number; now: number; lastWeight: (exerciseId: string) => number | null }
+/** 今天已练完（ia §1.2）：本次摘要 + 这次练到的肌头离黄金窗还有几小时（最快的在前） */
+export interface DoneToday { session: Session; sets: number; load: number; stage: Stage; heads: { id: string; name: string; hours: number; recovery: number }[] }
+export interface HomeData { rx: Prescription; dv: DeloadView; hits: number; now: number; lastWeight: (exerciseId: string) => number | null; done: DoneToday | null }
 
 export function homeData(scenario: string | Source, now: number): HomeData {
   const { history, profile, deload } = typeof scenario === 'string' ? sourceOf(scenario, now) : scenario;
@@ -45,5 +47,13 @@ export function homeData(scenario: string | Source, now: number): HomeData {
     const w = r.entry.sets.filter((s) => s.type === 'work').map((s) => s.weightKg ?? 0);
     return w.length ? Math.max(...w) : null;
   };
-  return { rx, dv, hits: sig.hits.length, now, lastWeight };
+  const last = history.filter((s) => s.startMs >= startOfDay(now) && s.startMs <= now).at(-1);
+  let done: DoneToday | null = null;
+  if (last) {
+    const stats = headStats(env, history, profile, now), { sets, load } = sessionStats(last);
+    const ids = [...new Set(last.exercises.filter((e) => !e.skipped).flatMap((e) => env.ex.get(e.exerciseId)?.primaryHeads ?? []))];
+    const heads = ids.flatMap((id) => { const h = stats.get(id); return h ? [{ id, name: h.name, hours: h.hoursLeft, recovery: h.recovery ?? 0 }] : []; }).sort((a, b) => a.hours - b.hours);
+    done = { session: last, sets, load, heads, stage: growth(env, { history, profile, now }).stage };
+  }
+  return { rx, dv, hits: sig.hits.length, now, lastWeight, done };
 }
