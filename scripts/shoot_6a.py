@@ -33,6 +33,11 @@ with sync_playwright() as p:
         pg.wait_for_timeout(wait)
         if path: ok(pg.url.split('?')[0].endswith(path) or path in pg.url, f'{name}：地址 {path}')
         ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{name}：无横向溢出')
+        # 滚动容器里的每一块不能被压扁（2026-10-06 真机：grid 滚动容器把行高压到 min-height，内容溢出、和下一块重叠）
+        crushed = pg.evaluate('''() => [...document.querySelectorAll('*')].filter((e) => /auto|scroll/.test(getComputedStyle(e).overflowY))
+          .flatMap((c) => [...c.children]).filter((k) => getComputedStyle(k).overflow === 'visible' && k.scrollHeight > k.getBoundingClientRect().height + 1)
+          .map((k) => k.className || k.tagName)''')
+        ok(not crushed, f'{name}：滚动区里没有被压扁的块 {crushed[:3]}')
         if not args.no_shots: pg.screenshot(path=os.path.join(OUT, f'{n[0]:02d}-{name}.png'))
         n[0] += 1
 

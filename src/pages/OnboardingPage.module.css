@@ -1,5 +1,5 @@
 /* 建档（P12）：问题在上、选项在中、按钮固定在拇指区；无导航 */
-.body { flex: 1; min-height: 0; overflow: auto; display: grid; align-content: start; gap: var(--milo-space-l);
+.body { flex: 1; min-height: 0; overflow: auto; display: grid; align-content: start; grid-auto-rows: max-content; gap: var(--milo-space-l);
   padding: var(--milo-space-m) var(--milo-size-gutter) calc(var(--milo-size-button-h) * 2 + var(--milo-space-3xl)); }
 .q { display: grid; gap: var(--milo-space-xs); }
 .q h2, .q p { margin: 0; }

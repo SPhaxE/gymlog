@@ -334,6 +334,63 @@
     },
   };
 
+  // ---------- 首页即打卡（2026-10-06 用户：取消独立训练页，首页就是打卡载体） ----------
+  // 状态：已开始，第 1 个动作做完 2 组、正在休息；今日 13 组完成 2 组 → 导航外圈走 2/13，选中胶囊写「首页 1:35」带休息描边
+  const DONE = 2, TOTAL = 13;
+  const navRing = () => `<div class="fade"></div><div class="nav" data-a="3" style="border-color:#D3D3CF">${TABS.map(([k, n]) =>
+      `<div class="it${k === 'home' ? ' on' : ''}" ${k === 'home' ? 'style="box-shadow:inset 0 0 0 3px #8E8E8A"' : ''}><i class="ico ${k}"></i>${k === 'home' ? '首页 1:35' : ''}</div>`).join('')}</div>
+    <svg class="abs" style="left:16px;bottom:18px;z-index:7;pointer-events:none" width="328" height="60"><rect x="1" y="1" width="326" height="58" rx="29" fill="none" stroke="#1d1d1b" stroke-width="3" pathLength="100" stroke-dasharray="${(DONE / TOTAL) * 100} 100"/></svg>`;
+  const ckHead = () => `<div class="t-s">${H().date} · 训练中 18 分钟</div><div class="row" style="margin-top:2px"><div class="t-title">今日处方</div><div class="sp"></div><span class="t-s" style="text-decoration:underline">结束训练</span></div>`;
+  const setLine = (n, kgv, reps, st) => `<div class="row" style="height:44px;gap:10px;${st === 'cur' ? 'background:#FFF;border-radius:10px;padding:0 8px;margin:0 -8px;box-shadow:0 0 0 1.5px #2b2b29' : ''}">
+      <span class="t-h" style="width:22px;color:${st === 'done' ? '#8a8a86' : '#1d1d1b'}">${n}</span>
+      <span style="flex:1"><span class="t-l" style="font-size:22px;${st === 'done' ? 'color:#8a8a86' : ''};${st === 'cur' ? 'text-decoration:underline dotted;text-underline-offset:4px' : ''}">${kgv}</span><span class="t-s"> kg × </span><span class="t-l" style="font-size:22px;${st === 'done' ? 'color:#8a8a86' : ''}">${reps}</span></span>
+      ${st === 'done' ? '<span class="t-h">✓</span>' : st === 'cur' ? '<span class="chip on" style="height:32px;padding:0 14px;font-size:13px;font-weight:700">打卡</span>' : '<span class="t-s">○</span>'}</div>`;
+  const CHECKIN = {
+    W1: {
+      title: '主角卡就地打卡',
+      note: '<em>改动最小</em>：首页结构不变（第一个动作做主角），开始后主角卡就地展开成组行，当前组一个「打卡」；底部大按钮变成「打卡第 3 组」，和卡里的打卡是同一件事（拇指区）。这个动作打完，下一个动作滑上来当主角。休息只在导航选中胶囊里走（「首页 1:35」+ 描边），外圈 2/13。点数字才弹键盘。代价：同时只看得到一个动作的组。',
+      html: () => {
+        const [first, ...rest] = allItems();
+        return `${status}<div class="pad" style="padding-top:10px">${ckHead()}
+          <div class="row" style="margin-top:8px;gap:3px">${Array.from({ length: TOTAL }, (_, i) => `<i class="sq${i < DONE ? ' on' : ''}" style="flex:1;height:5px;border-radius:2px"></i>`).join('')}</div>
+          <div class="fill" style="margin-top:10px;padding:12px 14px" data-a="1"><div class="row"><div><div class="t-s">第 1 个 · ${first.region} · 2 / 3 组</div><div class="t-h" style="font-size:18px;margin-top:2px">${first.name}</div></div><div class="sp"></div><span class="t-s" style="text-decoration:underline">要领</span></div>
+            <div style="margin-top:8px">${setLine(1, first.kg, 7, 'done')}${setLine(2, first.kg, 6, 'done')}${setLine(3, first.kg, 6, 'cur')}</div>
+            <div class="t-s" style="margin-top:6px">点重量或次数改数 · 改完收起键盘</div></div>
+          <div class="t-s" style="margin:12px 0 4px;font-weight:700">接下来</div>
+          ${rest.slice(0, 3).map((it) => `<div class="row" style="height:44px;border-bottom:1px solid #DEDED9"><div style="flex:1"><div class="t-b" style="font-weight:700">${it.name}</div><div class="t-s">${it.region} · ${it.plan}</div></div>${kg(it.kg, 't-h')}</div>`).join('')}</div>
+          <div class="abs" style="left:16px;right:16px;bottom:94px;z-index:5" data-a="2"><div class="btn">打卡第 3 组 · ${first.kg} kg × 6</div></div>${navRing()}`;
+      },
+    },
+    W2: {
+      title: '清单即打卡（全部展开）',
+      note: '<em>全局一眼看完</em>：不分主角，5 个动作排成一列，每个动作一行组格子（○ 待做 / ● 已打卡），当前动作展开显示组行。点格子 = 打这一组（按预填的建议值），点数字才弹键盘；可以跳着练、换顺序。底部大按钮「打卡 · 当前动作 第 3 组」。代价：主角不突出，「今天先做什么」要看高亮行。',
+      html: () => {
+        const it = allItems();
+        const dots = (n, d) => Array.from({ length: n }, (_, i) => `<i style="display:inline-block;width:16px;height:16px;border-radius:50%;margin-left:5px;${i < d ? 'background:#2b2b29' : 'border:1.5px solid #8E8E8A'}"></i>`).join('');
+        return `${status}<div class="pad" style="padding-top:10px">${ckHead()}
+          <div class="row" style="margin-top:8px;align-items:baseline"><span class="t-l">${DONE}</span><span class="t-b"> / ${TOTAL} 组</span><span class="t-s" style="margin-left:8px">${H().summary}</span></div>
+          <div data-a="1" style="margin-top:8px">
+            <div class="fill" style="padding:10px 12px;margin:0 -4px"><div class="row"><div style="flex:1"><div class="t-h">${it[0].name}</div><div class="t-s">${it[0].region} · ${it[0].plan}</div></div>${dots(3, 2)}</div>
+              <div style="margin-top:6px">${setLine(3, it[0].kg, 6, 'cur')}</div></div>
+            ${it.slice(1).map((x) => `<div class="row" style="height:52px;border-bottom:1px solid #DEDED9"><div style="flex:1"><div class="t-b" style="font-weight:700">${x.name}</div><div class="t-s">${x.region} · ${x.plan} · ${x.kg ? x.kg + ' kg' : '首次'}</div></div>${dots(x.sets, 0)}</div>`).join('')}</div></div>
+          <div class="abs" style="left:16px;right:16px;bottom:94px;z-index:5" data-a="2"><div class="btn">打卡 · ${it[0].name} 第 3 组</div></div>${navRing()}`;
+      },
+    },
+    W3: {
+      title: '共用：点数字才弹键盘（W1 / W2 都用）',
+      note: '两个方案共用。<em>平时没有键盘</em>：组行预填建议值，绝大多数组只点「打卡」。点重量或次数 → 底部面板弹出键盘（盖住导航），第一下覆盖、±2.5 kg、「好了」收起；首次动作的空重量在面板里先给提示，不在页面上预先报红。',
+      html: () => {
+        const [first] = allItems();
+        return `${status}<div class="pad" style="padding-top:10px;opacity:.35">${ckHead()}<div class="fill" style="height:240px;margin-top:20px"></div></div>
+          <div class="abs" style="inset:0;background:rgba(0,0,0,.28)"></div>
+          <div class="abs box" style="left:0;right:0;bottom:0;border-radius:18px 18px 0 0;padding:14px 16px 18px" data-a="2">
+            <div class="row"><div class="t-s">${first.name} · 第 3 组</div><div class="sp"></div><span class="t-h">好了</span></div>
+            <div class="row" style="margin-top:8px;gap:10px"><div class="fill" style="flex:1;padding:10px 12px;box-shadow:0 0 0 2px #2b2b29"><span class="t-xl" style="font-size:34px">${first.kg}</span><span class="t-b"> kg</span></div><div class="fill" style="flex:1;padding:10px 12px"><span class="t-xl" style="font-size:34px">6</span><span class="t-b"> 次</span></div></div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px">${['1', '2', '3', '−2.5', '4', '5', '6', '+2.5', '7', '8', '9', '⌫', '.', '0', '', ''].map((k) => k ? `<div class="fill" style="height:44px;display:flex;align-items:center;justify-content:center" class="t-h">${k}</div>` : '<div></div>').join('')}</div></div>`;
+      },
+    },
+  };
+
   // ---------- 肌头详情面板 ----------
   const focusHead = () => head(P06.focus);
   const behind = () => `${status}<div class="pad" style="padding-top:10px;opacity:.35"><div class="row"><div class="t-title">身体</div><div class="sp"></div>${toggles}</div><div class="fill" style="height:600px;margin-top:12px"></div></div><div class="abs" style="inset:0;background:rgba(0,0,0,.35)"></div>`;
@@ -402,7 +459,8 @@
     gains: { title: '增量 · 增量总览（P09）', sub: '渐进超负荷的全局视图', v: GAINS },
     log: { title: '记录 · 训练记录（P07）', sub: '时间倒序', v: LOG },
     me: { title: '我的（P11）', sub: '档案与设置', v: ME },
-    session: { title: '训练进行中（P03）', sub: '第 1 个动作做完 1 组，正在休息 · 无导航', v: SESSION },
+    session: { title: '训练进行中（P03）', sub: '第 1 个动作做完 1 组，正在休息 · 无导航（2026-10-06 作废：打卡并入首页，见 checkin）', v: SESSION },
+    checkin: { title: '首页即打卡（P01 + 原 P03）', sub: '已开始：第 1 个动作做完 2 组、正在休息 · 导航外圈 2/13 · 选中胶囊「首页 1:35」', v: CHECKIN },
     sheet: { title: '肌头详情面板（身体页）', sub: '松手后打开「中下胸」', v: SHEET },
     story: { title: '故事引导（P12 前 3 屏）', sub: 'A = 三幕插画，B = 一条成长线；各 3 屏', v: STORYV },
   };

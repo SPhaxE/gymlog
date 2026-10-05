@@ -8,7 +8,7 @@
 import argparse, os, sys
 from playwright.sync_api import sync_playwright
 
-PAGES = {'body': 3, 'home': 3, 'gains': 3, 'log': 2, 'me': 2, 'session': 2, 'sheet': 2, 'story': 6}
+PAGES = {'body': 3, 'home': 3, 'gains': 3, 'log': 2, 'me': 2, 'session': 2, 'sheet': 2, 'story': 6, 'checkin': 3}
 ap = argparse.ArgumentParser()
 ap.add_argument('--base', default='http://localhost:8765/design/wireframes/')
 ap.add_argument('--chromium', default=os.environ.get('CHROMIUM', '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'))

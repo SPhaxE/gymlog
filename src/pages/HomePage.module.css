@@ -1,7 +1,7 @@
 .link { color: var(--milo-color-text-secondary); font-size: var(--milo-font-size-caption); text-underline-offset: var(--milo-space-xs); }
 .tags { display: flex; flex-wrap: wrap; gap: var(--milo-space-s); }
 /* 内容区：左右 gutter；底部给开始按钮和导航留空，可滚动 */
-.body { flex: 1; min-height: 0; overflow: auto; display: grid; align-content: start; gap: var(--milo-space-m);
+.body { flex: 1; min-height: 0; overflow: auto; display: grid; align-content: start; grid-auto-rows: max-content; gap: var(--milo-space-m);
   padding: var(--milo-space-l) var(--milo-size-gutter) calc(var(--nav-clear) + var(--milo-size-button-h) + var(--milo-space-2xl)); }
 .primary { color: var(--milo-color-text-primary); }
 .cta { position: absolute; z-index: 9; left: var(--milo-size-gutter); right: var(--milo-size-gutter); bottom: calc(var(--nav-clear) + var(--milo-space-s)); }

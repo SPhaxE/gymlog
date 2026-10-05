@@ -1,5 +1,5 @@
 /* 训练结算（P05）：主角结果 → 三格统计 → 逐个动作 → 成长 → 力竭度 → 完成 */
-.body { flex: 1; min-height: 0; overflow-y: auto; display: grid; align-content: start; gap: var(--milo-space-m);
+.body { flex: 1; min-height: 0; overflow-y: auto; display: grid; align-content: start; grid-auto-rows: max-content; gap: var(--milo-space-m);
   padding: var(--milo-space-l) var(--milo-size-gutter) calc(var(--milo-size-button-h) + var(--milo-space-4xl)); }
 .hero, .heroQuiet { display: grid; gap: var(--milo-space-xs); padding: var(--milo-space-l); border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised); }
 /* 新纪录（Stitch s6 V3）：整块荧光、黑字，这一屏唯一的荧光；进场时从下往上弹出、扫过一道光 */
