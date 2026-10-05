@@ -24,7 +24,7 @@ export { Sheet, SheetBlock } from './Sheet';
 export { forced, type Forced } from './state';
 export { Ticks } from './Ticks';
 export {
-  DayCell, ExerciseRow, MediaFrame, PrescriptionHero, RestBar, SessionRow, SetRow, WeekStrip, clock, useCountdown,
+  DayCell, ExerciseRow, MediaFrame, PrescriptionHero, RestBar, SessionRow, SetRow, NumPad, WeekStrip, clock, useCountdown,
   type DayProps, type DayStatus, type ExerciseStatus, type MediaState, type SetStatus, type SetType,
 } from './training';
 export { Banner, Card, Delta, List, ListRow, Num, PageHeader, SectionLabel, StatusStrip, Tag, TierLegend, TopBar, type DeltaDir, type NumSize, type TagTone } from './ui';

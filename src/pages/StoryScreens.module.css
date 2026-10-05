@@ -1,16 +1,159 @@
-/* 故事引导：上半舞台、下半文字、拇指区按钮（线框 A 骨架，按选定方向再定稿） */
-.top { display: flex; justify-content: flex-end; padding: var(--milo-space-m) var(--milo-size-gutter) 0; }
-.skip { border: 0; background: none; padding: var(--milo-space-xs) var(--milo-space-s); font: inherit; font-size: var(--milo-font-size-body); color: var(--milo-color-text-secondary); }
-.stage { display: grid; place-items: end center; height: 46%; margin: var(--milo-space-s) var(--milo-size-gutter) 0; padding-bottom: var(--milo-space-l);
-  border-radius: var(--milo-radius-l); background: radial-gradient(circle at 50% 70%, var(--milo-prim-lime-500-a13), transparent 65%), var(--milo-color-bg-raised);
-  --mascot-unit: calc(var(--milo-stroke-hairline) * 0.32); --mascot-max-h: calc(var(--milo-space-5xl) * 4.4); animation: fade var(--milo-motion-slow) var(--milo-motion-ease-standard) both; }
-.text { display: grid; gap: var(--milo-space-s); padding: var(--milo-space-2xl) var(--milo-size-gutter) 0; animation: fade var(--milo-motion-slow) var(--milo-motion-ease-standard) both; }
+/* 初见引导（故事 8 幕）：上 60% 是舞台（三层场景 + 人物 + 代码生成的图），下面是文字；顶部 Stories 进度条，右上「跳过」 */
+.story { position: relative; flex: 1; min-height: 0; overflow: hidden; background: var(--milo-color-bg-base); color: var(--milo-color-text-primary); --stage-h: 60%; }
+
+/* ---------- 场景三层：object-position 跟着镜头 --cam 平移；远景平移得少，近景放大一点平移得多 = 视差 ---------- */
+.backdrop { position: absolute; left: 0; right: 0; top: 0; height: var(--stage-h); overflow: hidden; }
+.layer { position: absolute; left: 0; bottom: 0; width: 100%; height: 100%; object-fit: cover; user-select: none;
+  transition: object-position calc(var(--milo-motion-slow) * 5) var(--milo-motion-ease-standard); }
+.far { object-position: calc((0.3 + var(--cam) * 0.4) * 100%) 0; }
+.mid { object-position: calc(var(--cam) * 100%) 100%; }
+.near { height: 112%; object-position: calc(var(--cam) * 100%) 100%; }
+.vignette { position: absolute; inset: 0; background: linear-gradient(transparent 55%, var(--milo-color-bg-base) 100%), radial-gradient(ellipse at 50% 40%, transparent 40%, color-mix(in srgb, var(--milo-color-bg-base) 70%, transparent) 100%); }
+
+/* ---------- 进度条与跳过 ---------- */
+.bars { position: absolute; z-index: 6; top: var(--milo-space-s); left: var(--milo-size-gutter); right: var(--milo-size-gutter); display: flex; gap: var(--milo-space-2xs); }
+.bars i { position: relative; flex: 1; height: var(--milo-stroke-focus); border-radius: var(--milo-radius-pill); overflow: hidden; background: color-mix(in srgb, var(--milo-prim-bone-100) 22%, transparent); }
+.bars i::after { content: ''; position: absolute; inset: 0; background: var(--milo-prim-bone-100); transform-origin: left; transform: scaleX(0); }
+.bars .barDone::after { transform: scaleX(1); }
+.bars .barNow::after { animation: fillBar var(--ms) linear both; animation-play-state: inherit; }
+@keyframes fillBar { to { transform: scaleX(1); } }
+.skip { position: absolute; z-index: 8; top: calc(var(--milo-space-s) + var(--milo-space-m)); right: var(--milo-size-gutter); border: 0; background: none; padding: var(--milo-space-xs) var(--milo-space-s);
+  font: inherit; font-size: var(--milo-font-size-body); color: var(--milo-color-text-secondary); }
+.tap { position: absolute; z-index: 1; inset: 0; -webkit-tap-highlight-color: transparent; }
+
+/* ---------- 舞台 ---------- */
+.stage { position: absolute; z-index: 2; left: 0; right: 0; top: 0; height: var(--stage-h); pointer-events: none; }
+.stage button { pointer-events: auto; }
+/* 米洛：6 个姿势同一个比例（素材按 M1 身高 720 像素导出），脚踩在近景的地面线上 */
+.fig { position: absolute; left: 50%; bottom: 12%; height: calc(var(--h) / 720 * 62%); width: auto; translate: -50% 0; user-select: none;
+  transition: opacity var(--milo-motion-base) var(--milo-motion-ease-standard), scale var(--milo-motion-spring-ms) var(--milo-motion-ease-spring); }
+.figSmall { bottom: 11%; }
+.in_walk { animation: walkIn calc(var(--milo-motion-slow) * 6) var(--milo-motion-ease-decelerate) both; }
+.in_fade { animation: fadeUp calc(var(--milo-motion-slow) * 2) var(--milo-motion-ease-standard) both; }
+@keyframes walkIn { from { opacity: 0; transform: translateX(-45%); filter: brightness(0.2); } 60% { opacity: 1; } to { transform: none; filter: none; } }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(6%); } }
+/* 桂冠：站定后荧光一闪 */
+.laurel { animation: walkIn calc(var(--milo-motion-slow) * 6) var(--milo-motion-ease-decelerate) both, laurel calc(var(--milo-motion-slow) * 4) var(--milo-motion-ease-standard) calc(var(--milo-motion-slow) * 6) both; }
+@keyframes laurel { 0%, 100% { filter: drop-shadow(0 0 0 transparent); } 40% { filter: drop-shadow(0 0 var(--milo-space-l) var(--milo-prim-lime-500-a33)) brightness(1.08); } }
+.figOn { opacity: 1; scale: 1; }
+.figOff { opacity: 0; scale: 0.96; }
+
+.zz { position: absolute; left: 56%; top: 30%; display: flex; gap: var(--milo-space-2xs); font-family: var(--milo-font-number); font-weight: 700; font-style: italic; color: var(--milo-color-text-secondary); }
+.zz i { font-style: italic; animation: zz calc(var(--milo-motion-slow) * 8) ease-in-out infinite; }
+.zz i:nth-child(2) { font-size: var(--milo-font-size-heading); animation-delay: calc(var(--milo-motion-slow) * -2.6); }
+.zz i:nth-child(3) { font-size: var(--milo-font-size-title); animation-delay: calc(var(--milo-motion-slow) * -5.2); }
+@keyframes zz { 0% { opacity: 0; transform: translate(0, 30%); } 30%, 70% { opacity: 1; } 100% { opacity: 0; transform: translate(40%, -80%); } }
+
+/* ---------- 刻度尺 ---------- */
+.ruler { position: absolute; left: 0; right: 0; bottom: 0; height: 12%; animation: fadeUp calc(var(--milo-motion-slow) * 2) var(--milo-motion-ease-standard) both; }
+.rulerSvg { width: 100%; height: 100%; overflow: visible; }
+.tick { stroke: color-mix(in srgb, var(--milo-prim-bone-100) 45%, transparent); stroke-width: 1.2; }
+.tickNum { fill: var(--milo-color-text-secondary); font-family: var(--milo-font-number); }
+.needle { stroke: var(--milo-prim-lime-500); stroke-width: 2.5; stroke-linecap: round; filter: drop-shadow(0 0 var(--milo-stroke-focus) var(--milo-prim-lime-500)); }
+.readout { position: absolute; left: var(--milo-size-gutter); bottom: 100%; margin-bottom: calc(var(--milo-space-5xl) * 4.6); display: grid; gap: var(--milo-space-2xs); }
+.readout b { font-variant-numeric: tabular-nums; }
+.readout small { font-size: var(--milo-font-size-body); color: var(--milo-color-text-secondary); }
+.plusOne { justify-self: start; padding: var(--milo-space-2xs) var(--milo-space-s); border-radius: var(--milo-radius-pill); background: var(--milo-prim-lime-500); color: var(--milo-color-text-on-accent);
+  font-size: var(--milo-font-size-caption); font-weight: 700; animation: plus calc(var(--milo-motion-slow) * 3) var(--milo-motion-ease-spring) both; }
+@keyframes plus { 0% { opacity: 0; transform: translateY(40%) scale(0.6); } 25% { opacity: 1; transform: none; } 75% { opacity: 1; } 100% { opacity: 0; transform: translateY(-40%); } }
+.logo { position: absolute; right: var(--milo-size-gutter); top: calc(var(--milo-space-5xl) * 1.2); display: grid; justify-items: center; gap: var(--milo-space-xs); animation: fadeUp calc(var(--milo-motion-slow) * 2) var(--milo-motion-ease-standard) both; }
+.logoGlyph { display: block; width: calc(var(--milo-space-5xl) * 1.5); height: calc(var(--milo-space-5xl) * 1.5); }
+.concept { padding: var(--milo-space-2xs) var(--milo-space-s); border-radius: var(--milo-radius-pill); background: var(--milo-prim-lime-500); color: var(--milo-color-text-on-accent); font-size: var(--milo-font-size-caption); font-weight: 900; }
+
+/* ---------- 曲线 ---------- */
+.curve { position: absolute; left: var(--milo-size-gutter); right: var(--milo-size-gutter); top: calc(var(--milo-space-5xl) * 1.1); width: calc(100% - 2 * var(--milo-size-gutter)); height: auto; overflow: visible;
+  padding: var(--milo-space-s); box-sizing: border-box; border-radius: var(--milo-radius-l); background: color-mix(in srgb, var(--milo-color-bg-base) 72%, transparent); backdrop-filter: blur(var(--milo-stroke-focus));
+  animation: fadeUp calc(var(--milo-motion-slow) * 2) var(--milo-motion-ease-standard) both; }
+.base { stroke: color-mix(in srgb, var(--milo-prim-bone-100) 35%, transparent); stroke-width: 1; stroke-dasharray: 3 4; }
+.baseLabel { fill: var(--milo-color-text-secondary); }
+.golden { fill: var(--milo-prim-lime-500-a13); stroke: color-mix(in srgb, var(--milo-prim-lime-500) 45%, transparent); stroke-width: 1; animation: fadeIn var(--milo-motion-slow) var(--milo-motion-ease-standard) calc(var(--milo-motion-slow) * 8) both; }
+.curvePath { fill: none; stroke: var(--milo-prim-bone-100); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1;
+  animation: draw calc(var(--milo-motion-slow) * 9) var(--milo-motion-ease-standard) calc(var(--milo-motion-slow) * 1.5) forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes fadeIn { from { opacity: 0; } }
+.phase { fill: var(--milo-color-text-secondary); animation: fadeIn var(--milo-motion-slow) var(--milo-motion-ease-standard) calc(var(--milo-motion-slow) * (3 + var(--k) * 2.2)) both; }
+.phaseLit { fill: var(--milo-prim-lime-500); font-weight: 700; }
+.trainMark { fill: var(--milo-color-text-secondary); }
+/* 互动幕：曲线、黄金窗、时相一上来就全在（上一幕已经画过一遍） */
+.instant, .instant .golden, .instant .curvePath, .instant .phase { animation: none; stroke-dashoffset: 0; }
+
+/* 黄金窗互动 */
+.dot { fill: var(--milo-prim-lime-500); filter: drop-shadow(0 0 var(--milo-space-2xs) var(--milo-prim-lime-500)); }
+.dotStop { fill: var(--milo-color-feedback-danger); filter: none; }
+.nextCycle { fill: none; stroke: var(--milo-prim-lime-500); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw calc(var(--milo-motion-slow) * 6) var(--milo-motion-ease-standard) forwards; }
+.base2 { stroke: color-mix(in srgb, var(--milo-prim-lime-500) 55%, transparent); stroke-width: 1; stroke-dasharray: 3 4; }
+.gwMsg { position: absolute; left: var(--milo-size-gutter); right: var(--milo-size-gutter); top: calc(var(--milo-space-5xl) * 5.2); margin: 0; text-align: center; color: var(--milo-color-text-secondary); }
+.gwOk { color: var(--milo-prim-lime-500); }
+.gwBad { color: var(--milo-color-feedback-danger); }
+.trainBtn { position: absolute; z-index: 7; left: 50%; bottom: 2%; translate: -50% 0; width: calc(var(--milo-space-5xl) * 1.6); aspect-ratio: 1; border: 0; border-radius: 50%;
+  background: var(--milo-prim-lime-500); color: var(--milo-color-text-on-accent); font: inherit; font-size: var(--milo-font-size-title); font-weight: 900;
+  box-shadow: 0 0 0 var(--milo-stroke-ring-gap) var(--milo-color-accent-glow-ring), 0 0 var(--milo-space-2xl) var(--milo-color-accent-glow); }
+.trainBtn:disabled { opacity: var(--milo-opacity-disabled); }
+.calfGrow { position: absolute; right: var(--milo-size-gutter); bottom: 4%; --mascot-unit: calc(var(--milo-stroke-hairline) * 0.2); animation: pop var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring) both; }
+@keyframes pop { from { opacity: 0; transform: scale(0.4) translateY(20%); } }
+
+/* 荧光碎屑 */
+.burst { position: absolute; left: 50%; top: 48%; width: 0; height: 0; pointer-events: none; }
+.burst i { position: absolute; width: var(--milo-space-xs); height: var(--milo-space-xs); border-radius: var(--milo-radius-s); background: var(--milo-prim-lime-500);
+  animation: fly calc(var(--milo-motion-slow) * 5) var(--milo-motion-ease-decelerate) calc(var(--k) * var(--milo-motion-stagger) * 0.2) both; }
+.burst i:nth-child(3n) { background: var(--milo-prim-bone-100); }
+.burst i:nth-child(4n) { border-radius: 50%; }
+@keyframes fly { from { opacity: 1; transform: rotate(var(--a)) translateY(0) scale(0.4); } 70% { opacity: 1; } to { opacity: 0; transform: rotate(var(--a)) translateY(calc(var(--d) * -1)) rotate(180deg) scale(1); } }
+
+/* ---------- 第 5 幕：拱门居中 + 荧光阶梯从左下爬到拱门口 + 米洛沿阶梯走进光里 ---------- */
+.archWrap { position: absolute; left: 50%; bottom: 10%; height: 80%; aspect-ratio: 1200 / 1171; translate: -50% 0; animation: fadeIn calc(var(--milo-motion-slow) * 3) var(--milo-motion-ease-standard) both; }
+.arch { display: block; width: 100%; height: 100%; object-fit: contain; filter: brightness(0.9); }
+/* 拱门里的光：阶梯画完时越来越亮，人走进去时满开 */
+.archLight { position: absolute; left: 33%; right: 33%; top: 30%; bottom: 6%; border-radius: 50% 50% 0 0 / 30% 30% 0 0; mix-blend-mode: screen;
+  background: radial-gradient(ellipse at 50% 80%, var(--milo-prim-lime-300), var(--milo-prim-lime-500-a33) 55%, transparent 75%);
+  animation: archLight calc(var(--milo-motion-slow) * 22) var(--milo-motion-ease-standard) both; }
+@keyframes archLight { 0% { opacity: 0; } 50% { opacity: 0.35; } 85% { opacity: 0.9; transform: scale(1.06); } 100% { opacity: 1; transform: scale(1.12); } }
+.stairs { position: absolute; left: 0; right: 0; top: 6%; width: 100%; height: 80%; overflow: visible; }
+.stairPath { fill: none; stroke: var(--milo-prim-lime-500); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1;
+  animation: draw calc(var(--milo-motion-slow) * 16) var(--milo-motion-ease-standard) calc(var(--milo-motion-slow) * 1) forwards; }
+.stairGlow { fill: none; stroke: var(--milo-prim-lime-500-a33); stroke-width: 9; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; filter: blur(var(--milo-stroke-focus));
+  animation: draw calc(var(--milo-motion-slow) * 16) var(--milo-motion-ease-standard) calc(var(--milo-motion-slow) * 1) forwards; }
+.peak { opacity: 0; animation: peakIn calc(var(--milo-motion-slow) * 2) var(--milo-motion-ease-spring) calc(var(--milo-motion-slow) * (4 + var(--k) * 3)) forwards; transform-box: fill-box; transform-origin: center; }
+.peak circle { fill: var(--milo-prim-bone-100); filter: drop-shadow(0 0 var(--milo-space-2xs) var(--milo-prim-lime-500)); }
+.peak text { fill: var(--milo-prim-lime-500); font-family: var(--milo-font-number); font-weight: 700; }
+@keyframes peakIn { from { opacity: 0; transform: scale(0.3); } to { opacity: 1; transform: none; } }
+/* 米洛沿阶梯往上走：整体从左下移到拱门口、越走越小（透视），步子一颠一颠；最后走进光里淡出 */
+.climber { position: absolute; inset: 0; animation: climb calc(var(--milo-motion-slow) * 22) var(--milo-motion-ease-standard) both; }
+@keyframes climb { 0% { transform: translate(-30%, 0) scale(1); opacity: 0; } 8% { opacity: 1; } 80% { transform: translate(2%, -18%) scale(0.62); opacity: 1; } 100% { transform: translate(4%, -20%) scale(0.5); opacity: 0; } }
+.figClimb { height: calc(var(--h) / 720 * 46%); animation: bob calc(var(--milo-motion-slow) * 2.2) ease-in-out infinite; }
+@keyframes bob { 0%, 100% { translate: -50% 0; } 50% { translate: -50% -3%; } }
+.sweep { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 35%, var(--milo-prim-lime-500-a33) 50%, transparent 65%) no-repeat;
+  background-size: 260% 100%; animation: sweep calc(var(--milo-motion-slow) * 7) var(--milo-motion-ease-standard) calc(var(--milo-motion-slow) * 18) both; mix-blend-mode: screen; }
+@keyframes sweep { from { background-position: 160% 0; } to { background-position: -60% 0; } }
+
+/* ---------- 第 6 幕：产品小样 ---------- */
+.product { position: absolute; left: var(--milo-size-gutter); right: var(--milo-size-gutter); top: calc(var(--milo-space-5xl) * 1.1); display: grid; gap: var(--milo-space-m); }
+.pCard { display: grid; gap: var(--milo-space-xs); padding: var(--milo-space-s); border-radius: var(--milo-radius-l); background: color-mix(in srgb, var(--milo-color-bg-base) 78%, transparent);
+  animation: flyIn var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring) calc(var(--milo-motion-slow) * (1 + var(--k) * 6)) both; }
+.pCard > div { position: relative; }
+.pLabel { color: var(--milo-prim-lime-500); }
+@keyframes flyIn { from { opacity: 0; transform: translateX(30%) rotate(3deg); } }
+
+/* ---------- 第 7 幕：你的小牛 ---------- */
+.calf { position: absolute; left: 50%; bottom: 26%; translate: -50% 0; --mascot-unit: calc(var(--milo-stroke-hairline) * 0.42);
+  filter: drop-shadow(0 0 var(--milo-space-2xl) var(--milo-prim-lime-500-a33)); animation: pop var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring) var(--milo-motion-slow) both; }
+.ages { position: absolute; left: var(--milo-size-gutter); right: var(--milo-size-gutter); bottom: 4%; display: flex; align-items: flex-end; justify-content: space-between; --mascot-unit: calc(var(--milo-stroke-hairline) * 0.085); }
+.ages span { animation: fadeUp var(--milo-motion-slow) var(--milo-motion-ease-standard) calc(var(--milo-motion-slow) * (4 + var(--k))) both; }
+.ageOff { filter: brightness(0) invert(0.18); opacity: 0.8; }
+.ageOn { filter: drop-shadow(0 0 var(--milo-space-s) var(--milo-prim-lime-500-a33)); }
+
+/* ---------- 文字 ---------- */
+.text { position: absolute; z-index: 3; left: var(--milo-size-gutter); right: var(--milo-size-gutter); top: calc(var(--stage-h) + var(--milo-space-s)); display: grid; gap: var(--milo-space-s); pointer-events: none; }
 .text h1, .text p { margin: 0; }
-.text p { color: var(--milo-color-text-secondary); }
-.dots { position: absolute; left: 0; right: 0; bottom: calc(var(--milo-size-button-h) + var(--milo-space-4xl)); display: flex; justify-content: center; gap: var(--milo-space-xs); }
-.dots i { width: var(--milo-space-xs); height: var(--milo-space-xs); border-radius: var(--milo-radius-pill); background: var(--milo-color-line-strong); transition: width var(--milo-motion-base) var(--milo-motion-ease-standard); }
-.dots i.on { width: var(--milo-space-l); background: var(--milo-color-text-primary); }
-.cta { position: absolute; left: var(--milo-size-gutter); right: var(--milo-size-gutter); bottom: var(--milo-space-2xl); display: grid; }
-@keyframes fade { from { opacity: 0; transform: translateY(var(--milo-space-s)); } }
-@media (prefers-reduced-motion: reduce) { .stage, .text { animation-name: fadeOnly; } }
-@keyframes fadeOnly { from { opacity: 0; } }
+.text h1 { animation: fadeUp calc(var(--milo-motion-slow) * 2) var(--milo-motion-ease-standard) calc(var(--milo-motion-slow) * 0.6) both; }
+.text p { color: var(--milo-color-text-secondary); animation: fadeUp calc(var(--milo-motion-slow) * 2) var(--milo-motion-ease-standard) calc(var(--milo-motion-slow) * 1.6) both; }
+.text b { color: var(--milo-prim-lime-500); font-weight: 900; }
+.cta { position: absolute; z-index: 7; left: var(--milo-size-gutter); right: var(--milo-size-gutter); bottom: var(--milo-space-2xl); display: grid; animation: fadeUp calc(var(--milo-motion-slow) * 2) var(--milo-motion-ease-standard) calc(var(--milo-motion-slow) * 6) both; }
+.hint { position: absolute; z-index: 3; left: 0; right: 0; bottom: var(--milo-space-2xl); text-align: center; font-size: var(--milo-font-size-caption); color: var(--milo-color-text-disabled);
+  animation: blink calc(var(--milo-motion-slow) * 8) ease-in-out calc(var(--milo-motion-slow) * 6) infinite both; }
+@keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+/* 减少动态效果：动画直接跳到最后一帧（时长压到最短、没有延迟），只剩淡入 */
+@media (prefers-reduced-motion: reduce) {
+  .story *, .story *::before, .story *::after { animation-duration: calc(var(--milo-motion-fast) * 0.01) !important; animation-delay: calc(var(--milo-motion-fast) * 0) !important; animation-iteration-count: 1 !important; transition-duration: calc(var(--milo-motion-fast) * 0.01) !important; }
+}

@@ -6,7 +6,7 @@
  *  - 「完成」回首页（替换历史，不能返回到结算）。 */
 import { useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
-import { AgeBadge, Button, Delta, GrowthBar, Num, RewardModal, Screen, SectionLabel, Stepper, TopBar } from '../components';
+import { AgeBadge, Button, Delta, GrowthBar, Num, RewardModal, Screen, SectionLabel, TopBar } from '../components';
 import { dateLabel, env, fmt, REGION_NAME } from '../data/demo';
 import { rewardOf } from '../data/growth';
 import { setExertion } from '../data/session';
@@ -50,9 +50,10 @@ export function SummaryPage() {
       <div className={s.body}>
         {best ? (
           <div className={s.hero}>
-            <span className="milo-text-label">新纪录 · {name(best.exerciseId)}</span>
-            <div className={s.heroNum}><Num size="hero" value={fmt(best.e1rm ?? 0)} unit="kg" />{best.delta != null && <span className={s.plus}>+{fmt(best.delta)} kg</span>}</div>
-            <span className="milo-text-caption">预估 1RM · 上次 {best.prevE1rm != null ? `${fmt(best.prevE1rm)} kg` : '—'}</span>
+            <div className={s.heroTop}><span className={s.pr}>PR</span><span className="milo-text-label">新纪录 · {name(best.exerciseId)}</span>
+              {best.prevE1rm != null && <span className={s.prev}>上次 {fmt(best.prevE1rm)} kg</span>}</div>
+            <div className={s.heroNum}><span className="milo-text-caption">预估 1RM</span><Num size="hero" value={fmt(best.e1rm ?? 0)} unit="kg" />{best.delta != null && <span className={s.plus}>+{fmt(best.delta)} kg</span>}</div>
+            <HeroTicks />
           </div>
         ) : (
           <div className={s.heroQuiet}>
@@ -88,7 +89,12 @@ export function SummaryPage() {
 
         <div className={s.exertion}>
           <div><span className="milo-text-body">力竭度</span><span className={`milo-text-caption ${s.muted}`}>用来算恢复窗口，可以不填</span></div>
-          <Stepper label="力竭度" value={ses.exertion ?? 8} step={1} min={1} max={10} onChange={(v) => setExertion(ses.id, v)} />
+        </div>
+        <div className={s.rate} role="radiogroup" aria-label="力竭度 1–10">
+          {Array.from({ length: 10 }, (_, k) => k + 1).map((v) => (
+            <button key={v} type="button" role="radio" aria-checked={(ses.exertion ?? 8) === v} className={`milo-press milo-focus ${(ses.exertion ?? 8) === v ? s.rateOn : ''}`}
+              onClick={() => setExertion(ses.id, v)}>{v}</button>
+          ))}
         </div>
         {d.slow && <p className="milo-text-caption">下次：{d.slow.region}约 {Math.max(1, Math.round(d.slow.hours))} 小时后恢复 · 下一份处方已经更新</p>}
       </div>
@@ -96,4 +102,9 @@ export function SummaryPage() {
       <RewardModal reward={reward} queued={d.queued} onClose={() => setReward(null)} />
     </Screen>
   );
+}
+
+/** 新纪录卡底部的刻度（Stitch s6 V3）：细刻度一排，和身体页、首页同一套视觉语言 */
+function HeroTicks() {
+  return <div className={s.ticks} aria-hidden="true">{Array.from({ length: 31 }, (_, k) => <i key={k} className={k % 5 === 0 ? s.tickL : undefined} />)}</div>;
 }

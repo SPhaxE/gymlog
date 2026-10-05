@@ -37,6 +37,7 @@
 .setInput { display: flex; align-items: baseline; gap: var(--milo-space-2xs); min-width: 0; height: var(--milo-size-button-h-s); padding: 0 var(--milo-space-s);
   border-radius: var(--milo-radius-s); background: var(--milo-color-bg-raised-2); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); align-items: center; }
 .setInput:focus-within { box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-control-selected); }
+.setInputOn { box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-control-selected); background: var(--milo-color-bg-raised); }
 .setInputBad, .setInputBad:focus-within { box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-feedback-danger); }
 .setInput input { flex: 1; min-width: 0; width: 100%; border: 0; background: none; outline: none; padding: 0; color: var(--milo-color-text-primary);
   font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-m); font-variant-numeric: tabular-nums; }
@@ -100,3 +101,14 @@
 .credit a { color: inherit; }
 
 @media (prefers-reduced-motion: reduce) { .mediaLoading { animation: none; } .restTrack i { transition: none; } }
+
+/* 训练页自带数字键盘：深色圆角键、等宽数字；步进键略暗；「下一组」骨白实心（这一屏的主操作） */
+.pad { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--milo-space-xs); padding: var(--milo-space-s) var(--milo-size-gutter) var(--milo-space-m);
+  background: var(--milo-color-bg-base); border-top: var(--milo-stroke-hairline) solid var(--milo-color-line-default); }
+.key { display: flex; align-items: baseline; justify-content: center; gap: var(--milo-space-2xs); height: var(--milo-size-hit-min); border: 0; border-radius: var(--milo-radius-m);
+  background: var(--milo-color-bg-raised-2); color: var(--milo-color-text-primary); font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-m);
+  align-items: center; -webkit-tap-highlight-color: transparent; }
+.key small { font-family: var(--milo-font-ui); font-weight: 500; font-size: var(--milo-font-size-min); color: var(--milo-color-text-secondary); }
+.keyStep { background: var(--milo-color-bg-raised); font-size: var(--milo-font-size-body); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
+.keyNext { grid-column: span 2; background: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); font-family: var(--milo-font-ui); font-size: var(--milo-font-size-body); font-weight: 900; }
+.keyNext:disabled { opacity: var(--milo-opacity-disabled); }

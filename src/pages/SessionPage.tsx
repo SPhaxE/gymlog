@@ -1,11 +1,14 @@
-/** 训练进行中（P03，线框 W2「组表格」，ia §1.5 / §1.6，阶段 6a）：任务流，没有导航。
+/** 训练进行中（P03，线框 W2「组表格」+ Stitch s6 V2，ia §1.5 / §1.6，阶段 6a）：任务流，没有导航。
+ *  - 自带数字键盘（不弹系统键盘）：点一格选中它，第一下数字覆盖原值、之后追加；±2.5 kg / ±1 次步进；「下一组」= 完成当前组。
+ *  - 组间休息在顶部（小胶囊，点开是完整的休息条）。
  *  - 当前动作的组排成一列（SetRow），当前组预填建议值，「完成」一次点击记完一组；完成后休息条从底部浮出（结束时间戳，切后台回来仍然准）。
  *  - 其余动作在下面，点一下切过去；可以加组（上限 10）、跳过这个动作。
  *  - 「结束」：有没做的组先确认；没有已完成的工作组 → 不保存，提示「没有可保存的记录」。结束后进结算页（替换历史，不能返回到训练）。
  *  - 每一下改动都立即写进本地存储；返回键回首页，训练不会丢，首页按钮变「继续训练」。 */
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router';
-import { Button, Dialog, ExerciseRow, Num, RestDock, Screen, SectionLabel, SetRow, TopBar, clock, useCountdown, useToast } from '../components';
+import { Button, Dialog, ExerciseRow, Num, NumPad, RestDock, Screen, SectionLabel, SetRow, TopBar, clock, useCountdown, useToast } from '../components';
+import { env } from '../data/demo';
 import { addSet, adjustRest, completeSet, discardSession, editSet, finishSession, focusExercise, hasWork, setError, setField, skipRest, toggleSkip, MAX_SETS } from '../data/session';
 import { useStore } from '../data/store';
 import s from './SessionPage.module.css';
@@ -15,11 +18,16 @@ export function SessionPage() {
   const a = st.active;
   const [confirm, setConfirm] = useState(false);
   const leaving = useRef(false);
-  const [dock, setDock] = useState(true);
+  const [dock, setDock] = useState(false);
+  // 键盘正在改哪一格：{ 第几组, 重量 / 次数, 是否刚选中（刚选中时第一下数字覆盖原值）}
+  const [focus, setFocus] = useState<{ row: number; field: 'weight' | 'reps'; fresh: boolean } | null>(null);
   const [tick, setTick] = useState(Date.now());
   useEffect(() => { const id = window.setInterval(() => setTick(Date.now()), 1000); return () => clearInterval(id); }, []);
   const left = useCountdown(st.rest?.endAt ?? null);
-  useEffect(() => { if (st.rest) setDock(true); }, [st.rest?.endAt]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (st.rest) setDock(false); }, [st.rest?.endAt]); // eslint-disable-line react-hooks/exhaustive-deps
+  // 换动作 / 完成一组后，键盘默认跟着当前组的重量
+  const curKey = a ? `${a.cur}:${a.entries[a.cur].rows.findIndex((r) => !r.done)}` : '';
+  useEffect(() => { setFocus(null); }, [curKey]);
   if (!a) return leaving.current ? null : <Navigate to="/today" replace />;
 
   const en = a.entries[a.cur];
@@ -27,6 +35,27 @@ export function SessionPage() {
   const totalSets = a.entries.reduce((n, x) => n + (x.skipped ? 0 : x.rows.length), 0);
   const pending = a.entries.reduce((n, x) => n + (x.skipped ? 0 : x.rows.filter((r) => !r.done).length), 0);
   const curRow = en.rows.findIndex((r) => !r.done);
+  const editing = en.rows.findIndex((r, j) => !r.done && j === curRow);
+  const fx = focus ?? (editing >= 0 ? { row: editing, field: 'weight' as const, fresh: true } : null);
+  const row = fx ? en.rows[fx.row] : null;
+  const rowErr = row ? setError(row) : undefined;
+  const key = (k: string) => {
+    if (!fx || !row) return;
+    const cur = row[fx.field];
+    let v = k === 'del' ? cur.slice(0, -1) : fx.fresh ? (k === '.' ? '0.' : k) : cur + k;
+    if (fx.field === 'reps' && k === '.') return;
+    if (v.length > 6) return;
+    if (/^0\d/.test(v)) v = v.slice(1);
+    setField(a.cur, fx.row, fx.field, v);
+    setFocus({ ...fx, fresh: false });
+  };
+  const stepBy = (d: number) => {
+    if (!fx || !row) return;
+    const n = Number(row[fx.field]) || 0, step = fx.field === 'weight' ? d : Math.sign(d);
+    const v = Math.max(fx.field === 'weight' ? 0 : 1, Math.round((n + step) * 100) / 100);
+    setField(a.cur, fx.row, fx.field, String(v));
+    setFocus({ ...fx, fresh: false });
+  };
 
   const end = () => {
     setConfirm(false);
@@ -53,7 +82,8 @@ export function SessionPage() {
           return (
             <SetRow key={j} index={j + 1} type={r.type} weight={r.weight} reps={r.reps} error={err?.msg} errorField={err?.field}
               status={r.done ? 'done' : j === curRow ? 'current' : 'todo'}
-              onChange={(f, v) => setField(a.cur, j, f, v)} onDone={() => completeSet(a.cur, j)} onEdit={() => editSet(a.cur, j)} />
+              keypad={{ field: fx?.row === j ? fx.field : null, onFocus: (f) => setFocus({ row: j, field: f, fresh: true }) }}
+              onChange={(f, v) => setField(a.cur, j, f, v)} onDone={() => completeSet(a.cur, j)} onEdit={() => { editSet(a.cur, j); setFocus({ row: j, field: 'weight', fresh: true }); }} />
           );
         })}
         <div className={s.actions}>
@@ -72,6 +102,10 @@ export function SessionPage() {
       </div>
 
       {st.rest && <div className={s.dock}><RestDock remaining={left} total={st.rest.totalMs / 1000} open={dock} onToggle={setDock} onAdjust={adjustRest} onSkip={skipRest} /></div>}
+      {!en.skipped && fx && row && (
+        <NumPad onKey={key} onStep={stepBy} step={fx.field === 'weight' ? env.cfg.loadStep : 1} unit={fx.field === 'weight' ? 'kg' : '次'}
+          onNext={() => completeSet(a.cur, fx.row)} nextDisabled={!row.weight.trim() || !row.reps.trim() || !!rowErr} nextLabel={row.done ? '保存' : '下一组'} />
+      )}
 
       <Dialog open={confirm} onClose={() => setConfirm(false)} title={hasWork(a) ? '结束这次训练？' : '还没有完成任何一组'}
         confirm={hasWork(a) ? '结束并结算' : '放弃这次训练'} tone={hasWork(a) ? 'neutral' : 'danger'}

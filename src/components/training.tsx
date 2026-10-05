@@ -56,8 +56,10 @@ export function PrescriptionHero({ order, region, name, weight, sets, reps, reas
 export type SetType = 'work' | 'warmup' | 'drop';
 export type SetStatus = 'todo' | 'current' | 'done' | 'editing';
 /** 报错只落在出错的那一格：红圈只圈那个输入框，红字就在它正下方、和它同宽（用户 2026-10-05：红字与警告项一比一，不再整行描红） */
-export function SetRow({ index, type = 'work', status, weight, reps, rpe, error, errorField = 'weight', onDone, onEdit, onChange, state }: {
+export function SetRow({ index, type = 'work', status, weight, reps, rpe, error, errorField = 'weight', onDone, onEdit, onChange, keypad, state }: {
   index: number; type?: SetType; status: SetStatus; weight: string; reps: string; rpe?: string; error?: string; errorField?: 'weight' | 'reps';
+  /** 用自带数字键盘（P03）：输入框不弹系统键盘，点一下只是选中这一格（field = 当前选中的格） */
+  keypad?: { field: 'weight' | 'reps' | null; onFocus: (f: 'weight' | 'reps') => void };
   onDone?: () => void; onEdit?: () => void; onChange?: (f: 'weight' | 'reps', v: string) => void; state?: Forced;
 }) {
   const idx = type === 'warmup' ? '热' : type === 'drop' ? '递' : String(index);
@@ -71,9 +73,11 @@ export function SetRow({ index, type = 'work', status, weight, reps, rpe, error,
       <span className={cx(s.idx, type !== 'work' && s.idxType)}>{status === 'done' && type === 'work' ? <Icon name="check" small /> : idx}</span>
       {editable ? (
         <span className={s.inputs}>
-          <SetInput label="重量" unit="kg" value={weight} onChange={(v) => onChange?.('weight', v)} invalid={!!error && errorField === 'weight'} />
+          <SetInput label="重量" unit="kg" value={weight} onChange={(v) => onChange?.('weight', v)} invalid={!!error && errorField === 'weight'}
+            pad={keypad && { on: keypad.field === 'weight', focus: () => keypad.onFocus('weight') }} />
           <i className={s.times}>×</i>
-          <SetInput label="次数" unit="次" value={reps} onChange={(v) => onChange?.('reps', v)} mode="numeric" invalid={!!error && errorField === 'reps'} />
+          <SetInput label="次数" unit="次" value={reps} onChange={(v) => onChange?.('reps', v)} mode="numeric" invalid={!!error && errorField === 'reps'}
+            pad={keypad && { on: keypad.field === 'reps', focus: () => keypad.onFocus('reps') }} />
           {note}
         </span>
       ) : (
@@ -91,13 +95,37 @@ export function SetRow({ index, type = 'work', status, weight, reps, rpe, error,
     </div>
   );
 }
-function SetInput({ label, unit, value, onChange, invalid, mode = 'decimal' }: { label: string; unit: string; value: string; onChange: (v: string) => void; invalid?: boolean; mode?: 'decimal' | 'numeric' }) {
+function SetInput({ label, unit, value, onChange, invalid, mode = 'decimal', pad }: {
+  label: string; unit: string; value: string; onChange: (v: string) => void; invalid?: boolean; mode?: 'decimal' | 'numeric'; pad?: { on: boolean; focus: () => void };
+}) {
   return (
-    <label className={cx(s.setInput, invalid && s.setInputBad)}>
+    <label className={cx(s.setInput, invalid && s.setInputBad, pad?.on && s.setInputOn)} onPointerDown={pad ? (e) => { e.preventDefault(); pad.focus(); } : undefined}>
       <span className="milo-sr">{label}</span>
-      <input value={value} inputMode={mode} aria-invalid={invalid || undefined} onChange={(e) => onChange(e.target.value)} placeholder="—" />
+      <input value={value} inputMode={pad ? 'none' : mode} readOnly={!!pad} aria-invalid={invalid || undefined} onChange={(e) => onChange(e.target.value)} placeholder="—"
+        onFocus={pad ? () => pad.focus() : undefined} />
       <i>{unit}</i>
     </label>
+  );
+}
+
+/* ---------- 训练页自带数字键盘（P03，Stitch s6 V2 + V1 的「下一组」键） ---------- */
+/** 0–9、小数点、退格；上面一排步进（重量 ±步进 kg，次数 ±1）；右下「下一组」= 完成当前这一组（唯一入口，缺值 / 超范围时不可用） */
+export function NumPad({ onKey, onStep, step, unit, onNext, nextDisabled, nextLabel = '下一组' }: {
+  onKey: (k: string) => void; onStep: (d: number) => void; step: number; unit: string; onNext: () => void; nextDisabled?: boolean; nextLabel?: string;
+}) {
+  const key = (k: string, label: ReactNode = k, extra?: string) => (
+    <button key={k} type="button" className={cx('milo-press milo-focus', s.key, extra)} onClick={() => onKey(k)} aria-label={k === 'del' ? '删除' : undefined}>{label}</button>
+  );
+  const stepKey = (d: number) => <button type="button" className={cx('milo-press milo-focus', s.key, s.keyStep)} onClick={() => onStep(d)}>{d > 0 ? '+' : '−'}{Math.abs(d)}<small>{unit}</small></button>;
+  // 4 列：1 2 3 −步进 / 4 5 6 +步进 / 7 8 9 退格 / . 0 下一组（占两格）
+  return (
+    <div className={s.pad} role="group" aria-label="数字键盘">
+      {key('1')}{key('2')}{key('3')}{stepKey(-step)}
+      {key('4')}{key('5')}{key('6')}{stepKey(step)}
+      {key('7')}{key('8')}{key('9')}{key('del', <Icon name="back" small />)}
+      {key('.')}{key('0')}
+      <button type="button" className={cx('milo-press milo-focus', s.key, s.keyNext)} onClick={onNext} disabled={nextDisabled}>{nextLabel}</button>
+    </div>
   );
 }
 

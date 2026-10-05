@@ -19,7 +19,7 @@ describe('首次打开（阶段 6a）', () => {
     store.clear();
     window.history.pushState({}, '', '/');
     render(<App />);
-    expect(await screen.findByText('米洛（Milo）每天扛起一头小牛')).toBeInTheDocument();
+    expect(await screen.findByText('两千五百年前，有个扛牛的人')).toBeInTheDocument();
     expect(window.location.pathname).toBe('/onboarding');
     screen.getByRole('button', { name: '跳过' }).click();
     expect(await screen.findByText('你练了多久？')).toBeInTheDocument();

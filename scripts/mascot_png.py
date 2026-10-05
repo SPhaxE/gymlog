@@ -152,6 +152,10 @@ def matte(sr, bg, member, hi, lo, key=None, shrink=0, open_bg_holes=False):
         # （小牛不能开：它的眼睛和深色底一样黑）
         if st[j, cv2.CC_STAT_AREA] < 0.008 * fig_area and not (open_bg_holes and np.median(d[cc == j]) < hi / 2): fill |= cc == j
     solid = core | fill
+    purple = None
+    if key == 'magenta' and open_bg_holes:  # 品红度高的（暗品红阴影、石缝里的底）不可能是画面内容：不填实、最后透明
+        px = sr.astype(np.float32); purple = (np.minimum(px[..., 0], px[..., 2]) - px[..., 1]) > 70
+        solid &= ~purple
     # 边缘：像素 = α·F + (1−α)·底，F 取最近的实心像素颜色（换掉边上混进去的底色，不留黑边 / 绿边）
     _, lab = cv2.distanceTransformWithLabels((~core).astype(np.uint8), cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)
     cy, cx = np.nonzero(core); lut = np.zeros((lab.max() + 1, 3), np.float32); lut[1:len(cy) + 1] = sr[cy, cx]
@@ -162,6 +166,7 @@ def matte(sr, bg, member, hi, lo, key=None, shrink=0, open_bg_holes=False):
     a = np.where(solid, 1.0, np.where(near & member, a, 0.0))
     rgb = np.where(solid[..., None], sr.astype(np.float32), Fc)
     a = cv2.GaussianBlur(a.astype(np.float32), (0, 0), 0.5) * (~solid) + solid
+    if purple is not None: a = a * ~purple
     return np.dstack([np.clip(rgb, 0, 255), np.clip(a * 255, 0, 255)]).astype(np.uint8)
 
 
