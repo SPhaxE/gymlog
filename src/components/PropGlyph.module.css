@@ -1,0 +1,39 @@
+/* 道具图标：骨白 + 荧光；牛头沿用标志的条（Logo.module.css 的 .bar / .barHorn 读 --logo-base / --logo-lit） */
+.glyph { display: block; width: calc(var(--milo-size-icon) * 1.5); height: auto; overflow: visible; }
+.prop { --logo-base: var(--milo-prim-bone-100); --logo-lit: var(--milo-prim-lime-500); }
+.prop text { font-family: var(--milo-font-number); font-weight: 800; letter-spacing: 0.04em; }
+
+/* 冻结卡：冰块 + 高光 + 冰晶；冻住的条变暗 */
+.ice { fill: color-mix(in srgb, var(--milo-prim-bone-100) 16%, transparent); stroke: color-mix(in srgb, var(--milo-prim-bone-100) 55%, transparent); stroke-width: 1.2; }
+.frozen { --logo-base: color-mix(in srgb, var(--milo-prim-bone-100) 62%, var(--milo-color-bg-raised)); }
+.glint { fill: none; stroke: var(--milo-prim-bone-100); stroke-width: 1.6; stroke-linecap: round; opacity: 0.7; }
+.crystal path { fill: none; stroke: var(--milo-prim-lime-300); stroke-width: 1.3; stroke-linecap: round; }
+.melt { fill: color-mix(in srgb, var(--milo-prim-lime-500) 55%, transparent); }
+.used .ice { stroke: var(--milo-prim-lime-500); }
+.used .frozen { --logo-base: var(--milo-prim-bone-100); }
+
+/* 牛劲：荧光硬币，牛头压印成深色 */
+.coin { fill: var(--milo-prim-lime-500); }
+.coinEdge { fill: none; stroke: var(--milo-prim-lime-ink); stroke-width: 1; stroke-dasharray: 1.2 1.6; opacity: 0.55; }
+.stamp { --logo-base: var(--milo-prim-lime-ink); --logo-lit: var(--milo-prim-lime-900); }
+
+/* Pro 体验：通行证 */
+.card { fill: var(--milo-color-bg-raised-2); stroke: var(--milo-prim-lime-500); stroke-width: 1.4; }
+.hole { fill: var(--milo-color-bg-base); stroke: color-mix(in srgb, var(--milo-prim-bone-100) 40%, transparent); stroke-width: 0.8; }
+.pro { fill: var(--milo-prim-lime-500); }
+
+/* 免邮：纸箱 + 荧光封箱带 + 速度线 */
+.box, .boxTop { fill: var(--milo-color-bg-raised-2); stroke: var(--milo-prim-bone-100); stroke-width: 1.3; stroke-linejoin: round; }
+.tape { fill: var(--milo-prim-lime-500); }
+.speedLines { fill: none; stroke: var(--milo-prim-lime-500); stroke-width: 1.6; stroke-linecap: round; }
+
+/* 商家券：吊牌 + 荧光折角 */
+.tag { fill: var(--milo-color-bg-raised-2); stroke: var(--milo-prim-bone-100); stroke-width: 1.3; stroke-linejoin: round; }
+.corner { fill: var(--milo-prim-lime-500); }
+
+/* 已用 / 过期：整体降到禁用色 */
+.dim { --logo-base: var(--milo-color-text-disabled); --logo-lit: var(--milo-color-text-disabled); opacity: 0.7; }
+.dim .coin, .dim .tape, .dim .corner, .dim .melt { fill: var(--milo-color-text-disabled); }
+.dim .pro { fill: var(--milo-color-text-disabled); }
+.dim .card, .dim .ice, .dim .used .ice { stroke: var(--milo-color-text-disabled); }
+.dim .crystal path, .dim .speedLines { stroke: var(--milo-color-text-disabled); }

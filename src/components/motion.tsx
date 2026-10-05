@@ -3,7 +3,7 @@
  *  RestDock — M02 流体胶囊形变：组间休息平时是底部一颗小胶囊，点开原地长成休息面板（尺寸与圆角一起按软弹簧过渡）；
  *  SharedDetail / sharedTransition / sharedName — M03 共享元素展开：列表行的卡片、名称、数字原地变形成整屏详情（View Transitions），返回时变回去。
  *  都有「减少动态效果」降级：直接到位。 */
-import { Children, useEffect, type ReactNode } from 'react';
+import { Children, useEffect, type CSSProperties, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import { T } from '../styles/tokens.gen';
 import { IconButton } from './Button';
@@ -41,8 +41,10 @@ export function RestDock({ remaining, total, open, onToggle, onAdjust, onSkip }:
 }
 
 /* ---------- M03 共享元素展开（View Transitions） ---------- */
-/** 共享元素的名字：同一个 id 的卡片、名称、数字在列表与详情里同名，转场时由浏览器把它们从旧位置变形到新位置 */
-export const sharedName = (part: 'card' | 'title' | 'num', id: string) => ({ viewTransitionName: `x-${part}-${id.replace(/[^a-zA-Z0-9-]/g, '-')}` });
+/** 共享元素的名字：同一个 id 的卡片、名称、数字在列表与详情里同名，转场时由浏览器把它们从旧位置变形到新位置。
+ *  view-transition-class = 部位（card / title / num），CSS 按部位定转场方式。
+ *  同一时刻只给「正在展开 / 收起的那一项」起名：转场层里的分组按文档顺序叠放，列表其他行要是也有名字，会画在展开的卡片上面（用户 2026-10-05 逐帧看到的遮挡错） */
+export const sharedName = (part: 'card' | 'title' | 'num', id: string) => ({ viewTransitionName: `x-${part}-${id.replace(/[^a-zA-Z0-9-]/g, '-')}`, viewTransitionClass: part }) as CSSProperties;
 
 /** 用 View Transitions 包住一次状态切换（flushSync 让新 DOM 在回调里就位）；不支持或减少动态效果时直接切换 */
 export function sharedTransition(update: () => void) {

@@ -1,6 +1,8 @@
 /* IP 小牛（PNG）：图里只有牛本身；这里管尺寸、动效和代码生成的特效（速度线、z、碎屑、Milo 的泛光 / 星光 / 扫光） */
 .mascot { display: inline-block; width: min(calc(var(--fig-w) * var(--mascot-unit, 0.04em)), calc(var(--mascot-max-h, 100vh) * var(--fig-w) / var(--fig-h))); max-width: 100%; vertical-align: bottom; }
-.fig { position: relative; display: block; width: 100%; aspect-ratio: var(--fig-ratio); transform-origin: 50% var(--ground); }
+.fig { position: relative; display: block; width: 100%; aspect-ratio: var(--fig-ratio); }
+/* 牛身：会动的只有这一层（动效以地面线为支点）；特效是 .fig 里它的兄弟，不跟着动 */
+.body { position: absolute; inset: 0; display: block; transform-origin: 50% var(--ground); }
 .root { --glow: calc(var(--fig-w) * var(--mascot-unit, 0.04em) * 0.008); }
 .img { position: relative; display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; }
 
@@ -53,15 +55,15 @@
 .headMilo .headImg { filter: drop-shadow(0 0 var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-prim-lime-500) 80%, transparent)) drop-shadow(0 0 calc(var(--milo-stroke-hairline) * 3) color-mix(in srgb, var(--milo-prim-lime-500) 35%, transparent)); }
 
 /* ---------- 动效（animate）：整只以地面线为支点；周期用 motion/slow 的倍数，首尾帧相同 ---------- */
-.m_idle .fig { animation: breathe calc(var(--milo-motion-slow) * 13.7) ease-in-out infinite; }
+.m_idle .body { animation: breathe calc(var(--milo-motion-slow) * 13.7) ease-in-out infinite; }
 @keyframes breathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.006, 1.018); } }
 
 /* 专注：蓄力前压——往前探、压低一点再回来 */
-.m_focused .fig { animation: press calc(var(--milo-motion-slow) * 6.9) ease-in-out infinite; }
+.m_focused .body { animation: press calc(var(--milo-motion-slow) * 6.9) ease-in-out infinite; }
 @keyframes press { 0%, 100% { transform: translateX(0) scale(1, 1); } 50% { transform: translateX(1.5%) scale(1.01, 0.985); } }
 
 /* 开心：原地小跳（起跳前压扁、空中拉长、落地再压一下） */
-.m_happy .fig { animation: hop calc(var(--milo-motion-slow) * 3.4) var(--milo-motion-ease-standard) infinite; }
+.m_happy .body { animation: hop calc(var(--milo-motion-slow) * 3.4) var(--milo-motion-ease-standard) infinite; }
 @keyframes hop {
   0%, 100% { transform: translateY(0) scale(1, 1); }
   15% { transform: translateY(0) scale(1.03, 0.95); }
@@ -71,11 +73,11 @@
 }
 
 /* 恢复日：深而慢的呼吸 */
-.m_rest .fig { animation: deep calc(var(--milo-motion-slow) * 17.1) ease-in-out infinite; }
+.m_rest .body { animation: deep calc(var(--milo-motion-slow) * 17.1) ease-in-out infinite; }
 @keyframes deep { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.01, 1.035); } }
 
 /* 破纪录：起跳欢呼，落回原姿再来 */
-.m_pr .fig { animation: cheer calc(var(--milo-motion-slow) * 4.6) var(--milo-motion-ease-standard) infinite; }
+.m_pr .body { animation: cheer calc(var(--milo-motion-slow) * 4.6) var(--milo-motion-ease-standard) infinite; }
 @keyframes cheer {
   0%, 100% { transform: translateY(0) scale(1, 1) rotate(0deg); }
   10% { transform: translateY(0) scale(1.04, 0.94) rotate(0deg); }
@@ -85,9 +87,9 @@
 }
 
 /* 减量周：慢而深的「叹气」 */
-.m_deload .fig { animation: sigh calc(var(--milo-motion-slow) * 16) ease-in-out infinite; }
+.m_deload .body { animation: sigh calc(var(--milo-motion-slow) * 16) ease-in-out infinite; }
 @keyframes sigh { 0%, 100% { transform: scale(1, 1); } 40% { transform: scale(1.01, 1.025); } 60% { transform: scale(1, 0.985); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .alive .fig, .alive .lime, .alive .sheen, .alive .speed, .alive .z, .alive .confetti, .alive .spark { animation: none !important; }
+  .alive .body, .alive .lime, .alive .sheen, .alive .speed, .alive .z, .alive .confetti, .alive .spark { animation: none !important; }
 }

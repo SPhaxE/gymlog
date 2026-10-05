@@ -126,7 +126,7 @@ def figures(img, n=6, thr=34):
 
 
 # ---------- 抠图 ----------
-def matte(sr, bg, member, hi, lo, key=None):
+def matte(sr, bg, member, hi, lo, key=None, shrink=0):
     """sr = 4 倍超分后的裁切图；member = 这只牛（已放大到同尺寸，并外扩过）；
     hi = 实心阈值（和背景的色差）；lo = 牛身外面一圈的底色水平（背景噪点）。
     key = 只看一个通道（品红底用绿色通道 1：底色绿 ≈ 7，牛身最暗的蹄子也有 ≈ 86；生成图在牛身外缘有一道暗品红描边，
@@ -136,8 +136,8 @@ def matte(sr, bg, member, hi, lo, key=None):
     d = gap(sr)
     core = (d > hi) & member
     core = cv2.morphologyEx(core.astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8)).astype(bool)
-    if key is not None:  # 品红底的过渡像素绿色也够高，会被当实心、带着品红原色留下来（一圈粉线）：实心区往里收 2 像素，边上一律用最近的牛身色
-        core = cv2.erode(core.astype(np.uint8), np.ones((5, 5), np.uint8)).astype(bool)
+    if shrink:  # 品红底：过渡像素和底色差也够大，会被当实心、带着品红原色留下来（一圈粉线）：实心区往里收 shrink 像素，边上一律用最近的实心色
+        core = cv2.erode(core.astype(np.uint8), np.ones((2 * shrink + 1,) * 2, np.uint8)).astype(bool)
     # 被实心区包住的洞：小的（眼睛、鼻孔、星星眼）算实心；大的（腿缝、尾巴圈住的背景）还是背景
     holes = (~core).astype(np.uint8); cv2.floodFill(holes, np.zeros((H + 2, W + 2), np.uint8), (0, 0), 0)
     cnt, cc, st, _ = cv2.connectedComponentsWithStats(holes, connectivity=8)
@@ -238,7 +238,7 @@ def main(sheet):
             mem = member[Y0:Y1, X0:X1].astype(np.uint8)
             mem = cv2.dilate(mem, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11 * SR // k4,) * 2))
             mem = cv2.resize(mem, (sr.shape[1], sr.shape[0]), interpolation=cv2.INTER_NEAREST).astype(bool)
-            rgba = matte(sr, bg, mem, hi=58, lo=12, key=1) if stage in NATIVE else matte(sr, bg, mem, hi=58, lo=7)  # 品红底：绿色通道当键，噪点 ≤ 8
+            rgba = matte(sr, bg, mem, hi=58, lo=12, key=1, shrink=2) if stage in NATIVE else matte(sr, bg, mem, hi=58, lo=7)  # 品红底：绿色通道当键，噪点 ≤ 8
             bx0, by0, bx1, by1 = body
             ground = (by1 - Y0) * k4                       # 牛身最低点 = 地面线
             cxb = ((bx0 + bx1) / 2 - X0) * k4               # 牛身横向中心

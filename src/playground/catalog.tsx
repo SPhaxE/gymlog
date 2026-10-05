@@ -7,7 +7,7 @@ import {
   Banner, BodyFigure, DotCalendar, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
   ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProgressSteps, RestBar, SectionLabel, Segmented,
   SessionRow, SetRow, Sheet, SheetBlock, Skeleton, Sparkline, StateView, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
-  AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, RewardCard, AgeBadge, Coupon, FreezeCard, GrowthBar, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, ProductCard, StreakBar,
+  AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, PropGlyph, type PropKind, RewardCard, AgeBadge, Coupon, FreezeCard, GrowthBar, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, ProductCard, StreakBar,
   type LogoState, type MascotMood, type MascotStage, type StreakStatus,
   type Forced, type IconName, type NumSize, type SkeletonShape, type Tab, type TagTone,
 } from '../components';
@@ -55,7 +55,7 @@ const noop = () => {};
 /** 轴取值的中文标注（矩阵表头与单元格说明） */
 export const CN: Record<string, string> = {
   default: '默认', pressed: '按下', focused: '聚焦', disabled: '禁用', loading: '加载中', primary: '主操作', primary_glow: '主操作 · 光晕', neutral: '中性', ghost: '描边', danger: '危险',
-  l: '大', s: '小', raised: '实底', plain: '无底', true: '是', false: '否', single: '单选', multi: '多选', empty: '空', filled: '已填', error: '错误',
+  l: '大', s: '小', raised: '实底', plain: '无底', true: '是', false: '否', single: '单选', multi: '多选', empty: '空', filled: '已填', error: '错误', 'error-reps': '次数错误', 'pk-freeze': '冻结卡', 'pk-niujin': '牛劲', 'pk-trial': 'Pro 体验', 'pk-shipping': '免邮券', 'pk-merchant': '商家券', 'ps-normal': '可用', 'ps-used': '刚用掉', 'ps-dim': '已用 / 过期',
   min: '到下限', max: '到上限', strong: '强调', outline: '虚线', up: '上升', down: '下降', flat: '持平', baseline: '基线', static: '只读', nav: '可进入',
   toggle: '开关', plain_card: '普通', hero: '主角', todo: '待做', first: '首次', current: '进行中', done: '已完成', skipped: '未做', missing: '缺值',
   editing: '修改中', warmup: '热身组', drop: '递减组', running: '计时中', ending: '即将结束', normal: '普通', pr: '有 PR', deload: '减量周', trained: '已练',
@@ -265,14 +265,14 @@ export const CATALOG: Entry[] = [
     },
   },
   {
-    name: 'SetRow', group: '训练与记录', desc: '记组。当前组预填建议值，「完成」是唯一入口（一次点击记完一组）；缺值时禁用并说明缺哪项；超范围行内报错。热身组不计入。',
-    axes: { kind: ['todo', 'current', 'missing', 'done', 'editing', 'error', 'warmup', 'drop'] }, size: 'card',
+    name: 'SetRow', group: '训练与记录', desc: '记组。当前组预填建议值，「完成」是唯一入口（一次点击记完一组）；缺值时禁用、在缺的那格下面说明；超范围只圈出错的那一格，红字就在它正下方、同宽（不整行描红）。热身组不计入。',
+    axes: { kind: ['todo', 'current', 'missing', 'done', 'editing', 'error', 'error-reps', 'warmup', 'drop'] }, size: 'card',
     render: (p) => {
       const base = { index: 2, weight: '62.5', reps: '8' };
       const m: Record<string, ReactNode> = {
         todo: <SetRow {...base} index={3} status="todo" />, current: <SetRow {...base} status="current" />, missing: <SetRow {...base} weight="" status="current" />,
         done: <SetRow {...base} index={1} status="done" rpe="8" />, editing: <SetRow {...base} index={1} status="editing" />,
-        error: <SetRow {...base} weight="620" status="current" error="重量范围 0–500 kg" />, warmup: <SetRow index={0} type="warmup" status="done" weight="40" reps="10" />,
+        error: <SetRow {...base} weight="620" status="current" error="最多 500 kg" />, 'error-reps': <SetRow {...base} reps="0" status="current" error="1–100 次" errorField="reps" />, warmup: <SetRow index={0} type="warmup" status="done" weight="40" reps="10" />,
         drop: <SetRow index={4} type="drop" status="done" weight="45" reps="12" />,
       };
       return m[p.kind];
@@ -408,7 +408,7 @@ export const CATALOG: Entry[] = [
   },
   /* ---------------- 品牌（阶段 5.5b，2026-10-05） ---------------- */
   {
-    name: 'Mascot', group: '品牌', desc: 'IP 小牛（PNG）：用户按意向图 3_27AM 用 Nano Banana 高清重制，scripts/mascot_png.py 切图、Real-ESRGAN 4 倍超分、抠图（边缘反解透明度不留黑边，只留牛本身；Milo 用无泛光的品红底源图，泛光由代码生成）。5 种牛龄（牛犊 · 小牛 · 壮牛 · 公牛 · Milo）× 6 种状态；前四种单眼，Milo 双眼发光。特效由代码生成：专注 = 速度线、恢复日 = 飘 z、破纪录 = 碎屑、Milo = 全身泛光 + 四角星 + 扫光；其余牛龄的荧光角带一圈会呼吸的微光。同一牛龄同比例、同地面线，换状态不跳；动效以地面线为支点整只呼吸 / 前压 / 小跳 / 欢呼 / 叹气，减少动态效果时静止。只出现在品牌位置（引导、奖励、牛龄、空态、商城、会员）。',
+    name: 'Mascot', group: '品牌', desc: 'IP 小牛（PNG）：用户按意向图 3_27AM 用 Nano Banana 高清重制，scripts/mascot_png.py 切图、Real-ESRGAN 4 倍超分、抠图（边缘反解透明度不留黑边，只留牛本身；Milo 用无泛光的品红底源图，泛光由代码生成）。5 种牛龄（牛犊 · 小牛 · 壮牛 · 公牛 · Milo）× 6 种状态；前四种单眼，Milo 双眼发光。特效由代码生成：专注 = 速度线、恢复日 = 飘 z、破纪录 = 碎屑、Milo = 全身泛光 + 四角星 + 扫光；其余牛龄的荧光角带一圈会呼吸的微光。同一牛龄同比例、同地面线，换状态不跳；动效以地面线为支点整只呼吸 / 前压 / 小跳 / 欢呼 / 叹气，粒子特效挂在不动的一层、不跟着牛跳，减少动态效果时静止。只出现在品牌位置（引导、奖励、牛龄、空态、商城、会员）。',
     axes: { stage: ['newborn', 'young', 'sturdy', 'bull', 'milo'], mood: ['m-idle', 'm-focused', 'm-happy', 'm-rest', 'm-pr', 'm-deload'] }, rows: ['stage'], cols: 'mood', size: 'card',
     render: (p) => <div className={s.mascotCell}><Mascot stage={p.stage as MascotStage} mood={p.mood.slice(2) as MascotMood} animate title="慢牛小牛" /></div>,
   },
@@ -467,7 +467,7 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'Coupon', group: '增长',
-    desc: '卡券（票根：左侧荧光存根 + 两侧缺口 + 虚线）：商家券 / 免邮券 / 会员体验 / 冻结卡 × 可兑换 / 牛劲不够（按钮不可用、写明还差多少）/ 可用 / 已用 / 已过期。',
+    desc: '卡券（票根：左侧深色存根放道具图标 PropGlyph + 面额，两侧缺口 + 虚线）：商家券 / 免邮券 / 会员体验 / 冻结卡 × 可兑换 / 牛劲不够（按钮不可用、写明还差多少）/ 可用 / 已用 / 已过期。',
     axes: { type: ['c-merchant', 'c-shipping', 'c-trial', 'c-freeze'], state: ['c-redeem', 'c-short', 'c-available', 'c-used', 'c-expired'] }, rows: ['type'], cols: 'state', size: 'card',
     render: (p) => {
       const c = COUPONS[p.type.slice(2) as keyof typeof COUPONS], st = p.state.slice(2);
@@ -491,6 +491,12 @@ export const CATALOG: Entry[] = [
     desc: '会员付费墙（演示不拦截）：免费 vs Pro 对比 + 月度 / 年度（省 40%）/ 试用 7 天；已是会员显示到期与管理；开通成功是 Milo 庆祝。全程标「演示模式」，支付走假成功，不收集支付信息。',
     axes: { state: ['w-month', 'w-year', 'w-trial', 'w-member', 'w-success'] }, size: 'screen',
     render: (p) => <Paywall plan={p.state === 'w-year' ? 'year' : p.state === 'w-trial' ? 'trial' : 'month'} member={p.state === 'w-member'} success={p.state === 'w-success'} />,
+  },
+  {
+    name: 'PropGlyph', group: '增长',
+    desc: '道具图标（标志「递增条牛头」的变体）：冻结卡 = 牛头冻在冰块里（用掉时化开一角、荧光漫进来）；牛劲 = 荧光硬币压印牛头；Pro 体验 = 通行证；免邮 = 印着牛头的纸箱 + 荧光封箱带；商家券 = 吊牌 + 荧光折角。已用 / 过期整体降为禁用色。用在冻结卡、卡券票根、消息。',
+    axes: { kind: ['pk-freeze', 'pk-niujin', 'pk-trial', 'pk-shipping', 'pk-merchant'], state: ['ps-normal', 'ps-used', 'ps-dim'] }, size: 'auto', covers: ['PROP_NAME'],
+    render: (p) => <PropGlyph kind={p.kind.slice(3) as PropKind} used={p.state === 'ps-used'} dim={p.state === 'ps-dim'} className={s.propGlyph} />,
   },
   {
     name: 'ProBadge', group: '增长',

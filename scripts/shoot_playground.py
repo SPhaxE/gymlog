@@ -49,7 +49,7 @@ with sync_playwright() as p:
     ok(demo.get_by_role('timer').get_attribute('aria-label') != before, '休息 +15 秒生效')
     # 行内报错：把当前组重量改成 620
     demo.locator('input').first.fill('620'); pg.wait_for_timeout(200)
-    ok(demo.get_by_text('重量范围 0–500 kg').count() >= 1 and demo.get_by_role('button', name='完成').first.is_disabled(), '记组：超范围行内报错且「完成」禁用')
+    ok(demo.get_by_text('最多 500 kg').count() >= 1 and demo.get_by_role('button', name='完成').first.is_disabled(), '记组：超范围行内报错且「完成」禁用')
 
     # 导航：点「身体」
     nd = pg.locator('[aria-label="导航演示"]')

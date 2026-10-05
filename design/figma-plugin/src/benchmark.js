@@ -118,11 +118,11 @@ async function buildP06(sec, x0, mode, V, S, K) {
     c.node = node;
     y += node.height + T.number['space/2xs'].value;
   }
-  // 引线：锚点 → 折线 → 胶囊左缘
-  caps.forEach((c, k) => {
-    const a = A[c.id], cy = c.node.y + c.node.height / 2, cx = c.node.x, ex = 188 + (k % 4) * 2;
+  // 引线：锚点 → 胶囊左缘中点，一条直线（2026-10-05 用户：折线的竖段在胶囊左边挤成一束）
+  caps.forEach((c) => {
+    const a = A[c.id], cy = c.node.y + c.node.height / 2, cx = c.node.x;
     const on = (mode === 'mag' || mode === 'sheet') && c.id === focus;
-    const ln = polyline(f, 'leader/' + c.id, [[a[0], a[1]], [ex, a[1]], [ex, cy], [cx, cy]], false);
+    const ln = polyline(f, 'leader/' + c.id, [[a[0], a[1]], [cx, cy]], false);
     ln.strokes = fill(V, on ? 'accent/default' : 'data/leader');
     ln.strokeWeight = on ? 1.3 : 0.8;
     const dot = ellipse(f, 'leader/' + c.id + '/dot', on ? 5 : 3, fill(V, on ? 'accent/default' : 'line/strong'));
