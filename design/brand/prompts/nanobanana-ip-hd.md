@@ -1,11 +1,11 @@
 # 慢牛 Milo · IP 高清重制提示词（Nano Banana 2，PNG）
 
-> 2026-10-05 · 用户决定：IP 改用 PNG，以意向图 `docs/brand-refs/ip2-geo-b-selected.jpg`（3_27AM）为准高清重制。
+> 2026-10-05 · 用户决定：IP 改用 PNG，以意向图 `docs/sources/brand-refs/ip2-geo-b-selected.jpg`（3_27AM）为准高清重制。
 > 范围：**5 种牛龄 × 6 种状态 = 30 张**。牛犊、小牛、壮牛、公牛都是**单眼**（头三分之四侧转，远侧眼被脸挡住）；Milo 是**双眼且泛光**（正脸朝向观者，双眼与轮廓发荧光）。
 
 ## 用法
 
-1. **每次出图都把参考图一起传上去**：`docs/brand-refs/ip2-geo-b-selected.jpg`，并在提示词前加一句 `Use the attached image as the exact style and character reference.`（下面每段已写好）。
+1. **每次出图都把参考图一起传上去**：`docs/sources/brand-refs/ip2-geo-b-selected.jpg`，并在提示词前加一句 `Use the attached image as the exact style and character reference.`（下面每段已写好）。
 2. **按顺序出，先锁定角色再出状态**：
    - **第一步 · 总览（A）**：5 种牛龄平常状态排一排，挑一张最满意的当「定妆照」。
    - **第二步 · 每种牛龄一张状态板（B1–B5）**：上传参考图 + 第一步选中的定妆照，各出 6 个状态。
@@ -13,7 +13,7 @@
 3. **背景**：A、B 用近黑 `#0A0A0B`，方便看效果；C 用纯品红 `#FF00FF` 当抠图底（调色板里没有品红，抠得干净）。出来后我负责抠图、对齐地面线、统一尺寸，导出 1x / 2x / 3x 的 PNG 和 WebP。
    - **Milo 的单张资产不画光**：泛光、轮廓光、四角星在品红底上抠不干净，所以 C 里的 Milo 是平涂的（双眼用最亮的白荧光色），光晕、扫光、星光由 App 叠加，还能动（`/brand` 里已经实现）。A、B 两步的 Milo 照常泛光，用来看整体效果。
 4. **尺寸**：A、B 选 16:9 最高分辨率（4K）；C 选 1:1 最高分辨率（2048 × 2048 或以上），角色占画面宽度约 70%，脚踩在画面下方约 15% 处的同一条地面线上（Milo 同样）。
-5. **命名与回收**：C 的文件名按表里的 `mascot-<牛龄>-<状态>.png`，放到 `docs/brand-refs/hd/` 或直接发到对话里。我会逐张对照定妆照检查比例、颜色、眼睛数量和状态是否对。
+5. **命名与回收**：C 的文件名按表里的 `mascot-<牛龄>-<状态>.png`，放到 `docs/sources/brand-refs/hd/` 或直接发到对话里。我会逐张对照定妆照检查比例、颜色、眼睛数量和状态是否对。
 6. 某一张不对，只重出那一张；同一牛龄的 6 张必须是同一只牛（角的大小、身体比例、颜色一致）。
 
 ## 设定速查
@@ -1163,7 +1163,7 @@ AVOID: realistic cow anatomy, fur, cow spots, udders, red cape, bullfighting, st
 为什么重出：原图 B5 的辉光贴着牛身，越靠近越亮，和牛身颜色几乎一样，BiRefNet 和颜色阈值都分不干净（破纪录那张两角之间留一团暗光）。
 所以从源头把辉光去掉，光晕、扫光、四角星全由 App 代码生成。同时按用户 2026-10-05 的要求，**Milo 的角和眼改成画面里最亮的荧光**（原来是骨白角、白眼）。
 
-用法：在 Nano Banana 里上传两张图，图 1 是 `docs/B5.jpg`（要改的状态板），图 2 是 Milo 平常状态的单张参考（用户提供，同款角色）。16:9 最高分辨率。
+用法：在 Nano Banana 里上传两张图，图 1 是 `docs/sources/mascot/B5.jpg`（要改的状态板），图 2 是 Milo 平常状态的单张参考（用户提供，同款角色）。16:9 最高分辨率。
 出图存 `docs/B5-noglow.png`。
 
 ```

@@ -15,7 +15,8 @@
     "android:sync": "cap sync android",
     "android:apk": "npm run build && cap sync android && cd android && ./gradlew assembleDebug",
     "shots:playground": "python3 scripts/shoot_playground.py",
-    "shots:hifi": "python3 scripts/shoot_hifi.py"
+    "shots:hifi": "python3 scripts/shoot_hifi.py",
+    "shots:6a": "python3 scripts/shoot_6a.py"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",

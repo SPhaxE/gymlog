@@ -1,4 +1,4 @@
-/** IP 小牛（2026-10-05 起用 PNG）：用户用 Nano Banana 按意向图 3_27AM 高清重制的状态板（docs/A.jpg、B1–B5.jpg），
+/** IP 小牛（2026-10-05 起用 PNG）：用户用 Nano Banana 按意向图 3_27AM 高清重制的状态板（docs/sources/mascot/A.jpg、B1–B5.jpg），
  *  由 scripts/mascot_png.py 切图、Real-ESRGAN 4 倍超分、抠图（边缘反解 α，去黑边；只留牛本身，Milo 的泛光也扣掉），按牛龄统一比例和地面线，
  *  导出到 public/mascot/<牛龄>-<状态>.webp（PNG 母版在 design/brand/mascot/），尺寸与头像框在 mascotAssets.ts。
  *  - 5 种牛龄：牛犊 → 小牛 → 壮牛 → 公牛 → Milo（最高等级：全身荧光、双眼发光）。

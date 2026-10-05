@@ -5,14 +5,14 @@
 ## 用法
 
 1. **每次都上传参考图**：
-   - 风格：`docs/brand-refs/ip2-geo-b-selected.jpg`；
-   - 牛的定妆：`docs/A.jpg`；
-   - 扛着的牛：`docs/B1.jpg`（牛犊）、`docs/B2.jpg`（小牛）、`docs/B3.jpg`（壮牛）、`docs/B4.jpg`（公牛）。
+   - 风格：`docs/sources/brand-refs/ip2-geo-b-selected.jpg`；
+   - 牛的定妆：`docs/sources/mascot/A.jpg`；
+   - 扛着的牛：`docs/sources/mascot/B1.jpg`（牛犊）、`docs/sources/mascot/B2.jpg`（小牛）、`docs/sources/mascot/B3.jpg`（壮牛）、`docs/sources/mascot/B4.jpg`（公牛）。
 2. **按顺序出**：
    - **第一步 · 定妆板**（深色底，3 × 2）：确认米洛长什么样。挑满意的一张发我，我先看一眼再往下。
    - **第二步 · 单张**（品红底，6 张）：每张一个姿势，进 App 用。上传参考图 + 选中的定妆板。
    - **第三步 · 场景**（3 张分层 + 1 张拱门）。
-3. 出好放进 `docs/story/`，文件名用下面每段标题里的编号（如 `M2.png`、`S1-mid.png`），或直接发到对话里。
+3. 出好放进 `docs/sources/story/`，文件名用下面每段标题里的编号（如 `M2.png`、`S1-mid.png`），或直接发到对话里。
 
 ## 设定速查（第一步到第三步通用）
 

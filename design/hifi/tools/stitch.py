@@ -1,9 +1,18 @@
 #!/usr/bin/env python3
-"""Stitch MCP（HTTP JSON-RPC）的最小客户端。密钥从 ~/.claude.json 读，不打印。
+"""Stitch MCP（HTTP JSON-RPC）的最小客户端。密钥不进仓库、不打印。
+密钥来源（按顺序）：环境变量 STITCH_API_KEY（+ 可选 STITCH_URL）→ ~/.claude.json 里任意一处名为 stitch 的 MCP 配置（顶层或某个项目下）。
 用法：python3 stitch.py list | call <tool> '<json args>'"""
-import json, sys, urllib.request
-cfg = json.load(open('/root/.claude.json'))['projects']['/tmp']['mcpServers']['stitch']
-URL, KEY = cfg['url'], cfg['headers']['X-Goog-Api-Key']
+import json, os, sys, urllib.request
+
+def _config():
+    if os.environ.get('STITCH_API_KEY'):
+        return os.environ.get('STITCH_URL', 'https://stitch.googleapis.com/mcp'), os.environ['STITCH_API_KEY']
+    try: c = json.load(open(os.path.expanduser('~/.claude.json')))
+    except OSError: sys.exit('没有 Stitch 密钥：设置环境变量 STITCH_API_KEY，或在 Claude Code 里配置名为 stitch 的 MCP')
+    for servers in [c.get('mcpServers', {})] + [p.get('mcpServers', {}) for p in c.get('projects', {}).values()]:
+        if 'stitch' in servers: return servers['stitch']['url'], servers['stitch']['headers']['X-Goog-Api-Key']
+    sys.exit('~/.claude.json 里没有名为 stitch 的 MCP 配置；也可以设置环境变量 STITCH_API_KEY')
+URL, KEY = _config()
 def rpc(method, params=None, sid=None, i=1):
     body = json.dumps({'jsonrpc': '2.0', 'id': i, 'method': method, 'params': params or {}}).encode()
     h = {'Content-Type': 'application/json', 'Accept': 'application/json, text/event-stream', 'X-Goog-Api-Key': KEY}

@@ -3,13 +3,13 @@
 > 2026-10-05 · 用户：护具、补剂这类实物给提示词，用户生成好抠图的图像；冻结卡等道具用 Logo 变体（已做成 `PropGlyph`，不用出图）。
 > 范围是 `src/data/growth.ts` 里的 5 件商品（商家、品牌全部虚构，价格是示例）。
 
-> **2026-10-06 已出图**：用户每件出了 2 张（512 × 512），选用的放在 `docs/shop/<id>.jpg`，另一张留在 `docs/shop/alt/`；已抠图导出 `public/shop/`。
+> **2026-10-06 已出图**：用户每件出了 2 张（512 × 512），选用的放在 `docs/sources/shop/<id>.jpg`，另一张留在 `docs/sources/shop/alt/`；已抠图导出 `public/shop/`。
 
 ## 怎么用
 
 1. 每件商品**单独出一张**（一张图只放一件，抠图最干净）：1:1，最高分辨率（2048 × 2048 或以上）。
 2. 先贴「通用前缀」，再接这件商品的「商品描述」，两段之间空一行。
-3. 出图后存成 `docs/shop/<id>.png`（或 .jpg），id 见下表，然后运行 `python3 scripts/shop_png.py`：
+3. 出图后存成 `docs/sources/shop/<id>.png`（或 .jpg），id 见下表，然后运行 `python3 scripts/shop_png.py`：
    - 抠图后导出 `public/shop/<id>.webp`（App 用）和 `design/brand/shop/<id>.png`（母版）；
    - 商品卡 `ProductCard` 有图就显示，没有图就显示占位。
 4. 出图后逐张对一下文末的检查清单。

@@ -1,11 +1,11 @@
 {
   "now": 1791050400000,
-  "variants": 522,
-  "components": 69,
+  "variants": 524,
+  "components": 70,
   "checks": [
     {
       "ok": true,
-      "check": "变体数：页面 522 = 目录 522"
+      "check": "变体数：页面 524 = 目录 524"
     },
     {
       "ok": true,
@@ -61,19 +61,19 @@
     },
     {
       "ok": true,
-      "check": "/today：无横向溢出（360）"
+      "check": "/today?scenario=plain-prescription：无横向溢出（360）"
     },
     {
       "ok": true,
-      "check": "/today：有主导航"
+      "check": "/today?scenario=plain-prescription：有主导航"
     },
     {
       "ok": true,
-      "check": "/body：无横向溢出（360）"
+      "check": "/body?scenario=done-today：无横向溢出（360）"
     },
     {
       "ok": true,
-      "check": "/body：有主导航"
+      "check": "/body?scenario=done-today：有主导航"
     },
     {
       "ok": true,

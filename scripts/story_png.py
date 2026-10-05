@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """初见引导素材（2026-10-06）：用户按 design/brand/prompts/nanobanana-milo-story.md 用 Nano Banana 出图，这里挑图、清理、抠图、导出。
 
-来源（docs/story/，由用户上传的 12 张整理而来；备选放在 docs/story/alt/）：
+来源（docs/sources/story/，由用户上传的 12 张整理而来；备选放在 docs/sources/story/alt/）：
   M1–M6.jpg   米洛（Milo）6 个姿势（品红底）
   S1-far.jpg  远景（铺满，不抠）· S1-mid.jpg 中景（品红底）· S1-near.jpg 近景（品红底，上方一团烟雾要先裁掉）· S2.jpg 奥林匹亚拱门（品红底）
 流程：
@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from mascot_png import bg_color, dist, feather, matte  # noqa: E402
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-SRC = os.path.join(ROOT, 'docs', 'story')
+SRC = os.path.join(ROOT, 'docs', 'sources', 'story')
 PUB = os.path.join(ROOT, 'public', 'story')
 MASTER = os.path.join(ROOT, 'design', 'brand', 'story')
 FIG_H = 720          # 米洛站直（M1）导出后的身高（像素）；其余姿势按同一个比例
