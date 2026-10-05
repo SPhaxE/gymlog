@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   Banner, Button, Cascade, Dialog, ExerciseRow, RestDock, SharedDetail, sharedTransition, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
   LandmarkRuler, PhaseSegments, Num, Screen, SetRow, clock, useCountdown, useToast, type Tab,
-  Mascot, MOOD_NAME, STAGE_NAME, type MascotMood, type MascotStage,
+  Mascot, MASCOT_MOODS, MASCOT_STAGES, MOOD_NAME, STAGE_NAME, type MascotMood, type MascotStage,
 } from '../components';
 import { BodyPage } from '../pages/BodyPage';
 import { HomePage } from '../pages/HomePage';
@@ -246,15 +246,15 @@ export function IconGridBoard() {
   return <iframe ref={ref} className={s.gridFrame} src="/design/icon-grid/index.html" title="图标网格规范" style={h ? { height: h } : undefined} />;
 }
 
-/** 小牛交互演示（用户 2026-10-05：只保留牛犊与米洛）：切形态、切状态，看动效 */
+/** 小牛交互演示：切牛龄、切状态，看动效 */
 function MascotDemo() {
   const [stage, setStage] = useState<MascotStage>('newborn'), [mood, setMood] = useState<MascotMood>('idle');
   return (
     <div className={s.demoPad}>
-      <div className={s.demoButtons}>{(['newborn', 'milo'] as MascotStage[]).map((st) => <Button key={st} kind={stage === st ? 'neutral' : 'ghost'} size="s" onClick={() => setStage(st)}>{STAGE_NAME[st]}</Button>)}</div>
-      <div className={s.demoButtons}>{(Object.keys(MOOD_NAME) as MascotMood[]).map((m) => <Button key={m} kind={mood === m ? 'neutral' : 'ghost'} size="s" onClick={() => setMood(m)}>{MOOD_NAME[m]}</Button>)}</div>
+      <div className={s.demoButtons}>{MASCOT_STAGES.map((st) => <Button key={st} kind={stage === st ? 'neutral' : 'ghost'} size="s" onClick={() => setStage(st)}>{STAGE_NAME[st]}</Button>)}</div>
+      <div className={s.demoButtons}>{MASCOT_MOODS.map((m) => <Button key={m} kind={mood === m ? 'neutral' : 'ghost'} size="s" onClick={() => setMood(m)}>{MOOD_NAME[m]}</Button>)}</div>
       <div className={s.mascotStage}><Mascot stage={stage} mood={mood} animate title={`${STAGE_NAME[stage]} · ${MOOD_NAME[mood]}`} /></div>
-      <Note>牛犊与米洛（公牛换荧光色）；状态只换眼睛、头的姿态与点缀，恢复日是同一只牛趴下。系统开启「减少动态效果」时静止。</Note>
+      <Note>5 种牛龄 × 6 种状态（PNG）。前四种单眼，米洛双眼发光；速度线、z、碎屑、米洛的泛光 / 星光 / 扫光都由代码生成；换状态时比例与地面线不变。系统开启「减少动态效果」时静止。</Note>
     </div>
   );
 }

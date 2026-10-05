@@ -1,63 +1,59 @@
-/* IP 小牛的颜色（意向图 3_27AM）：骨白 + 暖灰 + 两档灰米色；荧光只给角（和极少的庆祝点缀）。
-   中间色用 color-mix 从原色 Token 调出来，不新增色值 */
-.mascot { display: block; width: calc(var(--fig-w) * var(--mascot-unit, 0.04em)); max-width: 100%; height: auto; overflow: visible; }
-.head { display: block; width: var(--milo-size-icon); height: var(--milo-size-icon); overflow: visible; }
-.bone { fill: var(--milo-prim-bone-100); }
-.grey { fill: color-mix(in srgb, var(--milo-prim-gray-600) 82%, var(--milo-prim-bone-100)); }
-.far { fill: color-mix(in srgb, var(--milo-prim-bone-100) 78%, var(--milo-prim-gray-600)); }
-.mid { fill: color-mix(in srgb, var(--milo-prim-bone-100) 45%, var(--milo-prim-gray-600)); }
-.ear { fill: color-mix(in srgb, var(--milo-prim-bone-100) 58%, var(--milo-prim-gray-600)); }
-.hoof { fill: color-mix(in srgb, var(--milo-prim-gray-600) 88%, var(--milo-prim-gray-500)); }
-.nose { fill: color-mix(in srgb, var(--milo-prim-gray-500) 55%, var(--milo-prim-gray-0)); }
-.ink { fill: var(--milo-prim-gray-0); }
-.horn { fill: var(--milo-prim-lime-500); }
-.tail { fill: none; stroke: var(--milo-prim-bone-100); stroke-linecap: round; }
-.line { fill: none; stroke: var(--milo-prim-gray-0); stroke-linecap: round; }
-.zz { fill: var(--milo-prim-lime-500); font-family: var(--milo-font-number); font-weight: 700; font-style: italic; }
+/* IP 小牛（PNG）：图里只有牛本身；这里管尺寸、动效和代码生成的特效（速度线、z、碎屑、米洛的泛光 / 星光 / 扫光） */
+.mascot { display: inline-block; width: calc(var(--fig-w) * var(--mascot-unit, 0.04em)); max-width: 100%; vertical-align: bottom; }
+.fig { position: relative; display: block; width: 100%; aspect-ratio: var(--fig-ratio); transform-origin: 50% var(--ground); }
+.img { display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; }
 
-/* 米洛 = 最高等级：公牛整只换成荧光色，主色用最亮的 lime-500；灰 → 深荧光、米色 → 两者之间；角反过来用骨白。
-   外发光（两层 drop-shadow，一近一远）+ 斜光扫过 + 四角星闪烁——在深色底上一眼就是「最亮的那只」 */
-.milo { --milo-glow: calc(var(--fig-w) * var(--mascot-unit, 0.04em) * 0.025);
-  filter: drop-shadow(0 0 var(--milo-glow) color-mix(in srgb, var(--milo-prim-lime-500) 70%, transparent))
-          drop-shadow(0 0 calc(var(--milo-glow) * 4) color-mix(in srgb, var(--milo-prim-lime-500) 35%, transparent)); }
-.milo .bone { fill: var(--milo-prim-lime-500); }
-.milo .far { fill: color-mix(in srgb, var(--milo-prim-lime-500) 72%, var(--milo-prim-lime-700)); }
-.milo .mid { fill: color-mix(in srgb, var(--milo-prim-lime-700) 80%, var(--milo-prim-lime-900)); }
-.milo .grey { fill: var(--milo-prim-lime-700); }
-.milo .horn { fill: var(--milo-prim-bone-100); }
-.sheen { transform-box: view-box; mix-blend-mode: screen; }
+/* 米洛：泛光（两层荧光 drop-shadow，一近一远）+ 一道斜光扫过全身（用同一张图当遮罩，只扫在牛身上）+ 四角星 */
+.milo { --glow: calc(var(--fig-w) * var(--mascot-unit, 0.04em) * 0.008); }
+.milo .img { filter: drop-shadow(0 0 var(--glow) color-mix(in srgb, var(--milo-prim-lime-500) 70%, transparent)) drop-shadow(0 0 calc(var(--glow) * 3.2) color-mix(in srgb, var(--milo-prim-lime-500) 28%, transparent)); }
+.sheen { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen;
+  background: linear-gradient(105deg, transparent 35%, color-mix(in srgb, var(--milo-prim-bone-100) 70%, transparent) 50%, transparent 65%) no-repeat;
+  background-size: 220% 100%; background-position: 160% 0;
+  -webkit-mask: var(--src) center / contain no-repeat; mask: var(--src) center / contain no-repeat; }
 .alive .sheen { animation: sheen calc(var(--milo-motion-slow) * 11) var(--milo-motion-ease-standard) infinite; }
-.sheenMid { stop-color: var(--milo-prim-bone-100); stop-opacity: 0.85; }
-.sheenEdge { stop-color: var(--milo-prim-bone-100); stop-opacity: 0; }
-@keyframes sheen { 0% { transform: translateX(0); } 32%, 100% { transform: translateX(150%); } }
-.sparks path { fill: var(--milo-prim-lime-300); transform-box: fill-box; transform-origin: center; }
-.alive .sparks path { animation: spark calc(var(--milo-motion-slow) * 5.7) ease-in-out calc(var(--k) * var(--milo-motion-slow) * -1.3) infinite; }
+@keyframes sheen { 0% { background-position: 160% 0; } 32%, 100% { background-position: -60% 0; } }
+
+/* ---------- 代码生成的特效 ---------- */
+.speed, .z, .confetti, .spark { position: absolute; pointer-events: none; }
+/* 专注：身后三道速度线 */
+.speed { border-radius: var(--milo-radius-pill); background: color-mix(in srgb, var(--milo-prim-bone-100) 55%, transparent); }
+.milo .speed { background: var(--milo-prim-lime-500); }
+.alive .speed { animation: speed calc(var(--milo-motion-slow) * 2.6) linear calc(var(--k) * var(--milo-motion-slow) * -0.7) infinite; }
+@keyframes speed { 0% { transform: translateX(30%) scaleX(0.2); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateX(-40%) scaleX(1); opacity: 0; } }
+/* 恢复日：头顶两个 z，往上飘 */
+.z { overflow: visible; font-family: var(--milo-font-number); font-weight: 700; font-style: italic; fill: color-mix(in srgb, var(--milo-prim-bone-100) 75%, transparent); }
+.milo .z { fill: var(--milo-prim-lime-300); }
+.alive .z { animation: float calc(var(--milo-motion-slow) * 7) ease-in-out calc(var(--k) * var(--milo-motion-slow) * -3.2) infinite; }
+@keyframes float { 0% { opacity: 0; transform: translate(0, 30%); } 30%, 70% { opacity: 1; } 100% { opacity: 0; transform: translate(40%, -70%); } }
+/* 破纪录：头边一圈碎屑（三角 + 圆点），一闪一闪往外迸 */
+.confetti { aspect-ratio: 1; background: var(--milo-prim-bone-100); transform: rotate(var(--rot)); }
+.confetti:nth-child(odd) { background: color-mix(in srgb, var(--milo-prim-bone-100) 60%, var(--milo-prim-gray-600)); }
+.confetti.lit, .milo .confetti.lit { background: var(--milo-prim-lime-500); }
+.milo .confetti:not(.lit) { background: var(--milo-prim-lime-300); }
+.tri { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.dot { border-radius: 50%; }
+.alive .confetti { animation: burst calc(var(--milo-motion-slow) * 4.6) var(--milo-motion-ease-decelerate) calc(var(--k) * var(--milo-motion-slow) * -0.3) infinite; }
+@keyframes burst { 0% { opacity: 0; transform: translate(0, 20%) rotate(var(--rot)) scale(0.4); } 20% { opacity: 1; } 70% { opacity: 1; transform: translate(0, -20%) rotate(calc(var(--rot) + 60deg)) scale(1); } 100% { opacity: 0; transform: translate(0, -30%) rotate(calc(var(--rot) + 90deg)) scale(0.8); } }
+/* 米洛：四角星闪烁 */
+.spark { aspect-ratio: 1; background: var(--milo-prim-lime-300); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); }
+.alive .spark { animation: spark calc(var(--milo-motion-slow) * 5.7) ease-in-out calc(var(--k) * var(--milo-motion-slow) * -1.3) infinite; }
 @keyframes spark { 0%, 100% { opacity: 0.25; transform: scale(0.55) rotate(0deg); } 50% { opacity: 1; transform: scale(1.1) rotate(45deg); } }
 
-/* ---------- 动效（animate）：参考 pet-forge 的 SVG 约定 ----------
-   - 每层显式支点（transform-box: view-box + 行内 transform-origin），不靠浏览器默认原点；
-   - 循环动画关键帧 0% = 100%，不跳帧；
-   - 多层异步：呼吸 ≈ 4.8 s、甩尾 ≈ 6 s、眨眼 ≈ 5.4 s，周期故意错开，看起来才像活物；
-   - 周期都用 motion Token 的倍数（motion/slow = 350 ms）。 */
-.whole, .bodyG, .headG, .tailG, .confetti { transform-box: view-box; }
-.eyesG { transform-box: fill-box; transform-origin: center; }
+/* 头像：正方形窗口，图按头像框定位 */
+.head { display: inline-block; width: var(--milo-size-icon); height: var(--milo-size-icon); vertical-align: middle; }
+.headClip { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; }
+.headImg { position: absolute; max-width: none; height: auto; user-select: none; }
 
-/* 平常：呼吸 + 甩尾 + 眨眼 */
-.alive .bodyG { animation: breathe calc(var(--milo-motion-slow) * 13.7) ease-in-out infinite; }
-.alive .tailG { animation: sway calc(var(--milo-motion-slow) * 17.1) ease-in-out infinite; }
-.alive .eyesG { animation: blink calc(var(--milo-motion-slow) * 15.4) linear infinite; }
-@keyframes breathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.008, 1.018); } }
-@keyframes sway { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-8deg); } }
-@keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+/* ---------- 动效（animate）：整只以地面线为支点；周期用 motion/slow 的倍数，首尾帧相同 ---------- */
+.m_idle .fig { animation: breathe calc(var(--milo-motion-slow) * 13.7) ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.006, 1.018); } }
 
-/* 专注：呼吸变快变浅，头微微前压（蓄力） */
-.m_focused .bodyG { animation-duration: calc(var(--milo-motion-slow) * 6.9); }
-.m_focused .headG { animation: press calc(var(--milo-motion-slow) * 6.9) ease-in-out infinite; }
-@keyframes press { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(2.5deg) translateY(1%); } }
+/* 专注：蓄力前压——往前探、压低一点再回来 */
+.m_focused .fig { animation: press calc(var(--milo-motion-slow) * 6.9) ease-in-out infinite; }
+@keyframes press { 0%, 100% { transform: translateX(0) scale(1, 1); } 50% { transform: translateX(1.5%) scale(1.01, 0.985); } }
 
-/* 开心：原地小跳（起跳前压扁、空中拉长、落地再压一下），尾巴快甩 */
-.m_happy .whole { animation: hop calc(var(--milo-motion-slow) * 3.4) var(--milo-motion-ease-standard) infinite; }
-.m_happy .tailG { animation: wag calc(var(--milo-motion-slow) * 1.7) ease-in-out infinite; }
+/* 开心：原地小跳（起跳前压扁、空中拉长、落地再压一下） */
+.m_happy .fig { animation: hop calc(var(--milo-motion-slow) * 3.4) var(--milo-motion-ease-standard) infinite; }
 @keyframes hop {
   0%, 100% { transform: translateY(0) scale(1, 1); }
   15% { transform: translateY(0) scale(1.03, 0.95); }
@@ -65,36 +61,25 @@
   72% { transform: translateY(0) scale(1.04, 0.95); }
   85% { transform: translateY(0) scale(1, 1); }
 }
-@keyframes wag { 0%, 100% { transform: rotate(4deg); } 50% { transform: rotate(-14deg); } }
 
-/* 恢复日：三层异步——深而慢的呼吸、尾巴偶尔摆、z 往上飘 */
-.m_sleep .bodyG, .m_sleep .headG { animation: deep calc(var(--milo-motion-slow) * 17.1) ease-in-out infinite; }
-.m_sleep .tailG { animation: sway calc(var(--milo-motion-slow) * 22.9) ease-in-out infinite; }
-.m_sleep .zz text { animation: float calc(var(--milo-motion-slow) * 5.1) linear infinite; }
-.m_sleep .zz text + text { animation-delay: calc(var(--milo-motion-slow) * -2.5); }
-@keyframes deep { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.01, 1.03); } }
-@keyframes float { 0% { opacity: 0; transform: translate(0, 0); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(3%, -10%); } }
+/* 恢复日：深而慢的呼吸 */
+.m_rest .fig { animation: deep calc(var(--milo-motion-slow) * 17.1) ease-in-out infinite; }
+@keyframes deep { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.01, 1.035); } }
 
-/* 破纪录：起跳欢呼（回归型：落回原姿再来），彩屑闪烁 */
-.m_pr .whole { animation: cheer calc(var(--milo-motion-slow) * 4.6) var(--milo-motion-ease-standard) infinite; }
-.m_pr .confetti { animation: twinkle calc(var(--milo-motion-slow) * 2.6) ease-in-out infinite; }
-.m_pr .tailG { animation: wag calc(var(--milo-motion-slow) * 1.4) ease-in-out infinite; }
+/* 破纪录：起跳欢呼，落回原姿再来 */
+.m_pr .fig { animation: cheer calc(var(--milo-motion-slow) * 4.6) var(--milo-motion-ease-standard) infinite; }
 @keyframes cheer {
-  0%, 100% { transform: translateY(0) scale(1, 1); }
-  10% { transform: translateY(0) scale(1.04, 0.94); }
-  30% { transform: translateY(-10%) scale(0.97, 1.04) rotate(-2deg); }
-  50% { transform: translateY(0) scale(1.04, 0.95); }
-  62% { transform: translateY(0) scale(1, 1); }
+  0%, 100% { transform: translateY(0) scale(1, 1) rotate(0deg); }
+  10% { transform: translateY(0) scale(1.04, 0.94) rotate(0deg); }
+  30% { transform: translateY(-9%) scale(0.97, 1.04) rotate(-2deg); }
+  50% { transform: translateY(0) scale(1.04, 0.95) rotate(0deg); }
+  62% { transform: translateY(0) scale(1, 1) rotate(0deg); }
 }
-@keyframes twinkle { 0%, 100% { opacity: 0.55; transform: scale(0.96); } 50% { opacity: 1; transform: scale(1.04); } }
 
-/* 减量周：慢而深的「叹气」呼吸，头往下耷拉一点，尾巴几乎不动 */
-.m_tired .bodyG { animation: sigh calc(var(--milo-motion-slow) * 16) ease-in-out infinite; }
-.m_tired .headG { animation: droop calc(var(--milo-motion-slow) * 20.6) ease-in-out infinite; }
-.m_tired .tailG { animation: none; }
-@keyframes sigh { 0%, 100% { transform: scale(1, 1); } 40% { transform: scale(1.01, 1.03); } 60% { transform: scale(1, 0.99); } }
-@keyframes droop { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(3.5deg) translateY(1.5%); } }
+/* 减量周：慢而深的「叹气」 */
+.m_deload .fig { animation: sigh calc(var(--milo-motion-slow) * 16) ease-in-out infinite; }
+@keyframes sigh { 0%, 100% { transform: scale(1, 1); } 40% { transform: scale(1.01, 1.025); } 60% { transform: scale(1, 0.985); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .alive * { animation: none !important; }
+  .alive .fig, .alive .sheen, .alive .speed, .alive .z, .alive .confetti, .alive .spark { animation: none !important; }
 }

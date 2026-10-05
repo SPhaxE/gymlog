@@ -1,14 +1,12 @@
-/** /brand：阶段 5.5b · IP 小牛与 Logo（2026-10-05，第四轮）。
- *  IP：牛犊与公牛由 scripts/mascot_geo.py 按用户手绘的体块布尔参考用圆的外切包络 + 交 / 差搭出来，参数对意向图 docs/brand-refs/ip2-geo-b-selected.jpg 拟合；米洛 = 公牛换荧光色；
- *  ?trace=newborn|bull|milo(&mood=…) 只按原图像素大小渲染一只（给 mascot_geo.py --check 做正负叠片与缺口检查用）。Logo 为 B 递增条牛头（3_44AM）。
- *  这一页只给用户评审用：同一组件在不同尺寸、底色、状态下的样子，以及放进启动页和奖励弹窗的样子。 */
+/** /brand：阶段 5.5b · IP 小牛与 Logo（2026-10-05）。
+ *  IP：用户用 Nano Banana 按意向图 3_27AM 高清重制的 PNG（docs/A.jpg、B1–B5.jpg），scripts/mascot_png.py 切图、超分、抠图后进 public/mascot/；
+ *  5 种牛龄 × 6 种状态。Logo 为 B 递增条牛头（3_44AM）。
+ *  这一页只给用户评审用：同一组件在不同尺寸、状态下的样子，以及放进启动页和奖励弹窗的样子。 */
 import { Fragment } from 'react';
-import { GEO } from '../components/mascotGeo';
 import { AppIcon, Lockup, LogoGlyph, LOGO_STATE_NAME, type LogoState } from '../components/Logo';
-import { MASCOT_STAGES, Mascot, MascotHead, MOOD_NAME, STAGE_NAME, type MascotMood } from '../components/Mascot';
+import { MASCOT_MOODS, MASCOT_STAGES, Mascot, MascotHead, MOOD_NAME, STAGE_NAME, type MascotMood } from '../components/Mascot';
 import s from './brand.module.css';
 
-const MOODS: MascotMood[] = ['idle', 'focused', 'happy', 'sleep', 'pr', 'tired'];
 const STATES: LogoState[] = ['idle', 'loading', 'training', 'pr', 'rest', 'deload'];
 const STATE_WHERE: Record<LogoState, string> = {
   idle: '启动页、关于、商店图标',
@@ -18,8 +16,13 @@ const STATE_WHERE: Record<LogoState, string> = {
   rest: '恢复日的首页标题位',
   deload: '减量周的首页标题位（内侧条收回一半、虚影标出原长度：量减了，余量还在）',
 };
-const STAGE_RULE = { newborn: '臀圆、肚圆、头圆、胶囊腿 · 水滴角芽', bull: '肩峰大圆、三圆头、新月角、锥形腿 · 怒眼', milo: '最高等级：最亮的荧光 · 外发光 · 扫光 · 星光' } as const;
-
+const STAGE_RULE = {
+  newborn: '荧光角芽 · 圆点单眼 · 矮胖大头',
+  young: '小新月角 · 圆点单眼 · 腿变长',
+  sturdy: '中新月角 · 坚定单眼 · 肩峰隆起',
+  bull: '大新月角 · 浓眉单眼 · 巨大肩峰',
+  milo: '最高等级：全身荧光 · 双眼发光 · 泛光与星光',
+} as const;
 
 function Section({ id, title, sub, children }: { id: string; title: string; sub: string; children: React.ReactNode }) {
   return (
@@ -31,21 +34,15 @@ function Section({ id, title, sub, children }: { id: string; title: string; sub:
 }
 
 export function Brand() {
-  const q = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-  const trace = q?.get('trace');
-  if (trace === 'newborn' || trace === 'bull' || trace === 'milo') {
-    const mood = (MOODS as string[]).includes(q?.get('mood') ?? '') ? q?.get('mood') as MascotMood : 'idle';
-    return <div className={s.traceOnly} data-trace={trace} style={{ width: GEO[trace === 'newborn' ? 'newborn' : 'bull'].w }}><Mascot stage={trace} mood={mood} className={s.traceSvg} /></div>;
-  }
   return (
     <div className={s.page}>
       <header className={s.hero}>
-        <p className={`milo-text-label ${s.muted}`}>阶段 5.5b · 第七轮 · 2026-10-05</p>
+        <p className={`milo-text-label ${s.muted}`}>阶段 5.5b · 2026-10-05</p>
         <h1 className="milo-text-title-l">IP 小牛与 Logo</h1>
-        <p className={`milo-text-body ${s.muted}`}>第七轮：牛犊与公牛按用户手绘的体块布尔参考重建——几个圆的外切包络 + 少量交 / 差，参数对意向图 3_27AM 拟合；按远近逐层画，正负叠片与品红底缺口检查验证。米洛是最高等级——最亮的荧光、外发光、扫光和星光。Logo 的破纪录与减量周状态已重做。</p>
+        <p className={`milo-text-body ${s.muted}`}>IP 改用 PNG：用户按意向图 3_27AM 用 Nano Banana 高清重制了 5 种牛龄 × 6 种状态，这里是切图、4 倍超分、抠图之后的素材，图里只有牛本身，特效由代码生成。前四种牛龄单眼，米洛双眼发光。Logo 为 B 递增条牛头，破纪录与减量周状态已重做。</p>
       </header>
 
-      <Section id="ip-stages" title="IP · 三个形态" sub="牛犊 → 公牛 → 米洛。按用户手绘的体块布尔参考搭出来：每个部件都是几个圆的外切包络加少量交 / 差（躯干 = 两圆包络、头 = 三圆包络、角 = 外圆 − 内圆 ∪ 圆头……），位置大小对原图拟合；按远近逐层画、每层垫到上一层底下，没有缺口、动起来不穿帮。米洛是最高等级。">
+      <Section id="ip-stages" title="IP · 五种牛龄" sub="牛犊 → 小牛 → 壮牛 → 公牛 → 米洛，大小按总览图 A 的相对身高。米洛是最高等级：全身荧光、双眼发光；泛光、四角星和扫光由代码生成。">
         <div className={s.stageRow}>
           {MASCOT_STAGES.map((st) => (
             <figure key={st} className={s.stageCell}>
@@ -56,25 +53,25 @@ export function Brand() {
         </div>
       </Section>
 
-      <Section id="ip-check" title="正负叠片检查" sub="scripts/mascot_geo.py --check：把矢量按原图像素大小渲染，与原图做正负叠片（原图 + 反相渲染各一半，完全重合处是均匀中灰）和逐像素差值；再在品红底上放大渲染每种状态找缺口。叠片图含意向图裁片，不随网页发布，存在仓库 screenshots/brand/trace-check-*.png。">
+      <Section id="ip-hd" title="高清化与抠图" sub="scripts/mascot_png.py：①从状态板切出每只牛，只留牛本身（碎屑、z、速度线、星光、泛光都不要，进 App 时由代码生成）；②Real-ESRGAN anime 模型 4 倍超分，去掉 JPEG 块状噪点、边缘变锐；③在 4 倍图上抠图：边缘按「像素 = α·前景 + (1−α)·背景」反解透明度并换成最近的实心色，不留黑边；被脸包住的眼睛、鼻孔保持实心；米洛外面那圈泛光当底色扣掉；④同一牛龄 6 张同比例、同地面线、同画布，换状态不跳。">
         <div className={s.checkCol}>
-          <p className="milo-text-body"><b>牛犊</b> 角色区域内差异像素 4.74%　·　<b>公牛</b> 4.47%（阈值 48/255）：剪影与原图基本重合，差异是几何体块把原图手绘的微小不规则拉直了。<b>缺口检查</b>：品红底、3 倍放大渲染 6 种状态，被角色包住的品红像素两只牛 12 个姿态全部为 0。</p>
+          <p className="milo-text-body">素材在 public/mascot/&lt;牛龄&gt;-&lt;状态&gt;.webp（App 用），PNG 母版在 design/brand/mascot/；检查图 screenshots/brand/mascot-sheet-checker.png（棋盘格 = 透明，红框 = 头像裁切，蓝线 = 地面线）。</p>
         </div>
       </Section>
 
-      <Section id="ip-moods" title="IP · 状态" sub="行 = 形态，列 = 状态：平常、专注（训练提示）、开心（完成训练）、恢复日（趴下）、破纪录（PR 弹窗）、减量周。平常 / 专注用原图的眼，其余状态只换眼睛、头的姿态与点缀。">
+      <Section id="ip-moods" title="IP · 状态" sub="行 = 牛龄，列 = 状态：平常、专注（训练中）、开心（完成训练）、恢复日（趴下）、破纪录（PR 弹窗）、减量周。">
         <div className={s.moodGrid}>
-          <span />{MOODS.map((m) => <b key={m} className="milo-text-label">{MOOD_NAME[m]}</b>)}
+          <span />{MASCOT_MOODS.map((m) => <b key={m} className="milo-text-label">{MOOD_NAME[m]}</b>)}
           {MASCOT_STAGES.map((st) => (
             <Fragment key={st}>
               <b className="milo-text-label">{STAGE_NAME[st]}</b>
-              {MOODS.map((m) => <div key={m} className={s.moodCell}><Mascot stage={st} mood={m} animate /></div>)}
+              {MASCOT_MOODS.map((m) => <div key={m} className={s.moodCell}><Mascot stage={st} mood={m} animate /></div>)}
             </Fragment>
           ))}
         </div>
       </Section>
 
-      <Section id="ip-small" title="IP · 头像（小尺寸）" sub="通知、Toast、牛龄徽章只用头：16 / 24 / 32 / 48 像素下检查角和表情是否还认得出。">
+      <Section id="ip-small" title="IP · 头像（小尺寸）" sub="通知、Toast、牛龄徽章只用头（同一张图按头像框裁成正方形）：16 / 24 / 32 / 48 像素下检查角和表情是否还认得出。">
         <div className={s.smallGrid}>
           {MASCOT_STAGES.map((st) => (
             <div key={st} className={s.smallCol}>
@@ -82,7 +79,8 @@ export function Brand() {
               <span className="milo-text-micro">{STAGE_NAME[st]}</span>
             </div>
           ))}
-          <div className={s.smallCol}>{(['happy', 'pr', 'sleep', 'tired'] as MascotMood[]).map((m) => <MascotHead key={m} stage="bull" mood={m} className={s.h48} />)}<span className="milo-text-micro">公牛 · 表情</span></div>
+          <div className={s.smallCol}>{(['happy', 'pr', 'rest', 'deload'] as MascotMood[]).map((m) => <MascotHead key={m} stage="bull" mood={m} className={s.h48} />)}<span className="milo-text-micro">公牛 · 表情</span></div>
+          <div className={s.smallCol}>{(['happy', 'pr', 'rest', 'deload'] as MascotMood[]).map((m) => <MascotHead key={m} stage="milo" mood={m} className={s.h48} />)}<span className="milo-text-micro">米洛 · 表情</span></div>
         </div>
       </Section>
 
@@ -139,7 +137,7 @@ export function Brand() {
             <div className={s.reward}>
               <div className={s.rewardArt}><Mascot stage="bull" mood="pr" animate /></div>
               <p className={`milo-text-label ${s.lime}`}>升段</p>
-              <h3 className="milo-text-title-m">牛犊长成公牛了</h3>
+              <h3 className="milo-text-title-m">壮牛长成公牛了</h3>
               <p className={`milo-text-body ${s.muted}`}>近 8 周深蹲预估 1RM +12.5 kg。下一段：米洛。</p>
               <p className={s.gain}><b>+500</b> 牛劲</p>
               <span className={s.cta}>收下</span>

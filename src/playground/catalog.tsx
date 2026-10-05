@@ -62,7 +62,7 @@ export const CN: Record<string, string> = {
   track: '已开始 · 0 组', partial: '进行中', full: '满环', home: '首页', body: '身体', gains: '增量', log: '记录', me: '我的', success: '成功', undo: '可撤销',
   suggest: '建议减量', week: '减量周', quiet: '一行小字', 'pool-empty': '动作池不足', resume: '继续上次训练', info: '信息', page: '子页', session: '训练中',
   eyebrow: '带日期与附件', pill: '小胶囊', open: '展开', loadingState: '加载中',
-  newborn: '牛犊', bull: '公牛', milo: '米洛', 'm-idle': '平常', 'm-focused': '专注', 'm-happy': '开心', 'm-sleep': '恢复日', 'm-pr': '破纪录', 'm-tired': '减量周', idle: '平常', training: '训练中',
+  newborn: '牛犊', young: '小牛', sturdy: '壮牛', bull: '公牛', milo: '米洛', 'm-idle': '平常', 'm-focused': '专注', 'm-happy': '开心', 'm-rest': '恢复日', 'm-pr': '破纪录', 'm-deload': '减量周', idle: '平常', training: '训练中',
   compact: '≤ 24 像素（7 根）', wide: '完整（9 根）', dark: '深底', light: '浅底', color: '彩色', mono: '单色',
 };
 export const cn = (v: string) => CN[v] ?? v;
@@ -398,13 +398,13 @@ export const CATALOG: Entry[] = [
   },
   /* ---------------- 品牌（阶段 5.5b，2026-10-05） ---------------- */
   {
-    name: 'Mascot', group: '品牌', desc: 'IP 小牛：牛犊与公牛按用户手绘的体块布尔参考重建——每个部件都是几个圆的外切包络加少量交 / 差（躯干 = 两圆包络、头 = 三圆包络、角 = 外圆 − 内圆 ∪ 圆头），参数对意向图拟合（scripts/mascot_geo.py）；米洛 = 最高等级，公牛换最亮的荧光色 + 外发光 + 扫光 + 星光；3 个形态 × 6 种状态。平常 / 专注用原图的眼，其余状态换眼与姿态；恢复日是同一只牛裁掉站立的腿、落地、嘴贴地。动效按 pet-forge 的 SVG 分层约定：身体组 / 头组 / 眼 / 尾显式支点，呼吸、甩尾、眨眼周期错开；减少动态效果时静止。只出现在品牌位置（引导、奖励、牛龄、空态、商城、会员）。',
-    axes: { stage: ['newborn', 'bull', 'milo'], mood: ['m-idle', 'm-focused', 'm-happy', 'm-sleep', 'm-pr', 'm-tired'] }, rows: ['stage'], cols: 'mood', size: 'card',
+    name: 'Mascot', group: '品牌', desc: 'IP 小牛（PNG）：用户按意向图 3_27AM 用 Nano Banana 高清重制，scripts/mascot_png.py 切图、Real-ESRGAN 4 倍超分、抠图（边缘反解透明度不留黑边，只留牛本身）。5 种牛龄（牛犊 · 小牛 · 壮牛 · 公牛 · 米洛）× 6 种状态；前四种单眼，米洛双眼发光。特效由代码生成：专注 = 速度线、恢复日 = 飘 z、破纪录 = 碎屑、米洛 = 泛光 + 四角星 + 扫光。同一牛龄同比例、同地面线，换状态不跳；动效以地面线为支点整只呼吸 / 前压 / 小跳 / 欢呼 / 叹气，减少动态效果时静止。只出现在品牌位置（引导、奖励、牛龄、空态、商城、会员）。',
+    axes: { stage: ['newborn', 'young', 'sturdy', 'bull', 'milo'], mood: ['m-idle', 'm-focused', 'm-happy', 'm-rest', 'm-pr', 'm-deload'] }, rows: ['stage'], cols: 'mood', size: 'card',
     render: (p) => <div className={s.mascotCell}><Mascot stage={p.stage as MascotStage} mood={p.mood.slice(2) as MascotMood} animate title="慢牛小牛" /></div>,
   },
   {
-    name: 'MascotHead', group: '品牌', desc: '只有头：16–48 像素的头像、通知、Toast、牛龄徽章。取头组（耳、头、眼、角、鼻），画布裁到头的外框。',
-    axes: { stage: ['newborn', 'bull', 'milo'], mood: ['m-idle', 'm-happy', 'm-pr', 'm-sleep', 'm-tired'] }, rows: ['stage'], cols: 'mood', size: 'auto',
+    name: 'MascotHead', group: '品牌', desc: '只有头：16–48 像素的头像、通知、Toast、牛龄徽章。同一张 PNG 按头像框（以角为锚取正方形）裁出来。',
+    axes: { stage: ['newborn', 'young', 'sturdy', 'bull', 'milo'], mood: ['m-idle', 'm-happy', 'm-pr', 'm-rest', 'm-deload'] }, rows: ['stage'], cols: 'mood', size: 'auto',
     render: (p) => <MascotHead stage={p.stage as MascotStage} mood={p.mood.slice(2) as MascotMood} className={s.mascotHead} />,
   },
   {

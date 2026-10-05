@@ -12,7 +12,7 @@
 .moodGrid { display: grid; grid-template-columns: auto repeat(6, minmax(0, 1fr)); gap: var(--milo-space-3xl) var(--milo-space-l); align-items: end; padding-top: var(--milo-space-2xl); }
 .moodGrid > b { color: var(--milo-color-text-secondary); text-align: center; align-self: center; }
 .moodCell { display: grid; place-items: end center; }
-.moodGrid { --mascot-unit: calc(var(--milo-stroke-hairline) * 0.28); }
+.moodGrid { --mascot-unit: calc(var(--milo-stroke-hairline) * 0.22); }
 .fit { display: block; max-width: 100%; width: auto; height: calc(var(--milo-size-hit-min) * 2.4); overflow: visible; }
 .stageRow { --mascot-unit: calc(var(--milo-stroke-hairline) * 0.42); }
 
@@ -50,8 +50,5 @@
 .gain b { font-size: var(--milo-font-size-m); color: var(--milo-color-accent-default); }
 .cta { display: grid; place-items: center; width: 100%; height: var(--milo-size-button-h); margin-top: var(--milo-space-s); border-radius: var(--milo-radius-pill); background: var(--milo-color-accent-default); color: var(--milo-color-text-on-accent); font-weight: 700; }
 .icon64 { display: grid; place-items: center; width: calc(var(--milo-size-hit-min) * 1.33); height: calc(var(--milo-size-hit-min) * 1.33); border-radius: 22%; background: var(--milo-prim-gray-150); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-prim-gray-300); }
-/* ?trace=：按原图像素大小裸渲染一只，背景同原图（叠片检查用） */
-.traceOnly { background: var(--milo-color-bg-base); }
-.traceSvg { display: block; width: 100%; height: auto; }
 .checkCol { display: grid; gap: var(--milo-space-l); }
 
