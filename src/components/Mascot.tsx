@@ -105,9 +105,10 @@ export function Mascot({ stage = 'newborn', mood = 'idle', animate, className, t
   const sleeping = mood === 'sleep';
   const at = (x: number, y: number): CSSProperties => ({ transformOrigin: `${x}px ${y}px` });
   const [hx, hy, hr] = f.head;
-  // 趴下：肚皮线以下的腿裁掉，整只下沉到地面；头再多沉一点，让嘴贴地
+  // 趴下：肚皮线以下的腿裁掉，整只下沉到地面
   const drop = f.ground - f.belly - f.h * 0.04;
-  const headDrop = f.ground - f.headBox[3] - f.h * 0.01;
+  // 头跟着身体一起趴下、再低一点点（下巴落到折起的前腿上），不一直掉到地面——否则肩峰会整个露出来，像个圆顶
+  const headDrop = Math.min(f.ground - f.headBox[3] - f.h * 0.01, drop + f.h * 0.07);
   const headPose = sleeping ? `translate(${f1(f.w * 0.01)} ${f1(headDrop)}) rotate(5 ${f.neck[0]} ${f.neck[1]})`
     // 开心仰头以下巴为支点：后脑往肩峰里收（肩峰底下有补完的灰），下巴不离开胸口，不露缝
     : mood === 'happy' ? `rotate(-6 ${f1(f.headBox[2] - (f.headBox[2] - f.headBox[0]) * 0.25)} ${f.headBox[3]})` : undefined;
@@ -117,7 +118,7 @@ export function Mascot({ stage = 'newborn', mood = 'idle', animate, className, t
     <rect className={s.far} x={f1(f.w * 0.08)} y={f1(f.ground - fold * 1.5)} width={f1(f.headBox[0] - f.w * 0.04)} height={f1(fold * 1.5)} rx={f1(fold / 2)} />
     <rect className={s.far} x={f1(f.w * 0.2)} y={f1(f.ground - fold)} width={f1(f.w * 0.3)} height={f1(fold)} rx={f1(fold / 2)} />
     <rect className={s.bone} x={f1(f.w * 0.06)} y={f1(f.ground - fold)} width={f1(f.w * 0.3)} height={f1(fold)} rx={f1(fold / 2)} />
-    <rect className={s.bone} x={f1(f.headBox[0] - f.w * 0.12)} y={f1(f.ground - fold)} width={f1(f.w * 0.36)} height={f1(fold)} rx={f1(fold / 2)} />
+    <rect className={s.bone} x={f1(f.headBox[0] - f.w * 0.12)} y={f1(f.ground - fold)} width={f1(f.w * 0.12 + (f.headBox[2] - f.headBox[0]) * 0.72)} height={f1(fold)} rx={f1(fold / 2)} />
   </g>;
   const ownEyes = mood === 'idle' || mood === 'focused';
   const milo = stage === 'milo';

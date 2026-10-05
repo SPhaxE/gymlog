@@ -251,8 +251,8 @@ def newborn_parts(ground):
     return [
         ('farLegs', 'far', [('far', 125, 226)], leg, [125.5, 200, 223, 24.5]),
         ('farLegs', 'far', [('far', 275, 210)], leg, [275, 190, 223, 24]),
-        # 203：躯干 = 臀圆 + 肚圆外切包络
-        ('torso', 'grey', [('grey', 200, 150)], lambda p: HULLC(p[0:3], p[3:6]), [100, 145, 52, 220, 140, 75]),
+        # 203：躯干 = 臀圆（就是近端后腿那个臀圆，借用它拟合好的参数）+ 肚圆外切包络——背线从臀圆顶上切出去，不会冒头
+        ('torso', 'grey', [('grey', 200, 150)], lambda p, q: HULLC(q[0:3], p[0:3]), [220, 140, 75], 3),
         # 207：臀 = 圆 ∪ 胶囊腿（腿的左边与圆的最左点相切，所以左边是一条直线）
         ('nearLegs', 'bone', [('bone', 96, 170)], lambda p: U(C(*p[0:3]), HULLC([p[0] - p[2] + p[3], p[1], p[3]], [p[0] - p[2] + p[3], p[4], p[3]])),
          [97, 150, 55, 23, 224]),
@@ -303,7 +303,7 @@ def targets(name, f, lab, H, W, ground):
     else:
         special = {'eyeN': eyes[0]}
     out = []
-    for part, color, seeds, fn, init in f['parts'](ground):
+    for part, color, seeds, *_ in f['parts'](ground):
         t = np.zeros((H, W), bool)
         for c, x, y in seeds: t |= special[c] if c in special else comp_at(lab, idx[c], x, y)
         out.append(t)
@@ -322,11 +322,18 @@ def fit(name, f):
     parts = f['parts'](ground)
     T, sil = targets(name, f, lab, H, W, ground)
     band = lambda t: cv2.dilate(t.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (13, 13))).astype(bool)
-    res = []
-    for i, (part, color, seeds, fn, init) in enumerate(parts):
+    # 有的部件直接借用另一个部件拟合好的圆（第 6 项 = 被借用部件的序号，构造函数收 (参数, 被借用部件的参数)），
+    # 所以先拟合被借用的，画的顺序不变
+    order = sorted(range(len(parts)), key=lambda i: 1 if len(parts[i]) > 5 else 0)
+    res, fitted = [None] * len(parts), {}
+    for i in order:
+        part, color, seeds, fn0, init = parts[i][:5]
+        fn = (lambda f_, q: (lambda p: f_(p, q)))(fn0, fitted[parts[i][5]]) if len(parts[i]) > 5 else fn0
         upper = np.logical_or.reduce(T[i + 1:]) if i + 1 < len(T) else np.zeros((H, W), bool)
         same = [T[j] for j, q in enumerate(parts) if j != i and q[0] == part and q[1] == color]
         allowed = T[i] | upper | (np.logical_or.reduce(same) if same else False)
+        if part == 'horns':  # 角根要扎进头里一点（角画在头上面，只相切会在交界露一道缝）
+            allowed = allowed | (cv2.dilate(T[i].astype(np.uint8), np.ones((9, 9), np.uint8)).astype(bool) & sil)
         under = band(T[i]) & upper & ~T[i]  # 伸进上层底下一点点（防缝），给一点奖励
         t = T[i]
         overW = 3.0 if part == 'horns' else 1.5  # 角越界就是盖到脸上的荧光，罚重一点
@@ -350,7 +357,7 @@ def fit(name, f):
             vis = np.zeros((H, W, 3), np.uint8); vis[t & g.m] = (0, 200, 200); vis[t & ~g.m] = (0, 255, 0); vis[g.m & ~allowed] = (0, 0, 255)
             vis[(g.m & allowed & ~t)] = (80, 80, 80)
             cv2.imwrite(os.path.join(os.environ['GEO_DEBUG'], f'{name}-{i:02d}-{part}.png'), vis)
-        res.append((part, color, g))
+        res[i] = (part, color, g); fitted[i] = r.x
     return res, T, sil, ground, H, W, lab
 
 
