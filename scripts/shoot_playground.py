@@ -5,7 +5,7 @@
 - App：/today /body /gains /log /me /patterns/* 在 360 宽下无横向溢出、无页面错误
 - 截图：screenshots/stage5/components/<组件>.png（每个组件一张）、screenshots/stage5/app/<路由>.png、report.json
 用法：先 npx vite --port 5199，再 python3 scripts/shoot_playground.py"""
-import argparse, json, os, sys
+import argparse, json, os, re, sys
 from datetime import datetime
 from playwright.sync_api import sync_playwright
 
@@ -66,6 +66,17 @@ with sync_playwright() as p:
     pg.keyboard.press('Escape'); pg.wait_for_timeout(300)
     ok(fd.get_by_role('alertdialog').count() == 0, '对话框：Esc 关闭')
     ok(pg.evaluate('document.activeElement && document.activeElement.textContent') == '删除训练', '对话框：关闭后焦点回到「删除训练」')
+
+    # 奖励弹窗：升段打开（role=dialog，名字里有「升段」），点一下跳到定格，Esc 关闭；「练到下一个奖励」由引擎算出并弹出
+    rd = pg.locator('[aria-label="奖励演示"]')
+    rd.scroll_into_view_if_needed()
+    rd.get_by_role('button', name='升段', exact=True).click(); pg.wait_for_timeout(400)
+    ok(rd.get_by_role('dialog', name=re.compile('升段')).count() == 1, '奖励弹窗：升段打开')
+    pg.keyboard.press('Escape'); pg.wait_for_timeout(300)
+    ok(rd.get_by_role('dialog').count() == 0, '奖励弹窗：Esc 关闭')
+    rd.get_by_role('button', name='练到下一个奖励').click(); pg.wait_for_timeout(800)
+    ok(rd.get_by_role('dialog').count() == 1, '奖励弹窗：引擎算出下一个奖励并弹出')
+    pg.keyboard.press('Escape'); pg.wait_for_timeout(300)
 
     if not args.no_shots:
         os.makedirs(os.path.join(OUT, 'components'), exist_ok=True)

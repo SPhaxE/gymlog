@@ -3,13 +3,16 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   Banner, Button, Cascade, Dialog, ExerciseRow, RestDock, SharedDetail, sharedTransition, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
   LandmarkRuler, PhaseSegments, Num, Screen, SetRow, clock, useCountdown, useToast, type Tab,
-  Mascot, MASCOT_MOODS, MASCOT_STAGES, MOOD_NAME, STAGE_NAME, type MascotMood, type MascotStage,
+  Mascot, MASCOT_MOODS, MASCOT_STAGES, MOOD_NAME, STAGE_NAME, RewardModal, REWARD_NAME, AgeBadge, GrowthBar, Paywall, type MascotMood, type MascotStage, type Reward,
 } from '../components';
 import { BodyPage } from '../pages/BodyPage';
 import { HomePage } from '../pages/HomePage';
 import { T } from '../styles/tokens.gen';
 import type { Fixtures } from './fixtures';
 import { Stage } from './Stage';
+import { afterSession, growthDemoUser, growthSample, sampleRewards } from '../data/growth';
+import { GROWTH_CONFIG, STAGE_LABEL, levelInfo } from '../engine';
+import curve from '../engine/growthCurve.json';
 import s from './Playground.module.css';
 
 const Note = ({ children }: { children: ReactNode }) => <p className={`milo-text-caption ${s.note}`}>{children}</p>;
@@ -259,7 +262,108 @@ function MascotDemo() {
   );
 }
 
+/** 奖励弹窗演示：①直接看每种奖励的完整编排；②「保存下一次训练」——演示用户（等级曲线模拟里的进阶用户）一次次往下练，
+ *  引擎算出这次达成了什么，只弹优先级最高的一个，其余进消息 */
+function RewardInner() {
+  const [reward, setReward] = useState<Reward | null>(null), [queued, setQueued] = useState(0), [pro, setPro] = useState(false);
+  const [i, setI] = useState(-1), [log, setLog] = useState<string[]>([]);
+  const samples = sampleRewards();
+  const play = (k: keyof typeof samples) => { const r = samples[k]; setQueued(k === 'stage' ? 2 : 0); setReward(pro ? { ...r, niujin: Math.round(r.niujin * GROWTH_CONFIG.niujin.proRate) } : r); };
+  const step = () => {
+    const n = Math.min(i + 1, growthDemoUser().history.length - 1);
+    const r = afterSession(n, pro);
+    setI(n);
+    setLog((l) => [`第 ${r.week} 周 · ${STAGE_LABEL[r.g.stage]} ${r.g.sub} 级 · 连胜 ${r.g.streak.weeks} 周 · 牛劲 ${r.g.niujin.balance}${r.popup ? ` · 弹：${REWARD_NAME[r.popup.kind]}` : ''}${r.messages.length ? ` · 消息 ${r.messages.length} 条` : ''}`, ...l].slice(0, 5));
+    if (r.popup) { setQueued(r.messages.filter((m) => m.kind !== 'week').length); setReward(r.popup); }
+  };
+  /** 一直练到下一次有弹窗为止 */
+  const skipTo = () => {
+    const u = growthDemoUser();
+    for (let n = i + 1; n < u.history.length; n++) {
+      const r = afterSession(n, pro);
+      if (r.popup) { setI(n); setLog((l) => [`第 ${r.week} 周 · ${STAGE_LABEL[r.g.stage]} ${r.g.sub} 级 · 连胜 ${r.g.streak.weeks} 周 · 牛劲 ${r.g.niujin.balance} · 弹：${REWARD_NAME[r.popup!.kind]}`, ...l].slice(0, 5)); setQueued(r.messages.filter((m) => m.kind !== 'week').length); setReward(r.popup); return; }
+    }
+  };
+  return (
+    <div className={s.demoPad}>
+      <div className={s.demoButtons}>{(['stage', 'milo', 'pr', 'streak', 'level', 'cycle'] as const).map((k) => (
+        <Button key={k} kind="ghost" size="s" onClick={() => play(k)}>{k === 'milo' ? '升段 · 米洛' : REWARD_NAME[k]}</Button>
+      ))}</div>
+      <div className={s.demoButtons}>
+        <Button kind="neutral" size="s" onClick={step}>保存下一次训练</Button>
+        <Button kind="ghost" size="s" onClick={skipTo}>练到下一个奖励</Button>
+        <Button kind={pro ? 'neutral' : 'ghost'} size="s" onClick={() => setPro(!pro)}>{pro ? 'Pro 会员' : '免费用户'}</Button>
+      </div>
+      <div className={s.rewardLog}>{log.length ? log.map((l, k) => <p key={k} className="milo-text-caption">{l}</p>) : <p className="milo-text-caption">还没开始练。点「保存下一次训练」或「练到下一个奖励」。</p>}</div>
+      <RewardModal reward={reward} pro={pro} queued={queued} onClose={() => setReward(null)} />
+    </div>
+  );
+}
+function RewardDemo() {
+  return <div className={s.demoCol}><Stage tall label="奖励演示"><RewardInner /></Stage>
+    <Note>升段约 2.5 秒：旧形态蓄力 → 闪屏、冲击波、碎屑、震屏 → 新形态弹出 → 文字弹簧入场 → 牛劲码表滚动 → 五段路径长到新段 → 「收下」按钮带光晕。点一下跳过；手机上会振动；系统开启「减少动态效果」时只淡入定格。</Note></div>;
+}
+
+/** 等级曲线：横轴周数（0–180），纵轴 15 级；三条线是三类合成用户，空心点是进阶用户的目标节奏，竖线是当前拖到的级 */
+function LevelCurve({ users, target, lv }: { users: Record<'novice' | 'intermediate' | 'advanced', { reach: (number | null)[] }>; target: number[]; lv: number }) {
+  const W = 300, H = 150, X = (w: number) => 24 + (w / 180) * (W - 32), Y = (l: number) => H - 18 - (l / 14) * (H - 30);
+  const line = (r: (number | null)[]) => r.map((w, l) => (w == null ? null : `${X(w).toFixed(1)},${Y(l).toFixed(1)}`)).filter(Boolean).join(' ');
+  return (
+    <svg className={s.curve} viewBox={`0 0 ${W} ${H}`} role="img" aria-label="等级曲线：三类用户到达每一级的周数">
+      {[0, 3, 6, 9, 12].map((l) => <g key={l}><line className={s.curveGrid} x1={24} x2={W - 8} y1={Y(l)} y2={Y(l)} /><text className={s.curveTick} x={2} y={Y(l) + 3} fontSize={7.5}>{STAGE_LABEL[levelInfo(l).stage]}</text></g>)}
+      {[0, 26, 52, 104, 156].map((w) => <text key={w} className={s.curveTick} x={X(w) - 6} y={H - 4} fontSize={7.5}>{w}周</text>)}
+      <line className={s.curveNow} x1={24} x2={W - 8} y1={Y(lv)} y2={Y(lv)} />
+      <polyline className={s.curveAdv} points={line(users.advanced.reach)} />
+      <polyline className={s.curveNov} points={line(users.novice.reach)} />
+      <polyline className={s.curveMid} points={line(users.intermediate.reach)} />
+      {target.map((w, l) => <circle key={l} className={s.curveTarget} cx={X(w)} cy={Y(l)} r={2.4} />)}
+      <text className={s.curveKey} x={W - 92} y={14} fontSize={8}><tspan className={s.kNov}>新手</tspan> · <tspan className={s.kMid}>进阶</tspan> · <tspan className={s.kAdv}>老手</tspan></text>
+    </svg>
+  );
+}
+
+/** 牛龄拖条：从牛犊 1 拖到米洛 3，徽章、成长条、小牛一起变；下面是三类合成用户到达每一级的周数（等级曲线模拟） */
+function AgeInner() {
+  const [lv, setLv] = useState(4);
+  const { stage, sub } = levelInfo(lv);
+  const L = GROWTH_CONFIG.levels, need = lv < 14 ? L[lv + 1] - L[lv] : 0;
+  const users = curve.users as Record<'novice' | 'intermediate' | 'advanced', { reach: (number | null)[] }>;
+  // 「再涨几 kg」：用演示用户当前的引擎结论换算（每点成长值约等于主项预估 1RM 涨多少 kg），进度 45% 时还差 55%
+  const ns = growthSample().next!, lift = ns.lift, kgPerPoint = lift ? lift.kg / ns.need : 0;
+  return (
+    <div className={s.demoPad}>
+      <div className={s.ageStage}><Mascot stage={stage} mood="idle" animate /></div>
+      <AgeBadge stage={stage} sub={sub} />
+      <GrowthBar stage={stage} sub={sub} progress={0.45} lift={need && lift ? { name: lift.name, kg: Math.ceil(need * 0.55 * kgPerPoint * 2) / 2 } : null} cycles={need ? Math.ceil((need * 0.55) / GROWTH_CONFIG.cyclePoints) : 0} />
+      <input className={s.ageRange} type="range" min={0} max={14} value={lv} onChange={(e) => setLv(Number(e.target.value))} aria-label="牛龄（15 级）" />
+      <LevelCurve users={users} target={curve.target} lv={lv} />
+      <p className="milo-text-caption">到达这一级（成长值 ≥ {L[lv]}）的周数：新手 {users.novice.reach[lv] ?? '—'} · 进阶 {users.intermediate.reach[lv] ?? '—'} · 老手 {users.advanced.reach[lv] ?? '—'}（目标：进阶 {curve.target[lv]}）</p>
+    </div>
+  );
+}
+function AgeDemo() {
+  return <div className={s.demoCol}><Stage tall label="牛龄演示"><AgeInner /></Stage>
+    <Note>15 级门槛由等级曲线模拟反推：进阶用户稳定训练，小牛约 2 个月、壮牛约 6 个月、公牛约 12 个月、米洛约 24 个月；新手更快，老手靠周期和 PR 也能稳步升级。成长条下面那句「再涨几 kg」由引擎按当前主项反推。</Note></div>;
+}
+
+/** 付费墙流程：选方案 → 开通（演示，不扣费）→ 米洛庆祝 → 会员态 */
+function PaywallInner() {
+  const [plan, setPlan] = useState<'month' | 'year' | 'trial'>('year'), [step, setStep] = useState<'choose' | 'success' | 'member'>('choose');
+  return (
+    <div className={s.demoPad}>
+      <Paywall plan={plan} onPlan={setPlan} success={step === 'success'} member={step === 'member'}
+        onBuy={() => setStep(step === 'choose' ? 'success' : step === 'success' ? 'member' : 'choose')} />
+    </div>
+  );
+}
+function PaywallDemo() {
+  return <div className={s.demoCol}><Stage tall label="会员演示"><PaywallInner /></Stage><Note>演示模式：全部权益已解锁，开通走假成功，不收集支付信息；在会员态点「管理订阅」回到未开通。</Note></div>;
+}
+
 export const DEMOS: Record<string, (f: Fixtures) => ReactNode> = {
+  RewardCard: () => <RewardDemo />,
+  AgeBadge: () => <AgeDemo />,
+  Paywall: () => <PaywallDemo />,
   Mascot: () => <MascotDemo />,
   Icon: () => <IconGridBoard />,
   ExerciseRow: (f) => <CascadeDemo f={f} />,

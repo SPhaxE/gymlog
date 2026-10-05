@@ -1,0 +1,192 @@
+/* 奖励弹窗：品牌时刻的编排。节拍 --b = motion/slow 的一半（≈ 175 ms），--t0 = 「爆点」在第几拍（升段 6，其余 2）。
+   约定：每个元素的「定格样子」写在基础样式里，入场动画用 both 填充先藏起来——跳过（.done）、定格（.still）、减少动态效果时
+   只要把入场动画拿掉，画面就是定格；闪屏、冲击波、碎屑、旧形态这些一次性元素在定格里本来就不可见。 */
+.layer, .card { --b: calc(var(--milo-motion-slow) / 2); --burst: calc(var(--b) * var(--t0)); }
+
+/* ---------- 遮罩：近黑 + 中心荧光光晕 + 闪屏 ---------- */
+.layer { position: absolute; inset: 0; z-index: 40; display: grid; place-items: center; padding: var(--milo-size-gutter); overflow: hidden;
+  background: color-mix(in srgb, var(--milo-color-bg-base) 88%, transparent); animation: fadeIn var(--milo-motion-base) var(--milo-motion-ease-decelerate) both; }
+.bloom { position: absolute; inset: -20%; pointer-events: none;
+  background: radial-gradient(45% 35% at 50% 38%, var(--milo-prim-lime-500-a33), transparent 70%);
+  animation: bloom calc(var(--b) * 4) var(--milo-motion-ease-decelerate) var(--burst) both; }
+.layer[data-tier='mid'] .bloom { opacity: 0.5; }
+.layer[data-milo] .bloom { background: radial-gradient(60% 45% at 50% 38%, color-mix(in srgb, var(--milo-prim-lime-500) 55%, transparent), transparent 72%); }
+.flash { position: absolute; inset: 0; pointer-events: none; opacity: 0; background: radial-gradient(circle at 50% 38%, var(--milo-prim-bone-100), var(--milo-prim-lime-300) 30%, transparent 75%); }
+.layer[data-tier='max'] .flash { animation: flash calc(var(--b) * 3) var(--milo-motion-ease-decelerate) var(--burst) both; }
+.layer[data-tier='high'] .flash { animation: flashSoft calc(var(--b) * 3) var(--milo-motion-ease-decelerate) var(--burst) both; }
+.shake { width: 100%; max-width: calc(var(--milo-size-screen-w) - var(--milo-size-gutter) * 2); }
+.layer[data-tier='max'] .shake { animation: shake calc(var(--b) * 3) linear calc(var(--burst) + var(--b) * 0.2) both; }
+.layer[data-tier='high'] .shake { animation: shakeSoft calc(var(--b) * 2) linear var(--burst) both; }
+.done .shake, .done .flash, .done .bloom { animation: none; }
+.done .bloom { opacity: 0.7; }
+
+/* ---------- 卡片：A4 主角卡（荧光弥散 + 颗粒）+ M06 旋转光晕描边 ---------- */
+.card { position: relative; isolation: isolate; display: grid; justify-items: center; gap: var(--milo-space-s); width: 100%; text-align: center;
+  padding: var(--milo-space-l) var(--milo-space-l) var(--milo-space-xl); border-radius: var(--milo-radius-xl); color: var(--milo-color-text-primary);
+  background: radial-gradient(90% 60% at 50% 22%, color-mix(in srgb, var(--milo-color-accent-default) 26%, transparent), transparent 70%),
+    radial-gradient(80% 50% at 0% 100%, color-mix(in srgb, var(--milo-prim-bone-500) 10%, transparent), transparent 70%), var(--milo-color-bg-sheet);
+  animation: rise var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring) var(--b) both; }
+.card::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit;
+  background-image: var(--grain); background-size: calc(var(--milo-space-5xl) * 3.333); mix-blend-mode: overlay; opacity: calc(var(--milo-opacity-grain) * 3);
+  -webkit-mask: radial-gradient(90% 60% at 50% 22%, black, transparent 72%); mask: radial-gradient(90% 60% at 50% 22%, black, transparent 72%); }
+.card[data-milo] { background: radial-gradient(100% 70% at 50% 25%, color-mix(in srgb, var(--milo-prim-lime-500) 42%, transparent), transparent 72%), var(--milo-color-bg-sheet); }
+@property --spin { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+.border { position: absolute; inset: 0; z-index: -2; border-radius: inherit; padding: var(--milo-stroke-focus); pointer-events: none;
+  background: conic-gradient(from var(--spin), transparent 0 50%, var(--milo-color-accent-default) 72%, var(--milo-prim-bone-100) 78%, transparent 92%);
+  -webkit-mask: linear-gradient(black, black) content-box, linear-gradient(black, black); -webkit-mask-composite: xor; mask: linear-gradient(black, black) content-box exclude, linear-gradient(black, black);
+  animation: spin calc(var(--milo-motion-slow) * 12) linear infinite; }
+.card[data-tier='mid'] .border { opacity: 0.6; }
+
+/* ---------- 舞台：光芒、光晕、冲击波、碎屑、小牛 ---------- */
+.stageArea { position: relative; display: grid; place-items: end center; width: 100%; height: calc(var(--milo-space-5xl) * 4); margin-top: calc(var(--milo-space-s) * -1);
+  --mascot-unit: calc(var(--milo-stroke-hairline) * 0.27); }
+.card[data-kind='level'] .stageArea, .card[data-kind='cycle'] .stageArea { height: calc(var(--milo-space-5xl) * 3.4); }
+.rays { position: absolute; left: 50%; top: 46%; width: 190%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; pointer-events: none; z-index: -1;
+  background: repeating-conic-gradient(from var(--spin), color-mix(in srgb, var(--milo-prim-lime-500) 22%, transparent) 0 6deg, transparent 6deg 18deg);
+  -webkit-mask: radial-gradient(closest-side, black 8%, transparent 70%); mask: radial-gradient(closest-side, black 8%, transparent 70%);
+  animation: spin calc(var(--milo-motion-slow) * 40) linear infinite, raysIn calc(var(--b) * 4) var(--milo-motion-ease-decelerate) var(--burst) both; }
+.card[data-milo] .rays { background: repeating-conic-gradient(from var(--spin), color-mix(in srgb, var(--milo-prim-lime-500) 45%, transparent) 0 6deg, transparent 6deg 15deg); }
+.halo { position: absolute; left: 50%; bottom: 6%; width: 78%; height: 22%; translate: -50% 0; border-radius: 50%; z-index: -1;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--milo-prim-lime-500) 40%, transparent), transparent); filter: blur(var(--milo-space-s));
+  animation: haloPulse calc(var(--milo-motion-slow) * 8) ease-in-out var(--burst) infinite; }
+.rings { position: absolute; left: 50%; top: 48%; width: 0; height: 0; pointer-events: none; }
+.rings i { position: absolute; left: 0; top: 0; width: calc(var(--milo-space-5xl) * 2); aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; opacity: 0;
+  box-shadow: 0 0 0 var(--milo-stroke-focus) var(--milo-prim-lime-500), 0 0 var(--milo-space-l) var(--milo-prim-lime-500-a33);
+  animation: ring calc(var(--b) * 5) var(--milo-motion-ease-decelerate) calc(var(--burst) + var(--b) * var(--r, 0)) both; }
+.rings i:nth-child(2) { --r: 0.8; } .rings i:nth-child(3) { --r: 1.6; box-shadow: 0 0 0 var(--milo-stroke-hairline) var(--milo-prim-bone-100); }
+
+/* 碎屑：从小牛头上方炸开，带一点下坠 */
+.burst { position: absolute; left: 50%; top: 42%; width: 0; height: 0; pointer-events: none; z-index: 2; }
+.bit { position: absolute; left: 0; top: 0; width: calc(var(--milo-space-s) * var(--z)); aspect-ratio: 1; opacity: 0;
+  animation: bit calc(var(--b) * 7) cubic-bezier(0.15, 0.7, 0.3, 1) calc(var(--burst) + var(--k) * var(--milo-motion-stagger) / 4) both; }
+.dot { border-radius: 50%; }
+.tri { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.bar { aspect-ratio: 3 / 1; border-radius: var(--milo-radius-pill); }
+.lime { background: var(--milo-prim-lime-500); } .pale { background: var(--milo-prim-lime-300); } .bone { background: var(--milo-prim-bone-100); }
+
+/* 小牛：升段时旧形态先蓄力（抖、发亮），在爆点闪白消失，新形态弹出（就是「长大」）；其余类型直接弹出 */
+.hero, .old { position: relative; z-index: 1; display: block; line-height: 0; }
+.hero { animation: heroIn var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring) var(--burst) both; transform-origin: 50% 100%; }
+.card[data-kind='stage'] .hero { animation: grow calc(var(--b) * 5) var(--milo-motion-ease-spring) var(--burst) both; }
+.old { position: absolute; bottom: 0; left: 50%; translate: -50% 0; opacity: 0; transform-origin: 50% 100%;
+  animation: charge calc(var(--burst) - var(--b)) linear var(--b) both; }
+
+/* 破纪录的「新纪录」印章：在爆点砸下来 */
+.stamp { position: absolute; right: 4%; top: 6%; z-index: 3; padding: var(--milo-space-2xs) var(--milo-space-s); border-radius: var(--milo-radius-s);
+  font: 900 var(--milo-font-size-heading) / 1 var(--milo-font-ui); letter-spacing: 0.08em; color: var(--milo-color-text-on-accent); background: var(--milo-color-accent-default);
+  box-shadow: 0 0 var(--milo-space-xl) var(--milo-prim-lime-500-a33); rotate: -10deg;
+  animation: stamp calc(var(--b) * 2) cubic-bezier(0.2, 0.8, 0.2, 1.2) var(--burst) both; }
+
+/* ---------- 文字与数字：M07 弹簧交错入场 ---------- */
+.label, .headline, .line, .gain, .cta, .metric, .weeks, .pips, .stats { animation: up var(--milo-motion-spring-ms) var(--milo-motion-ease-spring) calc(var(--burst) + var(--b) * 1.5 + var(--n, 2) * var(--milo-motion-stagger)) both; }
+.label { display: inline-flex; align-items: center; gap: var(--milo-space-xs); margin: 0; color: var(--milo-color-accent-default); letter-spacing: 0.18em; }
+.labelGlyph { width: var(--milo-size-icon); height: var(--milo-size-icon); overflow: visible; }
+.headline { margin: 0; font: 900 var(--milo-font-size-title) / 1.1 var(--milo-font-ui); letter-spacing: 0.02em;
+  background: linear-gradient(180deg, var(--milo-color-text-primary) 40%, color-mix(in srgb, var(--milo-color-text-primary) 45%, transparent)), var(--grain);
+  -webkit-background-clip: text; background-clip: text; color: transparent; }
+.card[data-kind='stage'] .headline { font-size: calc(var(--milo-font-size-hero) * 1.15); line-height: 0.95; letter-spacing: 0.06em;
+  background: linear-gradient(180deg, var(--milo-prim-lime-300) 20%, var(--milo-color-accent-default) 60%, color-mix(in srgb, var(--milo-color-accent-default) 25%, transparent)), var(--grain);
+  -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 0 var(--milo-space-l) var(--milo-prim-lime-500-a33)); }
+.giant { display: inline-flex; align-items: baseline; font-family: var(--milo-font-number); font-weight: 700; font-size: calc(var(--milo-font-size-hero) * 1.6); line-height: 0.9; font-variant-numeric: tabular-nums; }
+.giant > i { font: 900 var(--milo-font-size-l) / 1 var(--milo-font-ui); font-style: normal; margin-left: var(--milo-space-xs); }
+.line { margin: 0; max-width: 92%; color: var(--milo-color-text-secondary); --n: 3; }
+.metric { display: grid; justify-items: center; gap: var(--milo-space-2xs); --n: 2; color: var(--milo-color-text-secondary); }
+.kg { display: inline-flex; align-items: baseline; gap: var(--milo-space-xs); color: var(--milo-color-text-primary); }
+.kg > i { font: 700 var(--milo-font-size-heading) / 1 var(--milo-font-number); font-style: normal; color: var(--milo-color-text-secondary); }
+.delta { padding: var(--milo-space-2xs) var(--milo-space-s); border-radius: var(--milo-radius-pill); font: 700 var(--milo-font-size-label) / 1.2 var(--milo-font-number);
+  color: var(--milo-color-text-on-accent); background: var(--milo-color-accent-default); }
+
+/* 连胜：一排周胶囊依次点亮 */
+.weeks { display: flex; align-items: center; gap: var(--milo-space-2xs); --n: 2; }
+.weeks i { width: var(--milo-space-s); height: var(--milo-space-l); border-radius: var(--milo-radius-pill); background: var(--milo-color-accent-default);
+  animation: weekOn var(--milo-motion-base) var(--milo-motion-ease-spring) calc(var(--burst) + var(--b) * 2 + var(--i) * var(--milo-motion-stagger) / 2) both; }
+.weeks b { color: var(--milo-color-text-secondary); margin-left: var(--milo-space-2xs); }
+
+/* 升级：三颗小级药丸，新的一颗爆亮 */
+.pips { display: flex; gap: var(--milo-space-xs); --n: 2; }
+.pips i { width: var(--milo-space-3xl); height: var(--milo-space-xs); border-radius: var(--milo-radius-pill); background: var(--milo-color-data-track); }
+.pips .pipOn { background: var(--milo-color-accent-default); }
+.pips .pipNew { box-shadow: 0 0 var(--milo-space-m) var(--milo-color-accent-default); animation: pip calc(var(--b) * 3) var(--milo-motion-ease-spring) calc(var(--burst) + var(--b) * 2) both; }
+
+/* 周期完成：三个数 */
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--milo-space-s); width: 100%; --n: 2; }
+.stats span { display: grid; gap: var(--milo-space-2xs); padding: var(--milo-space-s) var(--milo-space-2xs); border-radius: var(--milo-radius-m); background: var(--milo-color-bg-raised); }
+.stats span > i { font-style: normal; color: var(--milo-color-text-secondary); }
+
+/* 五段成长路径 */
+.path { position: relative; width: 100%; display: grid; grid-template-columns: repeat(5, 1fr); margin: var(--milo-space-xs) 0 var(--milo-space-2xs);
+  animation: up var(--milo-motion-spring-ms) var(--milo-motion-ease-spring) calc(var(--burst) + var(--b) * 2 + var(--milo-motion-stagger) * 3) both; }
+.pathTrack, .pathFill { position: absolute; left: 10%; right: 10%; top: calc(var(--milo-space-xs) / 2); height: var(--milo-stroke-focus); border-radius: var(--milo-radius-pill); translate: 0 -50%; }
+.pathTrack { background: var(--milo-color-data-track); }
+.pathFill { background: linear-gradient(90deg, var(--milo-prim-lime-700), var(--milo-color-accent-default)); transform-origin: left; scale: var(--to) 1;
+  box-shadow: 0 0 var(--milo-space-s) var(--milo-prim-lime-500-a33); animation: fill calc(var(--b) * 4) var(--milo-motion-ease-standard) calc(var(--burst) + var(--b) * 4) both; }
+.node { position: relative; display: grid; justify-items: center; gap: var(--milo-space-2xs); color: var(--milo-color-text-disabled); }
+.node i { width: var(--milo-space-xs); aspect-ratio: 1; border-radius: 50%; background: var(--milo-color-data-track); }
+.nodeOn { color: var(--milo-color-text-secondary); }
+.nodeOn i { background: var(--milo-color-accent-default); }
+.nodeNow { color: var(--milo-color-text-primary); }
+.nodeNow i { box-shadow: 0 0 0 var(--milo-stroke-focus) var(--milo-color-bg-sheet), 0 0 0 calc(var(--milo-stroke-focus) * 2) var(--milo-color-accent-default);
+  animation: nodePulse calc(var(--milo-motion-slow) * 5) ease-in-out calc(var(--burst) + var(--b) * 8) infinite; }
+
+/* 牛劲：码表滚动 + 会员加成 */
+.gain { display: inline-flex; align-items: baseline; gap: var(--milo-space-2xs); padding: var(--milo-space-xs) var(--milo-space-m); border-radius: var(--milo-radius-pill);
+  background: var(--milo-prim-lime-500-a13); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-prim-lime-500-a33); --n: 4; }
+.gain > :global(*) { color: var(--milo-color-accent-default); }
+.plus { font: 700 var(--milo-font-size-l) / 1 var(--milo-font-number); color: var(--milo-color-accent-default); }
+.pro { align-self: center; margin-left: var(--milo-space-xs); padding: var(--milo-space-2xs) var(--milo-space-xs); border-radius: var(--milo-radius-pill);
+  font: 700 var(--milo-font-size-min) / 1.2 var(--milo-font-number); color: var(--milo-color-text-on-accent);
+  background: linear-gradient(110deg, var(--milo-prim-lime-500) 35%, var(--milo-prim-bone-100) 50%, var(--milo-prim-lime-500) 65%) 0 0 / 300% 100%; animation: sheen calc(var(--milo-motion-slow) * 6) linear infinite; }
+.cta { display: grid; gap: var(--milo-space-xs); width: 100%; margin-top: var(--milo-space-xs); --n: 5; }
+.cta > :first-child, .cta > :first-child > * { width: 100%; }
+.queued { margin: 0; color: var(--milo-color-text-secondary); }
+
+/* ---------- 定格 / 跳过 / 减少动态效果 ---------- */
+.still, .still .in, .done .card, .done .in, .done .label, .done .headline, .done .line, .done .gain, .done .cta, .done .metric, .done .weeks, .done .pips, .done .stats,
+.done .path, .done .pathFill, .done .weeks i, .done .pipNew, .done .hero, .done .rays, .done .halo,
+.still .label, .still .headline, .still .line, .still .gain, .still .cta, .still .metric, .still .weeks, .still .weeks i, .still .pips, .still .pipNew, .still .stats, .still .path, .still .pathFill, .still .hero, .still .stamp, .done .stamp { animation: none; }
+.still .loop, .still .rays, .still .halo { animation: none; }
+.still .rays, .done .rays { opacity: 0.55; }
+.still .old, .done .old, .still .rings, .done .rings, .still .burst, .done .burst { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .layer *, .layer, .card, .card * { animation: none !important; }
+  .old, .rings, .burst, .flash { display: none; }
+  .layer { animation: fadeIn var(--milo-motion-base) linear both !important; }
+}
+
+/* ---------- 关键帧 ---------- */
+@keyframes fadeIn { from { opacity: 0; } }
+@keyframes spin { to { --spin: 360deg; } }
+@keyframes bloom { 0% { opacity: 0; scale: 0.4; } 40% { opacity: 1; scale: 1.15; } 100% { opacity: 0.7; scale: 1; } }
+@keyframes flash { 0% { opacity: 0; } 12% { opacity: 0.95; } 100% { opacity: 0; } }
+@keyframes flashSoft { 0% { opacity: 0; } 15% { opacity: 0.45; } 100% { opacity: 0; } }
+@keyframes shake { 0%, 100% { translate: 0 0; } 10% { translate: -2% 1%; } 20% { translate: 2% -1.5%; } 30% { translate: -1.5% 1%; } 40% { translate: 1.5% 0.5%; } 55% { translate: -0.8% -0.5%; } 70% { translate: 0.5% 0.3%; } 85% { translate: -0.2% 0; } }
+@keyframes shakeSoft { 0%, 100% { translate: 0 0; } 20% { translate: -1% 0.5%; } 40% { translate: 1% -0.5%; } 60% { translate: -0.5% 0; } 80% { translate: 0.3% 0; } }
+@keyframes rise { from { opacity: 0; translate: 0 12%; scale: 0.9; } }
+@keyframes raysIn { from { opacity: 0; scale: 0.3; } to { opacity: 1; scale: 1; } }
+@keyframes haloPulse { 0%, 100% { opacity: 0.7; scale: 1; } 50% { opacity: 1; scale: 1.12; } }
+@keyframes ring { 0% { opacity: 0; scale: 0.2; } 12% { opacity: 1; } 100% { opacity: 0; scale: 3.4; } }
+@keyframes bit {
+  0% { opacity: 0; transform: rotate(var(--a)) translateX(0) rotate(0deg) scale(0.4); }
+  8% { opacity: 1; }
+  55% { opacity: 1; transform: rotate(var(--a)) translateX(calc(var(--milo-space-5xl) * var(--d))) rotate(220deg) scale(1); }
+  100% { opacity: 0; transform: rotate(var(--a)) translateX(calc(var(--milo-space-5xl) * var(--d) * 1.15)) translateY(var(--milo-space-3xl)) rotate(400deg) scale(0.7); }
+}
+@keyframes heroIn { from { opacity: 0; scale: 0.6; translate: 0 8%; } }
+/* 长大：从一团白光里弹出来，冲过头再回落 */
+@keyframes grow { 0% { opacity: 0; scale: 0.55; filter: brightness(4) saturate(0); } 25% { opacity: 1; } 55% { scale: 1.12; filter: brightness(1.6); } 100% { scale: 1; filter: none; } }
+/* 蓄力：出现 → 越抖越快、越来越亮 → 爆点前缩一下 */
+@keyframes charge {
+  0% { opacity: 0; scale: 0.8; } 12% { opacity: 1; scale: 1; }
+  30% { translate: -51% 0; } 36% { translate: -49% 0; } 42% { translate: -51.5% 0; filter: brightness(1.3); }
+  48% { translate: -48.5% 0; } 54% { translate: -51.5% 0; } 60% { translate: -48.5% 0; filter: brightness(1.8); }
+  66% { translate: -52% 0; } 70% { translate: -48% 0; } 74% { translate: -52% 0; } 78% { translate: -48% 0; filter: brightness(2.6); }
+  88% { translate: -50% 0; scale: 1.06 0.9; filter: brightness(4) saturate(0); opacity: 1; }
+  100% { translate: -50% 0; scale: 0.8 1.15; filter: brightness(6) saturate(0); opacity: 0; }
+}
+@keyframes stamp { 0% { opacity: 0; scale: 2.6; rotate: -18deg; } 60% { opacity: 1; scale: 0.92; rotate: -9deg; } 100% { scale: 1; rotate: -10deg; } }
+@keyframes up { from { opacity: 0; translate: 0 calc(var(--milo-space-l) * 1.2); } }
+@keyframes weekOn { from { opacity: 0.15; scale: 1 0.3; background: var(--milo-color-data-track); } }
+@keyframes pip { 0% { background: var(--milo-color-data-track); scale: 1; } 40% { background: var(--milo-prim-bone-100); scale: 1.25 2; } 100% { scale: 1; } }
+@keyframes fill { from { scale: var(--from) 1; } }
+@keyframes nodePulse { 0%, 100% { scale: 1; } 50% { scale: 1.35; } }
+@keyframes sheen { to { background-position: -300% 0; } }

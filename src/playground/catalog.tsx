@@ -7,11 +7,14 @@ import {
   Banner, BodyFigure, DotCalendar, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
   ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProgressSteps, RestBar, SectionLabel, Segmented,
   SessionRow, SetRow, Sheet, SheetBlock, Skeleton, Sparkline, StateView, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
-  AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, type LogoState, type MascotMood, type MascotStage,
+  AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, RewardCard, AgeBadge, Coupon, FreezeCard, GrowthBar, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, ProductCard, StreakBar,
+  type LogoState, type MascotMood, type MascotStage, type StreakStatus,
   type Forced, type IconName, type NumSize, type SkeletonShape, type Tab, type TagTone,
 } from '../components';
 import type { DeltaDir } from '../components';
 import { REGION_NAME, fmt } from '../data/demo';
+import { COUPONS, KNOWLEDGE, PRODUCTS, dateOf, growthSample, niujinOff, sampleRewards, type KnowledgeId } from '../data/growth';
+import { GROWTH_CONFIG } from '../engine';
 import { T } from '../styles/tokens.gen';
 import type { Fixtures } from './fixtures';
 import s from './Playground.module.css';
@@ -33,7 +36,7 @@ export interface Entry {
   render: (p: Props, f: Fixtures) => ReactNode;
 }
 
-export const GROUPS = ['基础', '表单', '反馈与悬浮层', '列表与页头', '训练与记录', '数据图形', '身体', '导航', '品牌'] as const;
+export const GROUPS = ['基础', '表单', '反馈与悬浮层', '列表与页头', '训练与记录', '数据图形', '身体', '导航', '品牌', '增长'] as const;
 
 /** 只在交互演示或页面里出现、不进矩阵的导出（catalog.test 读这张表） */
 export const NOT_IN_MATRIX: Record<string, string> = {
@@ -63,6 +66,13 @@ export const CN: Record<string, string> = {
   suggest: '建议减量', week: '减量周', quiet: '一行小字', 'pool-empty': '动作池不足', resume: '继续上次训练', info: '信息', page: '子页', session: '训练中',
   eyebrow: '带日期与附件', pill: '小胶囊', open: '展开', loadingState: '加载中',
   newborn: '牛犊', young: '小牛', sturdy: '壮牛', bull: '公牛', milo: '米洛', 'm-idle': '平常', 'm-focused': '专注', 'm-happy': '开心', 'm-rest': '恢复日', 'm-pr': '破纪录', 'm-deload': '减量周', idle: '平常', training: '训练中',
+  'r-stage': '升段', 'r-milo': '升段 · 米洛', 'r-pr': '破纪录', 'r-streak': '连胜里程碑', 'r-level': '升小级', 'r-cycle': '周期完成', free: '免费', pro: 'Pro 会员',
+  'b-compact': '紧凑（「我的」顶部）', 'b-full': '完整（牛龄页头）', 'g-normal': '进行中', 'g-near': '快升级', 'g-stage': '下一级是升段', 'g-max': '米洛满级',
+  's-zero': '0 周', 's-open': '本周进行中', 's-kept': '本周已守约', 's-risk': '快断了', 's-frozen': '用了冻结卡', 's-deload': '减量周', 's-milestone': '里程碑周',
+  'f-have': '有卡', 'f-none': '没卡', 'f-used': '刚自动使用', 'c-merchant': '商家券', 'c-shipping': '免邮券', 'c-trial': '会员体验', 'c-freeze': '冻结卡',
+  'c-redeem': '可兑换', 'c-short': '牛劲不够', 'c-available': '可用', 'c-used': '已用', 'c-expired': '已过期', belt: '腰带', straps: '助力带', protein: '蛋白质与睡眠', creatine: '肌酸', knee: '护膝',
+  'k-tip': '页内提示', 'k-header': '详情页头', 'p-normal': '普通', 'p-member': '会员价', 'p-niujin': '牛劲抵扣', 'p-off': '已下架',
+  'w-month': '选月度', 'w-year': '选年度', 'w-trial': '选试用', 'w-member': '已是会员', 'w-success': '开通成功', locked: '入口标记', active: '已开通', reward: '奖励', freeze: '冻结卡', demote: '降级说明',
   compact: '≤ 24 像素（7 根）', wide: '完整（9 根）', dark: '深底', light: '浅底', color: '彩色', mono: '单色',
 };
 export const cn = (v: string) => CN[v] ?? v;
@@ -401,6 +411,101 @@ export const CATALOG: Entry[] = [
     name: 'Mascot', group: '品牌', desc: 'IP 小牛（PNG）：用户按意向图 3_27AM 用 Nano Banana 高清重制，scripts/mascot_png.py 切图、Real-ESRGAN 4 倍超分、抠图（边缘反解透明度不留黑边，只留牛本身）。5 种牛龄（牛犊 · 小牛 · 壮牛 · 公牛 · 米洛）× 6 种状态；前四种单眼，米洛双眼发光。特效由代码生成：专注 = 速度线、恢复日 = 飘 z、破纪录 = 碎屑、米洛 = 泛光 + 四角星 + 扫光。同一牛龄同比例、同地面线，换状态不跳；动效以地面线为支点整只呼吸 / 前压 / 小跳 / 欢呼 / 叹气，减少动态效果时静止。只出现在品牌位置（引导、奖励、牛龄、空态、商城、会员）。',
     axes: { stage: ['newborn', 'young', 'sturdy', 'bull', 'milo'], mood: ['m-idle', 'm-focused', 'm-happy', 'm-rest', 'm-pr', 'm-deload'] }, rows: ['stage'], cols: 'mood', size: 'card',
     render: (p) => <div className={s.mascotCell}><Mascot stage={p.stage as MascotStage} mood={p.mood.slice(2) as MascotMood} animate title="慢牛小牛" /></div>,
+  },
+  {
+    name: 'RewardCard', group: '增长', covers: ['RewardModal'],
+    desc: '奖励弹窗（品牌时刻）：升段 = 满档（旧形态蓄力抖动发亮 → 闪屏 + 冲击波 + 光芒 + 碎屑 + 震屏 + 长振动 → 新形态从白光里弹出，就是「小牛长大」，五段路径长到新段）；破纪录 / 连胜里程碑 = 高（印章砸下、Logo 条点亮、重量码表滚到新纪录 / 周胶囊依次点亮）；升小级 / 周期完成 = 中。牛劲用码表滚出来，会员显示 ×1.5。一次只弹一个，其余进「消息」；点一下跳过到定格；减少动态效果时只淡入定格。这里是定格画面，交互演示里看完整编排。数据取自等级曲线模拟里的进阶用户。',
+    axes: { kind: ['r-stage', 'r-milo', 'r-pr', 'r-streak', 'r-level', 'r-cycle'], member: ['free', 'pro'] }, rows: ['kind'], cols: 'member', size: 'screen',
+    render: (p) => {
+      const r = sampleRewards()[p.kind.slice(2) as keyof ReturnType<typeof sampleRewards>];
+      const pro = p.member === 'pro';
+      return <RewardCard reward={pro ? { ...r, niujin: Math.round(r.niujin * GROWTH_CONFIG.niujin.proRate) } : r} pro={pro} queued={p.kind === 'r-stage' ? 2 : 0} still />;
+    },
+  },
+  {
+    name: 'AgeBadge', group: '增长',
+    desc: '牛龄徽章：紧凑 = 「我的」根页顶部一行（头像 + 段名小级 + 连胜周数）；完整 = 牛龄页头（荧光圈头像 + 段名 + 三颗小级）。米洛的圈更亮。',
+    axes: { stage: ['newborn', 'young', 'sturdy', 'bull', 'milo'], size: ['b-compact', 'b-full'] }, rows: ['stage'], cols: 'size', size: 'card',
+    render: (p) => <AgeBadge stage={p.stage as MascotStage} sub={p.stage === 'milo' ? 3 : 2} size={p.size === 'b-compact' ? 'compact' : 'full'} streak={p.size === 'b-compact' ? growthSample().streak.weeks : undefined} />,
+  },
+  {
+    name: 'GrowthBar', group: '增长',
+    desc: '成长条：离下一级还差多少，用能照着做的说法（主项预估 1RM 再涨几 kg，或再完成几个周期），由引擎反推；快升级时发光扫光；下一级是升段时标出；米洛 3 级满级。',
+    axes: { state: ['g-normal', 'g-near', 'g-stage', 'g-max'] }, size: 'card',
+    render: (p) => {
+      const g = growthSample(), n = g.next!;
+      const v = { 'g-normal': [g.stage, 2, n.progress], 'g-near': [g.stage, 2, 0.92], 'g-stage': [g.stage, 3, 0.4], 'g-max': ['milo', 3, 1] }[p.state] as [MascotStage, 1 | 2 | 3, number];
+      return <GrowthBar stage={v[0]} sub={v[1]} progress={v[2]} lift={n.lift} cycles={n.cycles} />;
+    },
+  },
+  {
+    name: 'StreakBar', group: '增长',
+    desc: '守约周连胜：周数 + 本周进度（已练 / 目标次数，目标由时长和经验推出）+ 状态说明。只按周算，不做每日打卡；减量周少练一次也算；快断了（剩下的天数不够练完）标红；断档时自动用冻结卡；第 4 / 12 / 26 / 52 周是里程碑。',
+    axes: { status: ['s-zero', 's-open', 's-kept', 's-risk', 's-frozen', 's-deload', 's-milestone'] }, size: 'card',
+    render: (p) => {
+      const v = { 's-zero': [0, 0, 4], 's-open': [7, 2, 4], 's-kept': [8, 4, 4], 's-risk': [7, 1, 4], 's-frozen': [7, 1, 4], 's-deload': [9, 3, 3], 's-milestone': [12, 4, 4] }[p.status] as [number, number, number];
+      return <StreakBar weeks={v[0]} done={v[1]} target={v[2]} status={p.status.slice(2) as StreakStatus} freeze={p.status === 's-zero' ? 0 : 1} />;
+    },
+  },
+  {
+    name: 'FreezeCard', group: '增长',
+    desc: '连胜冻结卡：有卡（断档那周的周一自动用一张）/ 没卡（牛劲兑换或开 Pro 每月送 2 张）/ 刚自动用了一张（连胜保住，变荧光）。',
+    axes: { state: ['f-have', 'f-none', 'f-used'] }, size: 'card',
+    render: (p) => <FreezeCard count={p.state === 'f-none' ? 0 : 1} state={p.state.slice(2) as 'have' | 'none' | 'used'} cost={COUPONS.freeze.cost} />,
+  },
+  {
+    name: 'NiujinBalance', group: '增长', covers: ['LedgerRow'],
+    desc: '牛劲余额（码表数字 + 本月进账，主角卡光）与流水：获得是荧光 +，花出是骨白 −，会员期间标「×1.5」。数字是演示用户练到第 30 周的引擎实算（第 20 周兑换过一张冻结卡）。',
+    axes: { member: ['free', 'pro'] }, size: 'card',
+    render: (p) => {
+      const g = growthSample(), rows = g.niujin.ledger.slice(-5).reverse(), pro = p.member === 'pro';
+      const month = g.niujin.ledger.filter((r) => r.amount > 0 && r.atMs > g.niujin.ledger.at(-1)!.atMs - 30 * 86400e3).reduce((a, r) => a + r.amount, 0);
+      const bal = pro ? g.niujin.ledger.reduce((a, r) => a + (r.amount > 0 ? Math.round(r.amount * 1.5) : r.amount), 0) : g.niujin.balance;
+      return <div className={s.growCol}><NiujinBalance balance={bal} month={pro ? Math.round(month * 1.5) : month} pro={pro} />
+        {[...rows, g.niujin.ledger.find((r) => r.amount < 0)!].map((r, i) => <LedgerRow key={i} label={r.label} amount={pro && r.amount > 0 ? Math.round(r.amount * 1.5) : r.amount} date={dateOf(r.atMs)} pro={pro && r.amount > 0} />)}</div>;
+    },
+  },
+  {
+    name: 'Coupon', group: '增长',
+    desc: '卡券（票根：左侧荧光存根 + 两侧缺口 + 虚线）：商家券 / 免邮券 / 会员体验 / 冻结卡 × 可兑换 / 牛劲不够（按钮不可用、写明还差多少）/ 可用 / 已用 / 已过期。',
+    axes: { type: ['c-merchant', 'c-shipping', 'c-trial', 'c-freeze'], state: ['c-redeem', 'c-short', 'c-available', 'c-used', 'c-expired'] }, rows: ['type'], cols: 'state', size: 'card',
+    render: (p) => {
+      const c = COUPONS[p.type.slice(2) as keyof typeof COUPONS], st = p.state.slice(2);
+      return <Coupon type={c.type} title={c.title} detail={c.detail} state={st === 'short' ? 'redeem' : st as 'redeem' | 'available' | 'used' | 'expired'} cost={c.cost} balance={st === 'short' ? Math.round(c.cost * 0.6) : c.cost * 3} />;
+    },
+  },
+  {
+    name: 'KnowledgeTip', group: '增长',
+    desc: '情境知识卡（商城的主要入口）：由引擎数据触发，先讲为什么现在给你看、适合什么时候、怎么用，再给商品。页内提示只在身体页、增量页出现，一屏最多一条，可关闭、可「不再提示这一类」；补剂写明「不构成医疗建议」。',
+    axes: { card: ['belt', 'straps', 'protein', 'creatine', 'knee'], variant: ['k-tip', 'k-header'] }, rows: ['card'], cols: 'variant', size: 'card',
+    render: (p) => { const k = KNOWLEDGE[p.card as KnowledgeId]; return <KnowledgeTip {...k} variant={p.variant === 'k-tip' ? 'tip' : 'header'} />; },
+  },
+  {
+    name: 'ProductCard', group: '增长',
+    desc: '商品卡：商家、品类、规格、价格；会员价（划掉原价 + Pro 价）；牛劲抵扣（100 牛劲抵 1 元，单笔最多 20%）；已下架不可点。商家与品牌全部虚构，价格为示例；商品图用几何品类图标。',
+    axes: { product: PRODUCTS.map((x) => x.id), state: ['p-normal', 'p-member', 'p-niujin', 'p-off'] }, rows: ['product'], cols: 'state', size: 'card',
+    render: (p) => { const x = PRODUCTS.find((y) => y.id === p.product)!; return <ProductCard {...x} state={p.state.slice(2) as 'normal' | 'member' | 'niujin' | 'off'} off={niujinOff(x.price, growthSample().niujin.balance)} />; },
+  },
+  {
+    name: 'Paywall', group: '增长',
+    desc: '会员付费墙（演示不拦截）：免费 vs Pro 对比 + 月度 / 年度（省 40%）/ 试用 7 天；已是会员显示到期与管理；开通成功是米洛庆祝。全程标「演示模式」，支付走假成功，不收集支付信息。',
+    axes: { state: ['w-month', 'w-year', 'w-trial', 'w-member', 'w-success'] }, size: 'screen',
+    render: (p) => <Paywall plan={p.state === 'w-year' ? 'year' : p.state === 'w-trial' ? 'trial' : 'month'} member={p.state === 'w-member'} success={p.state === 'w-success'} />,
+  },
+  {
+    name: 'ProBadge', group: '增长',
+    desc: 'Pro 标记：高级分析、商品会员价旁的入口标记（描边）/ 已开通（实底 + 勾）。',
+    axes: { state: ['locked', 'active'] }, size: 'auto',
+    render: (p) => <ProBadge state={p.state as 'locked' | 'active'} />,
+  },
+  {
+    name: 'MessageRow', group: '增长',
+    desc: '「我的」→ 消息：同时达成多项时没弹出来的奖励、冻结卡已自动使用、删除训练后的降级说明（不弹窗，只写在这里）。',
+    axes: { kind: ['reward', 'freeze', 'demote'], unread: ['true', 'false'] }, rows: ['kind'], cols: 'unread', size: 'card',
+    render: (p) => {
+      const v = { reward: ['破纪录 · 杠铃卧推', '预估 1RM 82.5 → 85 kg，+30 牛劲'], freeze: ['冻结卡已自动使用', '上周练了 1 / 4 次，连胜 7 周保住了'], demote: ['牛龄回到 壮牛 1 级', '你删除了 9 月 12 日的训练，成长值已重算'] }[p.kind] as [string, string];
+      return <MessageRow kind={p.kind as 'reward' | 'freeze' | 'demote'} title={v[0]} detail={v[1]} date="今天" unread={p.unread === 'true'} />;
+    },
   },
   {
     name: 'MascotHead', group: '品牌', desc: '只有头：16–48 像素的头像、通知、Toast、牛龄徽章。同一张 PNG 按头像框（以角为锚取正方形）裁出来。',

@@ -10,3 +10,5 @@ export * from './deload';
 export * from './load';
 export * from './prescribe';
 export * from './summary';
+export * from './growth';
+export * from './growth.sim';
