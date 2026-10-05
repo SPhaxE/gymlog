@@ -1,22 +1,23 @@
-# 交接报告 · 慢牛 Milo（2026-10-06，阶段 6a 完成）
+# 交接报告 · 慢牛 Milo（2026-10-06 定稿，阶段 6a 完成）
 
 > 给接手的人或客户端（Claude Code 本地版、Cursor、Codex……）。先读这一页，再按需看 `docs/`。
 > 用户写中文、要结论先行；所有对外文字（App 文案、文档、提交信息）用中文。
 
 ## 0. 一句话现状
 
-- **主流程闭环已经能用**：故事引导 → 建档 → 载入演示数据 → 首页处方 → 训练（数字键盘）→ 结算（新纪录 / 成长）→ 首页「今天已练完」。
+- **主流程闭环已经能用**：故事引导 → 建档 → 载入演示数据 → 首页处方 → **就在首页打卡**（主角卡展开成组行，键盘按需拉出）→ 结算（新纪录 / 成长）→ 首页「今天已练完」。
+- **2026-10-06 真机验收后的大改**：独立训练页（P03）取消，训练并入首页——导航胶囊环的今日进度和休息描边全程可见。演示里每一处交互按「交互五层 + 命中区 + 8motions」重新打磨，规则写进 `docs/DESIGN.md` §9.6 / §9.7，并进了截图门禁。
 - **第一版实机演示已上线**：<https://gymlog-taupe.vercel.app/demo>。这是现有 Vercel 域名下的一个路径，不是新域名；要独立域名，需要在 Vercel 项目的 Domains 里加。
 - **5 个 Tab 里，首页和身体是真页面**；增量、记录、我的还是占位（阶段 6b 起做）。
 - **门禁全绿**：
   - `tsc`
-  - vitest 207 项
+  - vitest 213 项
   - 写死值检查
   - Token 校验
   - Figma 插件 62 项
   - 构建
-  - `shots:playground`（70 个组件、524 个变体）
-  - `shots:6a`
+  - `shots:playground`（73 个组件、532 个变体）
+  - `shots:6a`（演示全流程，360 与 412 两种宽，每一步查命中区 ≥ 48、被压扁的块、横向溢出、页面错误）
 
 ## 1. 产品与决定
 
@@ -38,7 +39,13 @@
 2. Stitch 多方案（`design/hifi/`），用户选或混搭；
 3. 用代码定稿，截图对比后交用户验收。
 
-有线框的页面可以直接写代码（6a 起用户同意）。
+有线框的页面可以直接写代码（6a 起用户同意）；具体页面设计用户已授权由 Claude 自己选（2026-10-06），但**交互五层分析要写在页面文件头注释里**（例：`src/pages/TrainingView.tsx`），并且必须过 `DESIGN.md` §9.6 的十条交互硬规则。
+
+**用户最在意、踩过的坑**（2026-10-06 真机）：
+- 组件之间不守规范、错位（提示把输入框顶歪）→ 现在有「提示不位移」规则和「被压扁的块」门禁；
+- 键盘常驻挡屏 → 键盘只在改数时从底部拉出；
+- 页面结构和已有设计冲突（独立训练页让导航环白做）→ 改结构前先对照 `ia.md` §1.12 / §3；
+- 交付前没在真机尺寸、真实状态（首次动作、休息中）下自测 → `shots:6a` 覆盖这些状态，412 × 915 也跑。
 
 ## 2. 硬约束（不要破）
 
@@ -60,10 +67,11 @@ src/
                growth.sim.ts = 三类用户的长期模拟（定门槛、演示数据都用它）；mock/ 场景供引擎测试与 ?scenario=
   data/        store.ts   本机存储（useSyncExternalStore，一个键整份 JSON，写失败可重试）+ demoState（模拟 30 周 + 辅助动作）
                session.ts 训练进行中的全部操作（开始、改格、完成一组、加组、跳过、休息、结束 → 写历史）
+               useTrainingNav.ts 导航胶囊环的训练状态（今日进度、休息），5 个 Tab 根页共用
                demo.ts    页面数据（homeData / bodyData）：传场景名走 mock，传 Source 走本机存储
                growth.ts  奖励文案、商品表
   components/  组件库（index.ts 统一导出；每个导出都要在 playground/catalog.tsx 有条目，测试会查）
-  pages/       Home、Body、Onboarding（+ StoryScreens 故事 8 幕）、Session、Summary、Demo、Playground、Preview、TokenCheck
+  pages/       Home（+ TrainingView 首页打卡）、Body、Onboarding（+ StoryScreens 故事 8 幕）、Summary、Demo、Playground、Preview、TokenCheck
   shell/       AppShell 路由（没建档 → /onboarding）、Android 返回键 back.ts、TabStub 占位、Patterns 数据态
   playground/  /playground 组件目录（全部组件 × 交互态 + 交互演示）
   lab/         /brand IP 与 Logo 评审、/lab 参考要素实验
@@ -74,9 +82,9 @@ src/
 | 路由 | 页面 |
 |---|---|
 | `/onboarding` | 故事引导 → 建档 3 步 |
-| `/today` | 首页（今日处方） |
+| `/today` | 首页：今日处方 / 训练中（打卡）/ 今天已练完 |
 | `/body` | 身体 |
-| `/session` | 训练进行中 |
+| `/session` | 旧地址，重定向到 `/today` |
 | `/summary/:id` | 训练结算 |
 | `/gains` · `/log` · `/me` | 增量 · 记录 · 我的（占位） |
 | `/demo` | 实机演示 |
@@ -103,7 +111,7 @@ npm run check                   # = CI 的 web job（typecheck + test + hardcode
 python3 scripts/build_tokens.py [--check]   # 改 design/tokens/tokens.json 后重生成 tokens.css、tokens.gen.ts、Figma 插件
 node scripts/test_figma_plugin.cjs
 # 截图门禁（先 npx vite --port 5199 --host 127.0.0.1）
-python3 scripts/shoot_6a.py         # 闭环 + 故事 8 幕 + /demo → screenshots/stage6a/
+python3 scripts/shoot_6a.py         # 演示全流程 + 故事 8 幕 + /demo → screenshots/stage6a/（命中区审计在 scripts/lib/hit_audit.js）
 python3 scripts/shoot_playground.py # 组件矩阵 + App 壳 → screenshots/stage5/
 python3 scripts/shoot_growth.py     # 奖励弹窗 GIF → screenshots/growth/
 ```
@@ -161,18 +169,21 @@ python3 scripts/shoot_growth.py     # 奖励弹窗 GIF → screenshots/growth/
 |---|---|---|
 | 初见引导 P12 | 8 幕 Stories 式动画：两千五百年前 → 每天扛小牛（kg 刻度尺）→ 渐进超负荷（第 1 → 1460 天，30 → 450 kg）→ 超量恢复曲线 → **黄金窗互动**（光点进荧光段时点「练」，早 / 晚 / 对三种结果）→ 阶梯走进奥林匹亚拱门 → Milo 替你算（真组件小样）→ 你的小牛出生。三层视差，按住暂停，可跳过，减少动态效果时降级 | `pages/StoryScreens.*` |
 | 建档 | 3 步，草稿实时保存；最后可选「载入演示数据」（进阶用户 30 周） | `pages/OnboardingPage.*` |
-| 首页 P01 | 处方主角卡 + 增量尺；「继续训练」中断恢复；**今天已练完**：睡着的小牛 + 摘要 + 恢复进度，「再练一次」才展开处方 | `pages/HomePage.*` |
-| 训练 P03 | 组表格；**自带数字键盘**（第一下覆盖、±2.5 kg、「下一组」= 完成当前组）；休息在顶部（结束时间戳，切后台回来仍然准）；加组、跳过；结束确认 | `pages/SessionPage.*`、`components/training.tsx`（SetRow、NumPad） |
-| 结算 P05 | 新纪录整块荧光卡（进场弹起 + 扫光）；三格统计；逐个动作；牛龄成长；十格力竭度；奖励弹窗（每条记录只弹一次） | `pages/SummaryPage.*` |
+| 首页 P01 | 处方主角卡 + 增量尺；「为什么是这些」面板（每个动作练到哪些肌头、时相、近 7 天组数、重量理由）；**今天已练完**：睡着的小牛 + 摘要 + 恢复进度，「再练一次」才展开处方 | `pages/HomePage.*` |
+| 首页训练中（原 P03） | 开始训练 → 主角卡原地展开成组行（M03）；拇指区唯一主操作「打卡 · 第 N 组」（首次动作变「填重量」，直接拉出键盘）；点组行拉出改数面板（`Sheet` + `SetEditor`，M05 + M04 码表）；休息：导航选中胶囊 + 主按钮左边的休息胶囊（M02，点别处缩回）；换动作：列表行长成主角卡（M03 `.swap`）；列表每行一排组点；导航外圈今日进度，切到身体页也在 | `pages/TrainingView.tsx`、`components/training.tsx`（SetLine、SetEditor、NumPad）、`data/useTrainingNav.ts` |
+| 结算 P05 | 新纪录整块荧光卡（进场弹起 + 扫光 + 按住微倾 M01）；增幅按「之前最好」算（与奖励弹窗一致）；总负荷码表；逐个动作（与上次比）；牛龄成长；力竭度两排五格（每格 ≥ 48）；奖励弹窗（每条记录只弹一次） | `pages/SummaryPage.*` |
 | 实机演示 | 电脑上：讲解 + 演示路线，跟随手机当前步骤，每步可直接跳转；右侧手机壳里是 App 本体（同源 iframe）。手机上：清空后全屏进故事 | `pages/DemoPage.*` |
 
-截图在 `screenshots/stage6a/`（`story-board.png` 是故事 8 幕总览，`demo-desk.png` 是演示页）。
+截图在 `screenshots/stage6a/`：`flow-board.png` 主流程总览，`story-board.png` 故事 8 幕总览，`demo-desk.png` 演示页；线框 `screenshots/wireframes/checkin/`（首页即打卡 W1 / W2 / 键盘 W3）。
+
+**这一轮回改的规范（组件层，别的页面也受益）**：小按钮命中区上下外扩到 48；分段控件每项 ≥ 48 宽、命中区算上内边距；`Sheet` 标题和说明上下叠、滚动行高修复；`RestDock` 胶囊 48 高、「收起」48 高；`SetRow` 提示不再挤动第一行对齐；`Odometer` 按位配对滚动（97.5 → 100 不错位）；`NumPad` 步进键有读屏名；新组件 `SetLine`、`SetEditor`、`Tilt`（都在 `/playground`）。
 
 ## 7. 已知问题与待验证
 
 - **「首次」仍会出现**：处方引擎会轮换动作（同一肌头换个动作练），演示数据里没练过的动作显示「首次」，配有引导文案。要彻底消掉，可以在 `store.ts` 的 `ACCESSORY` 里加动作，或者让引擎优先选练过的动作（这是产品决定，先问用户）。
-- **新纪录在演示里不一定出现**：首页建议的深蹲是减量后的 80 kg。要演示新纪录，在训练页把重量加上去（例如提踵 +2.5 kg）。
-- **真机验证还没做**（`ia.md` §1.10 标了「阶段 6 真机验证」）：放大镜跟手的帧率、胶囊命中区、Android 返回键在各页的行为、数字键盘在小屏（360 × 640）上会不会挤。
+- **新纪录在演示里不一定出现**：首页建议的深蹲是减量后的 80 kg。要演示新纪录：点第 1 组整行，把重量改大（例如 120），再打卡、结束。
+- **真机验证还没全做**：命中区、对齐、溢出已在 360 / 412 两种宽自动检查；还没验的是放大镜跟手的帧率、Android 返回键在训练中 / 改数面板里的行为、360 × 640 这类矮屏上训练中的一屏能放下几组。
+- **P04 动作要领**还没做，主角卡上暂时没有「要领」入口。
 - **`/demo` 的「重新开始」**：父页清空存储后刷新手机里的 iframe。如果手机里正在休息倒计时，极小概率会在刷新前写回一次，再点一次即可。
 - **故事动画**只在 Chromium 上做过逐帧检查；Safari 和 Android WebView 上的 `text-wrap: balance`、`color-mix` 需要看一眼。Capacitor 8 默认的 WebView 足够新。
 
@@ -185,7 +196,7 @@ python3 scripts/shoot_growth.py     # 奖励弹窗 GIF → screenshots/growth/
   - P13：牛龄；
   - P14：钱包（牛劲、卡券）。
 - **6e 首页补全与商城**：
-  - 首页：P02 处方依据、P04 动作要领（`public/exercises/` 里有视频）、减量面板；
+  - 首页：P02 处方依据（现在是底部面板简版，可扩成整页）、P04 动作要领（`public/exercises/` 里有视频）、减量面板；
   - 商城与会员：P15–P21，只做演示链路。
 - **打磨**：开屏动画、真机性能、APK 上架素材（`brief.md` 增长层的「打磨」条目）。
 

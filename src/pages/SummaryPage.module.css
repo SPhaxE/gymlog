@@ -13,10 +13,10 @@
 .heroTop { display: flex; align-items: center; gap: var(--milo-space-s); }
 .pr { padding: var(--milo-space-2xs) var(--milo-space-xs); border-radius: var(--milo-radius-s); background: var(--milo-color-text-on-accent); color: var(--milo-color-accent-default) !important;
   font-family: var(--milo-font-number); font-weight: 900; font-size: var(--milo-font-size-caption); }
-.prev { margin-left: auto; padding: var(--milo-space-2xs) var(--milo-space-s); border-radius: var(--milo-radius-pill); background: color-mix(in srgb, var(--milo-color-text-on-accent) 12%, transparent);
+.prev { margin-left: auto; white-space: nowrap; padding: var(--milo-space-2xs) var(--milo-space-s); border-radius: var(--milo-radius-pill); background: color-mix(in srgb, var(--milo-color-text-on-accent) 12%, transparent);
   font-size: var(--milo-font-size-caption); font-weight: 700; }
 .heroNum { display: flex; align-items: baseline; gap: var(--milo-space-s); }
-.plus { margin-left: auto; padding: var(--milo-space-2xs) var(--milo-space-s); border-radius: var(--milo-radius-s); background: var(--milo-color-text-on-accent); color: var(--milo-color-accent-default) !important;
+.plus { margin-left: auto; white-space: nowrap; padding: var(--milo-space-2xs) var(--milo-space-s); border-radius: var(--milo-radius-s); background: var(--milo-color-text-on-accent); color: var(--milo-color-accent-default) !important;
   font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-m); }
 .ticks { display: flex; justify-content: space-between; align-items: flex-end; height: var(--milo-space-m); margin-top: var(--milo-space-2xs);
   border-top: var(--milo-stroke-hairline) solid color-mix(in srgb, var(--milo-color-text-on-accent) 35%, transparent); }

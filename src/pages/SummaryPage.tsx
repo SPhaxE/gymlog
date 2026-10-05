@@ -40,7 +40,9 @@ export function SummaryPage() {
 
   const { sum, after, before } = d;
   const name = (exId: string) => env.ex.get(exId)?.name ?? exId;
-  const best = [...sum.prs].sort((a, b) => (b.delta ?? 0) - (a.delta ?? 0))[0];
+  // 新纪录的增幅按「之前最好」算（与奖励弹窗、成长引擎同一口径）；逐动作表里才是与上次比
+  const gain = (r: (typeof sum.prs)[number]) => (r.e1rm != null && r.prevBest != null ? r.e1rm - r.prevBest : null);
+  const best = [...sum.prs].sort((a, b) => (gain(b) ?? 0) - (gain(a) ?? 0))[0];
   const gained = Math.round((after.points - before.points) * 10) / 10;
   const next = after.next;
 
@@ -51,8 +53,8 @@ export function SummaryPage() {
         {best ? (
           <Tilt><div className={s.hero}>
             <div className={s.heroTop}><span className={s.pr}>PR</span><span className="milo-text-label">新纪录 · {name(best.exerciseId)}</span>
-              {best.prevE1rm != null && <span className={s.prev}>上次 {fmt(best.prevE1rm)} kg</span>}</div>
-            <div className={s.heroNum}><span className="milo-text-caption">预估 1RM</span><Num size="hero" value={fmt(best.e1rm ?? 0)} unit="kg" />{best.delta != null && <span className={s.plus}>+{fmt(best.delta)} kg</span>}</div>
+              {best.prevBest != null && <span className={s.prev}>之前最好 {fmt(best.prevBest)} kg</span>}</div>
+            <div className={s.heroNum}><span className="milo-text-caption">预估 1RM</span><Num size="hero" value={fmt(best.e1rm ?? 0)} unit="kg" />{gain(best) != null && <span className={s.plus}>+{fmt(gain(best)!)} kg</span>}</div>
             <HeroTicks />
           </div></Tilt>
         ) : (

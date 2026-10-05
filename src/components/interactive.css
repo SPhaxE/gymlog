@@ -39,6 +39,8 @@
 /* M03 共享元素转场（View Transitions）：变形按 motion/spring；整页不做交叉淡化。
    卡片（.card）是「窗口展开」：新旧快照都按原尺寸贴左上角、被逐渐变大 / 变小的框裁出来，不拉伸放大（旧的快速淡出、新的快速淡入）；
    名称、数字（.title / .num）按比例缩放飞到新位置，交叉淡化 */
+/* 转场进行中不吞点击：转场层让点击穿过去，落到底下已经是新状态的真实页面上（开始训练后马上点组行，2026-10-06） */
+::view-transition { pointer-events: none; }
 ::view-transition-group(*) { animation-duration: var(--milo-motion-spring-ms); animation-timing-function: var(--milo-motion-ease-spring); }
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
 ::view-transition-image-pair(*.card) { overflow: clip; border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised); }  /* 实底：变形途中看不到后面的列表 */
@@ -48,7 +50,7 @@
 @keyframes vtIn { from { opacity: 0; } }
 /* 换位（.swap，首页训练中：列表行 ↔ 主角卡、开始训练时处方卡 → 打卡卡）：同样是「窗口」裁切，但新旧快照交叉淡化——
    旧的先快速淡出、新的随后淡入。缩回去的那一方新快照是透明底的列表行，旧卡要是保持不透明就会和行文字叠在一起（2026-10-06 逐帧看到） */
-::view-transition-group(*.swap) { animation-duration: var(--milo-motion-spring-soft-ms); animation-timing-function: var(--milo-motion-ease-spring-soft); }
+::view-transition-group(*.swap) { animation-duration: var(--milo-motion-spring-ms); animation-timing-function: var(--milo-motion-ease-spring); }
 ::view-transition-image-pair(*.swap) { overflow: clip; border-radius: var(--milo-radius-l); }
 ::view-transition-old(*.swap), ::view-transition-new(*.swap) { inset: 0; width: 100%; height: 100%; object-fit: none; object-position: left top; }
 ::view-transition-old(*.swap) { animation: vtOut var(--milo-motion-fast) var(--milo-motion-ease-standard) both; }
