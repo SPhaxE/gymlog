@@ -15,3 +15,5 @@
 第二轮（2026-10-05）：IP 按 `ip2-geo-b-selected.jpg` 的画法逐块重描，每个成长阶段都有全部状态，动效分层参考 [pet-forge](https://github.com/rullerzhou-afk/pet-forge) 的 SVG 约定（分层母版、显式支点、循环首尾帧相同、多层异步周期）；Logo 定为 `logo-bars-vhead-selected.jpg`（B 递增条牛头）。
 
 矢量实现在 `/brand`（`src/components/Mascot.tsx`、`src/components/Logo.tsx`），截图在 `screenshots/brand/`。
+
+第七轮之后（2026-10-05）：用户决定 IP 改用 PNG，按 `ip2-geo-b-selected.jpg` 高清重制 5 种牛龄 × 6 种状态（提示词 `design/brand/prompts/nanobanana-ip-hd.md`）。重制出来的单张资产（`mascot-<牛龄>-<状态>.png`）会抠图、统一尺寸后进 `public/`，作为正式素材；这里的意向图仍只作参考。
