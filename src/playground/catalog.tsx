@@ -7,6 +7,7 @@ import {
   Banner, BodyFigure, DotCalendar, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
   ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProgressSteps, RestBar, SectionLabel, Segmented,
   SessionRow, SetRow, Sheet, SheetBlock, Skeleton, Sparkline, StateView, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
+  AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, type LogoState, type MascotMood, type MascotStage,
   type Forced, type IconName, type NumSize, type SkeletonShape, type Tab, type TagTone,
 } from '../components';
 import type { DeltaDir } from '../components';
@@ -32,7 +33,7 @@ export interface Entry {
   render: (p: Props, f: Fixtures) => ReactNode;
 }
 
-export const GROUPS = ['基础', '表单', '反馈与悬浮层', '列表与页头', '训练与记录', '数据图形', '身体', '导航'] as const;
+export const GROUPS = ['基础', '表单', '反馈与悬浮层', '列表与页头', '训练与记录', '数据图形', '身体', '导航', '品牌'] as const;
 
 /** 只在交互演示或页面里出现、不进矩阵的导出（catalog.test 读这张表） */
 export const NOT_IN_MATRIX: Record<string, string> = {
@@ -61,6 +62,8 @@ export const CN: Record<string, string> = {
   track: '已开始 · 0 组', partial: '进行中', full: '满环', home: '首页', body: '身体', gains: '增量', log: '记录', me: '我的', success: '成功', undo: '可撤销',
   suggest: '建议减量', week: '减量周', quiet: '一行小字', 'pool-empty': '动作池不足', resume: '继续上次训练', info: '信息', page: '子页', session: '训练中',
   eyebrow: '带日期与附件', pill: '小胶囊', open: '展开', loadingState: '加载中',
+  st0: '牛犊', st1: '小牛', st2: '壮牛', st3: '公牛', st4: '米洛', 'm-idle': '平常', 'm-focused': '专注', 'm-happy': '开心', 'm-sleep': '恢复日', 'm-pr': '破纪录', 'm-tired': '减量周', idle: '平常', training: '训练中',
+  compact: '≤ 24 像素（7 根）', wide: '完整（9 根）', dark: '深底', light: '浅底', color: '彩色', mono: '单色',
 };
 export const cn = (v: string) => CN[v] ?? v;
 
@@ -393,7 +396,32 @@ export const CATALOG: Entry[] = [
     render: (p) => <div className={s.navBox}><Nav selected={p.selected as Tab} itemState={st(p.item)}
       progress={p.ring === 'off' ? null : p.ring === 'track' ? 0 : p.ring === 'full' ? 1 : 8 / 14} started={p.ring !== 'off'} rest={p.ring === 'rest' ? '1:35' : undefined} restRatio={p.ring === 'rest' ? 95 / 180 : undefined} /></div>,
   },
-];
+  /* ---------------- 品牌（阶段 5.5b，2026-10-05） ---------------- */
+  {
+    name: 'Mascot', group: '品牌', desc: 'IP 小牛：按意向图 3_27AM 的画法逐块描出的 5 个成长阶段（牛龄）× 6 种状态。眼型跟体型走（牛犊 / 小牛圆眼，壮牛 / 公牛怒眼）；恢复日是该阶段自己的身体下沉、腿收起、嘴贴地。动效按 pet-forge 的 SVG 分层约定：身体 / 头 / 眼 / 尾四层显式支点，呼吸、甩尾、眨眼周期错开；减少动态效果时静止。只出现在品牌位置（引导、奖励、牛龄、空态、商城、会员）。',
+    axes: { stage: ['st0', 'st1', 'st2', 'st3', 'st4'], mood: ['m-idle', 'm-focused', 'm-happy', 'm-sleep', 'm-pr', 'm-tired'] }, rows: ['stage'], cols: 'mood', size: 'card',
+    render: (p) => <div className={s.mascotCell}><Mascot stage={Number(p.stage.slice(2)) as MascotStage} mood={p.mood.slice(2) as MascotMood} animate title="慢牛小牛" /></div>,
+  },
+  {
+    name: 'MascotHead', group: '品牌', desc: '只有头：16–48 像素的头像、通知、Toast、牛龄徽章。角按阶段长，壮牛起换怒眼。',
+    axes: { stage: ['st0', 'st1', 'st2', 'st3', 'st4'], mood: ['m-idle', 'm-happy', 'm-pr', 'm-sleep', 'm-tired'] }, rows: ['stage'], cols: 'mood', size: 'auto',
+    render: (p) => <MascotHead stage={Number(p.stage.slice(2)) as MascotStage} mood={p.mood.slice(2) as MascotMood} className={s.mascotHead} />,
+  },
+  {
+    name: 'LogoGlyph', group: '品牌', desc: 'Logo B 递增条牛头：9 根竖条从角往中间一根比一根长（渐进超负荷），两根角条荧光，倾斜 11°。≤ 24 像素用 7 根宽条。状态只改姿态、发光、点缀和条的长短：加载 = 一根根长出来，训练中 = 前压 + 速度线，破纪录 = 角发光迸发，恢复日 = 变暗呼吸 + z，减量周 = 条变短 + 细环。',
+    axes: { logo: ['idle', 'loading', 'training', 'pr', 'rest', 'deload'], size: ['wide', 'compact'] }, rows: ['size'], cols: 'logo', size: 'auto',
+    render: (p) => <LogoGlyph mark="bars" state={p.logo as LogoState} small={p.size === 'compact'} className={p.size === 'compact' ? s.logoS : s.logoL} />,
+  },
+  {
+    name: 'AppIcon', group: '品牌', desc: 'App 图标：近黑圆角方形 + Logo；浅底版（商店图、浅色背景）主体变黑、角条用深一档的荧光。',
+    axes: { theme: ['dark', 'light'], logo: ['idle', 'loading', 'pr', 'rest', 'deload'] }, rows: ['theme'], cols: 'logo', size: 'auto',
+    render: (p) => <AppIcon mark="bars" light={p.theme === 'light'} state={p.logo as LogoState} className={s.appIcon} />,
+  },
+  {
+    name: 'Lockup', group: '品牌', desc: '横排组合：Logo + 「慢牛 Milo」，字标同样倾斜 11°；单色版连角条也是骨白。',
+    axes: { tone: ['color', 'mono'] }, size: 'auto',
+    render: (p) => <Lockup mark="bars" mono={p.tone === 'mono'} />,
+  },];
 
 function FigureCell({ view, sex, f }: { view: 'front' | 'back'; sex: 'male' | 'female'; f: Fixtures }) {
   return <div className={s.figureBox}><FigureInner view={view} sex={sex} f={f} /></div>;
@@ -407,7 +435,8 @@ function FigureInner({ view, sex, f }: { view: 'front' | 'back'; sex: 'male' | '
 export interface Variant { key: string; props: Props }
 export function variants(e: Entry): Variant[] {
   const axes = Object.entries(e.axes);
-  let combos: Props[] = [{}];
+  let combos: Props[] = [{}
+];
   for (const [k, vals] of axes) combos = combos.flatMap((c) => vals.map((v) => ({ ...c, [k]: v })));
   return combos.filter((p) => !e.skip?.(p)).map((p) => ({ key: `${e.name}|${axes.map(([k]) => `${k}=${p[k]}`).join(',')}`, props: p }));
 }

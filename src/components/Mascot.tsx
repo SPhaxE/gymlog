@@ -1,12 +1,16 @@
-/** IP 小牛（阶段 5.5b 第二轮，2026-10-05）：按用户指定，尽量逼近意向图 docs/brand-refs/ip2-geo-b-selected.jpg（原 3_27AM）的画法——
+/** IP 小牛（阶段 5.5b 第三轮，2026-10-05）：逼近意向图 docs/brand-refs/ip2-geo-b-selected.jpg（原 3_27AM）的画法——
  *  四分之三正面、头大且压在身体前上方；躯干一大块灰，臀 + 后腿是一整块骨白（上沿圆、后背直），前肩一块高高的圆角骨白；
  *  远侧两条腿暗一档；腿略带斜度；蹄是灰色半圆帽；骨白细尾 + 灰尾梢；嘴是灰米色宽圆角块、压出头的下沿；叶形耳向两侧伸；
  *  新月角从头后面伸出来，荧光只给角。每个体型的形状都是从意向图上逐块量出来的（坐标系 = 意向图上该角色的裁切框），
- *  k 把各体型换回原图的相对大小，放在一起时大小关系与原图一致。
- *  状态（用户 2026-10-05：每个成长阶段都要有）：每个体型自带眼睛的位置与基础眼型（小牛圆点眼、壮牛 / 公牛斜切怒眼），
- *  状态只换眼睛与点缀；恢复日是同一套趴睡姿态，按阶段换大小、换角；破纪录时小牛抬一条前腿（意向图 Celebrating）。
+ *  k 把各体型换回原图的相对大小。
+ *  第三轮与原图逐张对比后的修正：牛犊不露尾巴；小牛肚皮下沿是低弧、臀块上沿更圆；专注 = 原图的圆点眼（不加眉）；
+ *  开心时头歪一点；破纪录时尾巴翘起、远侧前腿屈膝抬起、彩屑全是灰米色；减量周是实心下垂半月眼（不加眉）；
+ *  壮牛 / 公牛臀块右上角是圆角。
+ *  状态（每个成长阶段都有）：每个体型自带眼位与基础眼型（牛犊 / 小牛圆眼、壮牛 / 公牛斜切怒眼），状态只换眼、头的姿态与点缀。
+ *  恢复日（用户 2026-10-05：要和对应阶段的牛有关系）：不是另画一只，而是把该阶段的身体整体下沉、站立的腿埋到地面以下
+ *  （clipPath），换成折起来的腿，头低下来闭眼——所以牛犊趴着还是牛犊，公牛趴着还是公牛。
  *  颜色只用原色 Token（灰与米色的中间色用 color-mix 调出来，见 Mascot.module.css）。 */
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import s from './Mascot.module.css';
 
 export type MascotStage = 0 | 1 | 2 | 3 | 4;
@@ -19,8 +23,19 @@ type Shape = [C, string];
 /** 眼：[x, y, r, side]；side −1 = 画面左边那只，1 = 右边那只（决定怒眼、眉毛的斜向） */
 type Eye = [number, number, number, number];
 interface Fig {
-  w: number; h: number; k: number; shapes: Shape[]; tail: [string, number];
-  eyes: Eye[]; angry: boolean; head: [number, number, number]; extra?: ReactNode;
+  w: number; h: number; k: number;
+  /** 尾巴 [路径, 粗细]；null = 不露尾巴（牛犊） */
+  tail: [string, number] | null;
+  shapes: Shape[]; eyes: Eye[]; angry: boolean;
+  /** 头的中心与半径（彩屑、z 的位置） */
+  head: [number, number, number];
+  /** 颈部支点（转头、低头） */
+  neck: [number, number];
+  /** 地面 y、趴下时身体下沉多少、折起来的腿（趴下后的坐标） */
+  ground: number; drop: number; fold: Shape[];
+  /** 趴下时头下沉多少（让嘴贴地，意向图 Sleeping） */
+  headDrop: number;
+  extra?: ReactNode;
 }
 
 const rr = (x: number, y: number, w: number, h: number, r: number) =>
@@ -31,37 +46,37 @@ const ell = (cx: number, cy: number, rx: number, ry: number, rot = 0) => {
   const p = (t: number) => { const x = rx * Math.cos(t), y = ry * Math.sin(t); return `${f1(cx + x * c - y * sn)},${f1(cy + x * sn + y * c)}`; };
   return `M${p(0)}A${rx},${ry} ${rot} 1 1 ${p(Math.PI)}A${rx},${ry} ${rot} 1 1 ${p(0)}Z`;
 };
-/** 蹄：腿底一顶灰色半圆帽 */
-const hoof = (x: number, y: number, w: number, h = 26) => `M${x},${y}H${x + w}C${x + w + 3},${y + h * 0.6} ${x + w - 6},${y + h} ${x + w - 14},${y + h}H${x + 12}C${x + 4},${y + h} ${x - 4},${y + h * 0.6} ${x},${y}Z`;
+/** 蹄：腿底一顶灰色半圆帽（上沿略斜，像鞋） */
+const hoof = (x: number, y: number, w: number, h = 26) => `M${x},${y + 3}L${x + w},${y - 2}C${x + w + 3},${y + h * 0.6} ${x + w - 6},${y + h} ${x + w - 14},${y + h}H${x + 12}C${x + 4},${y + h} ${x - 4},${y + h * 0.6} ${x},${y + 3}Z`;
 const star = (cx: number, cy: number, r: number) => { const q = r * 0.3; return `M${f1(cx)},${f1(cy - r)}L${f1(cx + q)},${f1(cy - q)}L${f1(cx + r)},${f1(cy)}L${f1(cx + q)},${f1(cy + q)}L${f1(cx)},${f1(cy + r)}L${f1(cx - q)},${f1(cy + q)}L${f1(cx - r)},${f1(cy)}L${f1(cx - q)},${f1(cy - q)}Z`; };
 const tri = (cx: number, cy: number, r: number, rot: number) => {
   const pts = [0, 120, 240].map((d) => { const a = ((d + rot) * Math.PI) / 180; return `${f1(cx + r * Math.sin(a))},${f1(cy - r * Math.cos(a))}`; });
   return `M${pts.join('L')}Z`;
 };
 
-/** 眼睛与眉：按状态画；基础眼型 angry = 斜切怒眼（壮牛、公牛），否则圆点 */
+/** 眼睛：按状态画；基础眼型 angry = 斜切怒眼（壮牛、公牛），否则圆点 */
 function Eyes({ eyes, angry, mood }: { eyes: Eye[]; angry: boolean; mood: MascotMood }) {
   return (
     <g>
       {eyes.map(([x, y, r, d], i) => {
         const sw = r * 0.62;
-        // 眉：内端 = 靠鼻梁那头。坚定（专注）内低外高；累（减量周）内高外低
-        const brow = (worried: boolean) => <path className={s.line} strokeWidth={sw} d={`M${f1(x - d * r * 1.3)},${f1(y - r * (worried ? 2.4 : 1.5))}L${f1(x + d * r * 1.2)},${f1(y - r * (worried ? 1.7 : 2.3))}`} />;
+        if (mood === 'sleep') return <path key={i} className={s.line} strokeWidth={r * 0.75} d={`M${f1(x - r * 1.3)},${f1(y)}Q${f1(x)},${f1(y + r * 1.5)} ${f1(x + r * 1.3)},${f1(y)}`} />;
         if (mood === 'happy') return <path key={i} className={s.line} strokeWidth={sw} d={`M${f1(x - r * 1.2)},${f1(y + r * 0.5)}Q${f1(x)},${f1(y - r * 1.4)} ${f1(x + r * 1.2)},${f1(y + r * 0.5)}`} />;
         if (mood === 'pr') return <path key={i} className={s.ink} d={star(x, y, r * 1.8)} />;
-        if (mood === 'tired') return <g key={i}>
-          <path className={s.line} strokeWidth={sw} d={`M${f1(x - r * 1.2)},${f1(y - r * 0.1)}Q${f1(x)},${f1(y + r * 1.3)} ${f1(x + r * 1.2)},${f1(y - r * 0.1)}`} />{brow(true)}</g>;
-        const base = angry
-          // 怒眼：上沿从外侧高处斜切到内侧低处（意向图公牛），下半是圆
-          ? <path className={s.ink} d={`M${f1(x + d * r * 1.25)},${f1(y - r * 1.05)}L${f1(x - d * r * 1.3)},${f1(y + r * 0.35)}Q${f1(x - d * r * 0.85)},${f1(y + r * 1.3)} ${f1(x + d * r * 0.05)},${f1(y + r * 1.2)}Q${f1(x + d * r * 1.25)},${f1(y + r * 0.9)} ${f1(x + d * r * 1.25)},${f1(y - r * 1.05)}Z`} />
-          : <circle className={s.ink} cx={x} cy={y} r={r} />;
-        return <g key={i}>{base}{mood === 'focused' && !angry && brow(false)}</g>;
+        // 减量周（意向图 Tired）：实心下垂半月眼——上沿是一条外低内高的直线，下面是半圆
+        if (mood === 'tired') {
+          const ix = x - d * r * 1.3, ox = x + d * r * 1.3, iy = y - r * 0.35, oy = y + r * 0.25;
+          return <path key={i} className={s.ink} d={`M${f1(ix)},${f1(iy)}L${f1(ox)},${f1(oy)}Q${f1(x + d * r * 0.4)},${f1(y + r * 1.5)} ${f1(x - d * r * 0.6)},${f1(y + r * 0.95)}Q${f1(ix - d * r * 0.1)},${f1(y + r * 0.55)} ${f1(ix)},${f1(iy)}Z`} />;
+        }
+        // 怒眼：上沿从外侧高处斜切到内侧低处（意向图公牛），下半是圆
+        if (angry) return <path key={i} className={s.ink} d={`M${f1(x + d * r * 1.25)},${f1(y - r * 1.05)}L${f1(x - d * r * 1.3)},${f1(y + r * 0.35)}Q${f1(x - d * r * 0.85)},${f1(y + r * 1.3)} ${f1(x + d * r * 0.05)},${f1(y + r * 1.2)}Q${f1(x + d * r * 1.25)},${f1(y + r * 0.9)} ${f1(x + d * r * 1.25)},${f1(y - r * 1.05)}Z`} />;
+        return <circle key={i} className={s.ink} cx={x} cy={y} r={r} />;
       })}
     </g>
   );
 }
 
-/** 破纪录的彩屑：围着头散开，灰米色为主，两颗荧光星 */
+/** 破纪录的彩屑：围着头散开，灰米色三角和圆点（意向图 Celebrating） */
 function Confetti({ head: [cx, cy, r] }: { head: [number, number, number] }) {
   const tris: Array<[number, number, number, number]> = [[-1.75, -1.35, 0.17, 15], [0.1, -1.95, 0.15, 200], [-1.95, 0.25, 0.17, 40], [1.45, 0.95, 0.16, 100]];
   const dots: Array<[number, number, number]> = [[-1.35, -0.55, 0.14], [-0.7, -1.7, 0.11], [1.75, -0.1, 0.14]];
@@ -69,7 +84,6 @@ function Confetti({ head: [cx, cy, r] }: { head: [number, number, number] }) {
     <g>
       {tris.map(([x, y, q, a], i) => <path key={i} className={s.ear} d={tri(cx + x * r, cy + y * r, q * r, a)} />)}
       {dots.map(([x, y, q], i) => <circle key={i} className={s.ear} cx={f1(cx + x * r)} cy={f1(cy + y * r)} r={f1(q * r)} />)}
-      <path className={s.horn} d={star(cx - 1.05 * r, cy - 1.5 * r, 0.16 * r)} /><path className={s.horn} d={star(cx + 1.4 * r, cy - 1.25 * r, 0.12 * r)} />
     </g>
   );
 }
@@ -80,33 +94,42 @@ const CALF_HORNS: Shape[] = [
   ['horn', 'M378,20C395,42 391,78 357,92L335,80C361,70 373,52 378,20Z'],
 ];
 const CALF_HEAD: Shape[] = [
-  ['ear', 'M166,112C190,96 212,92 234,96L234,130C210,132 186,126 166,112Z'],
-  ['ear', 'M410,112C386,96 364,92 342,96L342,130C366,132 390,126 410,112Z'],
-  ['bone', 'M218,118C218,78 248,48 290,48C332,48 360,78 360,118C360,168 335,200 290,206C246,200 218,168 218,118Z'],
-  ['ear', rr(247, 160, 96, 60, 30)],
-  ['nose', ell(277, 192, 10, 6, 25)],
-  ['nose', ell(316, 192, 10, 6, -25)],
+  ['ear', 'M164,114C188,96 212,90 236,94L236,132C210,134 184,128 164,114Z'],
+  ['ear', 'M412,114C388,96 364,90 340,94L340,132C366,134 392,128 412,114Z'],
+  ['bone', 'M216,116C216,74 248,46 290,46C332,46 362,74 362,116C362,168 336,200 290,206C244,200 216,168 216,116Z'],
+  ['ear', rr(244, 160, 100, 62, 31)],
+  ['nose', ell(277, 193, 10, 6, 25)],
+  ['nose', ell(317, 193, 10, 6, -25)],
 ];
 const calf = (pr: boolean): Fig => ({
-  w: 423, h: 400, k: 1.1, tail: ['M66,208C32,204 22,232 26,262', 10],
-  eyes: [[258, 128, 12, -1], [330, 128, 12, 1]], angry: false, head: [290, 128, 80],
+  w: 423, h: 400, k: 1.1,
+  // 破纪录时尾巴翘起来，尾梢朝上（意向图 Celebrating）
+  tail: pr ? ['M64,206C30,204 22,176 34,146', 10] : ['M64,206C32,204 22,232 26,262', 10],
+  eyes: [[258, 128, 12, -1], [330, 128, 12, 1]], angry: false, head: [290, 128, 80], neck: [250, 200],
+  ground: 392, drop: 78, headDrop: 150,
+  fold: [['far', rr(150, 366, 110, 26, 13)], ['bone', rr(36, 364, 128, 28, 14)], ['bone', rr(206, 364, 170, 28, 14)]],
   shapes: [
     ...CALF_HORNS,
-    ['far', 'M112,290L150,290L158,368L118,368Z'], ['hoof', hoof(115, 366, 45)],
-    // 破纪录：远侧前腿抬起来（意向图 Celebrating）
-    ...(pr ? [['far', 'M262,232L304,236L318,292L292,342L268,330L286,292Z'], ['hoof', 'M268,330L292,342C290,360 280,368 270,362L258,352C254,344 260,334 268,330Z']] as Shape[]
-      : [['far', 'M270,230L312,230L318,368L278,368Z'], ['hoof', hoof(276, 366, 44)]] as Shape[]),
-    ['grey', 'M100,196C130,178 180,165 246,150L318,205L318,262C300,285 230,298 190,302L140,302C110,300 98,260 100,196Z'],
-    ['bone', 'M50,215C50,195 60,186 80,185L132,180C145,182 152,192 150,210L148,285C146,298 135,302 120,302L97,302L97,368L55,368Z'], ['hoof', hoof(54, 366, 45)],
-    ['bone', 'M186,258C186,232 200,220 222,220L240,220C252,222 254,232 252,245L262,368L218,368Z'], ['hoof', hoof(216, 366, 47)],
+    ['far', 'M110,288L150,288L172,368L132,368Z'], ['hoof', hoof(129, 366, 45)],
+    // 破纪录：远侧前腿屈膝抬起——大腿向前下，小腿折回向后下，蹄尖朝下
+    ...(pr ? [['far', 'M266,236L306,240L322,300L298,340L276,330L290,298Z'], ['hoof', 'M276,330L298,340C298,358 290,368 280,366L266,356C260,348 266,334 276,330Z']] as Shape[]
+      : [['far', 'M268,232L310,232L332,368L292,368Z'], ['hoof', hoof(290, 366, 44)]] as Shape[]),
+    // 躯干：背从臀上沿缓升到颈，肚皮下沿是一条低弧
+    ['grey', 'M96,198C128,178 182,164 248,150L320,206L318,262C306,296 250,322 196,322C160,322 128,312 112,300C100,280 96,240 96,198Z'],
+    // 臀 + 近侧后腿：左上大圆角、上沿向右缓升、右缘内凹接后腿
+    ['bone', 'M50,226C50,200 62,186 88,184L134,180C148,180 154,190 152,206L148,282C146,298 132,304 116,304L98,306L86,368L40,368L50,300Z'], ['hoof', hoof(38, 366, 49)],
+    // 前肩 + 近侧前腿：左上大圆角，腿略向前斜
+    ['bone', 'M184,262C184,232 198,218 224,218L240,218C254,218 258,230 256,246L274,368L228,368Z'], ['hoof', hoof(226, 366, 49)],
     ...CALF_HEAD,
   ],
 });
 
-/* ---------------- 牛犊（意向图 Newborn Calf，坐标系 620 × 400；侧脸，一只眼） ---------------- */
+/* ---------------- 牛犊（意向图 Newborn Calf，坐标系 620 × 400；侧脸，一只眼，不露尾巴） ---------------- */
 const newborn: Fig = {
-  w: 620, h: 400, k: 0.62, tail: ['M70,175C40,178 30,205 34,232', 14],
-  eyes: [[420, 153, 17, -1]], angry: false, head: [440, 150, 110],
+  w: 620, h: 400, k: 0.62, tail: null,
+  eyes: [[420, 153, 17, -1]], angry: false, head: [440, 150, 110], neck: [380, 245],
+  ground: 378, drop: 56, headDrop: 100,
+  fold: [['far', rr(150, 350, 130, 28, 14)], ['bone', rr(40, 348, 160, 30, 15)], ['bone', rr(300, 348, 200, 30, 15)]],
   shapes: [
     ['horn', 'M335,45C346,38 362,54 374,72L350,96C340,80 330,60 335,45Z'],
     ['horn', 'M512,40C524,48 527,64 518,80L494,70C500,58 505,45 512,40Z'],
@@ -125,86 +148,61 @@ const newborn: Fig = {
 /* ---------------- 壮牛（意向图 Sturdy Young Bull，坐标系 541 × 400；头侧转，一只怒眼） ---------------- */
 const sturdy: Fig = {
   w: 541, h: 400, k: 1.17, tail: ['M60,176C28,170 18,200 22,236', 11],
-  eyes: [[385, 157, 12, -1]], angry: true, head: [405, 165, 85],
+  eyes: [[385, 157, 12, -1]], angry: true, head: [405, 165, 85], neck: [350, 235],
+  ground: 394, drop: 80, headDrop: 128,
+  fold: [['far', rr(150, 366, 120, 28, 14)], ['bone', rr(48, 364, 150, 30, 15)], ['bone', rr(250, 364, 200, 30, 15)]],
   shapes: [
     ['horn', 'M300,18C268,40 270,98 330,124L362,108C320,92 300,62 300,18Z'],
     ['horn', 'M488,15C522,36 528,92 470,124L440,110C482,94 494,60 488,15Z'],
     ['far', 'M128,282L166,278L176,370L136,372Z'], ['hoof', hoof(134, 368, 44)],
     ['far', 'M346,262L386,254L402,370L362,372Z'], ['hoof', hoof(360, 368, 46)],
-    ['grey', 'M148,170C200,140 240,110 300,88L420,90L440,180C430,250 400,300 350,315C300,318 220,300 165,286L140,250Z'],
-    ['bone', 'M55,202C55,170 70,155 95,152L158,150L165,170L160,285L140,300L100,330L100,370L60,370Z'], ['hoof', hoof(58, 368, 44)],
-    ['bone', 'M236,186C236,178 241,172 250,172L290,172C320,172 330,200 328,230L325,310L345,366L300,370L272,300L246,240Z'], ['hoof', hoof(298, 366, 48)],
-    ['ear', 'M290,146C310,128 330,124 350,128L352,160C330,162 306,158 290,146Z'],
+    ['grey', 'M148,170C200,140 240,110 300,90C350,74 410,80 432,112C440,130 442,160 440,180C430,250 400,300 350,316C300,322 220,306 165,288L140,250Z'],
+    ['bone', 'M55,204C55,172 70,156 96,153L148,150C160,150 166,160 166,172L160,285L140,300L100,330L100,370L60,370Z'], ['hoof', hoof(58, 368, 44)],
+    ['bone', 'M236,190C236,178 242,172 254,172L290,172C320,172 330,200 328,230L325,310L345,366L300,370L272,300L246,240Z'], ['hoof', hoof(298, 366, 48)],
+    ['ear', 'M288,148C308,128 330,123 352,127L354,162C330,164 304,160 288,148Z'],
     ['ear', 'M505,145C490,130 475,126 462,128L462,158C478,160 494,156 505,145Z'],
     ['bone', 'M340,108L462,92C470,92 472,100 470,110L465,195C460,225 440,240 410,240C375,238 348,210 343,175Z'],
-    ['ear', rr(382, 192, 82, 52, 24)],
-    ['nose', ell(410, 218, 8, 5, 25)], ['nose', ell(444, 218, 8, 5, -25)],
+    ['ear', rr(382, 192, 84, 54, 25)],
+    ['nose', ell(411, 219, 8, 5, 25)], ['nose', ell(445, 219, 8, 5, -25)],
   ],
 };
 
 /* ---------------- 公牛（意向图 Full-grown Bull，坐标系 543 × 400；两只怒眼） ---------------- */
 const bull = (legend: boolean): Fig => ({
   w: 543, h: 400, k: 1.34, tail: ['M70,170C35,168 18,200 20,240', 12],
-  eyes: [[383, 154, 13, -1], [449, 154, 13, 1]], angry: true, head: [410, 165, 90],
+  eyes: [[383, 154, 13, -1], [449, 154, 13, 1]], angry: true, head: [410, 165, 90], neck: [355, 240],
+  ground: 404, drop: 82, headDrop: 132,
+  fold: [['far', rr(150, 376, 130, 28, 14)], ['bone', rr(34, 374, 160, 30, 15)], ['bone', rr(262, 374, 210, 30, 15)]],
   shapes: [
     ['horn', 'M300,10C270,30 272,100 335,125L370,112C322,92 300,55 300,10Z'],
     ['horn', 'M490,10C528,30 534,95 470,120L440,108C484,92 498,55 490,10Z'],
     ['far', 'M125,290L160,285L190,380L150,382Z'], ['hoof', hoof(148, 378, 46)],
     ['far', 'M386,298L430,290L438,380L396,382Z'], ['hoof', hoof(394, 378, 48)],
-    ['grey', 'M140,160C190,120 240,80 300,60L380,60C420,62 450,85 460,130L455,230C440,290 390,315 330,318C270,316 210,300 160,290L130,250Z'],
-    ['bone', 'M40,205C40,172 55,150 85,148L160,142L168,165L162,290L135,310L85,330L85,380L42,380Z'], ['hoof', hoof(40, 378, 47)],
-    ['bone', 'M256,176L300,172C325,172 338,195 336,230L330,320L350,380L305,382L285,320L258,250Z'], ['hoof', hoof(303, 378, 49)],
-    ['ear', 'M300,140C325,122 350,120 368,125L370,158C345,162 318,156 300,140Z'],
+    ['grey', 'M140,160C190,120 240,80 300,62C350,46 420,56 452,96C462,110 462,122 460,130L455,230C440,290 390,318 330,322C270,320 210,304 160,292L130,250Z'],
+    ['bone', 'M40,206C40,172 55,150 85,148L152,142C164,142 168,152 168,165L162,290L135,310L85,330L85,380L42,380Z'], ['hoof', hoof(40, 378, 47)],
+    ['bone', 'M256,180C256,174 262,172 270,172L300,172C325,172 338,195 336,230L330,320L350,380L305,382L285,320L258,250Z'], ['hoof', hoof(303, 378, 49)],
+    ['ear', 'M298,142C324,122 350,119 370,124L372,160C346,164 316,158 298,142Z'],
     ['ear', 'M510,145C495,128 478,124 462,126L462,160C480,162 498,158 510,145Z'],
     ['bone', 'M348,98L462,88C470,88 474,95 472,105L462,200C455,232 435,248 408,248C375,245 352,215 350,180Z'],
-    ['ear', rr(380, 196, 84, 54, 26)],
-    ['nose', ell(410, 222, 8, 5, 25)], ['nose', ell(445, 222, 8, 5, -25)],
+    ['ear', rr(380, 196, 86, 55, 26)],
+    ['nose', ell(411, 223, 8, 5, 25)], ['nose', ell(446, 223, 8, 5, -25)],
   ],
   extra: legend ? <path className={s.horn} d={ell(18, 262, 13, 24, 15)} /> : undefined,
 });
 
-/* ---------------- 趴睡（意向图 Sleeping (Rest Day)，坐标系 895 × 400）：各阶段同一姿态，按阶段换大小与角 ---------------- */
-const SLEEP_K = [0.42, 0.62, 0.8, 0.95, 0.98];
-const sleep = (stage: MascotStage): Fig => {
-  // 角：小牛的新月角放大到睡姿头上（头中心 648,190）；牛犊是两个角芽；越往后越大
-  const hk = [0, 1.75, 2.15, 2.5, 2.6][stage];
-  const horns: ReactNode = stage === 0
-    ? <g><path className={s.horn} d={ell(560, 60, 16, 26, -30)} /><path className={s.horn} d={ell(736, 60, 16, 26, 30)} /></g>
-    : <g transform={`translate(648 ${120 - 30 * (stage - 1)}) scale(${hk}) translate(-292 -78)`}>{CALF_HORNS.map(([c, d], i) => <path key={i} className={s[c]} d={d} />)}</g>;
-  return {
-    w: 895, h: 400, k: SLEEP_K[stage], tail: ['M66,242C14,252 20,346 110,356', 22],
-    eyes: [], angry: false, head: [648, 190, 140],
-    shapes: [
-      ['grey', 'M150,130C250,95 370,45 430,40C520,38 570,80 580,120L560,300L300,305L230,300Z'],
-      ['bone', rr(60, 302, 700, 82, 41)],
-      ['far', 'M300,302H430V384H300Z'],
-      ['bone', ell(170, 238, 110, 110)],
-      ['ear', 'M410,175C450,150 500,140 530,145L520,210C470,215 430,200 410,175Z'],
-      ['ear', 'M885,170C850,145 815,138 780,140L790,205C830,212 865,198 885,170Z'],
-    ],
-    extra: <>
-      {horns}
-      <path className={s.bone} d={ell(648, 190, 140, 142)} />
-      <path className={s.ear} d={rr(565, 266, 190, 114, 55)} />
-      <path className={s.nose} d={ell(622, 330, 22, 7, 25)} /><path className={s.nose} d={ell(704, 330, 22, 7, -25)} />
-      <g className={s.thick}><path d="M548,190Q588,236 628,190" /><path d="M678,190Q718,236 758,190" /></g>
-      <g className={s.zz}><text x="790" y="96" fontSize="64">z</text><text x="842" y="44" fontSize="46">z</text></g>
-    </>,
-  };
-};
-
 function figure(stage: MascotStage, mood: MascotMood): Fig {
-  if (mood === 'sleep') return sleep(stage);
   if (stage === 0) return newborn;
   if (stage === 2) return sturdy;
   if (stage >= 3) return bull(stage === 4);
   return calf(mood === 'pr');
 }
 
-/** 尾梢：在尾巴末端挂一撮灰（水滴形，略斜） */
+/** 尾梢：在尾巴末端挂一撮灰（水滴形，沿尾巴走向） */
 function tuft(tail: string, w: number) {
-  const m = tail.match(/(-?[\d.]+),(-?[\d.]+)$/)!;
-  return ell(Number(m[1]) - w * 0.2, Number(m[2]) + w * 1.7, w * 1.15, w * 2, 15);
+  const m = tail.match(/(-?[\d.]+),(-?[\d.]+) (-?[\d.]+),(-?[\d.]+)$/)!; // 最后一个控制点与终点
+  const [cx, cy, x, y] = m.slice(1).map(Number), ang = Math.atan2(y - cy, x - cx);
+  const L = w * 1.9;
+  return ell(x + Math.cos(ang) * L * 0.8, y + Math.sin(ang) * L * 0.8, w * 1.15, L, (ang * 180) / Math.PI - 90);
 }
 
 /** 整只小牛。渲染宽度 = --fig-w（各体型在原图里的相对宽度）× --mascot-unit（默认 0.1em）；也可以直接用 className 设宽。
@@ -212,37 +210,57 @@ function tuft(tail: string, w: number) {
  *  各自循环、周期故意错开（呼吸、甩尾、眨眼不同步才像活物）；循环关键帧首尾相同，见 Mascot.module.css。 */
 export function Mascot({ stage = 1, mood = 'idle', animate, className, title }: { stage?: MascotStage; mood?: MascotMood; animate?: boolean; className?: string; title?: string }) {
   const f = figure(stage, mood);
+  const clip = useId().replace(/[^a-zA-Z0-9-]/g, '');
   const sleeping = mood === 'sleep';
   // 分层：角 + 第一只耳朵之后的部件（耳、头、口鼻、鼻孔）= 头；其余 = 身体
   const firstEar = f.shapes.findIndex(([c]) => c === 'ear');
   const head = f.shapes.filter(([c], i) => c === 'horn' || i >= firstEar);
-  const body = f.shapes.filter(([c], i) => c !== 'horn' && i < firstEar);
-  const tailRoot = f.tail[0].match(/^M(-?[\d.]+),(-?[\d.]+)/)!;
+  const standing = f.shapes.filter(([c], i) => c !== 'horn' && i < firstEar);
+  // 趴下：远侧腿、蹄、近侧前腿（身体里最后一块骨白）都收起来，换成 fold；臀块里的后腿被地面裁掉
+  const frontLeg = standing.map(([c]) => c).lastIndexOf('bone');
+  const body = sleeping ? standing.filter(([c], i) => c !== 'far' && c !== 'hoof' && i !== frontLeg) : standing;
   const at = (x: number | string, y: number | string) => ({ transformOrigin: `${x}px ${y}px` });
   const [hx, hy, hr] = f.head;
+  const dy = sleeping ? f.drop : 0;
+  // 趴下：头比身体少沉一点并低头；开心时头歪一点（意向图 Happy）
+  const headPose = sleeping ? `translate(${f1(hr * 0.08)} ${f.headDrop}) rotate(4 ${f.neck[0]} ${f.neck[1]})`
+    : mood === 'happy' ? `rotate(-7 ${f.neck[0]} ${f.neck[1]})` : undefined;
+  const tailRoot = f.tail && f.tail[0].match(/^M(-?[\d.]+),(-?[\d.]+)/)!;
   return (
     <svg className={`${className ?? s.mascot} ${animate ? `${s.alive} ${s[`m_${mood}`]}` : ''}`} viewBox={`0 0 ${f.w} ${f.h}`} style={{ ['--fig-w' as string]: f.w * f.k }}
       role={title ? 'img' : undefined} aria-label={title} aria-hidden={title ? undefined : true}>
-      <g className={s.whole} style={at(f.w / 2, f.h - 12)}>
-        <g className={s.tailG} style={at(tailRoot[1], tailRoot[2])}>
-          <path className={s.tail} strokeWidth={f.tail[1]} d={f.tail[0]} />
-          {sleeping ? <path className={stage === 4 ? s.horn : s.hoof} d={ell(150, 356, 44, 27, -10)} />
-            : stage !== 4 && <path className={s.hoof} d={tuft(f.tail[0], f.tail[1])} />}
-          {!sleeping && stage === 4 && f.extra}
+      {sleeping && <defs><clipPath id={clip}><rect x="-50" y="-200" width={f.w + 100} height={f.ground + 200 - 2} /></clipPath></defs>}
+      <g className={s.whole} style={at(f.w / 2, f.ground)}>
+        <g clipPath={sleeping ? `url(#${clip})` : undefined}>
+          <g transform={dy ? `translate(0 ${dy})` : undefined}>
+            {f.tail && tailRoot && (
+              <g className={s.tailG} style={at(tailRoot[1], tailRoot[2])}>
+                <path className={s.tail} strokeWidth={f.tail[1]} d={f.tail[0]} />
+                <path className={stage === 4 ? s.horn : s.hoof} d={tuft(f.tail[0], f.tail[1])} />
+              </g>
+            )}
+            <g className={s.bodyG} style={at(f.w / 2, f.ground)}>{body.map(([c, d], i) => <path key={i} className={s[c]} d={d} />)}</g>
+          </g>
         </g>
-        <g className={s.bodyG} style={at(f.w / 2, f.h - 12)}>{body.map(([c, d], i) => <path key={i} className={s[c]} d={d} />)}</g>
-        <g className={s.headG} style={at(hx - hr * 0.55, hy + hr * 0.85)}>
-          {head.map(([c, d], i) => <path key={i} className={s[c]} d={d} />)}
-          {sleeping && f.extra}
-          {!sleeping && <g className={s.eyesG}><Eyes eyes={f.eyes} angry={f.angry} mood={mood} /></g>}
+        {/* 趴下：站着的腿埋进地面以下，换成折起来的腿 */}
+        {sleeping && f.fold.map(([c, d], i) => <path key={i} className={s[c]} d={d} />)}
+        <g transform={headPose}>
+          <g className={s.headG} style={at(f.neck[0], f.neck[1])}>
+            {head.map(([c, d], i) => <path key={i} className={s[c]} d={d} />)}
+            <g className={s.eyesG}><Eyes eyes={f.eyes} angry={f.angry} mood={mood} /></g>
+          </g>
         </g>
+        {sleeping && <g className={s.zz}>
+          <text x={f1(hx + hr * 0.95)} y={f1(hy + f.headDrop - hr * 0.75)} fontSize={f1(hr * 0.45)}>z</text>
+          <text x={f1(hx + hr * 1.3)} y={f1(hy + f.headDrop - hr * 1.15)} fontSize={f1(hr * 0.32)}>z</text>
+        </g>}
         {mood === 'pr' && <g className={s.confetti} style={at(hx, hy)}><Confetti head={f.head} /></g>}
       </g>
     </svg>
   );
 }
 
-/** 只有头（16–48px 的头像、通知、Toast）：小牛的正脸，角按阶段长；公牛段换成怒眼 */
+/** 只有头（16–48px 的头像、通知、Toast）：小牛的正脸，角按阶段长；壮牛 / 公牛段换成怒眼 */
 export function MascotHead({ stage = 1, mood = 'idle', className, title }: { stage?: MascotStage; mood?: MascotMood; className?: string; title?: string }) {
   const k = [0, 0.75, 1, 1.25, 1.35][stage];
   return (
@@ -250,8 +268,7 @@ export function MascotHead({ stage = 1, mood = 'idle', className, title }: { sta
       {stage === 0 ? <g><path className={s.horn} d={ell(232, 70, 9, 15, -30)} /><path className={s.horn} d={ell(348, 70, 9, 15, 30)} /></g>
         : <g transform={`translate(290 92) scale(${k}) translate(-290 -92)`}>{CALF_HORNS.map(([c, d], i) => <path key={i} className={s[c]} d={d} />)}</g>}
       {CALF_HEAD.map(([c, d], i) => <path key={i} className={s[c]} d={d} />)}
-      {mood === 'sleep' ? <g className={s.thinLine}><path d="M244,126Q258,144 272,126" /><path d="M316,126Q330,144 344,126" /></g>
-        : <Eyes eyes={[[258, 128, 12, -1], [330, 128, 12, 1]]} angry={stage >= 3} mood={mood} />}
+      <Eyes eyes={[[258, 128, 12, -1], [330, 128, 12, 1]]} angry={stage >= 2} mood={mood} />
     </svg>
   );
 }

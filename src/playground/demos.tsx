@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   Banner, Button, Cascade, Dialog, ExerciseRow, RestDock, SharedDetail, sharedTransition, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
   LandmarkRuler, PhaseSegments, Num, Screen, SetRow, clock, useCountdown, useToast, type Tab,
+  Mascot, MOOD_NAME, STAGE_NAME, type MascotMood, type MascotStage,
 } from '../components';
 import { BodyPage } from '../pages/BodyPage';
 import { HomePage } from '../pages/HomePage';
@@ -245,7 +246,21 @@ export function IconGridBoard() {
   return <iframe ref={ref} className={s.gridFrame} src="/design/icon-grid/index.html" title="图标网格规范" style={h ? { height: h } : undefined} />;
 }
 
+/** 小牛交互演示：切阶段、切状态，看动效 */
+function MascotDemo() {
+  const [stage, setStage] = useState<MascotStage>(1), [mood, setMood] = useState<MascotMood>('idle');
+  return (
+    <div className={s.demoPad}>
+      <div className={s.demoButtons}>{STAGE_NAME.map((n, i) => <Button key={n} kind={stage === i ? 'neutral' : 'ghost'} size="s" onClick={() => setStage(i as MascotStage)}>{n}</Button>)}</div>
+      <div className={s.demoButtons}>{(Object.keys(MOOD_NAME) as MascotMood[]).map((m) => <Button key={m} kind={mood === m ? 'neutral' : 'ghost'} size="s" onClick={() => setMood(m)}>{MOOD_NAME[m]}</Button>)}</div>
+      <div className={s.mascotStage}><Mascot stage={stage} mood={mood} animate title={`${STAGE_NAME[stage]} · ${MOOD_NAME[mood]}`} /></div>
+      <Note>同一只牛随牛龄长大；状态只换眼睛、头的姿态与点缀，恢复日是这一阶段自己趴下。系统开启「减少动态效果」时静止。</Note>
+    </div>
+  );
+}
+
 export const DEMOS: Record<string, (f: Fixtures) => ReactNode> = {
+  Mascot: () => <MascotDemo />,
   Icon: () => <IconGridBoard />,
   ExerciseRow: (f) => <CascadeDemo f={f} />,
   SharedDetail: (f) => <div className={s.demoCol}><Stage tall label="共享元素演示"><ExpandInner f={f} /></Stage><Note>点一个动作：卡片原地长满屏，名称和重量飞到详情的位置并放大；点返回变回去。</Note></div>,
