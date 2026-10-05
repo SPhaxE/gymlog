@@ -1157,3 +1157,33 @@ AVOID: realistic cow anatomy, fur, cow spots, udders, red cape, bullfighting, st
 - **颜色**：只用设定里的色值；荧光只在角上（Milo 除外）；破纪录的荧光碎屑最多两片（Milo 除外）。
 - **没有任何文字**（恢复日的两个 z 除外）。
 - **单张资产**：品红底均匀、角色边缘没有品红溢色，地面线位置一致。
+
+## D · Milo 重出（2026-10-05）：去辉光 + 角和眼改成最亮的荧光
+
+为什么重出：原图 B5 的辉光贴着牛身，越靠近越亮，和牛身颜色几乎一样，BiRefNet 和颜色阈值都分不干净（破纪录那张两角之间留一团暗光）。
+所以从源头把辉光去掉，光晕、扫光、四角星全由 App 代码生成。同时按用户 2026-10-05 的要求，**Milo 的角和眼改成画面里最亮的荧光**（原来是骨白角、白眼）。
+
+用法：在 Nano Banana 里上传两张图，图 1 是 `docs/B5.jpg`（要改的状态板），图 2 是 Milo 平常状态的单张参考（用户提供，同款角色）。16:9 最高分辨率。
+出图存 `docs/B5-noglow.png`。
+
+```
+Edit image 1. It is a 3×2 character sheet of the same lime-green bull mascot "Milo" in six poses. Image 2 is a close-up reference of the same character (same body shapes and colors).
+
+Keep EVERYTHING about the six bulls exactly the same: pose, silhouette, proportions, position on the canvas, size, flat body colors, shading shapes, ears, nose, tail, hooves. Do not redraw, restyle, move or resize anything. Keep the 3×2 layout and the text labels under each bull unchanged.
+
+Change only these things:
+1. HORNS: recolor both horns from bone-white to the brightest neon lime in the whole image, hex #EEFF6A — a pure, saturated, luminous fluorescent yellow-green, clearly lighter and more vivid than every lime body panel, but still lime (not white, not cream, not yellow). One flat fill, crisp hard edges, no gradient.
+2. EYES: recolor the two eyes to the same brightest neon lime #EEFF6A (not white). Keep their exact shape for each pose (angry slants, closed arcs, four-point star eyes, half-closed lids). If they blend into the face, give each eye a very thin dark olive outline #3A4614 so the shape stays readable.
+3. Remove the outer glow / bloom / halo around every bull completely. The outline must be a crisp, hard vector edge directly against the background: no light spilling outward, no rim light, no blur. The horns and eyes look bright because of their flat color only, not because of any glow.
+4. Remove all sparkles, four-point stars, confetti, triangles, dots, speed lines and "z" letters around the bulls.
+
+Background: one perfectly flat, uniform solid color, pure magenta #FF00FF, edge to edge, with no gradient, vignette, texture, noise, shadow or glow. No ground shadow.
+
+Style: flat vector illustration with clean hard edges, like an SVG export. No glow effects anywhere.
+```
+
+要点：
+- **角和眼 = `#EEFF6A`**：比牛身每一块荧光都更亮的纯荧光绿（App 色板：强调色 lime-500 `#D4FF3A`、亮荧光 lime-300 `#EFFF9A`）。出图太白就把色值往 `#E4FF2E` 调，太暗往 `#F2FF8C` 调。
+- **眼睛**：荧光眼在荧光脸上可能糊在一起，所以允许加一圈极细的深橄榄描边（`#3A4614`）保住形状。
+- **不要任何光效**：角和眼靠颜色本身亮，不靠辉光；辉光进 App 时由代码按全身加。
+- **品红纯色底**：和荧光绿、橄榄色差得最远，边缘反解不串色。
