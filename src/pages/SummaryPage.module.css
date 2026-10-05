@@ -1,0 +1,21 @@
+/* 训练结算（P05）：主角结果 → 三格统计 → 逐个动作 → 成长 → 力竭度 → 完成 */
+.body { flex: 1; min-height: 0; overflow-y: auto; display: grid; align-content: start; gap: var(--milo-space-m);
+  padding: var(--milo-space-l) var(--milo-size-gutter) calc(var(--milo-size-button-h) + var(--milo-space-4xl)); }
+.hero, .heroQuiet { display: grid; gap: var(--milo-space-xs); padding: var(--milo-space-l); border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised); }
+.hero { box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-accent-default), 0 0 var(--milo-space-2xl) var(--milo-color-accent-glow); }
+.hero > span:first-child { color: var(--milo-color-accent-default); }
+.heroQuiet > span:first-child, .hero > span:last-child, .heroQuiet > span:last-child { color: var(--milo-color-text-secondary); }
+.heroNum { display: flex; align-items: baseline; gap: var(--milo-space-m); }
+.plus { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-m); color: var(--milo-color-accent-default); }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--milo-space-s); }
+.stats > div { display: grid; gap: var(--milo-space-2xs); padding: var(--milo-space-m); border-radius: var(--milo-radius-m); background: var(--milo-color-bg-raised); }
+.stats span { color: var(--milo-color-text-secondary); }
+.rows { display: grid; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: var(--milo-space-s); min-height: var(--milo-size-hit-min);
+  border-bottom: var(--milo-stroke-hairline) solid var(--milo-color-line-default); color: var(--milo-color-text-primary); }
+.val { display: flex; align-items: baseline; gap: var(--milo-space-s); }
+.muted { color: var(--milo-color-text-secondary); }
+.exertion { display: flex; align-items: center; justify-content: space-between; gap: var(--milo-space-m); padding: var(--milo-space-m); border-radius: var(--milo-radius-m); background: var(--milo-color-bg-raised); }
+.exertion > div { display: grid; gap: var(--milo-space-2xs); color: var(--milo-color-text-primary); }
+.body > p { margin: 0; }
+.cta { position: absolute; z-index: 9; left: var(--milo-size-gutter); right: var(--milo-size-gutter); bottom: var(--milo-space-2xl); display: grid; }

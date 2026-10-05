@@ -2,7 +2,7 @@
 import { buildScenario, demoEnv } from '../engine/demo';
 import { DAY, deloadSignal, deloadView, exerciseRecords, headStats, prescribe, sessionStats, startOfDay } from '../engine';
 import type { DeloadView, HeadStat, Prescription } from '../engine';
-import type { Region } from '../engine/types';
+import type { DeloadState, Profile, Region, Session } from '../engine/types';
 
 export const env = demoEnv();
 export const REGION_NAME: Record<Region, string> = { lower: '下肢', back: '背', chest: '胸', shoulders: '肩', arms: '手臂', core: '核心' };
@@ -14,8 +14,12 @@ export const dateLabel = (ms: number) => { const d = new Date(ms); return `${d.g
 
 export interface BodyData { stats: Map<string, HeadStat>; kpi: { load: number; sets: number; days: number }; gender: 'male' | 'female'; trainedToday: boolean }
 
-export function bodyData(scenario: string, now: number): BodyData {
-  const { history, profile } = buildScenario(scenario, now);
+/** 数据源：演示场景（?scenario=，截图与回归用）或本机存储里的真实数据 */
+export interface Source { history: Session[]; profile: Profile | null; deload: DeloadState }
+export const sourceOf = (scenario: string, now: number): Source => buildScenario(scenario, now);
+
+export function bodyData(scenario: string | Source, now: number): BodyData {
+  const { history, profile } = typeof scenario === 'string' ? sourceOf(scenario, now) : scenario;
   const stats = headStats(env, history, profile, now);
   let load = 0, sets = 0;
   const days = new Set<number>();
@@ -30,8 +34,8 @@ export function bodyData(scenario: string, now: number): BodyData {
 
 export interface HomeData { rx: Prescription; dv: DeloadView; hits: number; now: number; lastWeight: (exerciseId: string) => number | null }
 
-export function homeData(scenario: string, now: number): HomeData {
-  const { history, profile, deload } = buildScenario(scenario, now);
+export function homeData(scenario: string | Source, now: number): HomeData {
+  const { history, profile, deload } = typeof scenario === 'string' ? sourceOf(scenario, now) : scenario;
   const sig = deloadSignal(env, history);
   const dv = deloadView(env, sig, deload, now);
   const rx = prescribe(env, history, profile!, { now, deload: dv.kind === 'week' });

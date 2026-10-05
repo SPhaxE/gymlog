@@ -5,9 +5,13 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';
 import { App as CapApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
-import { FluidBackdrop, OverlayHost, ScreenAtmosphere, ToastProvider, ToastViewport, handleBack, type Tab } from '../components';
+import { Banner, Button, FluidBackdrop, OverlayHost, ScreenAtmosphere, ToastProvider, ToastViewport, handleBack, type Tab } from '../components';
 import { BodyPage } from '../pages/BodyPage';
 import { HomePage } from '../pages/HomePage';
+import { OnboardingPage } from '../pages/OnboardingPage';
+import { SessionPage } from '../pages/SessionPage';
+import { SummaryPage } from '../pages/SummaryPage';
+import { store, useStore } from '../data/store';
 import { backAction } from './back';
 import { Pattern } from './Patterns';
 import { TabStub } from './TabStub';
@@ -42,14 +46,24 @@ function Routed() {
   const now = Number(q.get('now')) || Date.now();
   const onTab = (_: Tab, path: string) => nav(path + loc.search);
   const focus = q.get('focus');
+  // 数据源：?scenario= 走演示场景（截图、回归）；否则读本机存储，没建档先去故事引导 + 建档（ia §4 P12）
+  const st = useStore();
+  const scenario = q.get('scenario') ?? undefined;
+  const needProfile = !scenario && !st.profile ? <Navigate to="/onboarding" replace /> : null;
   // Tab 根页最底层：流体噪点渐变（A4 追加）；训练流程等子页不用
   const tab = (el: React.ReactNode) => <ScreenAtmosphere.Provider value={<FluidBackdrop />}>{el}</ScreenAtmosphere.Provider>;
   return (
     <Suspense fallback={null}>
+    {/* 本机存储写入失败：不静默（ia §1.1 / §1.5），数据还在内存里，可以重试 */}
+    {st.saveError && <div className={s.saveError}><Banner tone="error" title="没能保存到本机" detail="刚才的改动还在，重试一次；一直失败请检查是否开了无痕模式或存储已满"
+      actions={<Button kind="ghost" size="s" onClick={() => store.retry()}>重试</Button>} /></div>}
     <Routes>
       <Route path="/" element={<Navigate to={'/today' + loc.search} replace />} />
-      <Route path="/today" element={tab(<HomePage scenario={q.get('scenario') ?? 'plain-prescription'} now={now} onTab={onTab} />)} />
-      <Route path="/body" element={tab(<BodyPage key={q.get('scenario')} scenario={q.get('scenario') ?? 'done-today'} now={now} onTab={onTab}
+      <Route path="/onboarding" element={st.profile ? <Navigate to="/today" replace /> : <OnboardingPage now={now} />} />
+      <Route path="/session" element={<SessionPage />} />
+      <Route path="/summary/:id" element={<SummaryPage />} />
+      <Route path="/today" element={needProfile ?? tab(<HomePage scenario={scenario} now={now} onTab={onTab} />)} />
+      <Route path="/body" element={needProfile ?? tab(<BodyPage key={scenario} scenario={scenario} now={now} onTab={onTab}
         initialFocus={focus && focus !== "none" ? focus : null} />)} />
       <Route path="/gains" element={tab(<TabStub tab="gains" onTab={onTab} />)} />
       <Route path="/log" element={tab(<TabStub tab="log" onTab={onTab} />)} />

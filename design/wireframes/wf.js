@@ -362,6 +362,40 @@
     },
   };
 
+  // ---------- 故事引导（P12 前 3 屏，阶段 6a） ----------
+  // 文案按 ia §1.13；插画只用现有小牛 PNG（不画人），这里是灰阶占位
+  const STORY = [
+    ['米洛（Milo）每天扛起一头小牛', '古希腊的大力士，每天扛着同一头小牛走一圈。'],
+    ['小牛长大，他也变强', '小牛每天只重一点点，他每天也只多扛一点点。'],
+    ['Milo 告诉你：下一组，该加多少', '每次只多一点，慢慢变牛。这就是渐进超负荷。'],
+  ];
+  const skip = '<div class="row pad" style="height:40px"><div class="sp"></div><span class="t-b">跳过</span></div>';
+  const dots = (i) => `<div class="row" style="justify-content:center;gap:6px">${[0, 1, 2].map((k) => `<i style="width:${k === i ? 18 : 6}px;height:6px;border-radius:3px;background:${k === i ? '#2b2b29' : '#C9C9C5'}"></i>`).join('')}</div>`;
+  const AGE = ['牛犊', '壮牛', '公牛'], AGE_H = [90, 150, 200];
+  const presc = '<div class="box" style="padding:12px 14px;margin:0 22px"><div class="t-s">下一组 · 杠铃卧推</div><div class="row" style="align-items:baseline;gap:6px;margin-top:4px"><span class="t-xl">85</span><span class="t-b">kg</span><span class="sp"></span><span class="t-h">+2.5</span></div><div class="t-s" style="margin-top:6px">上次 82.5 kg × 8 / 8 / 8，全部做到上限</div></div>';
+  const storyA = (i) => ({
+    title: `A · 三幕插画 · 第 ${i + 1} 屏`,
+    note: i === 0 ? '<em>一屏一幕</em>：上半是大舞台，小牛按牛龄长大（牛犊 → 壮牛 → 公牛）；下半一句大标题 + 一行解释 + 进度点；按钮固定在拇指区，第 3 屏变成「开始建档」，舞台换成一张真实的处方卡（85 kg，+2.5）。代价：三屏结构相同，节奏平。' : i === 2 ? '第 3 屏把故事落到产品：处方卡 = 「下一组该加多少」。' : '',
+    html: () => `${status}${skip}<div class="fill" style="margin:6px 16px 0;height:${i === 2 ? 330 : 380}px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:18px" data-a="1">
+      ${i === 2 ? `<div class="slot" style="width:120px;height:90px;margin-bottom:14px">小牛（公牛 · 开心）</div>${presc}` : `<div class="slot" style="width:${AGE_H[i] * 1.3}px;height:${AGE_H[i]}px">小牛 PNG（${AGE[i]}）</div><div style="width:80%;height:2px;background:#BDBDB9;margin-top:4px"></div>`}</div>
+      <div class="pad" style="margin-top:22px"><div class="t-title" style="font-size:26px;line-height:1.25">${STORY[i][0]}</div><div class="t-b" style="margin-top:10px;color:#555;line-height:1.6">${STORY[i][1]}</div></div>
+      <div class="abs" style="left:0;right:0;bottom:104px">${dots(i)}</div>
+      <div class="btn abs" style="left:16px;right:16px;bottom:30px" data-a="2">${i === 2 ? '开始建档' : '下一步'}</div>`,
+  });
+  const storyB = (i) => ({
+    title: `B · 一条成长线 · 第 ${i + 1} 屏`,
+    note: i === 0 ? '<em>一个连续场景</em>：三屏是同一条地面线往右走，小牛走着走着长大；舞台底下是一把 kg 刻度尺，每屏只多一格（60 → 62.5 → 65），就是「每次只多一点」的图解。文字压在下方左对齐、字更大；点屏幕任意处前进，第 3 屏才出现按钮。代价：插画和刻度要做连续动效，工作量大一些。' : i === 2 ? '第 3 屏刻度尺停在荧光的「+2.5」，接上按钮「开始建档」。' : '',
+    html: () => `${status}${skip}<div style="position:relative;height:420px;margin-top:6px" data-a="1">
+      <div class="abs" style="left:0;right:0;top:300px;height:2px;background:#BDBDB9"></div>
+      ${[0, 1, 2].map((k) => `<div class="slot abs" style="left:${(k - i) * 300 + 120 - AGE_H[k] * 0.4}px;top:${300 - AGE_H[k]}px;width:${AGE_H[k] * 1.3}px;height:${AGE_H[k]}px;opacity:${k === i ? 1 : 0.35}">小牛（${AGE[k]}）</div>`).join('')}
+      <div class="abs row" style="left:0;right:0;top:330px;gap:0;padding:0 16px">${Array.from({ length: 13 }, (_, k) => `<div style="flex:1;display:flex;flex-direction:column;align-items:center"><i style="width:1.5px;height:${k % 2 ? 8 : 14}px;background:${k === 4 + 2 * i ? '#1d1d1b' : '#A9A9A5'}"></i>${k % 2 ? '' : `<span class="t-s" style="margin-top:2px;${k === 4 + 2 * i ? 'color:#1d1d1b;font-weight:700' : ''}">${55 + k * 1.25}</span>`}</div>`).join('')}</div>
+      <div class="abs t-h" style="left:${16 + (4 + 2 * i + 0.5) * 25.2}px;top:372px;transform:translateX(-50%)">${['60 kg', '+2.5', '+2.5'][i]}</div></div>
+      <div class="pad" style="margin-top:6px"><div class="t-title" style="font-size:30px;line-height:1.2">${STORY[i][0]}</div><div class="t-b" style="margin-top:12px;color:#555;line-height:1.6">${STORY[i][1]}</div></div>
+      <div class="abs" style="left:16px;bottom:${i === 2 ? 104 : 40}px">${dots(i)}</div>
+      ${i === 2 ? '<div class="btn abs" style="left:16px;right:16px;bottom:30px" data-a="2">开始建档</div>' : '<div class="abs t-s" style="right:16px;bottom:38px" data-a="2">点任意处继续 →</div>'}`,
+  });
+  const STORYV = { W1: storyA(0), W2: storyA(1), W3: storyA(2), W4: storyB(0), W5: storyB(1), W6: storyB(2) };
+
   const PAGES = {
     body: { title: '身体 · 容量与恢复（P06）', sub: '放大镜按住「中下胸」· 数据 design/benchmark/p06.json', v: BODY },
     home: { title: '首页 · 今日处方（P01）', sub: '有处方、还没开始 · 演示场景 plain-prescription', v: HOME },
@@ -370,6 +404,7 @@
     me: { title: '我的（P11）', sub: '档案与设置', v: ME },
     session: { title: '训练进行中（P03）', sub: '第 1 个动作做完 1 组，正在休息 · 无导航', v: SESSION },
     sheet: { title: '肌头详情面板（身体页）', sub: '松手后打开「中下胸」', v: SHEET },
+    story: { title: '故事引导（P12 前 3 屏）', sub: 'A = 三幕插画，B = 一条成长线；各 3 屏', v: STORYV },
   };
 
   // ---------- 标注 ----------

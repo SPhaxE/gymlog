@@ -90,13 +90,14 @@ with sync_playwright() as p:
     pg.close()
 
     # ---------- App 壳 ----------
-    routes = [('today', '/today'), ('body', '/body'), ('gains', '/gains'), ('log', '/log'), ('me', '/me'),
+    # 首页、身体页带演示场景（不带时读本机存储，没建档会进故事引导）
+    routes = [('today', '/today?scenario=plain-prescription'), ('body', '/body?scenario=done-today'), ('gains', '/gains'), ('log', '/log'), ('me', '/me'),
               ('patterns-loading', '/patterns/loading'), ('patterns-empty', '/patterns/empty'), ('patterns-error', '/patterns/error')]
     os.makedirs(os.path.join(OUT, 'app'), exist_ok=True)
     for name, url in routes:
         ap_ = b.new_page(viewport={'width': 360, 'height': 800}, device_scale_factor=2)
         ap_.on('pageerror', lambda e, n=name: errors.append(f'{n}: {e}'))
-        ap_.goto(f'{args.base}{url}?now={NOW}'); ap_.wait_for_timeout(1200)
+        ap_.goto(f'{args.base}{url}{"&" if "?" in url else "?"}now={NOW}'); ap_.wait_for_timeout(1200)
         sw = ap_.evaluate('document.documentElement.scrollWidth')
         ok(sw <= 360, f'{url}：无横向溢出（{sw}）')
         ok(ap_.get_by_role('navigation', name='主导航').count() == 1, f'{url}：有主导航')
@@ -104,7 +105,7 @@ with sync_playwright() as p:
         ap_.close()
     # Tab 切换不整页刷新
     ap_ = b.new_page(viewport={'width': 360, 'height': 800}, device_scale_factor=2)
-    ap_.goto(f'{args.base}/today?now={NOW}'); ap_.wait_for_timeout(800)
+    ap_.goto(f'{args.base}/today?scenario=plain-prescription&now={NOW}'); ap_.wait_for_timeout(800)
     ap_.evaluate('window.__marker = 1')
     ap_.get_by_role('link', name='增量').click(); ap_.wait_for_timeout(400)
     ok(ap_.evaluate('location.pathname') == '/gains' and ap_.evaluate('window.__marker') == 1, 'Tab 切换走路由，不整页刷新')

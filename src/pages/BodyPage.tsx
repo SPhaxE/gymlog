@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Banner, BodyFigure, CapsuleRail, LandmarkRuler, Nav, Num, PageHeader, PhaseSegments, Screen, Segmented, Sheet, SheetBlock, Ticks, TierLegend, type Anchors, type Tab } from '../components';
 import { ago, bodyData, fmt, REGION_NAME } from '../data/demo';
+import { useStore } from '../data/store';
 import type { HeadStat } from '../engine';
 import { T } from '../styles/tokens.gen';
 import s from './BodyPage.module.css';
@@ -19,8 +20,9 @@ type Card = { key: number; view: View; gender: Gender; st: 'still' | 'wait' | 'i
 const noop = () => {};
 const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario: string; now: number; initialFocus: string | null; onTab?: (tab: Tab, path: string) => void }) {
-  const data = useMemo(() => bodyData(scenario, now), [scenario, now]);
+export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: string; now: number; initialFocus: string | null; onTab?: (tab: Tab, path: string) => void }) {
+  const st = useStore();
+  const data = useMemo(() => bodyData(scenario ?? st, now), [scenario, st.history, st.profile, now]); // eslint-disable-line react-hooks/exhaustive-deps
   const [cards, setCards] = useState<Card[]>(() => [{ key: 0, view: 'front', gender: data.gender, st: 'still', dir: 0 }]);
   const cur = cards[cards.length - 1], view = cur.view, gender = cur.gender;
   const [anchors, setAnchors] = useState<Anchors>({});
