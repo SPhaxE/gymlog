@@ -33,7 +33,7 @@ const STAGE_LINE: Record<MascotStage, string> = {
   young: '小牛站起来了。每次只多一点，它就一直在长。',
   sturdy: '肩峰长出来了——这是你一组一组扛出来的。',
   bull: '成年公牛。你已经是自己最强的样子，而且还在涨。',
-  milo: '米洛。传说里扛着小牛走成公牛的人——现在是你。',
+  milo: 'Milo。传说里扛着小牛走成公牛的人——现在是你。',
 };
 const MOOD: Record<RewardKind, MascotMood> = { stage: 'happy', pr: 'pr', streak: 'happy', level: 'happy', cycle: 'idle' };
 

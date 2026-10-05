@@ -39,10 +39,10 @@ export function Brand() {
       <header className={s.hero}>
         <p className={`milo-text-label ${s.muted}`}>阶段 5.5b · 2026-10-05</p>
         <h1 className="milo-text-title-l">IP 小牛与 Logo</h1>
-        <p className={`milo-text-body ${s.muted}`}>IP 改用 PNG：用户按意向图 3_27AM 用 Nano Banana 高清重制了 5 种牛龄 × 6 种状态，这里是切图、4 倍超分、抠图之后的素材，图里只有牛本身，特效由代码生成。前四种牛龄单眼，米洛双眼发光。Logo 为 B 递增条牛头，破纪录与减量周状态已重做。</p>
+        <p className={`milo-text-body ${s.muted}`}>IP 改用 PNG：用户按意向图 3_27AM 用 Nano Banana 高清重制了 5 种牛龄 × 6 种状态，这里是切图、4 倍超分、抠图之后的素材，图里只有牛本身，特效由代码生成。前四种牛龄单眼，Milo 双眼发光。Logo 为 B 递增条牛头，破纪录与减量周状态已重做。</p>
       </header>
 
-      <Section id="ip-stages" title="IP · 五种牛龄" sub="牛犊 → 小牛 → 壮牛 → 公牛 → 米洛，大小按总览图 A 的相对身高。米洛是最高等级：全身荧光、双眼发光；泛光、四角星和扫光由代码生成。">
+      <Section id="ip-stages" title="IP · 五种牛龄" sub="牛犊 → 小牛 → 壮牛 → 公牛 → 米洛（Milo），大小按总览图 A 的相对身高。Milo 是最高等级：全身荧光、双眼发光；泛光、四角星和扫光由代码生成。">
         <div className={s.stageRow}>
           {MASCOT_STAGES.map((st) => (
             <figure key={st} className={s.stageCell}>
@@ -53,7 +53,7 @@ export function Brand() {
         </div>
       </Section>
 
-      <Section id="ip-hd" title="高清化与抠图" sub="scripts/mascot_png.py：①从状态板切出每只牛，只留牛本身（碎屑、z、速度线、星光、泛光都不要，进 App 时由代码生成）；②Real-ESRGAN anime 模型 4 倍超分，去掉 JPEG 块状噪点、边缘变锐；③在 4 倍图上抠图：边缘按「像素 = α·前景 + (1−α)·背景」反解透明度并换成最近的实心色，不留黑边；被脸包住的眼睛、鼻孔保持实心；米洛外面那圈泛光当底色扣掉；④同一牛龄 6 张同比例、同地面线、同画布，换状态不跳。">
+      <Section id="ip-hd" title="高清化与抠图" sub="scripts/mascot_png.py：①从状态板切出每只牛，只留牛本身（碎屑、z、速度线、星光、泛光都不要，进 App 时由代码生成）；②Real-ESRGAN anime 模型 4 倍超分，去掉 JPEG 块状噪点、边缘变锐；③在 4 倍图上抠图：边缘按「像素 = α·前景 + (1−α)·背景」反解透明度并换成最近的实心色，不留黑边；被脸包住的眼睛、鼻孔保持实心；Milo 改用 BiRefNet（HR-matting，2048 输入）直接预测透明度，只留牛身、去掉泛光雾，边缘换成最近的实心色；④同一牛龄 6 张同比例、同地面线、同画布，换状态不跳。">
         <div className={s.checkCol}>
           <p className="milo-text-body">素材在 public/mascot/&lt;牛龄&gt;-&lt;状态&gt;.webp（App 用），PNG 母版在 design/brand/mascot/；检查图 screenshots/brand/mascot-sheet-checker.png（棋盘格 = 透明，红框 = 头像裁切，蓝线 = 地面线）。</p>
         </div>
@@ -80,7 +80,7 @@ export function Brand() {
             </div>
           ))}
           <div className={s.smallCol}>{(['happy', 'pr', 'rest', 'deload'] as MascotMood[]).map((m) => <MascotHead key={m} stage="bull" mood={m} className={s.h48} />)}<span className="milo-text-micro">公牛 · 表情</span></div>
-          <div className={s.smallCol}>{(['happy', 'pr', 'rest', 'deload'] as MascotMood[]).map((m) => <MascotHead key={m} stage="milo" mood={m} className={s.h48} />)}<span className="milo-text-micro">米洛 · 表情</span></div>
+          <div className={s.smallCol}>{(['happy', 'pr', 'rest', 'deload'] as MascotMood[]).map((m) => <MascotHead key={m} stage="milo" mood={m} className={s.h48} />)}<span className="milo-text-micro">Milo · 表情</span></div>
         </div>
       </Section>
 
@@ -138,7 +138,7 @@ export function Brand() {
               <div className={s.rewardArt}><Mascot stage="bull" mood="pr" animate /></div>
               <p className={`milo-text-label ${s.lime}`}>升段</p>
               <h3 className="milo-text-title-m">壮牛长成公牛了</h3>
-              <p className={`milo-text-body ${s.muted}`}>近 8 周深蹲预估 1RM +12.5 kg。下一段：米洛。</p>
+              <p className={`milo-text-body ${s.muted}`}>近 8 周深蹲预估 1RM +12.5 kg。下一段：Milo。</p>
               <p className={s.gain}><b>+500</b> 牛劲</p>
               <span className={s.cta}>收下</span>
             </div>

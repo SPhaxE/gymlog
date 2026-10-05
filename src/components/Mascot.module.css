@@ -1,10 +1,15 @@
-/* IP 小牛（PNG）：图里只有牛本身；这里管尺寸、动效和代码生成的特效（速度线、z、碎屑、米洛的泛光 / 星光 / 扫光） */
-.mascot { display: inline-block; width: calc(var(--fig-w) * var(--mascot-unit, 0.04em)); max-width: 100%; vertical-align: bottom; }
+/* IP 小牛（PNG）：图里只有牛本身；这里管尺寸、动效和代码生成的特效（速度线、z、碎屑、Milo 的泛光 / 星光 / 扫光） */
+.mascot { display: inline-block; width: min(calc(var(--fig-w) * var(--mascot-unit, 0.04em)), calc(var(--mascot-max-h, 100vh) * var(--fig-w) / var(--fig-h))); max-width: 100%; vertical-align: bottom; }
 .fig { position: relative; display: block; width: 100%; aspect-ratio: var(--fig-ratio); transform-origin: 50% var(--ground); }
-.img { display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; }
+.root { --glow: calc(var(--fig-w) * var(--mascot-unit, 0.04em) * 0.008); }
+.img { position: relative; display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; }
 
-/* 米洛：泛光（两层荧光 drop-shadow，一近一远）+ 一道斜光扫过全身（用同一张图当遮罩，只扫在牛身上）+ 四角星 */
-.milo { --glow: calc(var(--fig-w) * var(--mascot-unit, 0.04em) * 0.008); }
+/* Milo：泛光（两层荧光 drop-shadow，一近一远）+ 一道斜光扫过全身（用同一张图当遮罩，只扫在牛身上）+ 四角星 */
+/* 非 Milo：只有角的那张图模糊后垫在下面，角周围一圈荧光微光（会动时慢慢呼吸） */
+.lime { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.85;
+  filter: blur(calc(var(--glow) * 1.6)) saturate(1.3); }
+.alive .lime { animation: limeGlow calc(var(--milo-motion-slow) * 9.1) ease-in-out infinite; }
+@keyframes limeGlow { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
 .milo .img { filter: drop-shadow(0 0 var(--glow) color-mix(in srgb, var(--milo-prim-lime-500) 70%, transparent)) drop-shadow(0 0 calc(var(--glow) * 3.2) color-mix(in srgb, var(--milo-prim-lime-500) 28%, transparent)); }
 .sheen { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen;
   background: linear-gradient(105deg, transparent 35%, color-mix(in srgb, var(--milo-prim-bone-100) 70%, transparent) 50%, transparent 65%) no-repeat;
@@ -17,7 +22,7 @@
 .speed, .z, .confetti, .spark { position: absolute; pointer-events: none; }
 /* 专注：身后三道速度线 */
 .speed { border-radius: var(--milo-radius-pill); background: color-mix(in srgb, var(--milo-prim-bone-100) 55%, transparent); }
-.milo .speed { background: var(--milo-prim-lime-500); }
+.milo .speed { background: var(--milo-prim-lime-500); box-shadow: 0 0 var(--glow) var(--milo-prim-lime-500); }
 .alive .speed { animation: speed calc(var(--milo-motion-slow) * 2.6) linear calc(var(--k) * var(--milo-motion-slow) * -0.7) infinite; }
 @keyframes speed { 0% { transform: translateX(30%) scaleX(0.2); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateX(-40%) scaleX(1); opacity: 0; } }
 /* 恢复日：头顶两个 z，往上飘 */
@@ -34,15 +39,18 @@
 .dot { border-radius: 50%; }
 .alive .confetti { animation: burst calc(var(--milo-motion-slow) * 4.6) var(--milo-motion-ease-decelerate) calc(var(--k) * var(--milo-motion-slow) * -0.3) infinite; }
 @keyframes burst { 0% { opacity: 0; transform: translate(0, 20%) rotate(var(--rot)) scale(0.4); } 20% { opacity: 1; } 70% { opacity: 1; transform: translate(0, -20%) rotate(calc(var(--rot) + 60deg)) scale(1); } 100% { opacity: 0; transform: translate(0, -30%) rotate(calc(var(--rot) + 90deg)) scale(0.8); } }
-/* 米洛：四角星闪烁 */
+/* Milo：四角星闪烁 */
 .spark { aspect-ratio: 1; background: var(--milo-prim-lime-300); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); }
 .alive .spark { animation: spark calc(var(--milo-motion-slow) * 5.7) ease-in-out calc(var(--k) * var(--milo-motion-slow) * -1.3) infinite; }
 @keyframes spark { 0%, 100% { opacity: 0.25; transform: scale(0.55) rotate(0deg); } 50% { opacity: 1; transform: scale(1.1) rotate(45deg); } }
 
 /* 头像：正方形窗口，图按头像框定位 */
 .head { display: inline-block; width: var(--milo-size-icon); height: var(--milo-size-icon); vertical-align: middle; }
-.headClip { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; }
+.headClip { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; border-radius: 50%; }
 .headImg { position: absolute; max-width: none; height: auto; user-select: none; }
+/* 头像的荧光：非 Milo 角上一圈微光；Milo 整只泛光（圆里只看得到头，光沿着头和角的轮廓） */
+.headLime { filter: blur(calc(var(--milo-stroke-hairline) * 2)); opacity: 0.9; }
+.headMilo .headImg { filter: drop-shadow(0 0 var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-prim-lime-500) 80%, transparent)) drop-shadow(0 0 calc(var(--milo-stroke-hairline) * 3) color-mix(in srgb, var(--milo-prim-lime-500) 35%, transparent)); }
 
 /* ---------- 动效（animate）：整只以地面线为支点；周期用 motion/slow 的倍数，首尾帧相同 ---------- */
 .m_idle .fig { animation: breathe calc(var(--milo-motion-slow) * 13.7) ease-in-out infinite; }
@@ -81,5 +89,5 @@
 @keyframes sigh { 0%, 100% { transform: scale(1, 1); } 40% { transform: scale(1.01, 1.025); } 60% { transform: scale(1, 0.985); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .alive .fig, .alive .sheen, .alive .speed, .alive .z, .alive .confetti, .alive .spark { animation: none !important; }
+  .alive .fig, .alive .lime, .alive .sheen, .alive .speed, .alive .z, .alive .confetti, .alive .spark { animation: none !important; }
 }

@@ -10,7 +10,7 @@ import { DAY } from './sets';
 
 const env = demoEnv();
 const WEEKS = 182;
-/** 进阶用户（稳定训练）到达第 1…14 级的目标周数（2026-10-05 用户拍板：小牛≈2 月、壮牛≈6 月、公牛≈12 月、米洛≈24 月；前 2 个月每 2–3 周升一小级） */
+/** 进阶用户（稳定训练）到达第 1…14 级的目标周数（2026-10-05 用户拍板：小牛≈2 月、壮牛≈6 月、公牛≈12 月、Milo≈24 月；前 2 个月每 2–3 周升一小级） */
 export const TARGET_WEEKS = [2.5, 5, 8, 12, 18, 26, 34, 43, 52, 64, 78, 104, 130, 156];
 const wk = (ms: number) => (ms - SIM_START) / (7 * DAY);
 
@@ -41,7 +41,7 @@ describe('牛龄曲线', () => {
     expect(n[6]!).toBeGreaterThan(8);
   });
 
-  it('老手（增幅很小）也能靠周期和 PR 稳步升级：一年内到壮牛，三年半内到米洛', () => {
+  it('老手（增幅很小）也能靠周期和 PR 稳步升级：一年内到壮牛，三年半内到 Milo', () => {
     const a = runs.advanced.reach;
     expect(a[3]!).toBeLessThanOrEqual(16);
     expect(a[6]!).toBeLessThanOrEqual(52);

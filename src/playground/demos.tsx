@@ -257,7 +257,7 @@ function MascotDemo() {
       <div className={s.demoButtons}>{MASCOT_STAGES.map((st) => <Button key={st} kind={stage === st ? 'neutral' : 'ghost'} size="s" onClick={() => setStage(st)}>{STAGE_NAME[st]}</Button>)}</div>
       <div className={s.demoButtons}>{MASCOT_MOODS.map((m) => <Button key={m} kind={mood === m ? 'neutral' : 'ghost'} size="s" onClick={() => setMood(m)}>{MOOD_NAME[m]}</Button>)}</div>
       <div className={s.mascotStage}><Mascot stage={stage} mood={mood} animate title={`${STAGE_NAME[stage]} · ${MOOD_NAME[mood]}`} /></div>
-      <Note>5 种牛龄 × 6 种状态（PNG）。前四种单眼，米洛双眼发光；速度线、z、碎屑、米洛的泛光 / 星光 / 扫光都由代码生成；换状态时比例与地面线不变。系统开启「减少动态效果」时静止。</Note>
+      <Note>5 种牛龄 × 6 种状态（PNG）。前四种单眼，Milo 双眼发光；速度线、z、碎屑、Milo 的泛光 / 星光 / 扫光都由代码生成；换状态时比例与地面线不变。系统开启「减少动态效果」时静止。</Note>
     </div>
   );
 }
@@ -287,7 +287,7 @@ function RewardInner() {
   return (
     <div className={s.demoPad}>
       <div className={s.demoButtons}>{(['stage', 'milo', 'pr', 'streak', 'level', 'cycle'] as const).map((k) => (
-        <Button key={k} kind="ghost" size="s" onClick={() => play(k)}>{k === 'milo' ? '升段 · 米洛' : REWARD_NAME[k]}</Button>
+        <Button key={k} kind="ghost" size="s" onClick={() => play(k)}>{k === 'milo' ? '升段 · Milo' : REWARD_NAME[k]}</Button>
       ))}</div>
       <div className={s.demoButtons}>
         <Button kind="neutral" size="s" onClick={step}>保存下一次训练</Button>
@@ -322,7 +322,7 @@ function LevelCurve({ users, target, lv }: { users: Record<'novice' | 'intermedi
   );
 }
 
-/** 牛龄拖条：从牛犊 1 拖到米洛 3，徽章、成长条、小牛一起变；下面是三类合成用户到达每一级的周数（等级曲线模拟） */
+/** 牛龄拖条：从牛犊 1 拖到 Milo 3，徽章、成长条、小牛一起变；下面是三类合成用户到达每一级的周数（等级曲线模拟） */
 function AgeInner() {
   const [lv, setLv] = useState(4);
   const { stage, sub } = levelInfo(lv);
@@ -343,10 +343,10 @@ function AgeInner() {
 }
 function AgeDemo() {
   return <div className={s.demoCol}><Stage tall label="牛龄演示"><AgeInner /></Stage>
-    <Note>15 级门槛由等级曲线模拟反推：进阶用户稳定训练，小牛约 2 个月、壮牛约 6 个月、公牛约 12 个月、米洛约 24 个月；新手更快，老手靠周期和 PR 也能稳步升级。成长条下面那句「再涨几 kg」由引擎按当前主项反推。</Note></div>;
+    <Note>15 级门槛由等级曲线模拟反推：进阶用户稳定训练，小牛约 2 个月、壮牛约 6 个月、公牛约 12 个月、Milo 约 24 个月；新手更快，老手靠周期和 PR 也能稳步升级。成长条下面那句「再涨几 kg」由引擎按当前主项反推。</Note></div>;
 }
 
-/** 付费墙流程：选方案 → 开通（演示，不扣费）→ 米洛庆祝 → 会员态 */
+/** 付费墙流程：选方案 → 开通（演示，不扣费）→ Milo 庆祝 → 会员态 */
 function PaywallInner() {
   const [plan, setPlan] = useState<'month' | 'year' | 'trial'>('year'), [step, setStep] = useState<'choose' | 'success' | 'member'>('choose');
   return (
