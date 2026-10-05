@@ -408,7 +408,7 @@ export const CATALOG: Entry[] = [
   },
   /* ---------------- 品牌（阶段 5.5b，2026-10-05） ---------------- */
   {
-    name: 'Mascot', group: '品牌', desc: 'IP 小牛（PNG）：用户按意向图 3_27AM 用 Nano Banana 高清重制，scripts/mascot_png.py 切图、Real-ESRGAN 4 倍超分、抠图（边缘反解透明度不留黑边，只留牛本身；Milo 用 BiRefNet 直接出透明度，泛光扣得干净）。5 种牛龄（牛犊 · 小牛 · 壮牛 · 公牛 · Milo）× 6 种状态；前四种单眼，Milo 双眼发光。特效由代码生成：专注 = 速度线、恢复日 = 飘 z、破纪录 = 碎屑、Milo = 全身泛光 + 四角星 + 扫光；其余牛龄的荧光角带一圈会呼吸的微光。同一牛龄同比例、同地面线，换状态不跳；动效以地面线为支点整只呼吸 / 前压 / 小跳 / 欢呼 / 叹气，减少动态效果时静止。只出现在品牌位置（引导、奖励、牛龄、空态、商城、会员）。',
+    name: 'Mascot', group: '品牌', desc: 'IP 小牛（PNG）：用户按意向图 3_27AM 用 Nano Banana 高清重制，scripts/mascot_png.py 切图、Real-ESRGAN 4 倍超分、抠图（边缘反解透明度不留黑边，只留牛本身；Milo 用无泛光的品红底源图，泛光由代码生成）。5 种牛龄（牛犊 · 小牛 · 壮牛 · 公牛 · Milo）× 6 种状态；前四种单眼，Milo 双眼发光。特效由代码生成：专注 = 速度线、恢复日 = 飘 z、破纪录 = 碎屑、Milo = 全身泛光 + 四角星 + 扫光；其余牛龄的荧光角带一圈会呼吸的微光。同一牛龄同比例、同地面线，换状态不跳；动效以地面线为支点整只呼吸 / 前压 / 小跳 / 欢呼 / 叹气，减少动态效果时静止。只出现在品牌位置（引导、奖励、牛龄、空态、商城、会员）。',
     axes: { stage: ['newborn', 'young', 'sturdy', 'bull', 'milo'], mood: ['m-idle', 'm-focused', 'm-happy', 'm-rest', 'm-pr', 'm-deload'] }, rows: ['stage'], cols: 'mood', size: 'card',
     render: (p) => <div className={s.mascotCell}><Mascot stage={p.stage as MascotStage} mood={p.mood.slice(2) as MascotMood} animate title="慢牛小牛" /></div>,
   },

@@ -13,8 +13,9 @@
 3. 抠图（在 4 倍图上做）：
    - 实心区 = 和背景色差够大的像素；被实心区包住的暗色小洞（眼睛、鼻孔、四角星眼）也算实心；
    - 边缘按「像素 = α·前景 + (1−α)·背景」反解 α，前景色取最近的实心像素（去掉黑边）；
-   - Milo（2026-10-05 用户：边缘还有没扣干净的泛光）改用 BiRefNet（ZhengPeng7/BiRefNet_HR-matting，2048 输入）直接预测 α：
-     只留牛身那一块（四角星丢掉），去掉泛光留下的低 α 雾，边缘颜色取最近的实心像素（不带泛光的色偏）。光晕由 App 叠加。
+   - Milo 的源图换成 docs/B5-noglow.jpg（2026-10-05）：B5 的泛光贴着牛身、越近越亮，阈值法和 BiRefNet（试过，2026-10-05）都扣不干净，
+     用户用 Nano Banana 出了无泛光、品红纯色底的版本（角和眼改成最亮的荧光，提示词 nanobanana-ip-hd.md §D）。
+     它本身就是 B5 的 4 倍大小，跳过超分，和其余牛龄走同一套抠图。光晕由 App 叠加。
 4. 规整：同一牛龄的 6 张用同一个比例、同一条地面线、同一块画布（换状态不跳）；各牛龄的大小按 A 的相对身高。
 5. 导出：public/mascot/<牛龄>-<状态>.webp（App 用）和 design/brand/mascot/<牛龄>-<状态>.png（PNG 母版），
    非 Milo 另出 public/mascot/<牛龄>-<状态>-lime.webp（只有荧光的角，App 用它叠微光），
@@ -23,7 +24,7 @@
 
   python3 scripts/mascot_png.py            # 全流程（第一次要几分钟：超分在 CPU 上跑）
   python3 scripts/mascot_png.py --sheet    # 另出检查图 screenshots/brand/mascot-sheet-*.png
-依赖：numpy、opencv-python-headless、torch（CPU 版即可）、Pillow；Milo 另要 transformers、timm（BiRefNet，权重缓存在 .cache/hf/）。"""
+依赖：numpy、opencv-python-headless、torch（CPU 版即可）、Pillow。"""
 import argparse, hashlib, json, os, urllib.request
 import numpy as np, cv2
 
@@ -32,7 +33,8 @@ CACHE = os.path.join(ROOT, '.cache', 'mascot')
 WEIGHTS_URL = 'https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth'
 STAGES = ['newborn', 'young', 'sturdy', 'bull', 'milo']
 MOODS = ['idle', 'focused', 'happy', 'rest', 'pr', 'deload']  # 状态板里的顺序：上排 3 个、下排 3 个
-SHEET = {s: f'docs/B{i + 1}.jpg' for i, s in enumerate(STAGES)}
+SHEET = {**{s: f'docs/B{i + 1}.jpg' for i, s in enumerate(STAGES)}, 'milo': 'docs/B5-noglow.jpg'}
+NATIVE = {'milo'}  # 源图已是 4 倍大小，不再超分
 SR = 4
 OUT_H = {'bull': 560}  # 公牛平常状态的身高（像素）；其余牛龄按 A 的比例换算
 
@@ -123,13 +125,18 @@ def figures(img, n=6, thr=34):
 
 
 # ---------- 抠图 ----------
-def matte(sr, bg, member, hi, lo):
+def matte(sr, bg, member, hi, lo, key=None):
     """sr = 4 倍超分后的裁切图；member = 这只牛（已放大到同尺寸，并外扩过）；
-    hi = 实心阈值（和背景的色差）；lo = 牛身外面一圈的底色水平（一般是背景 ≈ 7；Milo 外面是泛光 ≈ 60，把光当底扣掉）"""
+    hi = 实心阈值（和背景的色差）；lo = 牛身外面一圈的底色水平（背景噪点）。
+    key = 只看一个通道（品红底用绿色通道 1：底色绿 ≈ 7，牛身最暗的蹄子也有 ≈ 86；生成图在牛身外缘有一道暗品红描边，
+    按最大色差算它会被当成牛身，按绿色通道算它就是底）"""
     H, W = sr.shape[:2]
-    d = dist(sr, bg)
+    gap = (lambda px: px[..., key].astype(np.float32) - bg[key]) if key is not None else (lambda px: dist(px, bg))
+    d = gap(sr)
     core = (d > hi) & member
     core = cv2.morphologyEx(core.astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8)).astype(bool)
+    if key is not None:  # 品红底的过渡像素绿色也够高，会被当实心、带着品红原色留下来（一圈粉线）：实心区往里收 2 像素，边上一律用最近的牛身色
+        core = cv2.erode(core.astype(np.uint8), np.ones((5, 5), np.uint8)).astype(bool)
     # 被实心区包住的洞：小的（眼睛、鼻孔、星星眼）算实心；大的（腿缝、尾巴圈住的背景）还是背景
     holes = (~core).astype(np.uint8); cv2.floodFill(holes, np.zeros((H + 2, W + 2), np.uint8), (0, 0), 0)
     cnt, cc, st, _ = cv2.connectedComponentsWithStats(holes, connectivity=8)
@@ -142,68 +149,12 @@ def matte(sr, bg, member, hi, lo):
     _, lab = cv2.distanceTransformWithLabels((~core).astype(np.uint8), cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)
     cy, cx = np.nonzero(core); lut = np.zeros((lab.max() + 1, 3), np.float32); lut[1:len(cy) + 1] = sr[cy, cx]
     Fc = lut[lab]
-    dF = np.abs(Fc - bg).max(-1)
+    dF = gap(Fc)
     a = np.clip((d - lo) / np.maximum(dF - lo, 1), 0, 1)
     near = cv2.dilate(solid.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))).astype(bool)
     a = np.where(solid, 1.0, np.where(near & member, a, 0.0))
     rgb = np.where(solid[..., None], sr.astype(np.float32), Fc)
     a = cv2.GaussianBlur(a.astype(np.float32), (0, 0), 0.5) * (~solid) + solid
-    return np.dstack([np.clip(rgb, 0, 255), np.clip(a * 255, 0, 255)]).astype(np.uint8)
-
-
-# ---------- Milo：BiRefNet 直接出 α ----------
-BIREFNET = 'ZhengPeng7/BiRefNet_HR-matting'
-BIREF_SIZE = 2048  # 1024 会把一部分泛光当半透明前景；2048 的边缘贴着牛身
-
-
-def load_birefnet():
-    import torch
-    os.environ.setdefault('HF_HOME', os.path.join(ROOT, '.cache', 'hf'))
-    from transformers import AutoModelForImageSegmentation
-    net = AutoModelForImageSegmentation.from_pretrained(BIREFNET, trust_remote_code=True).eval().float()
-
-    def run(img_bgr):
-        h, w = img_bgr.shape[:2]
-        x = cv2.resize(img_bgr, (BIREF_SIZE, BIREF_SIZE), interpolation=cv2.INTER_AREA)[:, :, ::-1].astype(np.float32) / 255
-        x = (x - [0.485, 0.456, 0.406]) / [0.229, 0.224, 0.225]
-        with torch.no_grad(): a = net(torch.from_numpy(x.transpose(2, 0, 1)).float()[None])[-1].sigmoid()[0, 0].numpy()
-        return np.clip(cv2.resize(a, (w, h), interpolation=cv2.INTER_CUBIC), 0, 1)
-    return run
-
-
-def matte_alpha(sr, bg, a, member, edge=8):
-    """BiRefNet 的 α → RGBA。BiRefNet 大多数地方边缘贴着牛身，但会把「两角之间、腿缝里被泛光填满的地方」整块判成前景
-    （破纪录那张最明显）。泛光是缓慢渐变，牛身边缘是一步到位的硬边——所以再用硬边圈一次：
-    从画面边缘往里灌，碰到硬边停，灌到的是外面；被硬边围住、但里面掺着底色（10% 分位和底色差 < 40）的块也是外面。
-    牛身 = 硬边圈出来的区域，加上外面里「平的、和底色差够大」的大块（蹄子的边偏软，灌水会漏进去）；α 取 BiRefNet 和颜色（差 50 → 0、差 85 → 1）里较大的那个（BiRefNet 偶尔漏掉蹄子），
-    只留牛身那一块（四角星丢掉），半透明的边缘颜色换成最近的实心像素（不带泛光、底色的色偏）。"""
-    d = dist(sr, bg).astype(np.float32)
-    g = cv2.GaussianBlur(d, (0, 0), 1.0)
-    grad = np.hypot(cv2.Sobel(g, cv2.CV_32F, 1, 0, ksize=3), cv2.Sobel(g, cv2.CV_32F, 0, 1, ksize=3)) / 8
-    hard = cv2.dilate((grad > edge).astype(np.uint8), np.ones((3, 3), np.uint8))
-    H, W = d.shape
-    ff = 1 - hard; cv2.floodFill(ff, np.zeros((H + 2, W + 2), np.uint8), (0, 0), 2)
-    cnt, cc, st, _ = cv2.connectedComponentsWithStats((ff == 1).astype(np.uint8), connectivity=4)
-    out = np.zeros(cnt, bool)
-    for k in range(1, cnt):
-        if np.percentile(d[cc == k], 10) < 40: out[k] = True
-    body = (ff != 2) & ~out[cc]
-    # 蹄子和底色之间的边偏软，灌水会漏进蹄子：外面里「平的、和底色差够大」的大块（蹄子）捞回来——泛光是渐变，不平
-    flat = ((grad < 0.7) & (d > 75) & (ff == 2)).astype(np.uint8)
-    cnt, cc, st, _ = cv2.connectedComponentsWithStats(flat, connectivity=4)
-    big = np.zeros(cnt, bool); big[1:] = st[1:, cv2.CC_STAT_AREA] > 300
-    body |= cv2.dilate(big[cc].astype(np.uint8), np.ones((5, 5), np.uint8)).astype(bool)
-    body = cv2.GaussianBlur(cv2.dilate(body.astype(np.uint8), np.ones((3, 3), np.uint8)).astype(np.float32), (0, 0), 1)
-    ac = np.clip((d - 50) / 35, 0, 1)
-    a = np.maximum(np.clip((a - 0.12) / 0.76, 0, 1), ac) * body * cv2.GaussianBlur(member.astype(np.float32), (0, 0), 3)
-    cnt, cc, st, _ = cv2.connectedComponentsWithStats((a > 0.5).astype(np.uint8), connectivity=8)
-    body = cc == (np.argmax(st[1:, cv2.CC_STAT_AREA]) + 1)
-    near = cv2.dilate(body.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (17, 17))).astype(bool)
-    a = a * near
-    core = cv2.erode((a > 0.97).astype(np.uint8), np.ones((3, 3), np.uint8)).astype(bool)
-    _, lab = cv2.distanceTransformWithLabels((~core).astype(np.uint8), cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)
-    cy, cx = np.nonzero(core); lut = np.zeros((lab.max() + 1, 3), np.float32); lut[1:len(cy) + 1] = sr[cy, cx]
-    rgb = np.where(core[..., None], sr.astype(np.float32), lut[lab])
     return np.dstack([np.clip(rgb, 0, 255), np.clip(a * 255, 0, 255)]).astype(np.uint8)
 
 
@@ -220,23 +171,18 @@ def heights_from_A():
 
 # 头像框：逐张标定的「头 + 角」外框 [x, y, 边长]（画布像素，2026-10-05 按 --sheet 检查图量的）。
 # 旧算法以角为锚往下取正方形，侧身的小牛会把肩、腿框进来（用户：头像蒙版出错），所以改成人工标定。
-# Milo 的画布随 BiRefNet 抠图变，所以 Milo 用牛身外框的比例 [cx, cy, 边长]（cx、边长按牛身宽，cy 按牛身高）。
 HEAD = {
     'newborn': {'idle': [212, 38, 180], 'focused': [222, 60, 180], 'happy': [192, 8, 185], 'rest': [215, 95, 180], 'pr': [195, 8, 175], 'deload': [210, 48, 180]},
     'young': {'idle': [300, 37, 230], 'focused': [380, 98, 240], 'happy': [300, 0, 230], 'rest': [352, 185, 225], 'pr': [312, 24, 235], 'deload': [330, 97, 230]},
     'sturdy': {'idle': [407, 65, 320], 'focused': [510, 138, 320], 'happy': [395, 13, 310], 'rest': [441, 249, 310], 'pr': [395, 0, 300], 'deload': [413, 109, 310]},
     'bull': {'idle': [365, 26, 360], 'focused': [496, 145, 340], 'happy': [365, 5, 340], 'rest': [430, 270, 335], 'pr': [392, 26, 290], 'deload': [405, 137, 320]},
+    'milo': {'idle': [393, 6, 410], 'focused': [490, 118, 400], 'happy': [410, -8, 400], 'rest': [448, 240, 395], 'pr': [405, -14, 385], 'deload': [396, 77, 400]},
 }
-MILO_HEAD = {'idle': [0.66, 0.24, 0.42], 'focused': [0.7, 0.33, 0.4], 'happy': [0.62, 0.22, 0.42], 'rest': [0.66, 0.4, 0.42], 'pr': [0.62, 0.22, 0.42], 'deload': [0.66, 0.3, 0.42]}
 HEAD_PAD = 1.12  # 圆形裁切：正方形的内切圆要装下头和角，外扩一点
 
 
-def head_box(stage, mood, body):
-    if stage == 'milo':
-        bx0, by0, bx1, by1 = body; fx, fy, fs = MILO_HEAD[mood]
-        cx, cy, side = bx0 + fx * (bx1 - bx0), by0 + fy * (by1 - by0), fs * (bx1 - bx0)
-    else:
-        x, y, side = HEAD[stage][mood]; cx, cy = x + side / 2, y + side / 2
+def head_box(stage, mood):
+    x, y, side = HEAD[stage][mood]; cx, cy = x + side / 2, y + side / 2
     side *= HEAD_PAD
     return [int(round(cx - side / 2)), int(round(cy - side / 2)), int(round(side)), int(round(side))]
 
@@ -251,7 +197,7 @@ def lime_layer(rgba):
 
 def main(sheet):
     from PIL import Image
-    sr_run = biref = None
+    sr_run = None
     ratio = heights_from_A()
     out_pub = os.path.join(ROOT, 'public', 'mascot'); out_png = os.path.join(ROOT, 'design', 'brand', 'mascot')
     os.makedirs(out_pub, exist_ok=True); os.makedirs(out_png, exist_ok=True); os.makedirs(CACHE, exist_ok=True)
@@ -259,33 +205,28 @@ def main(sheet):
     for stage in STAGES:
         img = cv2.imread(os.path.join(ROOT, SHEET[stage]))
         milo = stage == 'milo'
-        figs, bg = figures(img, thr=85 if milo else 34)  # Milo 外面有泛光：阈值抬高，只取牛身
+        k4 = 1 if stage in NATIVE else SR
+        figs, bg = figures(img, thr=34 * (2 if stage in NATIVE else 1))
         mats = []
         for k, ((x0, y0, x1, y1), member, body) in enumerate(figs):
-            m = 40 if milo else 14  # Milo 留宽一点：BiRefNet 要看到牛身外面的泛光和底，才分得清
+            m = 14 * (SR // k4)
             X0, Y0, X1, Y1 = max(0, x0 - m), max(0, y0 - m), min(img.shape[1], x1 + m), min(img.shape[0], y1 + m)
             crop = img[Y0:Y1, X0:X1]
             key = hashlib.md5(crop.tobytes()).hexdigest()[:12]
             cp = os.path.join(CACHE, f'{stage}-{MOODS[k]}-{key}.png')
-            if os.path.exists(cp): sr = cv2.imread(cp)
+            if stage in NATIVE: sr = crop
+            elif os.path.exists(cp): sr = cv2.imread(cp)
             else:
                 if sr_run is None: sr_run = load_sr()
                 print('  超分', stage, MOODS[k], crop.shape[1], '×', crop.shape[0]); sr = sr_run(crop); cv2.imwrite(cp, sr)
             mem = member[Y0:Y1, X0:X1].astype(np.uint8)
-            mem = cv2.dilate(mem, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11, 11)))
+            mem = cv2.dilate(mem, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11 * SR // k4,) * 2))
             mem = cv2.resize(mem, (sr.shape[1], sr.shape[0]), interpolation=cv2.INTER_NEAREST).astype(bool)
-            if milo:
-                ap = os.path.join(CACHE, f'{stage}-{MOODS[k]}-{key}-alpha{BIREF_SIZE}.png')
-                if os.path.exists(ap): a = cv2.imread(ap, cv2.IMREAD_GRAYSCALE) / 255.0
-                else:
-                    if biref is None: biref = load_birefnet()
-                    print('  BiRefNet', stage, MOODS[k]); a = biref(sr); cv2.imwrite(ap, (a * 255 + 0.5).astype(np.uint8))
-                rgba = matte_alpha(sr, bg, a, mem)
-            else: rgba = matte(sr, bg, mem, hi=58, lo=7)
+            rgba = matte(sr, bg, mem, hi=58, lo=12, key=1) if stage in NATIVE else matte(sr, bg, mem, hi=58, lo=7)  # 品红底：绿色通道当键，噪点 ≤ 8
             bx0, by0, bx1, by1 = body
-            ground = (by1 - Y0) * SR                       # 牛身最低点 = 地面线
-            cxb = ((bx0 + bx1) / 2 - X0) * SR               # 牛身横向中心
-            hb = (by1 - by0) * SR
+            ground = (by1 - Y0) * k4                       # 牛身最低点 = 地面线
+            cxb = ((bx0 + bx1) / 2 - X0) * k4               # 牛身横向中心
+            hb = (by1 - by0) * k4
             mats.append((rgba, ground, cxb, hb))
         # 同一牛龄：同比例（按平常状态的身高）、同地面线、同画布
         s = OUT_H['bull'] * ratio[stage] / mats[0][3]
@@ -312,7 +253,7 @@ def main(sheet):
                 Image.fromarray(cv2.cvtColor(lime_layer(canvas), cv2.COLOR_BGRA2RGBA)).save(os.path.join(out_pub, name + '-lime.webp'), quality=80, method=6)
             ys, xs = np.nonzero(canvas[:, :, 3] > 128)
             body = [int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1]
-            meta[stage]['moods'][MOODS[k]] = {'head': head_box(stage, MOODS[k], body), 'body': body}
+            meta[stage]['moods'][MOODS[k]] = {'head': head_box(stage, MOODS[k]), 'body': body}
         print(stage, CW, '×', CH, 'ground', round(gy), 'scale', round(s, 3))
     ts = ['/** 由 scripts/mascot_png.py 生成，勿手改：IP 小牛 PNG 素材的画布尺寸（像素）、地面线 y、各状态的头像裁切框 [x, y, 边长]。',
           ' *  头像框是逐张标定的「头 + 角」，已外扩成能放进圆形的正方形。非 Milo 另有 <牛龄>-<状态>-lime.webp（只有荧光的角，叠微光用）。',

@@ -53,7 +53,7 @@ export function Brand() {
         </div>
       </Section>
 
-      <Section id="ip-hd" title="高清化与抠图" sub="scripts/mascot_png.py：①从状态板切出每只牛，只留牛本身（碎屑、z、速度线、星光、泛光都不要，进 App 时由代码生成）；②Real-ESRGAN anime 模型 4 倍超分，去掉 JPEG 块状噪点、边缘变锐；③在 4 倍图上抠图：边缘按「像素 = α·前景 + (1−α)·背景」反解透明度并换成最近的实心色，不留黑边；被脸包住的眼睛、鼻孔保持实心；Milo 改用 BiRefNet（HR-matting，2048 输入）直接预测透明度，只留牛身、去掉泛光雾，边缘换成最近的实心色；④同一牛龄 6 张同比例、同地面线、同画布，换状态不跳。">
+      <Section id="ip-hd" title="高清化与抠图" sub="scripts/mascot_png.py：①从状态板切出每只牛，只留牛本身（碎屑、z、速度线、星光、泛光都不要，进 App 时由代码生成）；②Real-ESRGAN anime 模型 4 倍超分，去掉 JPEG 块状噪点、边缘变锐；③在 4 倍图上抠图：边缘按「像素 = α·前景 + (1−α)·背景」反解透明度并换成最近的实心色，不留黑边；被脸包住的眼睛、鼻孔保持实心；Milo 的源图换成用户重出的无泛光、品红底版本（角和眼改成最亮的荧光），用绿色通道抠，泛光全由代码生成；④同一牛龄 6 张同比例、同地面线、同画布，换状态不跳。">
         <div className={s.checkCol}>
           <p className="milo-text-body">素材在 public/mascot/&lt;牛龄&gt;-&lt;状态&gt;.webp（App 用），PNG 母版在 design/brand/mascot/；检查图 screenshots/brand/mascot-sheet-checker.png（棋盘格 = 透明，红框 = 头像裁切，蓝线 = 地面线）。</p>
         </div>
