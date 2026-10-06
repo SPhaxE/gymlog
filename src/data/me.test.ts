@@ -107,13 +107,13 @@ describe('消息（ia §1.15）', () => {
     const merged = ms.find((m) => m.id === 'm-s1')!;
     expect(merged.title).toBe('同时达成 2 项');
     expect(merged.detail).toContain('升级：壮牛 2 级');
-    expect(merged.detail).toBe('升级：壮牛 2 级 · PR 杠铃卧推，已入账 +130 牛劲');
-    expect(merged.detail).toContain('已入账 +130 牛劲');   // 弹出的是 PR（优先级比升级高），其余是 升级 100 + 另一个 PR 30
+    expect(merged.detail).toBe('升级：壮牛 2 级 · PR 杠铃卧推');
+    expect(merged.niujin).toBe(130);   // 弹出的是 PR（优先级比升级高），其余是 升级 100 + 另一个 PR 30
     expect(ms.some((m) => m.id === 'm-s2')).toBe(false);
   });
   it('周结算里的奖励、冻结卡自动使用各是一条；守约周不进消息', () => {
-    expect(ms.find((m) => m.id.startsWith('m-streak'))).toMatchObject({ kind: 'reward', title: '连胜 4 周' });
-    expect(ms.find((m) => m.id.startsWith('m-freeze'))).toMatchObject({ kind: 'freeze', title: '冻结卡已自动使用' });
+    expect(ms.find((m) => m.id.startsWith('m-streak'))).toMatchObject({ kind: 'reward', title: '连胜 4 周', niujin: 100 });
+    expect(ms.find((m) => m.id.startsWith('m-freeze'))).toMatchObject({ kind: 'freeze', title: '冻结卡已自动使用', niujin: 0 });
     expect(ms.some((m) => m.title.startsWith('守约周'))).toBe(false);
   });
   it('新的在前；未读 = 比「看过消息的时刻」新', () => {

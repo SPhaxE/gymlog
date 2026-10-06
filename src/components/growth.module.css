@@ -201,7 +201,10 @@
 .msg_reward .msgMark { color: var(--milo-color-text-primary); }
 .msg_reward.msgUnread .msgMark { color: var(--milo-color-text-on-accent); background: var(--milo-color-accent-default); }
 .msgText { display: grid; gap: var(--milo-space-2xs); flex: 1; }
-.msgSide { display: grid; justify-items: end; gap: var(--milo-space-2xs); }
+.msgSide { display: grid; justify-items: end; gap: var(--milo-space-2xs); flex: none; }
+.msgSide > span:last-child { display: inline-flex; align-items: center; gap: var(--milo-space-xs); white-space: nowrap; }
+.msgAmt { display: inline-flex; align-items: baseline; gap: var(--milo-space-2xs); color: var(--milo-color-text-primary); white-space: nowrap; }
+.msgAmt i { font-style: normal; font-size: var(--milo-font-size-caption); color: var(--milo-color-text-secondary); }
 .unread { width: var(--milo-space-xs); aspect-ratio: 1; border-radius: 50%; background: var(--milo-color-accent-default); }
 
 @media (prefers-reduced-motion: reduce) { .pro, .near .fill::after { animation: none; } .fill { transition: none; } }

@@ -3,3 +3,6 @@
 .body { display: grid; align-content: start; grid-auto-rows: max-content; padding: var(--milo-space-s) var(--milo-size-gutter) var(--milo-space-4xl); }
 .empty { display: grid; align-content: center; min-height: 100%; padding: 0 var(--milo-size-gutter); }
 .note { margin: var(--milo-space-m) 0 0; text-align: center; color: var(--milo-color-text-secondary); }
+
+.month { display: grid; gap: var(--milo-space-2xs); }
+.month + .month { margin-top: var(--milo-space-l); }

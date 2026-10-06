@@ -101,6 +101,8 @@ export interface Message {
   kind: 'reward' | 'freeze';
   title: string;
   detail: string;
+  /** 这一条入账的牛劲（冻结卡为 0）：页面单独一列右对齐 */
+  niujin: number;
 }
 
 const rank = (e: GrowthEvent) => REWARD_PRIORITY.indexOf(e.kind);
@@ -113,8 +115,8 @@ export function messagesOf(g: GrowthState): Message[] {
   for (const e of g.events) {
     if (e.kind === 'week') continue;
     if (e.sessionId) bySession.set(e.sessionId, [...(bySession.get(e.sessionId) ?? []), e]);
-    else if (e.kind === 'freeze') out.push({ id: `m-${e.kind}-${e.atMs}`, atMs: e.atMs, kind: 'freeze', title: '冻结卡已自动使用', detail: `那一周没练够，用掉 1 张冻结卡，连胜保住了（${e.weeks} 周）` });
-    else out.push({ id: `m-${e.kind}-${e.atMs}`, atMs: e.atMs, kind: 'reward', title: eventTitle(e), detail: e.niujin ? `已入账 +${e.niujin} 牛劲` : '已入账' });
+    else if (e.kind === 'freeze') out.push({ id: `m-${e.kind}-${e.atMs}`, atMs: e.atMs, kind: 'freeze', title: '冻结卡已自动使用', detail: `那一周没练够，用掉 1 张冻结卡，连胜保住了（${e.weeks} 周）`, niujin: 0 });
+    else out.push({ id: `m-${e.kind}-${e.atMs}`, atMs: e.atMs, kind: 'reward', title: eventTitle(e), detail: e.kind === 'streak' ? '周结算达成，已入账' : '周期结算达成，已入账', niujin: e.niujin });
   }
   for (const [sid, evs] of bySession) {
     const popup = [...evs].sort((a, b) => rank(a) - rank(b) || a.atMs - b.atMs)[0];
@@ -122,7 +124,7 @@ export function messagesOf(g: GrowthState): Message[] {
     if (!rest.length) continue;
     const niujin = rest.reduce((a, e) => a + e.niujin, 0), atMs = Math.max(...rest.map((e) => e.atMs));
     const names = rest.slice(0, 3).map(shortTitle).join(' · ') + (rest.length > 3 ? ` 等 ${rest.length} 项` : '');
-    out.push({ id: `m-${sid}`, atMs, kind: 'reward', title: rest.length === 1 ? eventTitle(rest[0]) : `同时达成 ${rest.length} 项`, detail: `${rest.length === 1 ? '和当天弹出的奖励一起达成' : names}，已入账 +${niujin} 牛劲` });
+    out.push({ id: `m-${sid}`, atMs, kind: 'reward', title: rest.length === 1 ? eventTitle(rest[0]) : `同时达成 ${rest.length} 项`, detail: rest.length === 1 ? '和当天弹出的奖励一起达成' : names, niujin });
   }
   return out.sort((a, b) => b.atMs - a.atMs);
 }
