@@ -262,8 +262,8 @@ export function SteelPlate({ months, label = '近 3 个月训练', selected, onS
           {/* 边框：一道槽（暗线）+ 槽里侧一道发丝亮边；外沿的亮边由 CSS 画（跟圆角走） */}
           <rect x="7" y="7" width={g.w - 14} height={f2(h - 14)} rx="4" fill="none" style={{ stroke: lo(78) }} strokeWidth="2" />
           <rect x="8.4" y="8.4" width={g.w - 16.8} height={f2(h - 16.8)} rx="3.2" fill="none" style={{ stroke: hi(7) }} strokeWidth=".8" />
-          {/* 月份：蚀刻的小字（暗字 + 右下一道亮边） */}
-          {g.labels.map((l) => <g key={l.text} fontSize="9.5" letterSpacing="1"><text x={f2(l.x + 0.6)} y={TOP - 9 + 0.6} style={{ fill: hi(20) }}>{l.text}</text><text x={f2(l.x)} y={TOP - 9} style={{ fill: lo(65) }}>{l.text}</text></g>)}
+          {/* 月份：钢印字（骨白 80% + 右下一道暗影）。2026-10-06 用户：暗字压在灰钢上看不清——对比度约 7:1（骨白 80% 对钢面 gray-400），不再用暗字 */}
+          {g.labels.map((l) => <g key={l.text} fontSize="10.5" fontWeight="600" letterSpacing="1"><text x={f2(l.x + 0.7)} y={TOP - 8 + 0.7} style={{ fill: lo(80) }}>{l.text}</text><text x={f2(l.x)} y={TOP - 8} style={{ fill: hi(80) }}>{l.text}</text></g>)}
           {g.holes.map((p) => <use key={p.t} href={`#${u('hole')}`} x={f2(p.x)} y={f2(p.y)} />)}
           {g.dimples.map((p) => <use key={p.t} href={`#${u('dim')}`} x={f2(p.x)} y={f2(p.y)} />)}
           {g.ahead.map((p) => <circle key={p.t} cx={f2(p.x)} cy={f2(p.y)} r=".55" style={{ fill: hi(9) }} />)}
