@@ -171,3 +171,118 @@ describe('记录页 → 训练详情 → 删除（2026-10-06）', () => {
   });
 });
 
+
+describe('我的（P11）→ 牛龄（P13）→ 消息（2026-10-06）', () => {
+  beforeEach(() => { store.clear(); store.update((x) => ({ ...x, ...demoState(Date.now()), draft: null })); });
+
+  it('「我的」：成长卡 + 档案四格 + 导航 + 数据 + 关于；改时长保存后档案变了；钱包 · 商城 / 会员两行不放（还没有页面）', async () => {
+    window.history.pushState({}, '', '/me');
+    render(<App />);
+    expect(await screen.findByRole('heading', { level: 1, name: '我的' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^牛龄 公牛 2 级，连胜 \d+ 周/ })).toBeInTheDocument();
+    for (const t of ['训练经验', '单次时长', '可用器械', '体型示意']) expect(screen.getByRole('button', { name: new RegExp(`^${t}：`) })).toBeInTheDocument();
+    expect(screen.queryByText('钱包 · 商城')).toBeNull();
+    const before = store.get().profile!.minutes;
+    screen.getByRole('button', { name: /^单次时长：/ }).click();
+    const sheet = await screen.findByRole('dialog', { name: '单次训练时长' });
+    within(sheet).getByRole('button', { name: '加 15分钟' }).click();
+    await within(sheet).findByText(String(before + 15));   // 等步进器画出新值，再点保存（保存读的是这一刻的值）
+    within(sheet).getByRole('button', { name: '保存' }).click();
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(store.get().profile?.minutes).toBe(before + 15);
+    expect(screen.getByRole('button', { name: new RegExp(`^单次时长：${before + 15}`) })).toBeInTheDocument();
+  });
+
+  it('体重（可选）：写错保存不了，填对写进档案，体型格带上；清空 = 不填', async () => {
+    window.history.pushState({}, '', '/me');
+    render(<App />);
+    screen.getByRole('button', { name: /^体型示意：/ }).click();
+    const sheet = await screen.findByRole('dialog', { name: '体型示意' });
+    const field = within(sheet).getByLabelText(/^体重（可选）/) as HTMLInputElement;
+    const type = (v: string) => { Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(field, v); field.dispatchEvent(new Event('input', { bubbles: true })); };
+    type('7a');
+    await waitFor(() => expect(within(sheet).getByRole('button', { name: '保存' })).toBeDisabled());
+    type('72');
+    await waitFor(() => expect(within(sheet).getByRole('button', { name: '保存' })).toBeEnabled());
+    within(sheet).getByRole('button', { name: '保存' }).click();
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(store.get().profile?.weightKg).toBe(72);
+    expect(screen.getByRole('button', { name: /^体型示意：男 · 72/ })).toBeInTheDocument();
+  });
+
+  it('导航设置：开关立即写进存储；休息结束提示选「仅描边」', async () => {
+    window.history.pushState({}, '', '/me');
+    render(<App />);
+    const ring = await screen.findByRole('switch', { name: '显示今日进度环' });
+    expect(ring).toHaveAttribute('aria-checked', 'true');
+    ring.click();
+    await waitFor(() => expect(store.get().settings.ring).toBe(false));
+    expect(screen.getByRole('switch', { name: '显示今日进度环' })).toHaveAttribute('aria-checked', 'false');
+    screen.getByRole('button', { name: /^休息结束提示/ }).click();
+    (await screen.findByRole('radio', { name: /^仅描边/ })).click();
+    await waitFor(() => expect(store.get().settings.restEnd).toBe('outline'));
+  });
+
+  it('清除全部数据：先确认（取消不变），确认后清空存储、回到建档', async () => {
+    window.history.pushState({}, '', '/me');
+    render(<App />);
+    (await screen.findByRole('button', { name: /^清除全部数据/ })).click();
+    const dlg = await screen.findByRole('alertdialog', { name: '清除全部数据？' });
+    expect(within(dlg).getByText(/不能撤销/)).toBeInTheDocument();
+    within(dlg).getByRole('button', { name: '取消' }).click();
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    expect(store.get().history.length).toBeGreaterThan(0);
+    screen.getByRole('button', { name: /^清除全部数据/ }).click();
+    within(await screen.findByRole('alertdialog')).getByRole('button', { name: '清除' }).click();
+    await waitFor(() => expect(window.location.pathname).toBe('/onboarding'));
+    expect(store.get().history).toEqual([]);
+    expect(store.get().profile).toBeNull();
+  });
+
+  it('牛龄页：5 段名字、离下一级、连胜三格、最近 12 周、成长记录；返回回「我的」；演示用户连胜不是 0', async () => {
+    window.history.pushState({}, '', '/me');
+    render(<App />);
+    (await screen.findByRole('button', { name: /^牛龄 / })).click();
+    expect(await screen.findByRole('list', { name: '牛龄五段' })).toBeInTheDocument();
+    expect(screen.getByText('离下一级')).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: '连胜与本周' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /^最近 \d+ 周：守约 \d+ 周/ })).toBeInTheDocument();
+    expect(screen.getByText('成长记录')).toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: '主导航' })).toBeNull();
+    const weeks = Number(within(screen.getByRole('group', { name: '连胜与本周' })).getAllByText(/^\d+$/)[0].textContent);
+    expect(weeks).toBeGreaterThanOrEqual(15);
+    screen.getByRole('button', { name: '返回' }).click();
+    await screen.findByRole('navigation', { name: '主导航' });
+    expect(window.location.pathname).toBe('/me');
+  });
+
+  it('消息：「我的」上的未读数，进去后清零；记下的降级说明出现在牛龄页', async () => {
+    window.history.pushState({}, '', '/me');
+    render(<App />);
+    const row = await screen.findByRole('button', { name: /^消息/ });
+    expect(row.textContent).toMatch(/\d+ 条新/);
+    row.click();
+    await screen.findByRole('heading', { name: '消息' });
+    await waitFor(() => expect(store.get().messagesSeenAt).toBeGreaterThan(Date.now() - 60e3));
+    screen.getByRole('button', { name: '返回' }).click();
+    await screen.findByRole('navigation', { name: '主导航' });
+    expect(screen.getByRole('button', { name: /^消息/ }).textContent).not.toMatch(/条新/);
+    store.update((x) => ({ ...x, notes: [{ atMs: Date.now(), kind: 'demote', text: '连胜 21 周 → 0 周' }] }));
+    window.history.pushState({}, '', '/me/level');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    expect(await screen.findByText('删除训练后重新计算')).toBeInTheDocument();
+    expect(screen.getByText('连胜 21 周 → 0 周')).toBeInTheDocument();
+  });
+
+  it('没有历史：牛龄页写「完成第一次训练开始长大」，导出 CSV 不可用', async () => {
+    store.update((x) => ({ ...x, history: [] }));
+    window.history.pushState({}, '', '/me');
+    render(<App />);
+    expect(await screen.findByRole('button', { name: /^导出 CSV/ })).toBeDisabled();
+    expect(screen.getByText('完成第一次训练开始长大')).toBeInTheDocument();   // 「我的」成长卡上也是这句
+    (screen.getByRole('button', { name: /^牛龄 牛犊 1 级/ })).click();
+    await screen.findByRole('list', { name: '牛龄五段' });
+    expect(screen.getByText('完成第一次训练开始长大')).toBeInTheDocument();
+    expect(screen.getByText(/练完第一次训练，这里会开始记录/)).toBeInTheDocument();
+  });
+});

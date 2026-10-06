@@ -3,8 +3,6 @@
   top: var(--safe-area-inset-top, env(safe-area-inset-top)); bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom));
   --nav-clear: calc(var(--milo-size-nav-bar-h) + var(--milo-size-nav-bottom) + var(--milo-space-s)); }
 .layer > :not([aria-live]) { pointer-events: auto; }
-.stub { flex: 1; display: grid; align-content: start; justify-items: center; gap: var(--milo-space-s); padding: var(--milo-space-2xl) var(--milo-size-gutter) var(--nav-clear); }
-.stubLink { text-decoration: none; }
 
 /* 存储写入失败的提示：压在所有页面最上方 */
 .saveError { position: fixed; z-index: 60; top: var(--milo-space-s); left: var(--milo-size-gutter); right: var(--milo-size-gutter); }

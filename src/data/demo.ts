@@ -15,7 +15,7 @@ export const dateLabel = (ms: number) => { const d = new Date(ms); return `${d.g
 export interface BodyData { stats: Map<string, HeadStat>; kpi: { load: number; sets: number; days: number }; gender: 'male' | 'female'; trainedToday: boolean }
 
 /** 数据源：演示场景（?scenario=，截图与回归用）或本机存储里的真实数据 */
-export interface Source { history: Session[]; profile: Profile | null; deload: DeloadState }
+export interface Source { history: Session[]; profile: Profile | null; deload: DeloadState; /** 采纳过的每一次减量（真存储才有；演示场景只有 deload 里最近一次） */ deloads?: number[] }
 export const sourceOf = (scenario: string, now: number): Source => buildScenario(scenario, now);
 
 export function bodyData(scenario: string | Source, now: number): BodyData {

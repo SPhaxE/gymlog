@@ -43,12 +43,18 @@ export function profileError(p: Profile): string | null {
   return null;
 }
 
+/** 档案合并一处改动；weightKg 明确写成 undefined = 清空（不填），不是「没改」 */
+export function mergeProfile(cur: Profile, patch: Partial<Profile>): Profile {
+  const next: Profile = { ...cur, ...patch };
+  if ('weightKg' in patch && patch.weightKg === undefined) delete next.weightKg;
+  return next;
+}
+
 /** 改档案：校验通过才写；返回错误文案（null = 已写入）。写存储失败走 store.saveError，外壳有可见提示，这里不吞 */
 export function updateProfile(patch: Partial<Profile>): string | null {
   const cur = store.get().profile;
   if (!cur) return '还没有档案';
-  const next: Profile = { ...cur, ...patch };
-  if (patch.weightKg === undefined && 'weightKg' in patch) delete next.weightKg;   // 清空体重 = 不填
+  const next = mergeProfile(cur, patch);
   const err = profileError(next);
   if (err) return err;
   store.update((s) => ({ ...s, profile: next }));

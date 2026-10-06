@@ -22,6 +22,8 @@ function stepOf(path: string): string {
   if (path.startsWith('/gains')) return 'gains';
   if (path.startsWith('/log/')) return 'logdetail';
   if (path.startsWith('/log')) return 'log';
+  if (path.startsWith('/me/level')) return 'level';
+  if (path.startsWith('/me')) return 'me';
   if (path.startsWith('/today')) return st.active ? 'session' : 'today';
   return '';
 }
@@ -67,6 +69,8 @@ export function DemoPage() {
     { id: 'trend', t: '动作进步曲线', d: '点增量页的任意一行：大数字是选中那天的预估力量，曲线按住横向拖或点明细的一行切换日期，下面是那天每一组和「下次目标」（和首页、增量页同一个数）；返回回到原来的筛选和滚动位置。', go: { label: '从增量页进一个动作', run: withDemo('/gains') } },
     { id: 'log', t: '记录', d: '页头下面是一块钢板日历：近 3 个月练过的日子是冲出来的孔，板后的荧光随页面往下滑从右移到左、两侧漏光换边；下面按周分组，每周一行合计（次数 · 组数 · 总负荷），一行一次训练。大标题滑走后顶上留细标题栏。', go: { label: '打开记录页', run: withDemo('/log') } },
     { id: 'logdetail', t: '训练详情', d: '点记录页的一行：日期飞成标题、部位飞成副标题；汇总三格、新纪录一行，每个动作一张卡，每一组「重量 × 次数」（热身灰字、递减组标出）；点动作卡头进它的进步曲线，返回回到这里；右上角「更多」可以删除这次训练（二次确认、不能撤销），删完回记录页，各页的容量、趋势、新纪录、处方都按新历史重算；返回记录页还原滚动位置和展开的周数。', go: { label: '从记录页进一次训练', run: withDemo('/log') } },
+    { id: 'me', t: '我的', d: '第一屏是成长卡：小牛、牛龄、离下一级还差什么、连胜 · 本周 · 牛劲，点它进牛龄页；下面档案四格（点哪格改哪项，体重可选），消息、导航三项设置（进度环 · 休息描边 · 结束提示，立即生效）、数据（载入示例 · 导出 CSV · 清除，都先确认）、关于。', go: { label: '打开我的', run: withDemo('/me') } },
+    { id: 'level', t: '牛龄', d: '5 段名字里当前一段加下划线，小牛站在一圈圈配重片里；离下一级用能照着做的说法（涨幅太大就写「再完成 N 个训练周期」）；连胜、本周、冻结卡三格，最近 12 周守约点阵，成长记录（连着破的几个 PR 合成一行）。删训练后牛龄或连胜回退，会在记录里写一行说明。', go: { label: '打开牛龄', run: withDemo('/me/level') } },
   ];
 
   if (!desk) return null;

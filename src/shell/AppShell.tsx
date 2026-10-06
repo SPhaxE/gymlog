@@ -1,5 +1,5 @@
 /** App 壳（阶段 5）：5 个 Tab 的路由、Android 返回键、悬浮层宿主（Dialog / Toast）。
- *  Tab 根页：/today 首页 · /body 身体 · /gains 增量 · /log 记录 · /me 我的（ia §4）。训练流程等子页在阶段 6 加。
+ *  Tab 根页：/today 首页 · /body 身体 · /gains 增量 · /log 记录 · /me 我的（ia §4）；「我的」的子页：/me/level 牛龄、/me/messages 消息。训练流程等子页在阶段 6 加。
  *  ?scenario= 选演示场景，?now= 固定时间（截图用）。 */
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';
@@ -13,13 +13,15 @@ import { GainsPage } from '../pages/GainsPage';
 import { TrendPage } from '../pages/TrendPage';
 import { HomePage } from '../pages/HomePage';
 import { LogDetailPage } from '../pages/LogDetailPage';
+import { LevelPage } from '../pages/LevelPage';
 import { LogPage } from '../pages/LogPage';
+import { MePage } from '../pages/MePage';
+import { MessagesPage } from '../pages/MessagesPage';
 import { OnboardingPage } from '../pages/OnboardingPage';
 import { SummaryPage } from '../pages/SummaryPage';
 import { store, useStore } from '../data/store';
 import { backAction } from './back';
 import { Pattern } from './Patterns';
-import { TabStub } from './TabStub';
 import s from './Shell.module.css';
 
 // 规范页与检查页按需加载，不进 App 主包
@@ -96,7 +98,9 @@ function Routed() {
       <Route path="/gains/:exerciseId" element={needProfile ?? <TrendPage key={loc.pathname} scenario={scenario} now={now} />} />
       <Route path="/log" element={needProfile ?? tab(<LogPage key={scenario} scenario={scenario} now={now} onTab={onTab} />)} />
       <Route path="/log/:id" element={needProfile ?? <LogDetailPage key={loc.pathname} scenario={scenario} now={now} />} />
-      <Route path="/me" element={tab(<TabStub tab="me" onTab={onTab} />)} />
+      <Route path="/me" element={needProfile ?? tab(<MePage key={scenario} scenario={scenario} now={now} onTab={onTab} />)} />
+      <Route path="/me/level" element={needProfile ?? <LevelPage key={scenario} scenario={scenario} now={now} />} />
+      <Route path="/me/messages" element={needProfile ?? <MessagesPage key={scenario} scenario={scenario} now={now} />} />
       <Route path="/patterns/:kind" element={tab(<PatternRoute onTab={onTab} />)} />
       <Route path="/playground" element={<Playground now={now} />} />
       <Route path="/preview" element={<Preview />} />

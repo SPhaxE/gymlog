@@ -7,7 +7,9 @@ import { Icon } from './Icon';
 import { Odometer } from './dataviz';
 import { Mascot, MascotHead, STAGE_NAME, type MascotStage } from './Mascot';
 import { PropGlyph, type PropKind } from './PropGlyph';
-import { cx } from './state';
+import { cx, forced, type Forced } from './state';
+import { Ticks } from './Ticks';
+import { Num } from './ui';
 import s from './growth.module.css';
 
 const STAGES: MascotStage[] = ['newborn', 'young', 'sturdy', 'bull', 'milo'];
@@ -37,23 +39,74 @@ export function AgeBadge({ stage, sub, size = 'full', streak }: { stage: MascotS
 }
 
 /** 成长条：离下一级还差多少，用能照着做的说法（「深蹲预估 1RM 再涨 2.5 kg」「或再完成 1 个周期」），不用抽象经验值 */
-export function GrowthBar({ stage, sub, progress, lift, cycles }: { stage: MascotStage; sub: 1 | 2 | 3; progress: number; lift?: { name: string; kg: number } | null; cycles?: number }) {
+export function GrowthBar({ stage, sub, progress, lift, cycles, hint, bare }: {
+  stage: MascotStage; sub: 1 | 2 | 3; progress: number; lift?: { name: string; kg: number } | null; cycles?: number;
+  /** 自己写那句话（没有历史、涨幅太大等引擎反推不出可行动的说法时） */
+  hint?: ReactNode;
+  /** 牛龄页：上面的页头已经写了「段名 · 小级」，这里不再重复，只写「离下一级」和下一级是什么 */
+  bare?: boolean;
+}) {
   const max = stage === 'milo' && sub === 3;
   const nextStage = sub === 3 ? STAGES[STAGES.indexOf(stage) + 1] : stage, nextSub = sub === 3 ? 1 : sub + 1;
   const near = !max && progress >= 0.85;
   return (
     <div className={cx(s.growth, near && s.near, max && s.max)}>
       <div className={s.growthHead}>
-        <span className="milo-text-label">{STAGE_NAME[stage]} {sub} 级</span>
+        <span className="milo-text-label">{bare ? '离下一级' : `${STAGE_NAME[stage]} ${sub} 级`}</span>
         <span className={cx('milo-text-caption', s.muted)}>{max ? '满级' : `→ ${STAGE_NAME[nextStage]} ${nextSub} 级${sub === 3 ? ' · 升段' : ''}`}</span>
       </div>
       <div className={s.track} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round((max ? 1 : progress) * 100)} aria-label="离下一级的进度">
         <span className={s.fill} style={{ '--p': max ? 1 : progress } as CSSProperties} />
       </div>
       <p className={cx('milo-text-caption', s.hint)}>
-        {max ? 'Milo 满级。接下来比的只有昨天的自己。'
-          : <>{lift ? <>{lift.name}预估 1RM 再涨 <b>{lift.kg} kg</b></> : '再创一次纪录'}{cycles ? <>，或再完成 <b>{cycles} 个周期</b></> : null}{near ? ' · 快到了' : ''}</>}
+        {hint ?? (max ? 'Milo 满级。接下来比的只有昨天的自己。'
+          : <>{lift ? <>{lift.name}预估 1RM 再涨 <b>{lift.kg} kg</b>{cycles ? <>，或再完成 <b>{cycles} 个周期</b></> : null}</> : cycles ? <>再完成 <b>{cycles} 个训练周期</b></> : '再创一次纪录'}{near ? ' · 快到了' : ''}</>)}
       </p>
+    </div>
+  );
+}
+
+/** 「我的」第一屏的成长卡（主角）：小牛头像 + 牛龄 + 离下一级的进度条与一句能照着做的话；下面三个数：连胜周数、本周进度、牛劲。
+ *  整张卡是按钮，点进牛龄页；卡的右上角有淡淡的配重片同心槽纹（品牌语言，只放这一处）。进度条是这一屏唯一的荧光。 */
+export function GrowthCard({ stage, sub, progress, hint, streak, done, target, niujin, onClick, state }: {
+  stage: MascotStage; sub: 1 | 2 | 3; progress: number; hint: ReactNode; streak: number; done: number; target: number; niujin: string; onClick?: () => void; state?: Forced;
+}) {
+  const body = (
+    <>
+      <span className={s.gcTop}>
+        <span className={s.gcHead}><MascotHead stage={stage} className={s.badgeHeadImg} /></span>
+        <span className={s.gcWho}>
+          <b className="milo-text-title-m">{STAGE_NAME[stage]} · {sub} 级</b>
+          <span className={s.track} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} aria-label="离下一级的进度"><span className={s.fill} style={{ '--p': progress } as CSSProperties} /></span>
+          <span className={cx('milo-text-caption', s.hint)}>{hint}</span>
+        </span>
+        {onClick && <Icon name="chevron" small />}
+      </span>
+      <Ticks />
+      <span className={s.gcStats}>
+        <span className={s.gcStat}><Num size="l" value={streak} unit="周" /><i className="milo-text-caption">连胜</i></span>
+        <span className={s.gcStat}><Num size="l" value={`${done} / ${target}`} unit="次" /><i className="milo-text-caption">本周</i></span>
+        <span className={s.gcStat}><Num size="l" value={niujin} /><i className="milo-text-caption">牛劲</i></span>
+      </span>
+    </>
+  );
+  const label = `牛龄 ${STAGE_NAME[stage]} ${sub} 级，连胜 ${streak} 周，本周已练 ${done} / ${target} 次，牛劲 ${niujin}`;
+  if (!onClick) return <section className={s.gcard} aria-label={label}>{body}</section>;
+  return <button type="button" className={cx('milo-press milo-focus', s.gcard, s.gcardBtn)} onClick={onClick} aria-label={`${label}，查看牛龄`} {...forced(state)}>{body}</button>;
+}
+
+/** 牛龄页头：顶上一行 5 段名字（当前这一段加下划线，一眼看到「现在在哪、还有几段」），小牛站在一圈圈配重片同心环里，下面是大号「段名 · 小级」。 */
+export function StageHero({ stage, sub, mood = 'idle' }: { stage: MascotStage; sub: 1 | 2 | 3; mood?: 'idle' | 'happy' | 'rest' | 'deload' }) {
+  return (
+    <div className={s.hero}>
+      <ol className={s.stages} aria-label="牛龄五段">
+        {STAGES.map((st) => <li key={st} className={cx('milo-text-label', st === stage && s.stageNow)} aria-current={st === stage ? 'step' : undefined}>{STAGE_NAME[st]}</li>)}
+      </ol>
+      <div className={s.stageArea}>
+        <i className={s.rings} aria-hidden="true" />
+        <Mascot stage={stage} mood={mood} animate title={`${STAGE_NAME[stage]}`} />
+      </div>
+      <b className="milo-text-title-l">{STAGE_NAME[stage]} · {sub} 级</b>
     </div>
   );
 }
@@ -89,6 +142,23 @@ export function StreakBar({ weeks, done, target, status, freeze = 0 }: { weeks: 
   );
 }
 
+/** 最近若干周的守约状态点阵（牛龄页）：实心骨白 = 守约，暗 = 减量周（按计划减量也算守约），斜纹 = 冻结卡抵掉，虚线 = 没守约，粗框 = 本周；下面一行图例。
+ *  不只靠颜色：每种状态的形状 / 纹理都不同；整条是一张图，读屏读汇总。 */
+export type StreakWeekStatus = 'kept' | 'deload' | 'frozen' | 'missed' | 'open';
+const WEEK_LEGEND: [StreakWeekStatus, string][] = [['kept', '守约'], ['deload', '减量周'], ['frozen', '冻结卡'], ['missed', '没守约'], ['open', '本周']];
+export function StreakWeeks({ weeks }: { weeks: StreakWeekStatus[] }) {
+  const n = (k: StreakWeekStatus) => weeks.filter((w) => w === k).length;
+  return (
+    <div className={s.weeksBox}>
+      <div className={s.weeks} role="img" style={{ '--n': Math.max(12, weeks.length) } as CSSProperties}
+        aria-label={`最近 ${weeks.length} 周：守约 ${n('kept')} 周，减量周 ${n('deload')} 周，冻结卡抵掉 ${n('frozen')} 周，没守约 ${n('missed')} 周`}>
+        {weeks.map((w, i) => <i key={i} className={cx(s.wk, s[`wk_${w}`])} />)}
+      </div>
+      <ul className={s.legend} aria-hidden="true">{WEEK_LEGEND.map(([k, t]) => <li key={k} className="milo-text-caption"><i className={cx(s.wk, s.wkS, s[`wk_${k}`])} />{t}</li>)}</ul>
+    </div>
+  );
+}
+
 /** 冻结卡：有卡（断档时周一自动用）/ 没卡（去兑换或开会员）/ 刚自动用了一张 */
 export function FreezeCard({ count, state, cost, onRedeem }: { count: number; state: 'have' | 'none' | 'used'; cost: number; onRedeem?: () => void }) {
   return (
@@ -116,12 +186,12 @@ export function NiujinBalance({ balance, month, pro }: { balance: number; month:
   );
 }
 
-/** 牛劲流水一行：获得（荧光 +）/ 花出（骨白 −）/ 会员加成标注 */
-export function LedgerRow({ label, amount, date, pro }: { label: string; amount: number; date: string; pro?: boolean }) {
+/** 牛劲流水一行：获得（荧光 +）/ 花出（骨白 −）/ 会员加成标注；plain = 获得也用骨白（一屏有很多行时，荧光只留给一处焦点，如牛龄页的成长记录） */
+export function LedgerRow({ label, amount, date, pro, detail, plain }: { label: string; amount: number; date: string; pro?: boolean; detail?: string; plain?: boolean }) {
   return (
     <div className={s.ledger}>
-      <span className={s.ledgerText}><span className="milo-text-body">{label}</span><span className={cx('milo-text-caption', s.muted)}>{date}{pro ? ' · 会员 ×1.5' : ''}</span></span>
-      <b className={cx('milo-text-number-m', amount >= 0 ? s.plus : s.minus)}>{amount >= 0 ? '+' : '−'}{Math.abs(amount)}</b>
+      <span className={s.ledgerText}><span className="milo-text-body">{label}</span><span className={cx('milo-text-caption', s.muted)}>{date}{detail ? ` · ${detail}` : ''}{pro ? ' · 会员 ×1.5' : ''}</span></span>
+      <b className={cx('milo-text-number-m', amount >= 0 && !plain ? s.plus : s.minus)}>{amount >= 0 ? '+' : '−'}{Math.abs(amount)}</b>
     </div>
   );
 }
@@ -259,11 +329,11 @@ export function Paywall({ plan, member, success, onPlan, onBuy }: { plan: 'month
 
 /* ---------------- 消息 ---------------- */
 
-/** 「我的」→ 消息里的一行：合并的奖励 / 冻结卡已自动使用 / 降级说明（删除训练后重算） */
+/** 「我的」→ 消息里的一行：合并的奖励 / 冻结卡已自动使用 / 降级说明（删除训练后重算）；奖励的图标只有未读时是荧光，读过的变回中性（一屏很多条时不会满屏荧光） */
 export function MessageRow({ kind, title, detail, date, unread }: { kind: 'reward' | 'freeze' | 'demote'; title: string; detail: string; date: string; unread?: boolean }) {
   const mark: ReactNode = kind === 'reward' ? <Icon name="star" small /> : kind === 'freeze' ? <PropGlyph kind="freeze" className={s.iceS} /> : <Icon name="down" small />;
   return (
-    <div className={cx(s.msg, s[`msg_${kind}`])}>
+    <div className={cx(s.msg, s[`msg_${kind}`], unread && s.msgUnread)}>
       <span className={s.msgMark} aria-hidden="true">{mark}</span>
       <span className={s.msgText}><b className="milo-text-body-strong">{title}</b><span className={cx('milo-text-caption', s.muted)}>{detail}</span></span>
       <span className={s.msgSide}><span className={cx('milo-text-micro', s.muted)}>{date}</span>{unread && <i className={s.unread} aria-label="未读" />}</span>

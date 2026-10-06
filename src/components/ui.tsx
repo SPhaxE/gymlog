@@ -112,6 +112,18 @@ export function Card({ children, hero, onClick, label, state }: { children: Reac
   return <section className={hero ? s.hero : s.card} aria-label={label} {...h}>{children}</section>;
 }
 
+/** 档案格（「我的」的 2×2）：小字名称在上、大字当前值在下，整格是按钮，点开对应的编辑面板；没有 onClick 就是只读 */
+export function ProfileTile({ label, value, unit, onClick, state }: { label: string; value: ReactNode; unit?: string; onClick?: () => void; state?: Forced }) {
+  const body = (
+    <>
+      <span className={cx('milo-text-caption', s.secondary)}>{label}</span>
+      <span className={s.tileValue}><b className="milo-text-number-m">{value}</b>{unit && <i className={s.unit}>{unit}</i>}</span>
+    </>
+  );
+  if (!onClick) return <div className={s.tile}>{body}</div>;
+  return <button type="button" className={cx('milo-press milo-focus', s.tile, s.tileBtn)} onClick={onClick} aria-label={`${label}：${value}${unit ?? ''}，修改`} {...forced(state)}>{body}</button>;
+}
+
 /** 容量图例：四档用明暗 + 纹理区分，不只靠色相 */
 export function TierLegend() {
   const thermal = useContext(BodyRender);

@@ -40,6 +40,47 @@
   animation: sheen calc(var(--milo-motion-slow) * 5) linear infinite; }
 .max .fill { background: linear-gradient(90deg, var(--milo-color-accent-default), var(--milo-prim-lime-300), var(--milo-color-accent-default)); }
 
+/* ---------- 成长卡（「我的」第一屏） ---------- */
+.gcard { position: relative; display: grid; gap: var(--milo-space-m); width: 100%; padding: var(--milo-space-l); border: 0; border-radius: var(--milo-radius-l); font: inherit; text-align: left; overflow: clip; isolation: isolate;
+  color: var(--milo-color-text-primary); background-color: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
+.gcard::before { content: ''; position: absolute; z-index: -1; right: calc(var(--milo-space-5xl) * -1.2); top: calc(var(--milo-space-5xl) * -1.2); width: calc(var(--milo-space-5xl) * 5); aspect-ratio: 1; border-radius: 50%; pointer-events: none;
+  background: repeating-radial-gradient(circle, transparent 0 calc(var(--milo-space-m) - var(--milo-stroke-hairline)), var(--milo-color-line-default) 0 var(--milo-space-m));
+  -webkit-mask: radial-gradient(circle, black, transparent 72%); mask: radial-gradient(circle, black, transparent 72%); }
+.gcardBtn { cursor: pointer; }
+.gcTop { display: flex; align-items: center; gap: var(--milo-space-m); }
+.gcHead { position: relative; display: grid; place-items: center; flex: none; width: calc(var(--milo-space-5xl) * 1.3); aspect-ratio: 1; border-radius: 50%; background: var(--milo-color-bg-raised-2); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); overflow: clip; }
+.gcWho { display: grid; flex: 1; min-width: 0; gap: var(--milo-space-xs); }
+.gcWho .hint { text-wrap: pretty; }
+.gcStats { display: grid; grid-template-columns: repeat(3, 1fr); }
+.gcStat { display: grid; justify-items: center; gap: var(--milo-space-2xs); }
+.gcStat + .gcStat { box-shadow: calc(var(--milo-stroke-hairline) * -1) 0 0 var(--milo-color-line-default); }
+.gcStat i { font-style: normal; color: var(--milo-color-text-secondary); }
+
+/* ---------- 牛龄页头：5 段名字 + 同心环里的小牛 ---------- */
+.hero { position: relative; display: grid; justify-items: center; gap: var(--milo-space-m); padding: var(--milo-space-m) var(--milo-space-l) var(--milo-space-l); border-radius: var(--milo-radius-l); overflow: clip; isolation: isolate;
+  background-color: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
+.stages { display: flex; justify-content: space-between; width: 100%; margin: 0; padding: 0 0 var(--milo-space-s); list-style: none; box-shadow: 0 var(--milo-stroke-hairline) 0 var(--milo-color-line-default); }
+.stages li { position: relative; color: var(--milo-color-text-secondary); }
+.stages .stageNow { color: var(--milo-color-text-primary); }
+.stages .stageNow::after { content: ''; position: absolute; left: 0; right: 0; bottom: calc((var(--milo-space-s) + var(--milo-stroke-hairline)) * -1); height: var(--milo-stroke-focus); background: var(--milo-color-text-primary); }
+.stageArea { position: relative; display: grid; place-items: end center; width: 100%; height: calc(var(--milo-space-5xl) * 3.6); --mascot-unit: calc(var(--milo-stroke-hairline) * 0.26); --mascot-max-h: calc(var(--milo-space-5xl) * 3.6 * 0.86); }
+.rings { position: absolute; inset: 0; margin: auto; width: calc(var(--milo-space-5xl) * 5.4); aspect-ratio: 1; border-radius: 50%; pointer-events: none; z-index: -1;
+  background: repeating-radial-gradient(circle, transparent 0 calc(var(--milo-space-xl) - var(--milo-stroke-hairline)), var(--milo-color-line-default) 0 var(--milo-space-xl));
+  -webkit-mask: radial-gradient(circle, black 35%, transparent 72%); mask: radial-gradient(circle, black 35%, transparent 72%); }
+
+/* ---------- 最近 N 周点阵 ---------- */
+.weeksBox { display: grid; gap: var(--milo-space-s); }
+.weeks { display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: var(--milo-space-xs); }
+.wk { display: block; aspect-ratio: 1; border-radius: var(--milo-radius-xs); box-sizing: border-box; }
+.wkS { width: var(--milo-space-m); flex: none; }
+.wk_kept { background: var(--milo-color-control-selected); }
+.wk_deload { background: var(--milo-color-data-track); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); }
+.wk_frozen { background: repeating-linear-gradient(135deg, var(--milo-color-text-secondary) 0 var(--milo-stroke-hairline), transparent var(--milo-stroke-hairline) calc(var(--milo-stroke-hairline) * 4)); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); }
+.wk_missed { outline: var(--milo-stroke-hairline) dashed var(--milo-color-text-secondary); outline-offset: calc(var(--milo-stroke-hairline) * -1); }
+.wk_open { box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-text-primary); }
+.legend { display: flex; flex-wrap: wrap; gap: var(--milo-space-xs) var(--milo-space-m); margin: 0; padding: 0; list-style: none; color: var(--milo-color-text-secondary); }
+.legend li { display: inline-flex; align-items: center; gap: var(--milo-space-xs); }
+
 /* ---------- 连胜条 ---------- */
 .streak { display: flex; align-items: center; gap: var(--milo-space-l); padding: var(--milo-space-m) var(--milo-space-l); border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised); color: var(--milo-color-text-primary); }
 .streakNum { display: grid; justify-items: center; min-width: calc(var(--milo-space-5xl) * 1.2); }
@@ -157,7 +198,8 @@
 /* ---------- 消息 ---------- */
 .msg { display: flex; align-items: center; gap: var(--milo-space-m); padding: var(--milo-space-s) 0; border-bottom: var(--milo-stroke-hairline) solid var(--milo-color-line-default); color: var(--milo-color-text-primary); }
 .msgMark { display: grid; place-items: center; width: var(--milo-space-3xl); aspect-ratio: 1; flex: none; border-radius: 50%; background: var(--milo-color-bg-raised); color: var(--milo-color-text-secondary); }
-.msg_reward .msgMark { color: var(--milo-color-text-on-accent); background: var(--milo-color-accent-default); }
+.msg_reward .msgMark { color: var(--milo-color-text-primary); }
+.msg_reward.msgUnread .msgMark { color: var(--milo-color-text-on-accent); background: var(--milo-color-accent-default); }
 .msgText { display: grid; gap: var(--milo-space-2xs); flex: 1; }
 .msgSide { display: grid; justify-items: end; gap: var(--milo-space-2xs); }
 .unread { width: var(--milo-space-xs); aspect-ratio: 1; border-radius: 50%; background: var(--milo-color-accent-default); }

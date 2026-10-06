@@ -23,8 +23,8 @@ export function useSource(scenario: string | undefined, now: number) {
   const removals = useSyncExternalStore(subscribe, () => version);
   const src = useMemo<Source>(() => {
     if (scenario) { const b = sourceOf(scenario, now), g = gone.get(scenario); return { ...b, history: g ? b.history.filter((s) => !g.has(s.id)) : b.history, deload: local ?? b.deload }; }
-    return { history: st.history, profile: st.profile, deload: st.deload };
-  }, [scenario, now, local, removals, st.history, st.profile, st.deload]);
+    return { history: st.history, profile: st.profile, deload: st.deload, deloads: st.deloads };
+  }, [scenario, now, local, removals, st.history, st.profile, st.deload, st.deloads]);
   const adopt = () => (scenario ? setLocal({ status: 'adopted', atMs: now }) : adoptDeload());
   const skip = () => (scenario ? setLocal({ status: 'dismissed', atMs: now }) : skipDeload());
   const remove = (id: string) => { if (scenario) removeInScenario(scenario, id); else deleteSession(id); };

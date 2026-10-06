@@ -1,0 +1,5 @@
+/* 消息页：子页，整页一个滚动区 */
+.scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.body { display: grid; align-content: start; grid-auto-rows: max-content; padding: var(--milo-space-s) var(--milo-size-gutter) var(--milo-space-4xl); }
+.empty { display: grid; align-content: center; min-height: 100%; padding: 0 var(--milo-size-gutter); }
+.note { margin: var(--milo-space-m) 0 0; text-align: center; color: var(--milo-color-text-secondary); }

@@ -1,0 +1,12 @@
+/* 牛龄页：子页，整页一个滚动区；没有导航，底部只留一点呼吸 */
+.scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.body { display: grid; align-content: start; grid-auto-rows: max-content; gap: var(--milo-space-l); padding: var(--milo-space-m) var(--milo-size-gutter) var(--milo-space-4xl); }
+.sec { display: grid; gap: var(--milo-space-s); }
+/* 连胜 / 本周 / 冻结卡：三格，格间一道细竖线 */
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); padding: var(--milo-space-m) 0; border-radius: var(--milo-radius-m); background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
+.stat { display: grid; justify-items: center; gap: var(--milo-space-2xs); }
+.stat + .stat { box-shadow: calc(var(--milo-stroke-hairline) * -1) 0 0 var(--milo-color-line-default); }
+.stat i { font-style: normal; color: var(--milo-color-text-secondary); }
+.empty { margin: 0; color: var(--milo-color-text-secondary); }
+.more { display: grid; justify-items: center; padding-top: var(--milo-space-xs); }
+.note { margin: 0; color: var(--milo-color-text-secondary); text-wrap: pretty; }
