@@ -4,8 +4,12 @@
  *  - 刻度尺、天数、曲线、阶梯、碎屑、产品小样都是代码生成；产品小样用真组件（胶囊、处方卡）。
  *  - 减少动态效果：每幕直接到最后一帧，互动换成按钮；故事不记进度（杀进程回第 1 幕）。?scene=N 从第 N 幕开始（截图用）。 */
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { Button, Capsule, LogoGlyph, Mascot, PrescriptionHero, Screen } from '../components';
+import { createPortal } from 'react-dom';
+import { BodyFigure, Button, CapsuleRail, Lockup, LogoGlyph, Mascot, PrescriptionHero, Screen, type Anchors } from '../components';
+import { capsuleLayout } from '../components/capsuleLayout';
 import { bodyData } from '../data/demo';
+import type { HeadStat } from '../engine';
+import { T } from '../styles/tokens.gen';
 import { STORY_ASSETS, type StoryAsset } from './storyAssets';
 import s from './StoryScreens.module.css';
 
@@ -13,14 +17,14 @@ const url = (k: StoryAsset) => `${import.meta.env.BASE_URL}story/${k}.webp`;
 const still = () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 /** 每幕：时长（毫秒，0 = 等互动）、镜头位置（0 = 最左，1 = 最右）、文字 */
-const SCENES: { ms: number; cam: number; h: string; b: ReactNode }[] = [
+const SCENES: { ms: number; cam: number; h: string; b: ReactNode; sh?: string }[] = [
   { ms: 6500, cam: 0.05, h: '两千五百年前，有个扛牛的人', b: <>公元前 6 世纪的克罗顿，古代奥运六届摔跤冠军——力量训练的祖师爷，米洛（Milo）。</> },
   { ms: 6000, cam: 0.2, h: '他每天扛起同一头小牛', b: <>传说，小牛刚出生，他就把它扛上肩，绕着场地走一圈。</> },
   { ms: 9500, cam: 0.45, h: '小牛每天只重一点', b: <>他每天也只多扛一点。几年后，肩上是一头公牛。这就是<b>渐进超负荷</b>。</> },
   { ms: 8000, cam: 0.62, h: '可他是在什么时候变强的？', b: <>不是扛的时候，是睡着以后：练完先变弱，恢复后比原来更强一点——<b>超量恢复</b>。</> },
-  { ms: 0, cam: 0.62, h: '在黄金窗里再练一次', b: <>光点沿着曲线走，进入荧光那一段时点「练」。</> },
+  { ms: 0, cam: 0.62, h: '在黄金窗里再练一次', b: <>光点沿着曲线走，进入荧光那一段时，点「开始训练」。</> },
   { ms: 9000, cam: 0.95, h: '两件事合起来，就是变强', b: <>每次只多一点 × 在恢复的最高点再练。他扛着公牛，走进了奥林匹亚。</> },
-  { ms: 7000, cam: 0.95, h: '现在，Milo 替你算这两件事', b: <>哪块肌肉恢复好了、这一组该加多少——打开 App，就是今天的答案。</> },
+  { ms: 9000, cam: 0.95, h: '现在，Milo 替你算这两件事', b: <>哪块肌肉恢复好了、这一组该加多少——打开 App，就是今天的答案。</>, sh: '74%' },
   { ms: 0, cam: 0.95, h: '你的小牛，今天出生', b: <>你每变强一点，它就长大一点。</> },
 ];
 
@@ -28,7 +32,9 @@ export function StoryScreens({ onDone }: { onDone: () => void }) {
   const [i, setI] = useState(() => Math.max(0, Math.min(SCENES.length - 1, Number(new URLSearchParams(location.search).get('scene') ?? 1) - 1)));
   const [paused, setPaused] = useState(false);
   const [ready, setReady] = useState(false); // 互动幕：做对了才能自动往下
-  const go = useCallback((d: number) => { setReady(false); setI((x) => Math.max(0, Math.min(SCENES.length - 1, x + d))); }, []);
+  const [brand, setBrand] = useState(false);  // 第 3 幕：天数走完、刻度到 450 kg 后，品牌 Logo 才出现
+  const [host, setHost] = useState<HTMLElement | null>(null);  // 互动幕的「开始训练」按钮要放在整屏底部拇指区，经 portal 挂到根容器上
+  const go = useCallback((d: number) => { setReady(false); setBrand(false); setI((x) => Math.max(0, Math.min(SCENES.length - 1, x + d))); }, []);
   const sc = SCENES[i];
   const ms = sc.ms || (ready ? 2600 : 0);
 
@@ -50,7 +56,7 @@ export function StoryScreens({ onDone }: { onDone: () => void }) {
 
   return (
     <Screen label={`故事 第 ${i + 1} 幕，共 ${SCENES.length} 幕`}>
-    <div className={s.story} style={{ '--cam': sc.cam } as CSSProperties}>
+    <div ref={setHost} className={s.story} style={{ '--cam': sc.cam, ...(sc.sh ? { '--stage-h': sc.sh } : {}) } as CSSProperties}>
       <Backdrop />
       <div className={s.bars} aria-hidden="true">
         {SCENES.map((_, k) => <i key={k} className={k < i ? s.barDone : k === i ? s.barNow : undefined} style={k === i && ms ? { '--ms': `${ms}ms`, animationPlayState: paused ? 'paused' : 'running' } as CSSProperties : undefined} />)}
@@ -63,9 +69,9 @@ export function StoryScreens({ onDone }: { onDone: () => void }) {
       <div className={s.stage} key={`st${i}`}>
         {i === 0 && <Figure k="M1" enter="walk" glow />}
         {i === 1 && <><Figure k="M2" enter="fade" /><Ruler value={30} label="第 1 天" /></>}
-        {i === 2 && <Progression />}
+        {i === 2 && <Progression onFull={() => setBrand(true)} />}
         {i === 3 && <><Figure k="M6" enter="fade" small /><Zz /><Curve /></>}
-        {i === 4 && <GoldenWindow onSuccess={() => setReady(true)} />}
+        {i === 4 && <GoldenWindow host={host} onSuccess={() => setReady(true)} />}
         {i === 5 && <Staircase />}
         {i === 6 && <Product />}
         {i === 7 && <Calf />}
@@ -76,6 +82,7 @@ export function StoryScreens({ onDone }: { onDone: () => void }) {
         <p className="milo-text-body">{sc.b}</p>
       </div>
 
+      {i === 2 && brand && <Brand />}
       {i === SCENES.length - 1 && <div className={s.cta}><Button glow onClick={onDone}>开始建档</Button></div>}
       {i < SCENES.length - 1 && sc.ms > 0 && <span className={s.hint} aria-hidden="true">点击继续</span>}
     </div>
@@ -91,6 +98,8 @@ function Backdrop() {
       <img className={`${s.layer} ${s.mid}`} src={url('S1-mid')} alt="" draggable={false} />
       <img className={`${s.layer} ${s.near}`} src={url('S1-near')} alt="" draggable={false} />
       <div className={s.vignette} />
+      {/* 荧光尘粒：缓慢往上飘，错开起点和速度，给整个故事一层若有若无的空气感 */}
+      <div className={s.motes}>{Array.from({ length: 16 }, (_, k) => <i key={k} style={{ '--x': `${(k * 37 + 11) % 100}%`, '--s': k % 3, '--k': k } as CSSProperties} />)}</div>
     </div>
   );
 }
@@ -128,10 +137,23 @@ function Ruler({ value, label, flash }: { value: number; label?: string; flash?:
   );
 }
 
-/* ---------------- 第 3 幕：天数快进，肩上的牛长大，刻度往前走，最后 Logo 递增条长出来 ---------------- */
+/* ---------------- 第 3 幕：天数快进，肩上的牛长大，刻度往前走，走完后品牌 Logo 在屏幕中下方长出来 ---------------- */
+/** 品牌位（2026-10-06 用户：Logo 移到中下方，强化品牌感）：递增条一根根从下往上长出来 → 光晕一闪 → 字标「慢牛 Milo」随后升起；
+ *  放在文字块下面、屏幕水平正中，是这一幕收尾的落点。 */
+function Brand() {
+  return (
+    <div className={s.brand} aria-hidden="true">
+      <span className={s.brandHalo} />
+      <LogoGlyph mark="bars" state="loading" className={s.brandGlyph} />
+      <Lockup className={s.brandWord} />
+    </div>
+  );
+}
+
 const STEPS: [number, StoryAsset][] = [[0, 'M2'], [0.22, 'M3'], [0.5, 'M4'], [0.78, 'M5']];
-function Progression() {
+function Progression({ onFull }: { onFull: () => void }) {
   const [p, setP] = useState(still() ? 1 : 0);
+  useEffect(() => { if (p >= 1) onFull(); }, [p >= 1]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (still()) return;
     let raf = 0; const t0 = performance.now(), D = 6500;
@@ -146,7 +168,6 @@ function Progression() {
     <>
       {STEPS.map(([, k], j) => <Figure key={k} k={k} className={j === step ? s.figOn : s.figOff} />)}
       <Ruler value={kg} label={`第 ${day} 天`} flash={step} />
-      {p >= 1 && <div className={s.logo}><LogoGlyph mark="bars" state="loading" className={s.logoGlyph} /><span className={s.concept}>渐进超负荷</span></div>}
     </>
   );
 }
@@ -170,9 +191,9 @@ function Curve({ children, lit = true, instant }: { children?: ReactNode; lit?: 
   );
 }
 
-/* ---------------- 第 4b 幕：黄金窗小互动 ---------------- */
+/* ---------------- 第 4b 幕：黄金窗小互动（按钮 = 首页的「开始训练」） ---------------- */
 type GW = 'run' | 'early' | 'late' | 'ok';
-function GoldenWindow({ onSuccess }: { onSuccess: () => void }) {
+function GoldenWindow({ host, onSuccess }: { host: HTMLElement | null; onSuccess: () => void }) {
   const path = useRef<SVGPathElement>(null);
   const [st, setSt] = useState<GW>(still() ? 'ok' : 'run');
   const [pt, setPt] = useState<{ x: number; y: number } | null>(null);
@@ -197,9 +218,11 @@ function GoldenWindow({ onSuccess }: { onSuccess: () => void }) {
     if (st !== 'run' || !pt) return;
     setSt(pt.x < 132 ? 'early' : pt.x <= 204 ? 'ok' : 'late');
   };
+  const inWin = st === 'run' && !!pt && pt.x >= 132 && pt.x <= 204;  // 光点在荧光段里：按钮脉冲加快加亮，手把手教「就是现在」
   const msg = { run: '等光点走进荧光那一段', early: '太早了：还没恢复好，越练越累', late: '错过了：又回到原来的水平', ok: '就是这样！在最高点再练，下一次从更高的地方开始' }[st];
   return (
     <>
+      <div className={s.gwStack}>
       <Curve instant>
         <path ref={path} d={CURVE} fill="none" stroke="none" />
         {st === 'ok' && <path className={s.nextCycle} d={`M168 62 C176 62 180 108 200 108 C220 108 226 62 238 50 C254 32 274 30 288 36 C300 42 310 50 320 54`} pathLength={1} />}
@@ -207,9 +230,15 @@ function GoldenWindow({ onSuccess }: { onSuccess: () => void }) {
         {pt && st !== 'ok' && <circle className={`${s.dot} ${st !== 'run' ? s.dotStop : ''}`} cx={pt.x} cy={pt.y} r={6} />}
       </Curve>
       <p className={`milo-text-body-strong ${s.gwMsg} ${st === 'ok' ? s.gwOk : st !== 'run' ? s.gwBad : ''}`} role="status">{msg}</p>
+      </div>
       {st === 'ok' && <Burst />}
       {st === 'ok' && <div className={s.calfGrow}><Mascot stage="young" mood="happy" animate /></div>}
-      {st !== 'ok' && <button type="button" className={`milo-press milo-focus ${s.trainBtn}`} onClick={hit} disabled={st !== 'run'}>练</button>}
+      {/* 和首页同一个「开始训练」按钮（荧光 + 圆锥描边慢转 + 呼吸光晕），放在整屏底部拇指区；外面再叠两圈脉冲引导点击 */}
+      {host && st !== 'ok' && createPortal(
+        <div className={`${s.gwCta} ${inWin ? s.gwHot : ''} ${st !== 'run' ? s.gwOff : ''}`}>
+          <span className={s.pulse} aria-hidden="true" />
+          <Button glow onClick={hit} disabled={st !== 'run'}>开始训练</Button>
+        </div>, host)}
     </>
   );
 }
@@ -249,17 +278,86 @@ function Staircase() {
   );
 }
 
-/* ---------------- 第 6 幕：产品小样（真组件） ---------------- */
-function Product() {
-  const head = useMemo(() => {
-    const st = bodyData('done-today', Date.now()).stats.get('mid-lower-pectoralis');
-    return st ? { ...st, phase: 'golden' as const, recovery: 1.02, hoursLeft: 0 } : null;
+/* ---------------- 第 6 幕：产品小样（真组件，自动演示） ----------------
+ *  第一张 = 身体页的演示：人体上肌肉按恢复程度着色，一根手指按在右侧胶囊列上往下滑，胶囊像放大镜一样逐个展开，最后停在「黄金窗」那一颗；
+ *  第二张 = 处方卡（杠铃卧推 85 kg · +2.5）。两张几乎同时弹入，第二张紧跟第一张。 */
+const DEMO_HEADS: [string, Partial<HeadStat>][] = [
+  ['anterior-deltoid', { phase: 'repair', recovery: 0.34, hoursLeft: 31 }],
+  ['upper-pectoralis', { phase: 'recovering', recovery: 0.8, hoursLeft: 9 }],
+  ['mid-lower-pectoralis', { phase: 'golden', recovery: 1.02, hoursLeft: 0 }],
+  ['short-head-bicep', { phase: 'recovering', recovery: 0.9, hoursLeft: 5 }],
+  ['lateral-deltoid', { phase: 'repair', recovery: 0.52, hoursLeft: 18 }],
+];
+const GOLDEN = 'mid-lower-pectoralis';
+const FIG_SCALE = 2.9;  // 人体按演示框高度的这么多倍画，只露出肩、胸、手臂（上半身），肌肉才看得清，胶囊的引线也不会挤在一小团里
+const FIG_LIFT = 0.16;  // 再往上提演示框高度的这么多：把头顶让出去，胸和肩落在框的中央
+const ease = (x: number) => (x < 0.5 ? 4 * x ** 3 : 1 - (-2 * x + 2) ** 3 / 2);
+
+function BodyDemo() {
+  const stats = useMemo(() => {
+    const all = bodyData('advanced-profile', Date.now()).stats, out = new Map<string, HeadStat>();
+    for (const [id, patch] of DEMO_HEADS) { const h = all.get(id); if (h) out.set(id, { ...h, ...patch } as HeadStat); }
+    return out;
   }, []);
+  const box = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState({ w: 0, h: 0 });
+  const [anchors, setAnchors] = useState<Anchors>({});
+  const [mag, setMag] = useState<number | null>(null);
+  useEffect(() => {
+    const el = box.current!, ro = new ResizeObserver(() => setSize({ w: el.clientWidth, h: el.clientHeight }));
+    ro.observe(el); return () => ro.disconnect();
+  }, []);
+  const ids = useMemo(() => Object.keys(anchors).filter((id) => stats.has(id)).sort((a, b) => anchors[a][1] - anchors[b][1] || anchors[a][0] - anchors[b][0]), [anchors, stats]);
+  const n = ids.length, gold = ids.indexOf(GOLDEN);
+  const left = size.w * T['ratio/rail-start'], right = size.w;
+
+  // 自动演示：停一下 → 按下第一颗 → 慢慢滑到最后一颗 → 停一下 → 滑回「黄金窗」那一颗，按住不放
+  const slow = T['motion/slow'];
+  useEffect(() => {
+    if (n < 2) return;
+    if (still()) { setMag(gold); return; }
+    const t0 = performance.now(), A = slow * 2.5, B = slow * 9, C = slow * 1.2, D = slow * 3.5;
+    let raf = 0;
+    const f = (t: number) => {
+      const x = t - t0;
+      if (x < A) setMag(null);
+      else if (x < A + B) setMag(ease((x - A) / B) * (n - 1));
+      else if (x < A + B + C) setMag(n - 1);
+      else if (x < A + B + C + D) setMag((n - 1) + (gold - (n - 1)) * ease((x - A - B - C) / D));
+      else { setMag(gold); return; }
+      raf = requestAnimationFrame(f);
+    };
+    raf = requestAnimationFrame(f);
+    return () => cancelAnimationFrame(raf);
+  }, [n, gold, slow]);
+
+  // 手指：跟着放大镜的位置走（按静止时的均分算，和 CapsuleRail 的手势命中是同一个映射）
+  const finger = useMemo(() => {
+    if (mag == null || !n || !size.h) return null;
+    const st = capsuleLayout(n, size.h, left, right, null), span = st.caps[n - 1].y + st.caps[n - 1].h;
+    return st.top + ((mag + 0.5) / n) * span;
+  }, [mag, n, size.h, left, right]);
+  const focusId = mag != null ? ids[Math.round(mag)] ?? null : null;
+
+  return (
+    <div ref={box} className={s.bodyDemo} aria-hidden="true">
+      <div className={s.bodyClip}>
+        <div className={s.bodyFig} style={{ top: -size.h * FIG_LIFT }}>
+          {size.h > 0 && <BodyFigure gender="male" view="front" stats={stats} focus={focusId} height={size.h * FIG_SCALE} onAnchors={setAnchors} relativeTo={box} />}
+        </div>
+      </div>
+      {size.h > 0 && n > 0 && <CapsuleRail ids={ids} stats={stats} anchors={anchors} width={size.w} height={size.h} left={left} right={right} mag={mag} onMag={() => {}} onSelect={() => {}} />}
+      {finger != null && <i className={s.finger} style={{ top: finger }} />}
+    </div>
+  );
+}
+
+function Product() {
   return (
     <div className={s.product}>
       <div className={s.pCard} style={{ '--k': 0 } as CSSProperties}>
         <span className={`milo-text-label ${s.pLabel}`}>什么时候练 · 超量恢复</span>
-        {head && <Capsule h={head} c={{ i: 0, x: 0, y: 0, w: 280, h: 74, weight: 1, focus: true }} standalone />}
+        <BodyDemo />
       </div>
       <div className={s.pCard} style={{ '--k': 1 } as CSSProperties}>
         <span className={`milo-text-label ${s.pLabel}`}>加多少 · 渐进超负荷</span>

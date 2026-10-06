@@ -52,7 +52,7 @@ def run(b, w, h, shots):
 
     if shots:
         # 故事 8 幕：每幕到点自动进下一幕（Stories 式），在快结束前截；互动幕（4b、7）不自动走
-        MS = [6500, 6000, 9500, 8000, 0, 9000, 7000, 0]
+        MS = [6500, 6000, 9500, 8000, 0, 9000, 9000, 0]
         for k in range(8):
             pg.goto(f'{args.base}/onboarding?scene={k + 1}'); pg.evaluate('localStorage.clear()'); pg.goto(f'{args.base}/onboarding?scene={k + 1}')
             pg.wait_for_timeout(MS[k] - 700 if MS[k] else 6000)
@@ -108,10 +108,41 @@ def run(b, w, h, shots):
     click(pg, pg.get_by_role('button', name='再练一次')); step('again')
     pg.close()
 
+def story_checks(b, w, h):
+    """故事页（2026-10-06 改版）的运行时断言：品牌 Logo 在屏幕中下方；互动幕的「开始训练」在底部拇指区、有脉冲、点早了有反馈；
+    产品小样幕里身体页演示在跑、两张卡先后弹入（相隔很短）、卡片和文字不重叠。"""
+    tag = f'{w}×{h}'
+    pg = b.new_page(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True)
+    pg.on('pageerror', lambda e: errors.append(f'{tag} story pageerror: {e}'))
+    def open_scene(k, wait):
+        pg.goto(f'{args.base}/onboarding?scene={k}'); pg.evaluate('localStorage.clear()'); pg.goto(f'{args.base}/onboarding?scene={k}'); pg.wait_for_timeout(wait)
+    # 第 3 幕：天数走完（约 6.5 秒）后品牌 Logo 在水平正中、下半屏，不压文字
+    open_scene(3, 8200)
+    br = pg.locator('[class*=brand]').first.bounding_box(); tx = pg.locator('[class*=_text_]').first.bounding_box()
+    ok(abs(br['x'] + br['width'] / 2 - w / 2) < w * 0.05 and br['y'] > h * 0.6, f'{tag} 故事第 3 幕：品牌 Logo 在屏幕水平正中、下半屏')
+    ok(br['y'] >= tx['y'] + tx['height'], f'{tag} 故事第 3 幕：品牌 Logo 不压文字')
+    # 第 5 幕：互动
+    open_scene(5, 700)
+    btn = pg.get_by_role('button', name='开始训练').bounding_box()
+    ok(btn['y'] > h * 0.75 and btn['height'] >= 48, f'{tag} 故事互动幕：「开始训练」在底部拇指区、高 ≥ 48')
+    ok(pg.evaluate('getComputedStyle(document.querySelector("[class*=pulse]"), "::before").animationName') != 'none', f'{tag} 故事互动幕：按钮外有脉冲动画')
+    pg.mouse.click(btn['x'] + btn['width'] / 2, btn['y'] + btn['height'] / 2); pg.wait_for_timeout(500)
+    ok(pg.get_by_text('太早了').count() > 0, f'{tag} 故事互动幕：点早了有反馈（提示不位移，曲线不动）')
+    # 第 7 幕：产品小样
+    open_scene(7, 3500)
+    ok(pg.locator('[role=option]').count() >= 4, f'{tag} 故事第 7 幕：身体页演示的胶囊列在')
+    delays = pg.evaluate('[...document.querySelectorAll("[class*=pCard]")].map((e) => parseFloat(getComputedStyle(e).animationDelay) * 1000)')
+    ok(len(delays) == 2 and 0 < delays[1] - delays[0] <= 200, f'{tag} 故事第 7 幕：第二张卡紧跟第一张弹入（相隔 {delays[1] - delays[0] if len(delays) == 2 else "?"} 毫秒 ≤ 200）')
+    cards = pg.evaluate('[...document.querySelectorAll("[class*=pCard]")].map((e) => { const r = e.getBoundingClientRect(); return [r.top, r.bottom]; })')
+    txt = pg.locator('[class*=_text_]').first.bounding_box()
+    ok(cards[0][1] <= cards[1][0] and cards[1][1] + 8 <= txt['y'], f'{tag} 故事第 7 幕：两张卡之间、卡和文字之间都不重叠')
+    pg.close()
+
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path=args.chromium if os.path.exists(args.chromium) else None)
     run(b, 360, 800, True)
     run(b, 412, 915, False)
+    story_checks(b, 360, 800); story_checks(b, 412, 915)
     # /demo 电脑版
     d = b.new_page(viewport={'width': 1440, 'height': 900})
     d.on('pageerror', lambda e: errors.append(f'demo pageerror: {e}'))

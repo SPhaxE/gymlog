@@ -46,6 +46,8 @@ export const T = {
   'size/tick-major': 12,
   'size/tick-pitch': 4,
   'size/bp-wide': 900,
+  'size/bp-short': 720,
+  'size/bp-tiny': 660,
   'size/hero-max-h': 160,
   'size/icon': 20,
   'size/icon-s': 16,

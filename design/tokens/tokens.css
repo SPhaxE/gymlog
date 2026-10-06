@@ -112,6 +112,8 @@
   --milo-size-tick-major: 12px;
   --milo-size-tick-pitch: 4px;
   --milo-size-bp-wide: 900px;
+  --milo-size-bp-short: 720px;
+  --milo-size-bp-tiny: 660px;
   --milo-size-hero-max-h: 160px;
   --milo-size-icon: 20px;
   --milo-size-icon-s: 16px;
