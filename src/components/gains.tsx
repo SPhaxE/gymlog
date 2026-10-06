@@ -9,7 +9,7 @@ import { Icon, type IconName } from './Icon';
 import { Skeleton } from './feedback';
 import { Sparkline, type Point } from './charts';
 import { Odometer } from './dataviz';
-import { drillName } from './motion';
+import { Collapsible, drillName } from './motion';
 import { cx, forced, type Forced } from './state';
 import { Delta, Num, Tag, type DeltaDir } from './ui';
 import s from './gains.module.css';
@@ -90,16 +90,24 @@ const HEAD: Record<GroupKind, { title: string; hint: string; icon: IconName }> =
   cut: { title: '该减重', hint: '有一组没做满，先退一档', icon: 'down' },
   week: { title: '本周目标 · 减量', hint: '组数减半，强度 ×0.9', icon: 'timer' },
 };
-export function GainGroupHead({ kind, count }: { kind: GroupKind; count: number }) {
-  const h = HEAD[kind];
+/** 组头。给了 onToggle 就是一个可收起的组头（2026-10-06 用户：分组展开太多，点标题要能收起）：整条色带是按钮（aria-expanded，按下 M08），
+ *  右边的箭头随展开转向；说明那一句跟着组一起收（Collapsible 同一套高度弹簧）。没给 onToggle 是静态组头（减量周只有一组）。 */
+export function GainGroupHead({ kind, count, expanded = true, onToggle, controls, state }: { kind: GroupKind; count: number; expanded?: boolean; onToggle?: () => void; /** 受控的组内容 id */ controls?: string; state?: Forced }) {
+  const h = HEAD[kind], tone = kind === 'add' ? s.headLit : s.bandGrey;
+  const inner = <>
+    <Icon name={h.icon} small />
+    <b className="milo-text-heading">{h.title}</b>
+    <span className={cx('milo-text-caption', s.count)}>{count} 个动作</span>
+    {onToggle && <span className={cx(s.chev, expanded && s.chevOpen)} aria-hidden="true"><Icon name="chevron" small /></span>}
+  </>;
   return (
     <div className={s.headWrap}>
-      <h2 className={cx(s.band, kind === 'add' ? s.headLit : s.bandGrey)}>
-        <Icon name={h.icon} small />
-        <b className="milo-text-heading">{h.title}</b>
-        <span className={cx('milo-text-caption', s.count)}>{count} 个动作</span>
+      <h2 className={s.bandH}>
+        {onToggle
+          ? <button type="button" className={cx('milo-press milo-focus', s.band, s.bandBtn, tone)} aria-expanded={expanded} aria-controls={controls} onClick={onToggle} {...forced(state)}>{inner}</button>
+          : <span className={cx(s.band, tone)}>{inner}</span>}
       </h2>
-      <p className={cx('milo-text-caption', s.hint)}>{h.hint}</p>
+      <Collapsible open={expanded}><p className={cx('milo-text-caption', s.hint)}>{h.hint}</p></Collapsible>
     </div>
   );
 }

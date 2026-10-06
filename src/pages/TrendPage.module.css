@@ -1,7 +1,10 @@
-/* 曲线页：整页一个滚动区；页头首屏（大数字）跟着滑走 */
-.scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+/* 曲线页：整页一个滚动区；页头首屏（大数字）跟着滑走。
+   拖曲线时整页不跳（2026-10-06 用户）：关掉滚动锚定（内容高度不变时它也不该动 scrollTop），组列表 / 大数字按最大值预留（--rows / --chars 由页面算） */
+.scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; overflow-anchor: none; }
 .hero { position: relative; isolation: isolate; display: grid; gap: var(--milo-space-xs); padding: var(--milo-space-l) var(--milo-size-gutter) var(--milo-space-m); overflow: hidden; }
-.label { color: var(--milo-color-text-secondary); }
+.label { color: var(--milo-color-text-secondary); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* 大数字：按最长读数预留宽度并右对齐，位数变化（97.5 → 100）时单位不左右跳 */
+.odo { display: inline-flex; justify-content: flex-end; min-width: calc(var(--chars, 1) * 1ch); font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-hero); font-variant-numeric: tabular-nums; }
 .big { display: inline-flex; align-items: baseline; gap: var(--milo-space-xs); color: var(--milo-color-text-primary); }
 .deltaRow { display: flex; align-items: center; gap: var(--milo-space-s); color: var(--milo-color-text-secondary); }
 /* 配重片同心纹：和增量页同一处理，圆心在右上角、被屏幕边切掉、向下渐隐 */
@@ -14,6 +17,7 @@
 
 /* 选中那天的每一组：一行一组，数字靠右 */
 .sets, .recent { list-style: none; margin: 0; padding: 0; display: grid; }
+.sets { min-height: calc(var(--rows, 1) * var(--milo-size-hit-min)); align-content: start; }
 .sets li { display: flex; align-items: baseline; justify-content: space-between; gap: var(--milo-space-m); min-height: var(--milo-size-hit-min); align-items: center;
   border-bottom: var(--milo-stroke-hairline) solid var(--milo-color-line-default); }
 .sets li:last-child { border-bottom: 0; }

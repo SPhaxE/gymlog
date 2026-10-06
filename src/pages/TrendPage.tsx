@@ -6,7 +6,7 @@
  *  - 框架：整页一个滚动区，页头首屏（大数字）跟着内容滑走；曲线 → 选中那天 → 下次目标 → 最近 8 次。整页只有曲线的荧光渐隐面积是荧光。
  *  - 表现：大数字按位滚动（M04）；按住曲线横向拖，游标吸到最近一次训练（吸附轻振）；点明细的一行也能选中那天；PR 点是菱形，涨跌用 ▲▼= 形状 + 文字。
  *  （Stitch g9 三种结构的取舍见 design/hifi/gains/decision.md） */
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router';
 import { BackToTop, Banner, Delta, Odometer, Screen, SectionLabel, StateView, Tag, TopBar, TrendChart, drillName, drillTransition } from '../components';
 import { env, fmt, REGION_NAME } from '../data/demo';
@@ -44,16 +44,18 @@ export function TrendPage({ scenario, now }: { scenario?: string; now: number })
   const reps = row.metric === 'reps';
   const diffText = (x: { dir: string; diff: number | null }) => (x.diff == null || x.diff === 0 ? undefined : `${x.diff > 0 ? '+' : '−'}${fmt(Math.abs(x.diff))} ${row.unit}`);
   const sub = `${REGION_NAME[row.region]} · 共 ${row.n} 次记录`;
+  // 拖曲线换日子时页面不许跳（2026-10-06 用户）：组列表按所有记录里最多的组数预留高度，大数字按最长的读数预留宽度
+  const keep = { '--rows': Math.max(...sessions.map((x) => x.sets.length)), '--chars': Math.max(...sessions.map((x) => fmt(x.v).length)) } as CSSProperties;
 
   return (
     <Screen label={`${row.name} 进步曲线`}>
       <TopBar title={row.name} sub={sub} onBack={back} titleStyle={drillName('name', exerciseId)} />
-      <div ref={topRef} className={s.scroll} data-drill-ready="trend">
+      <div ref={topRef} className={s.scroll} style={keep} data-drill-ready="trend">
         <header className={s.hero}>
           <span className={s.plate} aria-hidden="true" />
           <span className={`milo-text-caption ${s.label}`}>{reps ? '每次最好一组的次数' : '预估 1RM'} · {dayText(cur.t)}{cur.pr ? ' · 新纪录' : ''}</span>
           <div className={s.big} style={drillName('num', exerciseId)}>
-            <Odometer value={fmt(cur.v)} size="hero" /><span className="milo-text-heading">{row.unit}</span>
+            <span className={s.odo}><Odometer value={fmt(cur.v)} size="hero" /></span><span className="milo-text-heading">{row.unit}</span>
           </div>
           <div className={s.deltaRow}>
             <Delta dir={cur.delta.dir} value={diffText(cur.delta)} />

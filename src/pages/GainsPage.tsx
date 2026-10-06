@@ -12,9 +12,10 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { flushSync } from 'react-dom';
-import { BackToTop, Cascade, Chip, GainGroupHead, GainRow, GainSummary, PageHeader, Screen, StateView, drillTransition, useToast, type Tab } from '../components';
+import { BackToTop, Cascade, Chip, Collapsible, GainGroupHead, GainRow, GainSummary, PageHeader, Screen, StateView, drillTransition, useToast, type Tab } from '../components';
 import { env, fmt, REGION_NAME } from '../data/demo';
 import { gainsData, groupGains, type GainRow as Row } from '../data/gains';
+import type { GainGroupKind as GroupKind } from '../components';
 import { useSource } from '../data/useSource';
 import type { Region } from '../engine';
 import { T } from '../styles/tokens.gen';
@@ -24,7 +25,7 @@ import { TabNav } from './TabNav';
 import s from './GainsPage.module.css';
 
 /** 点进曲线页前记下部位筛选和滚动位置，返回时还原（按场景分开记；刷新页面就忘了，不写存储） */
-const memo = new Map<string, { region: Region | 'all'; top: number; from?: string }>();
+const memo = new Map<string, { region: Region | 'all'; top: number; from?: string; open?: Partial<Record<GroupKind, boolean>> }>();
 
 /** 涨跌文字：重量动作 ±kg，自重动作 ±次 */
 const deltaText = (r: Row) => {
@@ -40,6 +41,8 @@ export function GainsPage({ scenario, now, onTab }: { scenario?: string; now: nu
   const key = scenario ?? 'live', scroll = useRef<HTMLDivElement>(null);
   const d = useMemo(() => gainsData(src, now), [src, now]);
   const [region, setRegion] = useState<Region | 'all'>(() => memo.get(key)?.region ?? 'all');
+  // 分组展开状态（2026-10-06 用户：展开太多、点标题要能收起）：默认只展开第一组，其余只露组头；点进曲线再回来还原
+  const [openMap, setOpenMap] = useState<Partial<Record<GroupKind, boolean>>>(() => memo.get(key)?.open ?? {});
   useLayoutEffect(() => { const m = memo.get(key); if (m && scroll.current) scroll.current.scrollTop = m.top; }, [key]);
   // 钻入转场：被点的那一行带共享名；从曲线页返回时，落回的那一行（memo.from）也带名，且这一次不播入场（转场要拍到完整的列表行）
   const [drill, setDrill] = useState<string | null>(() => memo.get(key)?.from ?? null);
@@ -51,7 +54,7 @@ export function GainsPage({ scenario, now, onTab }: { scenario?: string; now: nu
     return () => window.clearTimeout(id);
   }, [key, landed]);
   const open = (id: string) => {
-    memo.set(key, { region, top: scroll.current?.scrollTop ?? 0, from: id });
+    memo.set(key, { region, top: scroll.current?.scrollTop ?? 0, from: id, open: openMap });
     drillTransition(() => nav(`/gains/${id}${loc.search}`), '[data-drill-ready=trend]', 'in', () => flushSync(() => setDrill(id)));
   };
   const [deloadOpen, setDeloadOpen] = useState(false);
@@ -84,15 +87,21 @@ export function GainsPage({ scenario, now, onTab }: { scenario?: string; now: nu
               )}
 
               <Cascade replayKey={region} still={landed}>
-                {groups.map((g) => (
-                  <section key={g.kind} className={s.group}>
-                    <GainGroupHead kind={g.kind} count={g.rows.length} />
-                    {g.rows.map((r) => (
-                      <GainRow key={r.exerciseId} name={r.name} latest={r.latest} unit={r.unit} delta={{ dir: r.delta.dir, value: deltaText(r) }} pr={r.pr4w}
-                        points={r.points} target={r.target?.text ?? null} note={noteOf(r)} onClick={() => open(r.exerciseId)} drillId={drill === r.exerciseId ? r.exerciseId : undefined} />
-                    ))}
-                  </section>
-                ))}
+                {groups.map((g, gi) => {
+                  // 只有一组（减量周）时不用收；否则默认只展开第一组
+                  const solo = groups.length === 1, isOpen = solo || (openMap[g.kind] ?? gi === 0), bodyId = `gains-${g.kind}`;
+                  return (
+                    <section key={g.kind} className={s.group}>
+                      <GainGroupHead kind={g.kind} count={g.rows.length} expanded={isOpen} controls={bodyId} onToggle={solo ? undefined : () => setOpenMap((m) => ({ ...m, [g.kind]: !isOpen }))} />
+                      <Collapsible open={isOpen} id={bodyId}>
+                        {g.rows.map((r) => (
+                          <GainRow key={r.exerciseId} name={r.name} latest={r.latest} unit={r.unit} delta={{ dir: r.delta.dir, value: deltaText(r) }} pr={r.pr4w}
+                            points={r.points} target={r.target?.text ?? null} note={noteOf(r)} onClick={() => open(r.exerciseId)} drillId={drill === r.exerciseId ? r.exerciseId : undefined} />
+                        ))}
+                      </Collapsible>
+                    </section>
+                  );
+                })}
               </Cascade>
             </>
           )}

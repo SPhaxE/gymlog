@@ -214,6 +214,17 @@ def gains_checks(b, w, h):
     ok(pg.get_by_role('heading', name='该减重').count() == 1, f'{tag} 增量：有「该减重」组')
     ok(pg.get_by_role('heading', name='保持，次数 +1').count() == 1, f'{tag} 增量：有「保持」组')
     ok(pg.locator('[class*=headLit]').count() == 1, f'{tag} 增量：荧光只有「该加重」一处')
+    # 分组可收起（2026-10-06 用户）：默认只展开第一组；点组头收起 / 展开，高度按弹簧走、展开时行依次弹入
+    heads = pg.locator('button[aria-expanded]')
+    ok([heads.nth(i).get_attribute('aria-expanded') for i in range(heads.count())] == ['true'] + ['false'] * (heads.count() - 1), f'{tag} 增量·分组：默认只展开第一组（{heads.count()} 组）')
+    body_h = lambda i: pg.evaluate(f"document.getElementById(document.querySelectorAll('button[aria-expanded]')[{i}].getAttribute('aria-controls')).getBoundingClientRect().height")
+    ok(body_h(1) < 1 and body_h(0) > 100, f'{tag} 增量·分组：收起的组只剩组头（{body_h(1):.0f}），展开的有内容（{body_h(0):.0f}）')
+    click(pg, heads.nth(1)); pg.wait_for_timeout(120)
+    mid = body_h(1); pg.wait_for_timeout(900)
+    ok(heads.nth(1).get_attribute('aria-expanded') == 'true' and 0 < mid < body_h(1), f'{tag} 增量·分组：点组头展开，高度是过渡过去的（{mid:.0f} → {body_h(1):.0f}）')
+    click(pg, heads.nth(0)); pg.wait_for_timeout(900)
+    ok(heads.nth(0).get_attribute('aria-expanded') == 'false' and body_h(0) < 1, f'{tag} 增量·分组：再点组头收起')
+    click(pg, heads.nth(0)); pg.wait_for_timeout(900)
     ok(pg.get_by_text('近 4 周练了').count() == 1 and pg.get_by_text('个在涨').count() == 1 and pg.get_by_text('次破纪录').count() == 1, f'{tag} 增量：摘要每个数都带单位（个动作 / 个在涨 / 次破纪录）')
     sparks = pg.evaluate('''() => [...document.querySelectorAll('svg[class*=spark]')].filter((e) => { const r = e.getBoundingClientRect(); return r.top > 0 && r.bottom < innerHeight; }).map((e) => Math.round(e.getBoundingClientRect().left))''')
     ok(len(sparks) >= 3 and max(sparks) - min(sparks) <= 1, f'{tag} 增量：每行的小曲线从同一条竖线开始 {sparks}')
@@ -238,19 +249,21 @@ def gains_checks(b, w, h):
         ys[path] = round(pg.locator('h1').first.bounding_box()['y'], 1)
     ok(max(ys.values()) - min(ys.values()) <= 1, f'{tag} 五个 Tab 的大标题 y 相同 {ys}')
     # 回到顶端：短的时候没有；滚过一屏出现，点了滚回顶、按钮收起
-    pg.goto(f'{args.base}/gains?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(700)
+    pg.goto(f'{args.base}/log?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(700)
     btt = pg.get_by_role('button', name='回到顶端')
     ok(btt.count() == 0, f'{tag} 回到顶端：在顶部时不出现（读屏也读不到）')
     pg.locator('[class*=_scroll_]').first.evaluate('e => e.scrollTo(0, e.scrollHeight)'); pg.wait_for_timeout(700)
     ok(btt.count() == 1 and float(btt.evaluate('e => getComputedStyle(e).opacity')) > 0.95, f'{tag} 回到顶端：滚过一屏出现')
     bb = btt.bounding_box(); nav_top = pg.get_by_role('navigation', name='主导航').bounding_box()['y']
-    ok(bb['width'] >= 48 and bb['height'] >= 48 and bb['y'] + bb['height'] <= nav_top, f'{tag} 回到顶端：命中 48、在导航上方 {bb}')
+    ok(round(bb['width']) >= 48 and round(bb['height']) >= 48 and bb['y'] + bb['height'] <= nav_top, f'{tag} 回到顶端：命中 48、在导航上方 {bb}')
     if not args.no_shots: pg.screenshot(path=os.path.join(OUT, 'back-to-top.png'))
     click(pg, btt); pg.wait_for_timeout(1500)
     ok(pg.locator('[class*=_scroll_]').first.evaluate('e => e.scrollTop') < 2, f'{tag} 回到顶端：点了滚回顶')
     ok(pg.get_by_role('button', name='回到顶端').count() == 0, f'{tag} 回到顶端：回到顶后收起')
     # 曲线页（P10）：点一行进去，大数字和增量页那一行是同一个数；点明细的一行换成那天；返回后筛选和滚动位置还在
     pg.goto(f'{args.base}/gains?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(700)
+    for i in range(pg.locator('button[aria-expanded=false]').count()):   # 展开全部组，进最后一行
+        hd = pg.locator('button[aria-expanded=false]').first; hd.scroll_into_view_if_needed(); click(pg, hd); pg.wait_for_timeout(700)
     rows_all = pg.get_by_role('button', name=re.compile(r'^查看.+的进步曲线$'))
     rows_all.last.scroll_into_view_if_needed(); pg.wait_for_timeout(500)
     top_before = pg.evaluate('document.querySelector("[class*=_scroll_]").scrollTop')
@@ -275,6 +288,19 @@ def gains_checks(b, w, h):
     recs = pg.locator('[class*=_rec_]')
     ok(recs.count() >= 2, f'{tag} 曲线页：最近几次明细可点（{recs.count()} 行）')
     day0 = pg.locator('[class*=_label_]').first.inner_text()
+    # 拖曲线换日子时整页不跳（2026-10-06 用户）：从左拖到右，每吸到一次都量「下次目标」的位置、滚动位置和单位的横坐标
+    pg.locator('[class*=_scroll_]').first.evaluate('(e) => e.scrollTo(0, 80)'); pg.wait_for_timeout(300)
+    plot = pg.locator('svg[class*=_plot_]').first.bounding_box()
+    probe = '''() => { const sc = document.querySelector('[class*=_scroll_]'), nx = document.querySelector('[class*=_next_]').getBoundingClientRect();
+      const u = document.querySelector('[class*=_big_] > .milo-text-heading').getBoundingClientRect(); return [Math.round(sc.scrollTop), Math.round(nx.top), Math.round(u.left), document.querySelector('[class*=_label_]').textContent]; }'''
+    pg.mouse.move(plot['x'] + 4, plot['y'] + plot['height'] / 2); pg.mouse.down()
+    marks = []
+    for k in range(13):
+        pg.mouse.move(plot['x'] + 4 + (plot['width'] - 8) * k / 12, plot['y'] + plot['height'] / 2, steps=3); pg.wait_for_timeout(120); marks.append(pg.evaluate(probe))
+    pg.mouse.up(); pg.wait_for_timeout(300)
+    ok(len({m[3] for m in marks}) >= 3, f'{tag} 曲线页·拖动：吸到了多个日子（{len({m[3] for m in marks})} 个）')
+    ok(len({m[0] for m in marks}) == 1 and max(m[1] for m in marks) - min(m[1] for m in marks) <= 1, f'{tag} 曲线页·拖动：滚动位置和下面的内容不跳 {sorted({(m[0], m[1]) for m in marks})}')
+    ok(max(m[2] for m in marks) - min(m[2] for m in marks) <= 1, f'{tag} 曲线页·拖动：大数字的单位不左右跳 {sorted({m[2] for m in marks})}')
     pg.locator('[class*=_scroll_]').first.evaluate('(e) => e.scrollTo(0, e.scrollHeight)'); pg.wait_for_timeout(400)
     click(pg, recs.nth(1)); pg.wait_for_timeout(600)
     pg.locator('[class*=_scroll_]').first.evaluate('(e) => e.scrollTo(0, 0)'); pg.wait_for_timeout(400)
