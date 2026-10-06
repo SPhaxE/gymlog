@@ -342,11 +342,11 @@ def log_checks(b, w, h):
     # 周头合计自洽：每个周头的「组」= 这一周各行写的组数之和
     heads = pg.evaluate("""() => [...document.querySelectorAll('section[class*=_week_]')].map((sec) => ({
         sets: +([...sec.querySelectorAll('[class*=_totals_] b')][1]?.textContent || 0),
-        rows: [...sec.querySelectorAll('[class*=_session_] [class*=_exText_] span')].map((e) => +((e.textContent.match(/(\\d+) 组/) || [0, 0])[1])),
+        rows: [...sec.querySelectorAll('[class*=_session_] [class*=_meta_]')].map((e) => +((e.textContent.match(/(\\d+) 组/) || [0, 0])[1])),
         txt: sec.querySelector('[class*=_totals_]').getAttribute('aria-label') }))""")
     ok(len(heads) >= 2 and all(hd['sets'] == sum(hd['rows']) for hd in heads), f'{tag} 记录：每周合计的组数 = 这一周各行组数之和 {[(hd["sets"], sum(hd["rows"])) for hd in heads[:3]]}')
     ok(all(re.fullmatch(r'\d+ 次 · \d+ 组 · [\d,.]+ kg', hd['txt']) for hd in heads), f'{tag} 记录：周合计三个数都带单位 {heads[0]["txt"]}')
-    ok(pg.locator('[class*=_session_] button, button[class*=_session_]').count() == 0, f'{tag} 记录：详情页还没做，行是静态行（不给死路按钮）')
+    ok(pg.locator('button[class*=_session_]').count() == sum(len(x) for x in [pg.locator('[class*=_session_]').all()]), f'{tag} 记录：每一行都是可点的按钮（点进训练详情，不给死路）')
     # 光随滚动从右移到左：把板往下挪一段（只为让板在三个滚动位置都完整在屏幕里），在 0 / 96 / 192 三处采样孔心亮度
     pg.evaluate('document.querySelector("[class*=_body_]").style.paddingTop = "300px"'); pg.wait_for_timeout(300)
     sample = {}
@@ -373,6 +373,46 @@ def log_checks(b, w, h):
     a0 = hole_lums(rp); rp.evaluate('document.querySelector("[class*=_scroll_]").scrollTo(0, 192)'); rp.wait_for_timeout(400); a1 = hole_lums(rp)
     ok(max(abs(x[1] - y[1]) for x, y in zip(a0, a1)) < 3, f'{tag} 记录·钢板：减少动态效果时滚动前后亮度一致')
     ctx.close()
+    # 训练详情（P08）：点一行进去，标题 / 汇总 / 动作卡与那一行一致；点动作卡头进曲线页再返回；返回记录页还原滚动位置；共享名飞进飞出
+    pg.goto(f'{args.base}/log?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(900)
+    pg.evaluate('document.querySelector("[class*=_scroll_]").scrollTo(0, 420)'); pg.wait_for_timeout(400)
+    row = pg.locator('button[class*=_session_]').nth(2)
+    rt = row.inner_text().split('\n'); r_date, r_wd = rt[0], rt[1]; r_sets = int(re.search(r'(\d+) 组', row.inner_text()).group(1)); r_pr = 'PR' in row.inner_text()
+    pg.evaluate('''() => { window.__vt = []; const o = document.startViewTransition.bind(document);
+      document.startViewTransition = (cb) => { const vt = o(cb); vt.ready.then(() => { window.__vt.push([...document.getAnimations()].map((a) => (a.effect && a.effect.pseudoElement) || '')); }, () => {}); return vt; }; }''')
+    click(pg, row); pg.wait_for_selector('[data-drill-ready=logdetail]'); pg.wait_for_timeout(1200)
+    ok('/log/' in pg.url, f'{tag} 详情：点一行进 /log/:id')
+    vts = pg.evaluate('window.__vt') or []
+    ok(any(all(any(k in x for x in v) for k in ('x-drill-name', 'x-drill-num')) for v in vts), f'{tag} 详情：进入时日期、部位作为共享元素飞成标题、副标题')
+    mon, day = r_date.split('/')
+    ok(pg.locator('h1').first.inner_text().startswith(f'{mon}月{day}日') and r_wd in pg.locator('h1').first.inner_text(), f'{tag} 详情：标题是那一天（{pg.locator("h1").first.inner_text()}）')
+    ok(pg.get_by_role('group', name='本次汇总').inner_text().replace('\n', ' ').count(str(r_sets)) >= 1 and f'{r_sets}' in pg.get_by_role('group', name='本次汇总').inner_text(), f'{tag} 详情：汇总里的组数 = 记录页那一行的组数（{r_sets}）')
+    ok(pg.locator('section[aria-label]').count() >= 3 and pg.get_by_role('button', name=re.compile(r'^查看.+的进步曲线$')).count() >= 3, f'{tag} 详情：每个动作一张卡，卡头可进曲线页')
+    ok((pg.get_by_text('新纪录').count() == 1) == r_pr, f'{tag} 详情：有 PR 才有「新纪录」一行（行上{"有" if r_pr else "没有"} PR 标）')
+    ok(pg.get_by_text('热身').count() >= 1 and pg.get_by_text('第 1 组').count() >= 1, f'{tag} 详情：热身组和工作组分开写')
+    ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} 详情：无横向溢出')
+    small = pg.evaluate(AUDIT); ok(not small, f'{tag} 详情：命中区都 ≥ 48 {small[:3]}')
+    ok(pg.get_by_role('navigation', name='主导航').count() == 0, f'{tag} 详情：子页没有 Tab 导航')
+    if not args.no_shots: pg.screenshot(path=os.path.join(OUT, 'log-detail.png'))
+    # 点动作卡头 → 曲线页 → 返回回到这次训练（不是增量页）
+    first_url = pg.url
+    click(pg, pg.get_by_role('button', name=re.compile(r'^查看.+的进步曲线$')).first); pg.wait_for_selector('text=下次目标'); pg.wait_for_timeout(900)
+    ok('/gains/' in pg.url, f'{tag} 详情：点动作卡头进它的曲线页')
+    click(pg, pg.get_by_role('button', name='返回')); pg.wait_for_selector('[data-drill-ready=logdetail]'); pg.wait_for_timeout(700)
+    ok(pg.url == first_url, f'{tag} 详情：从曲线页返回回到这次训练')
+    # 返回记录页：滚动位置还在，日期 / 部位作为共享元素飞回那一行，放完后不留共享名
+    pg.evaluate('window.__vt = []')
+    click(pg, pg.get_by_role('button', name='返回')); pg.wait_for_selector('[data-drill-ready=log]'); pg.wait_for_timeout(500)
+    ok(any(all(any(k in x for x in v) for k in ('x-drill-name', 'x-drill-num')) for v in (pg.evaluate('window.__vt') or [])), f'{tag} 详情：返回时日期、部位作为共享元素飞回那一行')
+    pg.wait_for_timeout(1800)
+    top_back = pg.evaluate('document.querySelector("[class*=_scroll_]").scrollTop')
+    ok(abs(top_back - 420) <= 2, f'{tag} 详情：返回记录页后滚动位置还在（420 → {top_back:.0f}）')
+    ok(pg.locator('[style*="x-drill"]').count() == 0, f'{tag} 详情：转场放完后记录页里不留共享名（同名不能有两份）')
+    # 训练不存在：有回记录页的出口
+    pg.goto(f'{args.base}/log/not-a-session?scenario=plain-prescription'); pg.wait_for_timeout(800)
+    ok(pg.get_by_text('这次训练已经不在了').count() == 1 and pg.get_by_role('button', name='回到记录').count() == 1, f'{tag} 详情：训练不存在时有回记录的出口')
+    click(pg, pg.get_by_role('button', name='回到记录')); pg.wait_for_timeout(700)
+    ok(pg.url.split('?')[0].endswith('/log'), f'{tag} 详情：出口回到记录页（{pg.url.split("5199")[-1]}）')
     # 更早的训练：用「载入演示数据」的真用户（30 周）走真实存储——一次渲染 8 周，点了再展开 8 周
     lp = b.new_page(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True)
     lp.on('pageerror', lambda e: errors.append(f'{tag} log(live) pageerror: {e}'))

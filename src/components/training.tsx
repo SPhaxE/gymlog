@@ -5,7 +5,7 @@ import { T } from '../styles/tokens.gen';
 import { Button, IconButton } from './Button';
 import { Odometer } from './dataviz';
 import { IncrementRuler } from './Gauges';
-import { sharedName } from './motion';
+import { drillName, sharedName } from './motion';
 import { Icon } from './Icon';
 import { cx, forced, type Forced } from './state';
 import { Card, Num, Tag } from './ui';
@@ -215,15 +215,18 @@ export function RestBar({ remaining, total, onAdjust, onSkip, onDismiss }: {
 /* ---------- 训练记录行（P07） ---------- */
 /** 票根行（6c，Stitch l6 C 的取舍）：左边大号日期（10/6）+ 周几，虚线（撕口），中间主要部位和动作 / 组 / 分钟，右边骨白 PR 标；
  *  没有 onClick 是静态行（不画箭头、没有按下反馈）；有 onClick 整行可点（≥ 48）。date 传数字（只有「日」）或「10/6」；year 只有不在今年时才传 */
-export function SessionRow({ date, weekday, year, title, meta, prs, deload, onClick, state }: {
+export function SessionRow({ date, weekday, year, title, meta, prs, deload, onClick, state, drillId }: {
   date: number | string; weekday: string; year?: number; title: string; meta: string; prs?: number; deload?: boolean; onClick?: () => void; state?: Forced;
+  /** M09 钻入转场：被点的这一行带共享名，日期飞成详情页的标题、部位飞成副标题（同一时刻只给一行起名） */
+  drillId?: string;
 }) {
   const body = (
     <>
-      <span className={s.date}><b className="milo-text-number-m">{date}</b><span className="milo-text-caption">{year ? `${year} · ` : ''}周{weekday}</span></span>
-      <span className={s.exText}><b className="milo-text-body-strong">{title}</b><span className="milo-text-caption">{meta}</span></span>
-      {deload && <Tag>减量</Tag>}
-      {prs ? <Tag tone="strong" icon="star">PR {prs}</Tag> : null}
+      <span className={s.date}><b className="milo-text-number-m" style={drillId ? drillName('name', drillId) : undefined}>{date}</b><span className="milo-text-caption">{year ? `${year} · ` : ''}周{weekday}</span></span>
+      <span className={s.exText}>
+        <span className={s.titleRow}><b className="milo-text-body-strong" style={drillId ? drillName('num', drillId) : undefined}>{title}</b>{deload && <Tag>减量</Tag>}{prs ? <Tag tone="strong" icon="star">PR {prs}</Tag> : null}</span>
+        <span className={cx('milo-text-caption', s.meta)}>{meta.split(' · ').map((m, i) => <span key={i}>{m}</span>)}</span>
+      </span>
       {onClick && <Icon name="chevron" small />}
     </>
   );

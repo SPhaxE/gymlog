@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { DAY, mainRegions, prMap, sessionStats, startOfDay, weekStart } from '../engine';
+import { DAY, mainRegions, prMap, sessionStats, startOfDay, summarize, weekStart } from '../engine';
 import type { Session } from '../engine';
 import { env, sourceOf, type Source } from './demo';
-import { logData, weekRange, weekTotals } from './log';
+import { logData, logDetail, weekRange, weekTotals } from './log';
 import { demoState } from './store';
 
 // 取傍晚（同 gains.test.ts）；2026-10-03 是周六
@@ -104,5 +104,28 @@ describe('记录页的数据（P07，ia §1.8）', () => {
     const k = weekStart(NOW);
     expect(new Date(k).getDay()).toBe(1);
     expect(weekStart(k + 6 * DAY + 3600e3)).toBe(k);
+  });
+
+  it('详情（P08）：每一组、热身不占序号、自重与单侧写法、PR 与增幅（和结算页同口径）', () => {
+    const squat = (id: string, startMs: number, sets: Session['exercises'][number]['sets']): Session => ({ id, startMs, durationMin: 61, exercises: [{ exerciseId: BENCH, skipped: false, sets }, { exerciseId: 'chin-ups-184', skipped: false, sets: [{ type: 'work', weightKg: null, reps: 8 }] }, { exerciseId: 'barbell-squat-24', skipped: true, sets: [] }] });
+    const h = [sess('a', at(2026, 9, 24), [[60, 8]]), squat('b', at(2026, 10, 1), [{ type: 'warmup', weightKg: 40, reps: 12 }, { type: 'work', weightKg: 65, reps: 8, rpe: 8 }, { type: 'work', weightKg: 65, reps: 7 }, { type: 'drop', weightKg: 50, reps: 10 }])];
+    const d = logDetail(src(h), 'b', NOW)!;
+    expect(d).toMatchObject({ id: 'b', title: '10月1日 周四', stats: { exercises: 2, sets: 4 } });
+    expect(d.sub.endsWith('61 分钟')).toBe(true);
+    const bench = d.exercises[0];
+    expect(bench.sets.map((x) => [x.n, x.type, x.weight, x.reps, x.rpe])).toEqual([[null, 'warmup', '40 kg', '12', null], [1, 'work', '65 kg', '8', 8], [2, 'work', '65 kg', '7', null], [3, 'drop', '50 kg', '10', null]]);
+    expect(d.exercises[1].sets[0]).toMatchObject({ weight: '自重', reps: '8' });
+    expect(d.exercises[2]).toMatchObject({ skipped: true, sets: [] });
+    expect(bench.pr).toBe(true);
+    expect(d.prs[0]).toMatchObject({ exerciseId: BENCH, name: expect.any(String) });
+    expect(d.prs[0].gain!).toBeGreaterThan(0);
+    // 与结算页同一个 PR（summarize）
+    expect(d.prs.map((x) => x.exerciseId)).toEqual(summarize(env, h, h[1]).prs.map((r) => r.exerciseId));
+  });
+
+  it('详情：单侧动作写「左 8 · 右 7」；不存在的训练返回 null（页面给回记录的出口）', () => {
+    const uni: Session = { id: 'u', startMs: at(2026, 10, 2), exercises: [{ exerciseId: BENCH, skipped: false, sets: [{ type: 'work', weightKg: 12, repsLeft: 8, repsRight: 7 }] }] };
+    expect(logDetail(src([uni]), 'u', NOW)!.exercises[0].sets[0]).toMatchObject({ weight: '12 kg', reps: '左 8 · 右 7' });
+    expect(logDetail(src([uni]), 'nope', NOW)).toBeNull();
   });
 });
