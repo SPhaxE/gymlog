@@ -53,7 +53,7 @@ with sync_playwright() as p:
 
     # 导航：点「身体」
     nd = pg.locator('[aria-label="导航演示"]')
-    nd.get_by_role('link', name='身体').click(); pg.wait_for_timeout(400)
+    nd.get_by_role('link', name='容量').click(); pg.wait_for_timeout(400)
     ok(nd.locator('[aria-current="page"]').get_attribute('href') == '/body', '导航：点「身体」后当前页移到身体')
     nd.get_by_role('button', name='开始休息 2:00').click(); pg.wait_for_timeout(400)
     ok('休息剩余' in (nd.locator('[aria-current="page"]').get_attribute('aria-label') or ''), '导航：休息时选中项读出剩余时间')
@@ -90,7 +90,7 @@ with sync_playwright() as p:
     pg.close()
 
     # ---------- App 壳 ----------
-    # 首页、身体页带演示场景（不带时读本机存储，没建档会进故事引导）
+    # 首页、容量页带演示场景（不带时读本机存储，没建档会进故事引导）
     routes = [('today', '/today?scenario=plain-prescription'), ('body', '/body?scenario=done-today'), ('gains', '/gains?scenario=plain-prescription'), ('log', '/log?scenario=plain-prescription'), ('me', '/me?scenario=plain-prescription'),
               ('patterns-loading', '/patterns/loading'), ('patterns-empty', '/patterns/empty'), ('patterns-error', '/patterns/error')]
     os.makedirs(os.path.join(OUT, 'app'), exist_ok=True)

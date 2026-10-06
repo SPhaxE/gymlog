@@ -5,12 +5,14 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { IconButton } from './Button';
 import { useBackHandler, useFocusTrap } from './overlay';
+import { sharedName } from './motion';
 import { cx } from './state';
 import s from './Sheet.module.css';
 
 const LOW = 0.6, HIGH = 0.92, RUBBER = 0.3, FLING = 0.6; // 屏高比例、橡皮筋系数、甩动速度阈值（px/ms）
 
-export function Sheet({ title, meta, onClose, children, docked }: { title: string; meta?: ReactNode; onClose: () => void; children: ReactNode; docked?: boolean }) {
+export function Sheet({ title, meta, onClose, children, docked, sharedId }: { title: string; meta?: ReactNode; onClose: () => void; children: ReactNode; docked?: boolean;
+  /** M03 共享元素（2026-10-06，容量页胶囊 → 肌头详情）：面板与标题和那颗胶囊同名，胶囊原地长成面板；这时面板不再自己从下面滑上来 */ sharedId?: string }) {
   const ref = useRef<HTMLElement>(null), scrim = useRef<HTMLDivElement>(null);
   useBackHandler(!docked, onClose);
   useFocusTrap(ref, onClose, !docked);
@@ -51,12 +53,13 @@ export function Sheet({ title, meta, onClose, children, docked }: { title: strin
 
   return (
     <div ref={scrim} className={s.scrim} onClick={onClose}>
-      <section ref={ref} className={cx(s.sheet, drag && s.dragging)} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1}
-        style={hgt != null ? { height: hgt } : undefined}>
+      <section ref={ref} className={cx(s.sheet, drag && s.dragging, sharedId && s.shared)} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1}
+        style={{ ...(hgt != null ? { height: hgt } : {}), ...(sharedId ? sharedName('card', sharedId) : {}) }}>
         <div className={s.grip} onPointerDown={docked ? undefined : down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} aria-hidden="true"><i /></div>
         <div className={s.head}>
           <div className={s.headText}>
-            <h2 className="milo-text-title-m">{title}</h2>
+            {/* 共享时标题收成文字本身的宽：转场里名称按字号比例放大，不会按整行宽被拉成一大团 */}
+            <h2 className="milo-text-title-m" style={sharedId ? { ...sharedName('title', sharedId), width: 'fit-content' } : undefined}>{title}</h2>
             {meta && <span className={`milo-text-caption ${s.meta}`}>{meta}</span>}
           </div>
           <IconButton icon="close" label="关闭" onClick={onClose} />

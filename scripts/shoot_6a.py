@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """阶段 6a 门禁（运行时）：演示里展示的全部交互，一路真点，每一步都查。
 流程：故事 8 幕 → 建档 3 步 → 载入演示数据 → 首页处方（含「为什么是这些」）→ 开始训练（就在首页打卡）→ 打卡 → 休息胶囊展开
-      → 点组行改数（键盘面板）→ 换动作 → 清空重量 →「填重量」→ 键盘输入 → 打卡 → 身体页（训练中）→ 结束 → 结算 → 今天已练完 → 再练一次；外加 /demo 电脑版。
+      → 点组行改数（键盘面板）→ 换动作 → 清空重量 →「填重量」→ 键盘输入 → 打卡 → 容量页（训练中）→ 结束 → 结算 → 今天已练完 → 再练一次；外加 /demo 电脑版。
 每一步检查：地址；360 宽无横向溢出；滚动区里没有被压扁的块；命中区（scripts/lib/hit_audit.js，看得见、能点的都 ≥ 48 × 48）；无页面错误。
 两种尺寸：360 × 800（设计基准，出截图）和 412 × 915（常见安卓真机，只查不截）。
 截图：screenshots/stage6a/<序号>-<步骤>.png（360 × 800 @2x）、story-<幕>.png、demo-desk.png。
@@ -120,16 +120,16 @@ def run(b, w, h, shots):
     click(pg, pg.get_by_role('button', name='填重量 · 第 1 组')); step('fill', None, 1000)
     for k in ['4', '0']: click(pg, pg.get_by_role('button', name=k, exact=True)); pg.wait_for_timeout(150)
     click(pg, pg.get_by_role('button', name='打卡', exact=True)); step('filled', None, 900)
-    # 切到身体页：计时胶囊借共享元素飞进导航滑块（点导航，不是直接改地址）
+    # 切到容量页：计时胶囊借共享元素飞进导航滑块（点导航，不是直接改地址）
     # 转场一就绪就记下转场层里有哪些共享元素（不靠睡眠时间采样，时序抖动也不会漏）
     pg.evaluate('''() => { window.__vt = null; const o = document.startViewTransition.bind(document);
       document.startViewTransition = (cb) => { const vt = o(cb); vt.ready.then(() => { window.__vt = [...document.getAnimations()].map((a) => (a.effect && a.effect.pseudoElement) || ''); }, () => {}); return vt; }; }''')
-    click(pg, pg.get_by_role('link', name='身体')); pg.wait_for_function('window.__vt !== null', timeout=5000)
+    click(pg, pg.get_by_role('link', name='容量')); pg.wait_for_function('window.__vt !== null', timeout=5000)
     fly = pg.evaluate('window.__vt')
     ok(any('x-rest-ring' in x for x in fly), f'{tag} 切 Tab：只有进度条（x-rest-ring）作为共享元素飞进导航滑块')
     ok(pg.locator('nav [style*="x-rest-timer"]').count() == 0, f'{tag} 切 Tab：导航滑块不带整颗胶囊的共享名（不会盖住图标和文字）')
     step('body-training', '/body', 2500)
-    ok('休息剩余' in navlabel() or pg.get_by_role('button', name='组间休息剩余').count() == 0, f'{tag} 身体页：休息计时在导航滑块上')
+    ok('休息剩余' in navlabel() or pg.get_by_role('button', name='组间休息剩余').count() == 0, f'{tag} 容量页：休息计时在导航滑块上')
     pg.goto(args.base + '/today'); pg.wait_for_timeout(1200)
     click(pg, pg.get_by_role('button', name='结束', exact=True)); step('end-confirm')
     click(pg, pg.get_by_role('button', name='结束并结算')); pg.wait_for_selector('text=练完了'); step('summary', '/summary/', 2000)
@@ -147,7 +147,7 @@ def run(b, w, h, shots):
 
 def story_checks(b, w, h):
     """故事页（2026-10-06 改版）的运行时断言：品牌 Logo 在屏幕中下方；互动幕的「开始训练」在底部拇指区、有脉冲、点早了有反馈；
-    产品小样幕里身体页演示在跑、两张卡先后弹入（相隔很短）、卡片和文字不重叠。"""
+    产品小样幕里容量页演示在跑、两张卡先后弹入（相隔很短）、卡片和文字不重叠。"""
     tag = f'{w}×{h}'
     pg = b.new_page(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True)
     pg.on('pageerror', lambda e: errors.append(f'{tag} story pageerror: {e}'))
@@ -167,7 +167,7 @@ def story_checks(b, w, h):
     ok(pg.get_by_text('太早了').count() > 0, f'{tag} 故事互动幕：点早了有反馈（提示不位移，曲线不动）')
     # 第 7 幕：产品小样
     open_scene(7, 3500)
-    ok(pg.locator('[role=option]').count() >= 4, f'{tag} 故事第 7 幕：身体页演示的胶囊列在')
+    ok(pg.locator('[role=option]').count() >= 4, f'{tag} 故事第 7 幕：容量页演示的胶囊列在')
     delays = pg.evaluate('[...document.querySelectorAll("[class*=pCard]")].map((e) => parseFloat(getComputedStyle(e).animationDelay) * 1000)')
     ok(len(delays) == 2 and 0 < delays[1] - delays[0] <= 200, f'{tag} 故事第 7 幕：第二张卡紧跟第一张弹入（相隔 {delays[1] - delays[0] if len(delays) == 2 else "?"} 毫秒 ≤ 200）')
     cards = pg.evaluate('[...document.querySelectorAll("[class*=pCard]")].map((e) => { const r = e.getBoundingClientRect(); return [r.top, r.bottom]; })')
@@ -248,6 +248,35 @@ def gains_checks(b, w, h):
         pg.goto(f'{args.base}{path}?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(500)
         ys[path] = round(pg.locator('h1').first.bounding_box()['y'], 1)
     ok(max(ys.values()) - min(ys.values()) <= 1, f'{tag} 五个 Tab 的大标题 y 相同 {ys}')
+    # 容量页（2026-10-06 用户）：整个人体完整显示、常态胶囊缩 1/3、换卡一律从左往右、胶囊 → 详情是共享元素（M03）
+    pg.goto(f'{args.base}/body?scenario=plain-prescription'); pg.wait_for_selector('[role=option]'); pg.wait_for_timeout(1500)
+    fig = pg.evaluate("""() => { const f = document.querySelector('svg[class*=_thermalWhole_]').getBoundingClientRect(), st = f && document.querySelector('[class*=_figureClip_]').getBoundingClientRect();
+      return { f: [f.left, f.top, f.right, f.bottom].map(Math.round), st: [st.left, st.top, st.right, st.bottom].map(Math.round) }; }""")
+    ok(fig['f'][0] >= fig['st'][0] - 1 and fig['f'][1] >= fig['st'][1] - 1 and fig['f'][3] <= fig['st'][3] + 1 and fig['f'][2] <= fig['st'][2] + 1, f'{tag} 容量：整个人体都在舞台里（头到脚、不裁半身）{fig}')
+    caps_h = pg.evaluate("[...document.querySelectorAll('[role=option]')].map((e) => e.getBoundingClientRect().height)")
+    ok(max(caps_h) <= 20.5, f'{tag} 容量：常态胶囊高 ≤ 20（缩了 1/3）{max(caps_h):.1f}')
+    ok(pg.get_by_role('heading', level=1, name='容量').count() == 1 and pg.get_by_role('link', name='容量').count() == 1, f'{tag} 容量：页标题和导航都叫「容量」')
+    light = pg.evaluate("""() => { const l = document.querySelector('svg[class*=_light_]'); return l ? { blend: getComputedStyle(l).mixBlendMode, anims: l.getAnimations({ subtree: true }).length, contour: l.querySelectorAll('[class*=_contourLime_] path').length } : null; }""")
+    ok(light and light['blend'] == 'screen' and light['anims'] >= 3 and light['contour'] > 20, f'{tag} 容量：浅荧光轮廓 + 游光 + 扫描光带在动（screen 混合，只提亮）{light}')
+    cdp = pg.context.new_cdp_session(pg); cdp.send('Animation.enable'); cdp.send('Animation.setPlaybackRate', {'playbackRate': 0.2})
+    pg.get_by_role('radio', name='背面').click(); pg.wait_for_timeout(250)
+    xs = pg.evaluate("""() => Object.fromEntries([...document.querySelectorAll('[class*=_cardIn_],[class*=_cardOut_]')].map((e) => [e.className.includes('cardIn') ? 'in' : 'out', new DOMMatrix(getComputedStyle(e).transform).e]))""")
+    ok(xs.get('in', 0) < 0 and xs.get('out', 0) > 0, f'{tag} 容量·换卡：新卡从左边进、旧卡往右退 {xs}')
+    zi = pg.evaluate("""() => [...document.querySelectorAll('[class*=_cardIn_],[class*=_cardOut_]')].map((e) => [e.className.includes('cardIn') ? 'in' : 'out', +getComputedStyle(e).zIndex])""")
+    ok(dict(zi).get('in', 0) > dict(zi).get('out', 0), f'{tag} 容量·换卡：新卡盖在旧卡上面，胶囊与引线在两张卡之上 {zi}')
+    cdp.send('Animation.setPlaybackRate', {'playbackRate': 1}); pg.wait_for_timeout(1500)
+    pg.evaluate("""() => { window.__vt = null; const o = document.startViewTransition.bind(document);
+      document.startViewTransition = (cb) => { const vt = o(cb); vt.ready.then(() => { window.__vt = [...document.getAnimations()].map((a) => (a.effect && a.effect.pseudoElement) || ''); }, () => {}); return vt; }; }""")
+    cap = pg.locator('[role=option]').nth(2); cb = cap.bounding_box(); pg.mouse.click(cb['x'] + cb['width'] / 2, cb['y'] + cb['height'] / 2)
+    pg.wait_for_selector('[role=dialog]'); pg.wait_for_timeout(300)
+    vt = pg.evaluate('window.__vt') or []
+    ok(any('x-card-' in x for x in vt) and any('x-title-' in x for x in vt), f'{tag} 容量·M03：胶囊原地长成肌头详情（卡片与名称是共享元素）')
+    pg.wait_for_timeout(900)
+    ok(pg.locator('[role=option][style*="view-transition-name"]').count() == 0, f'{tag} 容量·M03：面板开着时胶囊不带共享名（同名不能有两份）')
+    if not args.no_shots: pg.screenshot(path=os.path.join(OUT, 'volume-sheet.png'))
+    click(pg, pg.get_by_role('button', name='关闭')); pg.wait_for_timeout(1200)
+    ok(pg.locator('[role=dialog]').count() == 0 and pg.locator('[style*="view-transition-name"]').count() == 0, f'{tag} 容量·M03：关闭后缩回胶囊，转场放完不留共享名')
+    if not args.no_shots: pg.screenshot(path=os.path.join(OUT, 'volume.png'))
     # 回到顶端：短的时候没有；滚过一屏出现，点了滚回顶、按钮收起
     pg.goto(f'{args.base}/log?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(700)
     btt = pg.get_by_role('button', name='回到顶端')

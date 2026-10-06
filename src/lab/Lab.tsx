@@ -126,7 +126,7 @@ export function Lab({ now }: { now: number }) {
             <div className={s.btnRow}><button type="button" onClick={mic.toggle}>{mic.on ? '停止律动' : '随声音律动（麦克风演示）'}</button></div>
             {mic.err && <span className="milo-text-caption">{mic.err}</span>}
           </Block>
-          <Block id="T4" title="荧光热 · 扫描线" src="身体页的正式渲染：热核 + 扩散 + 扫描线与颗粒；胶囊量尺同一条色带；按住胶囊列仍可放大">
+          <Block id="T4" title="荧光热 · 扫描线" src="容量页的正式渲染：热核 + 扩散 + 扫描线与颗粒；胶囊量尺同一条色带；按住胶囊列仍可放大">
             <Stage tall label="T4"><BodyPage scenario="rest-day" now={now} initialFocus={null} /></Stage>
             <Ramp />
           </Block>

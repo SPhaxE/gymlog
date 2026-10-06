@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { T } from '../styles/tokens.gen';
 import { capsuleLayout, cosineWeight, indexAt } from './capsuleLayout';
 
-const H = 560, n = 19;
+// 轨道正好是胶囊列的最小高（每颗都在静止上限）：容量页舞台放不下时就是这个高度，放大要从其余胶囊里让
+const n = 19, H = n * T['size/capsule-rest-max-h'] + (n - 1) * T['size/capsule-gap'];
 const total = (c: ReturnType<typeof capsuleLayout>['caps']) => c.reduce((a, b) => a + b.h, 0) + T['size/capsule-gap'] * (c.length - 1);
 
 describe('胶囊列几何（ia §1.10 放大镜）', () => {

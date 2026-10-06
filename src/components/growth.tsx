@@ -219,7 +219,7 @@ export function Coupon({ type, title, detail, state, cost, balance, onRedeem }: 
 
 /* ---------------- 商城 ---------------- */
 
-/** 情境知识卡：tip = 身体页 / 增量页里的一行提示（一屏最多一条，可关闭、可「不再提示这一类」）；header = 知识卡详情页头 */
+/** 情境知识卡：tip = 容量页 / 增量页里的一行提示（一屏最多一条，可关闭、可「不再提示这一类」）；header = 知识卡详情页头 */
 export function KnowledgeTip({ title, why, when, how, supplement, variant, onOpen, onDismiss, onMute }: {
   title: string; why: string; when?: string; how?: string[]; supplement?: boolean; variant: 'tip' | 'header'; onOpen?: () => void; onDismiss?: () => void; onMute?: () => void;
 }) {
@@ -286,7 +286,7 @@ export function ProBadge({ state }: { state: 'locked' | 'active' }) {
 }
 
 const PERKS: [string, string, string][] = [
-  ['处方、记录、身体页、增量页', '✓', '✓'], ['周期计划自动编排（减量周自动插入）', '—', '✓'], ['高级分析：肌群容量趋势、动作对比', '—', '✓'],
+  ['处方、记录、容量页、增量页', '✓', '✓'], ['周期计划自动编排（减量周自动插入）', '—', '✓'], ['高级分析：肌群容量趋势、动作对比', '—', '✓'],
   ['牛劲', '×1', '×1.5'], ['连胜冻结卡', '兑换', '每月 2 张'], ['商城会员价、免邮券', '—', '✓'], ['数据导出', '—', '✓'],
 ];
 const PLANS: Record<'month' | 'year' | 'trial', [string, string, string]> = { month: ['月度', '¥18', '/ 月'], year: ['年度', '¥128', '/ 年 · 约 ¥10.7 / 月'], trial: ['试用', '7 天', '到期前提醒，不自动扣费'] };

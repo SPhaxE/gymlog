@@ -107,7 +107,7 @@ export function SummaryPage() {
   );
 }
 
-/** 新纪录卡底部的刻度（Stitch s6 V3）：细刻度一排，和身体页、首页同一套视觉语言 */
+/** 新纪录卡底部的刻度（Stitch s6 V3）：细刻度一排，和容量页、首页同一套视觉语言 */
 function HeroTicks() {
   return <div className={s.ticks} aria-hidden="true">{Array.from({ length: 31 }, (_, k) => <i key={k} className={k % 5 === 0 ? s.tickL : undefined} />)}</div>;
 }
