@@ -2,7 +2,7 @@
  *  - 真用户：读本机存储，采纳 / 不减写进存储（data/deload.ts），删除训练写进存储（data/session.ts）；
  *  - 演示场景（?scenario=，截图、回归、演示路线）：不读也不写存储，减量状态只在本页内存里改、删掉的训练记在模块级的内存里（刷新即复位，
  *    所有用 useSource 的页面订阅同一份，删完回到别的页也已重算）——这样场景里点「采纳」「删除」也能走完完整流程，不会有点了没反应的按钮。
- *    身体页不走这里（直接读场景），场景里删除不影响它。 */
+ *    容量页不走这里（直接读场景），场景里删除不影响它。 */
 import { useMemo, useState, useSyncExternalStore } from 'react';
 import type { DeloadState } from '../engine/types';
 import { adoptDeload, skipDeload } from './deload';

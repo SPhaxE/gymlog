@@ -166,11 +166,11 @@ export function NavDemo() {
   return <div className={s.demoCol}><Stage label="导航演示"><NavInner /></Stage></div>;
 }
 
-/** 整页：身体页的放大镜（按住胶囊列上下滑），首页的第一屏 */
+/** 整页：容量页的放大镜（按住胶囊列上下滑），首页的第一屏 */
 export function MagnifierDemo({ f }: { f: Fixtures }) {
   return (
     <div className={s.demoRow}>
-      <div className={s.demoCol}><Stage tall label="身体页"><BodyPage scenario="done-today" now={f.now} initialFocus={null} /></Stage>
+      <div className={s.demoCol}><Stage tall label="容量页"><BodyPage scenario="done-today" now={f.now} initialFocus={null} /></Stage>
         <Note>胶囊列上竖向短滑 = 滚动页面；按住 150 ms 不动进入放大镜，上下滑逐个放大，焦点胶囊左边写组数、恢复度与时相，名称在右（手指底下）。松手只退出；轻点胶囊或人体上的肌肉打开详情。正面 / 背面、男 / 女切换是抽卡。</Note></div>
       <div className={s.demoCol}><Stage tall label="首页"><HomePage scenario="plain-prescription" now={f.now} /></Stage>
         <Note>首页第一屏：今天练什么、第一个动作的建议重量、开始训练（这一屏唯一的荧光）。</Note></div>

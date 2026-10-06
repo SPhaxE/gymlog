@@ -1,5 +1,5 @@
 /** App 壳（阶段 5）：5 个 Tab 的路由、Android 返回键、悬浮层宿主（Dialog / Toast）。
- *  Tab 根页：/today 首页 · /body 身体 · /gains 增量 · /log 记录 · /me 我的（ia §4）；「我的」的子页：/me/level 牛龄、/me/messages 消息。训练流程等子页在阶段 6 加。
+ *  Tab 根页：/today 首页 · /body 容量（路由沿用 /body） · /gains 增量 · /log 记录 · /me 我的（ia §4）；「我的」的子页：/me/level 牛龄、/me/messages 消息。训练流程等子页在阶段 6 加。
  *  ?scenario= 选演示场景，?now= 固定时间（截图用）。 */
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';

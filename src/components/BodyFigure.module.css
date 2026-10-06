@@ -19,7 +19,34 @@
   -webkit-mask: linear-gradient(90deg, transparent 0, black calc(var(--milo-ratio-figure-fade) * 100%));
   mask: linear-gradient(90deg, transparent 0, black calc(var(--milo-ratio-figure-fade) * 100%)); }
 .thermal path { vector-effect: non-scaling-stroke; }
-.thermalContour path { fill: none; stroke: var(--milo-color-bg-base); stroke-width: calc(var(--milo-stroke-hairline) * 0.6); opacity: 0.5; }
+/* 容量页的整个人体：不裁、不渐隐 */
+.thermalWhole { display: block; }
+.thermalWhole path { vector-effect: non-scaling-stroke; }
+.stack { position: relative; display: block; }
+.measureOnly path { fill: none; stroke: none; }
+
+/* ---------- 光（ThermalLight）：浅荧光轮廓 + 游光 + 扫描光带；混合模式 screen，只提亮不遮挡；动的只有这一层 ---------- */
+.light { position: absolute; inset: 0; display: block; pointer-events: none; mix-blend-mode: screen; overflow: visible; }
+.lightHalf {
+  -webkit-mask: linear-gradient(90deg, transparent 0, black calc(var(--milo-ratio-figure-fade) * 100%));
+  mask: linear-gradient(90deg, transparent 0, black calc(var(--milo-ratio-figure-fade) * 100%)); }
+.light path { vector-effect: non-scaling-stroke; }
+.contourLime path { fill: none; stroke: color-mix(in srgb, var(--milo-prim-lime-300) 62%, transparent); stroke-width: calc(var(--milo-stroke-hairline) * 0.9); stroke-linecap: round; stroke-linejoin: round; }
+.glint path { fill: none; stroke: var(--milo-prim-lime-300); stroke-width: calc(var(--milo-stroke-hairline) * 1.8); stroke-linecap: round; stroke-linejoin: round; }
+.beamStop0 { stop-color: var(--milo-prim-lime-500); stop-opacity: 0; }
+.beamStop1 { stop-color: var(--milo-prim-lime-500); stop-opacity: 0.16; }
+.beamStop2 { stop-color: var(--milo-prim-lime-300); stop-opacity: 0.75; }
+.beamLine { fill: var(--milo-prim-lime-300); opacity: 0.5; }
+/* 描出：遮罩矩形从脚往头长出来（只播一次，换卡时新卡重播） */
+.reveal { transform-box: fill-box; transform-origin: 50% 100%; animation: bodyReveal calc(var(--milo-motion-slow) * 4) var(--milo-motion-ease-decelerate) both; }
+@keyframes bodyReveal { from { transform: scaleY(0); } }
+/* 游光：光带每隔一阵从下往上扫过轮廓（约 1/3 的时间在走，其余停在头顶外面） */
+.glintBand { transform-box: fill-box; animation: glintUp calc(var(--milo-motion-slow) * 18) linear calc(var(--milo-motion-slow) * 4) infinite both; }
+@keyframes glintUp { 0% { transform: translateY(460%); } 34%, 100% { transform: translateY(-100%); } }
+/* 扫描光带：每隔一阵从脚扫到头，裁在人体剪影里 */
+.beam { transform-box: fill-box; animation: beamUp calc(var(--milo-motion-slow) * 18) var(--milo-motion-ease-standard) calc(var(--milo-motion-slow) * 9) infinite both; }
+@keyframes beamUp { 0% { transform: translateY(720%); } 30%, 100% { transform: translateY(-100%); } }
+@media (prefers-reduced-motion: reduce) { .reveal { animation: none; } .glint, .beamWrap { display: none; } }
 .thermalFocus path { fill: none; stroke: var(--milo-color-text-primary); stroke-width: var(--milo-stroke-focus); }
 .scan { mix-blend-mode: multiply; }
 .scanLine { fill: var(--milo-color-bg-base); opacity: 0.35; }

@@ -13,6 +13,7 @@ import type { HeadStat } from '../engine';
 import { T } from '../styles/tokens.gen';
 import type { Anchors } from './BodyFigure';
 import { capsuleLayout, indexAt, type CapBox } from './capsuleLayout';
+import { sharedName } from './motion';
 import { BodyRender, heatCss, heatOf } from './thermal';
 import s from './CapsuleRail.module.css';
 
@@ -41,9 +42,12 @@ function useStrength(target: number) {
   return k;
 }
 
-export function CapsuleRail({ ids, stats, anchors, width, height, left, right, mag, onMag, onSelect }: {
+export function CapsuleRail({ ids, stats, anchors, width, height, left, right, mag, onMag, onSelect, leaders = true, drawKey, sharedId }: {
   ids: string[]; stats: Map<string, HeadStat>; anchors: Anchors; width: number; height: number; left: number; right: number;
   mag: number | null; onMag: (f: number | null) => void; onSelect: (id: string) => void;
+  /** 画不画引线（换人体卡的途中先收起，新卡量完锚点再画） */ leaders?: boolean;
+  /** 引线重画的钥匙：变一次，所有引线从人体（左）往胶囊（右）重新描一遍 */ drawKey?: string | number;
+  /** M03：正在长成详情面板 / 从面板缩回来的那颗胶囊（只有它带共享名） */ sharedId?: string;
 }) {
   const n = ids.length;
   const [preview, setPreview] = useState(false);  // 按下了、长按还没确认
@@ -95,21 +99,21 @@ export function CapsuleRail({ ids, stats, anchors, width, height, left, right, m
 
   return (
     <>
-      <svg className={s.leaders} width={width} height={height} aria-hidden="true">
+      <svg key={drawKey} className={s.leaders} width={width} height={height} aria-hidden="true" style={leaders ? undefined : { opacity: 0 }}>
         {caps.map((c, j) => {
           const a = anchors[ids[j]];
           if (!a) return null;
           const cy = top + c.y + c.h / 2;
           return (
             <g key={ids[j]} className={c.focus ? s.leaderOn : s.leader}>
-              <line x1={a[0]} y1={a[1]} x2={c.x} y2={cy} />
+              <line x1={a[0]} y1={a[1]} x2={c.x} y2={cy} pathLength={1} style={{ animationDelay: `${Math.round((j * T['motion/stagger']) / 4)}ms` }} />
               <circle cx={a[0]} cy={a[1]} r={c.focus ? T['stroke/ring-progress'] : T['stroke/focus']} />
             </g>
           );
         })}
       </svg>
       <div ref={rail} className={s.rail} role="listbox" aria-label="肌头容量（轻点看详情，按住上下滑动放大）">
-        {caps.map((c, k) => <Capsule key={ids[k]} h={stats.get(ids[k])!} c={c} top={top} />)}
+        {caps.map((c, k) => <Capsule key={ids[k]} h={stats.get(ids[k])!} c={c} top={top} shared={sharedId === ids[k]} />)}
       </div>
       {/* 手势层：只盖胶囊列的静止宽度；人体在它左边另有轻点命中 */}
       <div ref={hit} className={s.hit} style={{ left, width: right - left }} aria-hidden="true"
@@ -119,18 +123,18 @@ export function CapsuleRail({ ids, stats, anchors, width, height, left, right, m
 }
 
 /** 单个胶囊。在轨道里由 CapsuleRail 定位；standalone 时按自身宽高排在文档流里（Playground、说明页） */
-export function Capsule({ h, c, top = 0, standalone }: { h: HeadStat; c: CapBox; top?: number; standalone?: boolean }) {
+export function Capsule({ h, c, top = 0, standalone, shared }: { h: HeadStat; c: CapBox; top?: number; standalone?: boolean; /** M03 共享名（胶囊 ↔ 肌头详情面板） */ shared?: boolean }) {
   const none = !(h.sets7d > 0);
   const fill = Math.min(1, h.sets7d / h.mrv) * 100;
   const thermal = useContext(BodyRender);
   return (
     <div className={`${c.focus ? s.focus : none ? s.none : s.cap} ${standalone ? s.standalone : ''}`} data-id={h.id} role="option" aria-selected={c.focus}
-      style={{ left: c.x, top: top + c.y, width: c.w, height: c.h, ['--w' as string]: c.weight }}>
+      style={{ left: c.x, top: top + c.y, width: c.w, height: c.h, ['--w' as string]: c.weight, ...(shared ? sharedName('card', h.id) : {}) }}>
       {!c.focus && !none && <div className={`${s.gauge} ${h.sets7d > h.mrv && !thermal ? s.gaugeOver : ''}`}
         style={{ width: `${fill}%`, ...(thermal ? { background: heatCss(heatOf(h), thermal.palette), opacity: 0.55 } : {}) }} />}
       {c.focus ? <FocusBody h={h} /> : (
         <div className={s.l1}>
-          <span className={s.name}>{h.name}</span>
+          <span className={s.name} style={shared ? sharedName('title', h.id) : undefined}>{h.name}</span>
           <span className={s.val}><b>{fmt(h.sets7d)}</b>/{h.mav}</span>
         </div>
       )}

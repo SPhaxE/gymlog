@@ -36,7 +36,7 @@ export interface Entry {
   render: (p: Props, f: Fixtures) => ReactNode;
 }
 
-export const GROUPS = ['基础', '表单', '反馈与悬浮层', '列表与页头', '训练与记录', '数据图形', '身体', '导航', '品牌', '增长'] as const;
+export const GROUPS = ['基础', '表单', '反馈与悬浮层', '列表与页头', '训练与记录', '数据图形', '容量', '导航', '品牌', '增长'] as const;
 
 /** 只在交互演示或页面里出现、不进矩阵的导出（catalog.test 读这张表） */
 export const NOT_IN_MATRIX: Record<string, string> = {
@@ -63,9 +63,9 @@ export const CN: Record<string, string> = {
   'trained-pr': '已练 · PR', rest: '休息', today: '今天', future: '未来', selected: '选中', ready: '已加载', many: '多次', 'many-selected': '多次 · 选中一次',
   one: '只有 1 次', none: '未练', off: '不画环', empty_pts: '没有记录', single_pt: '只有 1 次', add: '加重', hold: '保持', cut: '减重', low: '不足', ok: '达标', over: '超量', repair: '修复期',
   recovering: '恢复中', golden: '黄金窗', decayed: '已回落', near: '邻近', focus: '焦点', front: '正面', back: '背面', male: '男', female: '女',
-  track: '已开始 · 0 组', partial: '进行中', full: '满环', home: '首页', body: '身体', gains: '增量', log: '记录', me: '我的', success: '成功', undo: '可撤销',
+  track: '已开始 · 0 组', partial: '进行中', full: '满环', home: '首页', body: '容量', gains: '增量', log: '记录', me: '我的', success: '成功', undo: '可撤销',
   suggest: '建议减量', week: '减量周', quiet: '一行小字', 'pool-empty': '动作池不足', resume: '继续上次训练', info: '信息', page: '子页', session: '训练中',
-  sub: '标题下带日期与附件', fold: '收起', closed: '已收起', pill: '小胶囊', open: '展开', loadingState: '加载中', shown: '已出现', lifted: '抬到主按钮上面', 'today-done': '今天练过',
+  sub: '标题下带日期与附件', whole: '整个人体（容量页）', half: '半身（故事动画）', crop: '裁切', fold: '收起', closed: '已收起', pill: '小胶囊', open: '展开', loadingState: '加载中', shown: '已出现', lifted: '抬到主按钮上面', 'today-done': '今天练过',
   experience: '训练经验', minutes: '单次时长', equipment: '可用器械', 'w-steady': '稳定守约', 'w-mixed': '有减量也有冻结', 'w-cold': '刚起步',
   'g-cycles': '涨幅太大 · 只写周期', 'g-bare': '牛龄页（不重复段名）',
   newborn: '牛犊', young: '小牛', sturdy: '壮牛', bull: '公牛', milo: 'Milo', 'm-idle': '平常', 'm-focused': '专注', 'm-happy': '开心', 'm-rest': '恢复日', 'm-pr': '破纪录', 'm-deload': '减量周', idle: '平常', training: '训练中',
@@ -204,7 +204,7 @@ export const CATALOG: Entry[] = [
       : <DialogCard icon="info" title="载入示例数据？" confirm="载入">会覆盖现有的训练历史。</DialogCard>,
   },
   {
-    name: 'Sheet', group: '反馈与悬浮层', desc: '底部面板（肌头详情、减量面板）。盖住导航；点遮罩、×、Esc、返回键关闭。',
+    name: 'Sheet', group: '反馈与悬浮层', desc: '底部面板（肌头详情、减量面板）。盖住导航；点遮罩、×、Esc、返回键关闭。sharedId：由某个元素原地长出来（M03，容量页胶囊 → 肌头详情），这时面板不再自己滑上来。',
     axes: {}, size: 'screen', covers: ['SheetBlock'],
     render: () => <div className={s.sheetBox}><Sheet docked title="中下胸" meta="大肌群" onClose={noop}><PhaseSegments phase="recovering" />
       <SheetBlock label="近 7 天容量"><LandmarkRuler value={7.5} mev={8} mav={16} mrv={22} /></SheetBlock></Sheet></div>,
@@ -419,7 +419,7 @@ export const CATALOG: Entry[] = [
     },
   },
   {
-    name: 'WeekBars', group: '数据图形', desc: 'E3 竖向胶囊量表（ref3）：近 8 周每周完成组数，本周骨白；和身体页胶囊同一语言（胶囊即量尺）。short（compact）= 增量页摘要卡里的 4 周破纪录柱，柱高一档 hit-min。',
+    name: 'WeekBars', group: '数据图形', desc: 'E3 竖向胶囊量表（ref3）：近 8 周每周完成组数，本周骨白；和容量页胶囊同一语言（胶囊即量尺）。short（compact）= 增量页摘要卡里的 4 周破纪录柱，柱高一档 hit-min。',
     axes: {}, size: 'card',
     render: (_, f) => <WeekBars weeks={f.weekBars} />,
   },
@@ -468,12 +468,12 @@ export const CATALOG: Entry[] = [
   { name: 'TierLegend', group: '数据图形', desc: '容量四档图例：明暗 + 纹理，不只靠色相；和人体图、胶囊同源。', axes: {}, size: 'card', render: () => <TierLegend /> },
   /* ---------------- 身体 ---------------- */
   {
-    name: 'Capsule', group: '身体', desc: '胶囊 = 量尺：底色按「组数 ÷ 最大可恢复量」从左填；0 组斜纹压暗；超量加斜纹。放大镜：邻近按余弦变大；焦点荧光实心，名称挪到最右（手指底下），组数 / 恢复度 · 时相 / 还需几小时三行写在左边（手指挡不到）。',
+    name: 'Capsule', group: '容量', desc: '常态缩小 1/3（2026-10-06 用户：少挡人体；高 20、宽从内容区 62% 起）。胶囊 = 量尺：底色按「组数 ÷ 最大可恢复量」从左填；0 组斜纹压暗；超量加斜纹。放大镜：邻近按余弦变大；焦点荧光实心，名称挪到最右（手指底下），组数 / 恢复度 · 时相 / 还需几小时三行写在左边（手指挡不到）。',
     axes: { tier: ['none', 'low', 'ok', 'over'], size: ['rest', 'near', 'focus'] }, rows: ['tier'], cols: 'size', size: 'm',
     render: (p, f) => cap(f, p.tier, p.size),
   },
   {
-    name: 'CapsuleRail', group: '身体', desc: '胶囊列 + 引线 + 放大镜手势：手势层只盖胶囊列静止宽度（人体在左边另接轻点）；竖向短滑滚动页面，按住 150 ms 不动才进放大镜、进入后锁住滚动；先动 8 px 算滚动；松手只退出，轻点才打开详情。真机手势见下方交互演示。',
+    name: 'CapsuleRail', group: '容量', desc: '胶囊列 + 引线 + 放大镜手势：手势层只盖胶囊列静止宽度（人体在左边另接轻点）；竖向短滑滚动页面，按住 150 ms 不动才进放大镜、进入后锁住滚动；先动 8 px 算滚动；松手只退出，轻点才打开详情：被点的那颗胶囊原地长成肌头详情面板（M03，名称飞成面板标题；关闭缩回胶囊）。换人体卡时引线先收、到位后从人体往胶囊（左 → 右）重新描出。真机手势见下方交互演示。',
     axes: { mag: ['rest', 'focus'] }, size: 'card',
     render: (p, f) => {
       const ids = ['upper-pectoralis', 'mid-lower-pectoralis', 'anterior-deltoid', 'lateral-deltoid', 'long-head-bicep', 'upper-abdominals'].filter((id) => f.body.stats.has(id));
@@ -483,9 +483,9 @@ export const CATALOG: Entry[] = [
     },
   },
   {
-    name: 'BodyFigure', group: '身体', desc: 'MuscleWiki 真实路径的半身：从包围盒左侧裁掉 ratio/figure-crop，左缘渐隐；按容量四档着色。只用于陪衬胶囊。',
-    axes: { view: ['front', 'back'], sex: ['male', 'female'] }, rows: ['sex'], cols: 'view', size: 'm',
-    render: (p, f) => <FigureCell view={p.view as 'front'} sex={p.sex as 'male'} f={f} />,
+    name: 'BodyFigure', group: '容量', desc: 'MuscleWiki 真实路径的人体，热成像（逐肌径向渐变 + 扩散 + 渐变映射 + 扫描线与颗粒）。whole = 容量页：整个人体不裁，四周留出热晕，最宽 ratio/figure-max-w；half = 故事动画等：从左裁掉 ratio/figure-crop、左缘渐隐。上面叠一层「光」（screen 混合，只有它在动）：浅荧光轮廓从下往上描出、一道细光沿轮廓游走、扫描光带周期性从脚扫到头；减少动态效果时只留静止轮廓。',
+    axes: { crop: ['whole', 'half'], view: ['front', 'back'], sex: ['male', 'female'] }, rows: ['crop', 'sex'], cols: 'view', size: 'm',
+    render: (p, f) => <FigureCell view={p.view as 'front'} sex={p.sex as 'male'} whole={p.crop === 'whole'} f={f} />,
   },
   /* ---------------- 导航 ---------------- */
   {
@@ -589,7 +589,7 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'KnowledgeTip', group: '增长',
-    desc: '情境知识卡（商城的主要入口）：由引擎数据触发，先讲为什么现在给你看、适合什么时候、怎么用，再给商品。页内提示只在身体页、增量页出现，一屏最多一条，可关闭、可「不再提示这一类」；补剂写明「不构成医疗建议」。',
+    desc: '情境知识卡（商城的主要入口）：由引擎数据触发，先讲为什么现在给你看、适合什么时候、怎么用，再给商品。页内提示只在容量页、增量页出现，一屏最多一条，可关闭、可「不再提示这一类」；补剂写明「不构成医疗建议」。',
     axes: { card: ['belt', 'straps', 'protein', 'creatine', 'knee'], variant: ['k-tip', 'k-header'] }, rows: ['card'], cols: 'variant', size: 'card',
     render: (p) => { const k = KNOWLEDGE[p.card as KnowledgeId]; return <KnowledgeTip {...k} variant={p.variant === 'k-tip' ? 'tip' : 'header'} />; },
   },
@@ -653,12 +653,12 @@ function BackToTopCell({ lift }: { lift: boolean }) {
   return <div ref={ref} className={s.backTopCell}><BackToTop target={ref} lift={lift} forceShown /></div>;
 }
 
-function FigureCell({ view, sex, f }: { view: 'front' | 'back'; sex: 'male' | 'female'; f: Fixtures }) {
-  return <div className={s.figureBox}><FigureInner view={view} sex={sex} f={f} /></div>;
+function FigureCell({ view, sex, f, whole }: { view: 'front' | 'back'; sex: 'male' | 'female'; f: Fixtures; whole?: boolean }) {
+  return <div className={s.figureBox}><FigureInner view={view} sex={sex} f={f} whole={whole} /></div>;
 }
-function FigureInner({ view, sex, f }: { view: 'front' | 'back'; sex: 'male' | 'female'; f: Fixtures }) {
+function FigureInner({ view, sex, f, whole }: { view: 'front' | 'back'; sex: 'male' | 'female'; f: Fixtures; whole?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
-  return <div ref={ref} className={s.figureInner}><BodyFigure gender={sex} view={view} stats={f.body.stats} focus={null} height={T['size/hero-max-h'] * 2} onAnchors={noop} relativeTo={ref} /></div>;
+  return <div ref={ref} className={s.figureInner}><BodyFigure whole={whole} gender={sex} view={view} stats={f.body.stats} focus={null} height={T['size/hero-max-h'] * 2} onAnchors={noop} relativeTo={ref} /></div>;
 }
 
 /* ---------- 变体展开 ---------- */

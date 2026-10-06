@@ -12,7 +12,7 @@ import { Icon } from './Icon';
 import { cx, forced, type Forced } from './state';
 import s from './Nav.module.css';
 
-export const TABS = [['home', '首页', '/today'], ['body', '身体', '/body'], ['gains', '增量', '/gains'], ['log', '记录', '/log'], ['me', '我的', '/me']] as const;
+export const TABS = [['home', '首页', '/today'], ['body', '容量', '/body'], ['gains', '增量', '/gains'], ['log', '记录', '/log'], ['me', '我的', '/me']] as const;
 export type Tab = (typeof TABS)[number][0];
 
 /** 圆角矩形路径，从顶边正中起顺时针（描边进度用 pathLength=1） */

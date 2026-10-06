@@ -102,11 +102,11 @@
   --milo-size-nav-item-h: 52px;
   --milo-size-nav-icon: 20px;
   --milo-size-segment-h: 32px;
-  --milo-size-capsule-rest-max-h: 30px;
-  --milo-size-capsule-near-h: 34px;
+  --milo-size-capsule-rest-max-h: 20px;
+  --milo-size-capsule-near-h: 23px;
   --milo-size-capsule-focus-h: 62px;
   --milo-size-capsule-near-grow: 10px;
-  --milo-size-capsule-focus-grow: 34px;
+  --milo-size-capsule-focus-grow: 106px;
   --milo-size-capsule-gap: 4px;
   --milo-size-tick-minor: 8px;
   --milo-size-tick-major: 12px;
@@ -141,7 +141,8 @@
   --milo-opacity-figure: 0.62;
   --milo-ratio-figure-crop: 0.42;
   --milo-ratio-figure-fade: 0.08;
-  --milo-ratio-rail-start: 0.43;
+  --milo-ratio-figure-max-w: 0.72;
+  --milo-ratio-rail-start: 0.62;
   --milo-opacity-trace-min: 0.3;
   --milo-opacity-press: 0.12;
   --milo-opacity-disabled: 0.38;
