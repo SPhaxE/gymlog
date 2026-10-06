@@ -6,7 +6,7 @@ export function Pattern({ kind, onTab }: { kind: string; onTab: (t: Tab, path: s
   const k = kind === 'empty' || kind === 'error' ? kind : 'loading';
   return (
     <Screen label="数据态">
-      <PageHeader title="记录" eyebrow={`数据态：${k === 'loading' ? '加载中' : k === 'empty' ? '空' : '错误'}`} />
+      <PageHeader title="记录"><p className="milo-text-caption">数据态：{k === 'loading' ? '加载中' : k === 'empty' ? '空' : '错误'}</p></PageHeader>
       <div className={s.stub}>
         {k === 'loading' && <StateView kind="loading" />}
         {k === 'empty' && <StateView kind="empty" title="还没有训练记录" detail="练完第一次，这里会按时间列出来" action="去看今日处方" onAction={() => onTab('home', '/today')} />}

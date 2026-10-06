@@ -10,7 +10,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { T } from '../styles/tokens.gen';
 import { flushSync } from 'react-dom';
 import { useNavigate } from 'react-router';
-import { Button, Card, Cascade, Dialog, ExerciseRow, Odometer, PageHeader, RestDock, SectionLabel, SetEditor, SetLine, Sheet, sharedName, sharedTransition, useCountdown, useToast } from '../components';
+import { BackToTop, Button, Card, Cascade, Dialog, ExerciseRow, Odometer, PageHeader, RestDock, SectionLabel, SetEditor, SetLine, Sheet, sharedName, sharedTransition, useCountdown, useToast } from '../components';
 import { dateLabel, env, REGION_NAME } from '../data/demo';
 import { addSet, adjustRest, completeSet, discardSession, finishSession, focusExercise, hasWork, setError, setField, skipRest, toggleSkip, MAX_SETS } from '../data/session';
 import type { ActiveSession } from '../data/store';
@@ -27,7 +27,7 @@ export function TrainingView({ a, now }: { a: ActiveSession; now: number }) {
   const [confirm, setConfirm] = useState(false);
   const [dock, setDock] = useState(false);
   const [swap, setSwap] = useState<string[]>([]);  // 正在换位的两个动作（只给它们起共享名，见 motion.tsx 的遮挡说明）
-  const hero = useRef<HTMLDivElement>(null);
+  const hero = useRef<HTMLDivElement>(null), topRef = useRef<HTMLDivElement>(null);
   const left = useCountdown(st.rest?.endAt ?? null);
   const [tick, setTick] = useState(now);
   useEffect(() => { const id = window.setInterval(() => setTick(Date.now()), 15e3); return () => clearInterval(id); }, []);
@@ -116,9 +116,11 @@ export function TrainingView({ a, now }: { a: ActiveSession; now: number }) {
 
   return (
     <>
-      <PageHeader title="今日处方" eyebrow={`${dateLabel(now)} · 训练中 ${mins} 分钟`}
-        trailing={<Button kind="ghost" size="s" onClick={() => (hasWork(a) && pending === 0 ? end() : setConfirm(true))}>结束</Button>} />
-      <div className={s.body} data-training>
+      <PageHeader title="今日处方"
+        trailing={<Button kind="ghost" size="s" onClick={() => (hasWork(a) && pending === 0 ? end() : setConfirm(true))}>结束</Button>}>
+        <p className={`milo-text-caption ${s.date}`}>{dateLabel(now)} · 训练中 {mins} 分钟</p>
+      </PageHeader>
+      <div ref={topRef} className={s.body} data-training>
         <div className={s.progress} aria-label={`已打卡 ${doneSets} / ${total} 组`}>
           <Odometer value={String(doneSets)} size="l" /><span className="milo-text-body">/ {total} 组</span>
           <span className={`milo-text-caption ${s.grow}`}>{[...new Set(a.entries.map((x) => regionName(x.exerciseId)))].join(' · ')}</span>
@@ -171,6 +173,7 @@ export function TrainingView({ a, now }: { a: ActiveSession; now: number }) {
         onConfirm={hasWork(a) ? end : () => { setConfirm(false); discardSession(); }}>
         {hasWork(a) ? `还有 ${pending} 组没打卡，结束后标为「未做」，不计入统计。` : '没有可保存的记录：放弃后不写入历史。'}
       </Dialog>
+      <BackToTop target={topRef} lift />
     </>
   );
 }

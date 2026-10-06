@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import {
-  Banner, Button, Cascade, Dialog, ExerciseRow, PageHeader, RestDock, SharedDetail, SteelPlate, dotMonths, sharedTransition, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
+  BackToTop, Banner, Button, Cascade, Dialog, ExerciseRow, PageHeader, RestDock, SharedDetail, SteelPlate, dotMonths, sharedTransition, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
   LandmarkRuler, PhaseSegments, Num, Screen, SetRow, clock, useCountdown, useToast, type Tab,
   Mascot, MASCOT_MOODS, MASCOT_STAGES, MOOD_NAME, STAGE_NAME, RewardModal, REWARD_NAME, AgeBadge, GrowthBar, Paywall, type MascotMood, type MascotStage, type Reward,
 } from '../components';
@@ -178,21 +178,23 @@ export function MagnifierDemo({ f }: { f: Fixtures }) {
   );
 }
 
-/** 页头 C：往下滑，大标题滑出屏幕顶的同时，顶上出现细标题栏；滑回去又收起 */
-function HeaderDemo({ f }: { f: Fixtures }) {
+/** 回到顶端：往下滑过一屏，右下角出现按钮；点了平滑滚回顶，按钮收起 */
+function BackTopDemo({ f }: { f: Fixtures }) {
+  const ref = useRef<HTMLDivElement>(null);
   return (
     <div className={s.demoCol}>
-      <Stage tall label="页头收缩演示">
-        <Screen label="页头收缩">
-          <div className={s.headerDemoScroll}>
-            <PageHeader collapse title="今日处方" eyebrow="10月3日 周六" />
+      <Stage tall label="回到顶端演示">
+        <Screen label="回到顶端">
+          <div ref={ref} className={s.headerDemoScroll}>
+            <PageHeader title="今日处方"><p className="milo-text-caption">10月3日 周六</p></PageHeader>
             <div className={s.headerDemoBody}>
-              {f.items.concat(f.items).map((x, i) => <ExerciseRow key={i} name={x.name} detail={`${x.sets} × ${x.repRange.join('–')}`} weight={x.suggestion.weightKg} />)}
+              {[...f.items, ...f.items, ...f.items, ...f.items].map((x, i) => <ExerciseRow key={i} name={x.name} detail={`${x.sets} × ${x.repRange.join('–')}`} weight={x.suggestion.weightKg} />)}
             </div>
           </div>
+          <BackToTop target={ref} />
         </Screen>
       </Stage>
-      <Note>往下滑：大标题滑出屏幕顶的同时，顶上出现 44 高的细标题栏（半透明 + 虚化 + 发丝线，只有标题）；滑回去收起。不写死滚动距离，跟着大标题走。</Note>
+      <Note>往下滑过一屏：右下角从下往上弹出「回到顶端」；点一下平滑滚回顶，按钮收起。页头跟着内容滑走，不留细标题栏。</Note>
     </div>
   );
 }
@@ -204,7 +206,7 @@ function PlateDemo({ f }: { f: Fixtures }) {
       <Stage tall label="钢板日历演示">
         <Screen label="钢板日历">
           <div className={s.headerDemoScroll}>
-            <PageHeader collapse title="记录" eyebrow="过去每一次练了什么" />
+            <PageHeader title="记录" />
             <div className={s.headerDemoBody}>
               <SteelPlate months={dotMonths(f.trainedDays, f.now)} />
               {f.items.concat(f.items).map((x, i) => <ExerciseRow key={i} name={x.name} detail={`${x.sets} × ${x.repRange.join('–')}`} weight={x.suggestion.weightKg} />)}
@@ -421,7 +423,7 @@ export const DEMOS: Record<string, (f: Fixtures) => ReactNode> = {
   SetRow: (f) => <SessionDemo f={f} />,
   Nav: () => <NavDemo />,
   CapsuleRail: (f) => <MagnifierDemo f={f} />,
-  PageHeader: (f) => <HeaderDemo f={f} />,
+  BackToTop: (f) => <BackTopDemo f={f} />,
   SteelPlate: (f) => <PlateDemo f={f} />,
   TrendChart: (f) => <ChartDemo f={f} />,
   WeekStrip: (f) => <WeekDemo f={f} />,

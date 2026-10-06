@@ -5,7 +5,7 @@
  *  轻点人体上的肌肉 = 轻点那颗胶囊：打开详情；人体与胶囊列的命中区左右分开，不重叠。
  *  页面可以竖向滚动：胶囊列至少保留每颗 capsule-rest-max-h 的高度，放不下就滚；胶囊列上竖向短滑也是滚动，按住才进放大镜。 */
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { Banner, BodyFigure, CapsuleRail, LandmarkRuler, Nav, Num, PageHeader, PhaseSegments, Screen, Segmented, Sheet, SheetBlock, Ticks, TierLegend, type Anchors, type Tab } from '../components';
+import { BackToTop, Banner, BodyFigure, CapsuleRail, LandmarkRuler, Nav, Num, PageHeader, PhaseSegments, Screen, Segmented, Sheet, SheetBlock, Ticks, TierLegend, type Anchors, type Tab } from '../components';
 import { ago, bodyData, fmt, REGION_NAME } from '../data/demo';
 import { useStore } from '../data/store';
 import { useTrainingNav } from '../data/useTrainingNav';
@@ -23,6 +23,7 @@ const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia
 
 export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: string; now: number; initialFocus: string | null; onTab?: (tab: Tab, path: string) => void }) {
   const st = useStore();
+  const topRef = useRef<HTMLDivElement>(null);
   const data = useMemo(() => bodyData(scenario ?? st, now), [scenario, st.history, st.profile, now]); // eslint-disable-line react-hooks/exhaustive-deps
   // 训练中切过来也看得到今日进度和休息（ia §1.12）
   const navState = useTrainingNav(scenario, data.trainedToday ? 1 : 0, now);
@@ -70,8 +71,8 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
   const cardCls = { still: s.card, wait: s.cardWait, in: s.cardIn, out: s.cardOut };
   return (
     <Screen label="身体">
-      <div className={s.scroll}>
-      <PageHeader collapse title="身体" trailing={<>
+      <div ref={topRef} className={s.scroll}>
+      <PageHeader title="身体" trailing={<>
         <Segmented label="视图" items={[['front', '正面'], ['back', '背面']]} value={view} onChange={(v) => v !== view && swap({ view: v }, v === 'back' ? 1 : -1)} />
         <Segmented label="体型示意" items={[['male', '男'], ['female', '女']]} value={gender} onChange={(v) => v !== gender && swap({ gender: v }, v === 'female' ? 1 : -1)} />
       </>}>
@@ -104,6 +105,7 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
 
       {sheet && <HeadSheet h={data.stats.get(sheet)!} onClose={reset} />}
       <Nav selected="body" {...navState} onSelect={onTab} />
+      <BackToTop target={topRef} />
     </Screen>
   );
 }

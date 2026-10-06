@@ -4,12 +4,12 @@
  *  - 范围：成长卡 + 档案四格（经验 · 时长 · 器械 · 体型，含可选体重）+ 消息 + 导航三项设置（进度环 · 休息描边 · 结束提示）+ 数据（载入示例 · 导出 CSV · 清除）+ 关于。
  *    「钱包 · 商城」「会员」两行等 6f / 6g 的页面有了再出现（不放点了没去处的行）。
  *  - 结构：Tab 根页（导航「我的」选中）；整页一个滚动区；子页：牛龄 /me/level、消息 /me/messages；改档案走底部面板（点哪格改哪项）。
- *  - 框架：页头 C（大标题滑走后顶上留细栏）→ 成长卡（第一屏主角）→ 档案四格 → 消息 → 导航 → 数据 → 关于。没有主操作按钮（设置页）；面板里的「保存」在拇指区。
+ *  - 框架：页头（跟着滑走）→ 成长卡（第一屏主角）→ 档案四格 → 消息 → 导航 → 数据 → 关于。没有主操作按钮（设置页）；面板里的「保存」在拇指区。
  *  - 表现：荧光只有成长卡的进度条一处；危险操作（清除）用危险色，载入 / 清除都先二次确认；设置的开关立即生效、不需要保存。
  *  设计过程见 design/hifi/me/（线框 me2 W2 成长卡做主角；Stitch 第 1 轮 m6）。 */
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { Dialog, GrowthCard, List, ListRow, OptionCard, OptionGroup, PageHeader, ProfileTile, Screen, SectionLabel, Sheet, Switch, Tag, useToast } from '../components';
+import { BackToTop, Dialog, GrowthCard, List, ListRow, OptionCard, OptionGroup, PageHeader, ProfileTile, Screen, SectionLabel, Sheet, Switch, Tag, useToast } from '../components';
 import { env } from '../data/demo';
 import { csvFileName, csvSetCount, historyCsv } from '../data/exportCsv';
 import { saveTextFile } from '../data/exportFile';
@@ -31,6 +31,7 @@ const REST_END = [['vibrate', '描边 + 振动', '休息结束时，选中项变
 export function MePage({ scenario, now, onTab }: { scenario?: string; now: number; onTab?: (tab: Tab, path: string) => void }) {
   const nav = useNavigate(), loc = useLocation(), toast = useToast();
   const st = useStore();
+  const topRef = useRef<HTMLDivElement>(null);
   const { src } = useSource(scenario, now);
   // 演示场景（?scenario=）不读也不写本机存储：改档案只改本页内存，刷新复位——点了不会没反应
   const [local, setLocal] = useState<Profile | null>(null);
@@ -69,8 +70,8 @@ export function MePage({ scenario, now, onTab }: { scenario?: string; now: numbe
 
   return (
     <Screen label="我的">
-      <div className={s.scroll}>
-        <PageHeader collapse title="我的" />
+      <div ref={topRef} className={s.scroll}>
+        <PageHeader title="我的" />
         <div className={s.body}>
           <GrowthCard stage={g.stage} sub={g.sub} progress={g.next?.progress ?? 1} hint={<GoalHint g={g} empty={empty} />} streak={g.streak.weeks}
             done={cur?.done ?? 0} target={cur?.target ?? weeklyTarget(profile)} niujin={g.niujin.balance.toLocaleString('en-US')} onClick={() => nav(`/me/level${loc.search}`)} />
@@ -136,6 +137,7 @@ export function MePage({ scenario, now, onTab }: { scenario?: string; now: numbe
         <p className={s.dlgNote}>档案、训练记录和进行中的训练都会删除，回到首次建档，不能撤销。</p>
       </Dialog>
       <TabNav selected="me" scenario={scenario} now={now} onTab={onTab} />
+      <BackToTop target={topRef} />
     </Screen>
   );
 }

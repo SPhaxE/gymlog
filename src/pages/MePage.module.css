@@ -1,4 +1,4 @@
-/* 我的：整页一个滚动区（页头 C：页头和内容一起滚，大标题滑走后顶上留细栏）。成长卡、档案格、分组列表都在这个滚动区里 */
+/* 我的：整页一个滚动区（页头和内容一起滚）。成长卡、档案格、分组列表都在这个滚动区里 */
 .scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 .body { display: grid; align-content: start; grid-auto-rows: max-content; gap: var(--milo-space-l); padding: var(--milo-space-m) var(--milo-size-gutter) calc(var(--nav-clear) + var(--milo-space-2xl)); }
 .group { display: grid; gap: var(--milo-space-xs); }

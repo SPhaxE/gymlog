@@ -86,17 +86,14 @@ def run(b, w, h, shots):
     click(pg, pg.get_by_role('button', name='下一步')); step('setup-2')
     click(pg, pg.get_by_role('button', name='下一步')); step('setup-3')
     click(pg, pg.get_by_role('button', name='载入演示数据 · 练了 30 周的进阶用户')); step('today', '/today', 2000)
-    # 页头 C：首页（非训练态）页头在滚动区里；滑走大标题时细栏出现（内容不够长就滚不到，所以只核对「大标题走了 ⇔ 细栏在」的一致性）
-    ok(pg.evaluate(SLIM) is not None and pg.evaluate(SLIM)['op'] == 0, f'{tag} 页头 C·首页：在顶部时细栏不可见')
-    pg.mouse.move(w / 2, h / 2); pg.mouse.wheel(0, 500); pg.wait_for_timeout(600)
-    hb, sl = pg.evaluate("document.querySelector('h1').getBoundingClientRect().bottom"), pg.evaluate(SLIM)
-    ok(sl is not None and ((sl['op'] > 0.95 and sl['txt'] in ('今日处方', '今天')) if hb <= 0 else sl['op'] < 1), f'{tag} 页头 C·首页：大标题滑走（下沿 {hb:.0f}）⇔ 细栏出现 {sl}')
-    pg.mouse.wheel(0, -1000); pg.wait_for_timeout(500)
+    # 2026-10-06 用户：滑走后不再出小页头（细标题栏整套删了）
+    ok(pg.locator('[class*=_slim_]').count() == 0, f'{tag} 首页：没有细标题栏')
+    home_h1 = pg.locator('h1').first.bounding_box()['y']
     click(pg, pg.get_by_role('button', name='为什么是这些')); step('why', None, 1200)
     pg.keyboard.press('Escape'); pg.wait_for_timeout(500)
     click(pg, pg.get_by_role('button', name='开始训练')); step('train', '/today', 1200)
     ok(pg.get_by_role('button', name='打卡 · 第 1 组').count() == 1, f'{tag} 开始后留在首页，主按钮是「打卡 · 第 1 组」')
-    ok(pg.locator('[class*=_slim_]').count() == 0, f'{tag} 页头 C：训练中不收缩（有「结束」和进度，页头钉在顶上）')
+    ok(abs(pg.locator('h1').first.bounding_box()['y'] - home_h1) <= 1, f'{tag} 训练中：大标题和开始前在同一个位置（标题上方不放日期）')
     click(pg, pg.get_by_role('button', name='打卡 · 第 1 组')); step('train-rest', None, 900)
     navlabel = lambda: pg.get_by_role('navigation', name='主导航').locator('[aria-current=page]').get_attribute('aria-label') or ''
     ok('休息剩余' not in navlabel() and pg.locator('[style*="x-rest-timer"]').count() == 1, f'{tag} 首页休息中只有一个计时器（主按钮旁的胶囊，导航不重复）')
@@ -200,9 +197,6 @@ def deload_checks(b, w, h):
     ok(pg.get_by_text('你选了这次不减').count() > 0, f'{tag} 减量：「这次不减」后只剩一行小字')
     pg.close()
 
-SLIM = """() => { const e = document.querySelector('[class*=_slim_]'); if (!e) return null; const r = e.getBoundingClientRect();
-  return { op: +(+getComputedStyle(e).opacity).toFixed(2), top: Math.round(r.top), h: Math.round(r.height), txt: e.textContent }; }"""
-
 
 def gains_checks(b, w, h):
     """增量页（P09）：演示数据三组都有、荧光只一处、下次目标与首页同一个数、减量周合成一组、没练过是空状态"""
@@ -224,15 +218,12 @@ def gains_checks(b, w, h):
     sparks = pg.evaluate('''() => [...document.querySelectorAll('svg[class*=spark]')].filter((e) => { const r = e.getBoundingClientRect(); return r.top > 0 && r.bottom < innerHeight; }).map((e) => Math.round(e.getBoundingClientRect().left))''')
     ok(len(sparks) >= 3 and max(sparks) - min(sparks) <= 1, f'{tag} 增量：每行的小曲线从同一条竖线开始 {sparks}')
     top0 = pg.locator('h1').first.bounding_box()['y']
-    slim0 = pg.evaluate(SLIM)
-    ok(slim0 is not None and slim0['op'] == 0, f'{tag} 页头 C·增量：在顶部时细栏不可见 {slim0}')
     pg.mouse.move(w / 2, h / 2); pg.mouse.wheel(0, 700); pg.wait_for_timeout(600)
     top1 = pg.locator('h1').first.bounding_box()['y']
     ok(top0 > 0 and top1 < 0, f'{tag} 增量：下滑后页头跟着滑走，不钉在顶上（{top0:.0f} → {top1:.0f}）')
-    slim1 = pg.evaluate(SLIM)
-    ok(slim1 is not None and slim1['op'] > 0.95 and slim1['h'] == 44 and slim1['top'] == 0 and slim1['txt'] == '增量', f'{tag} 页头 C·增量：大标题滑走后顶上出现 44 高的细标题栏 {slim1}')
+    ok(pg.locator('[class*=_slim_]').count() == 0, f'{tag} 增量：滑走后没有细标题栏')
     chip_y = pg.get_by_role('button', name='全部').first.bounding_box()['y']
-    ok(0 <= chip_y < 120 and chip_y >= 44, f'{tag} 增量：部位筛选滑到顶后贴在细栏下面（y={chip_y:.0f}）')
+    ok(0 <= chip_y < 60, f'{tag} 增量：部位筛选滑到顶后贴顶（y={chip_y:.0f}）')
     pg.mouse.wheel(0, -3000); pg.wait_for_timeout(600)
     chips = pg.get_by_role('button', name='胸')
     ok(chips.count() == 1, f'{tag} 增量：有部位筛选')
@@ -240,15 +231,24 @@ def gains_checks(b, w, h):
     ok(chips.first.get_attribute('aria-pressed') == 'true', f'{tag} 增量：选中「胸」')
     ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} 增量·筛选后：无横向溢出')
     if not args.no_shots: pg.screenshot(path=os.path.join(OUT, 'gains-chest.png'))
-    # 页头 C：身体页同样（页头在滚动区里，大标题滑走后细栏出现）。屏高 915 时身体页几乎不用滚，所以这一段用矮屏（640）保证有得滚
-    pg.set_viewport_size({'width': w, 'height': 640})
-    pg.goto(f'{args.base}/body?scenario=done-today'); pg.wait_for_selector('h1'); pg.wait_for_timeout(900)
-    b0 = pg.evaluate(SLIM)
-    ok(b0 is not None and b0['op'] == 0, f'{tag} 页头 C·身体：在顶部时细栏不可见 {b0}')
-    pg.mouse.move(w / 2, 320); pg.mouse.wheel(0, 400); pg.wait_for_timeout(600)
-    b1 = pg.evaluate(SLIM)
-    ok(b1 is not None and b1['op'] > 0.95 and b1['h'] == 44 and b1['txt'] == '身体', f'{tag} 页头 C·身体：大标题滑走后出现细栏 {b1}')
-    pg.set_viewport_size({'width': w, 'height': h})
+    # 五个 Tab 的大标题在同一个位置（2026-10-06 用户：标题上方的小字让跨页时大标题位置不稳定）
+    ys = {}
+    for path in ('/today', '/body', '/gains', '/log', '/me'):
+        pg.goto(f'{args.base}{path}?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(500)
+        ys[path] = round(pg.locator('h1').first.bounding_box()['y'], 1)
+    ok(max(ys.values()) - min(ys.values()) <= 1, f'{tag} 五个 Tab 的大标题 y 相同 {ys}')
+    # 回到顶端：短的时候没有；滚过一屏出现，点了滚回顶、按钮收起
+    pg.goto(f'{args.base}/gains?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(700)
+    btt = pg.get_by_role('button', name='回到顶端')
+    ok(btt.count() == 0, f'{tag} 回到顶端：在顶部时不出现（读屏也读不到）')
+    pg.locator('[class*=_scroll_]').first.evaluate('e => e.scrollTo(0, e.scrollHeight)'); pg.wait_for_timeout(700)
+    ok(btt.count() == 1 and float(btt.evaluate('e => getComputedStyle(e).opacity')) > 0.95, f'{tag} 回到顶端：滚过一屏出现')
+    bb = btt.bounding_box(); nav_top = pg.get_by_role('navigation', name='主导航').bounding_box()['y']
+    ok(bb['width'] >= 48 and bb['height'] >= 48 and bb['y'] + bb['height'] <= nav_top, f'{tag} 回到顶端：命中 48、在导航上方 {bb}')
+    if not args.no_shots: pg.screenshot(path=os.path.join(OUT, 'back-to-top.png'))
+    click(pg, btt); pg.wait_for_timeout(1500)
+    ok(pg.locator('[class*=_scroll_]').first.evaluate('e => e.scrollTop') < 2, f'{tag} 回到顶端：点了滚回顶')
+    ok(pg.get_by_role('button', name='回到顶端').count() == 0, f'{tag} 回到顶端：回到顶后收起')
     # 曲线页（P10）：点一行进去，大数字和增量页那一行是同一个数；点明细的一行换成那天；返回后筛选和滚动位置还在
     pg.goto(f'{args.base}/gains?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(700)
     rows_all = pg.get_by_role('button', name=re.compile(r'^查看.+的进步曲线$'))
@@ -322,7 +322,7 @@ def centroid(ls):
     return sum(x * b for x, b in ls) / tot
 
 def log_checks(b, w, h):
-    """记录页（P07）：钢板上的孔数 = 练过的天数、板的节点数、光随滚动从右移到左、两侧漏光换边、减少动态效果下静止、周合计自洽、更早的训练、空态；细栏随大标题出现"""
+    """记录页（P07）：钢板上的孔数 = 练过的天数、板的节点数、光随滚动从右移到左、两侧漏光换边、减少动态效果下静止、周合计自洽、更早的训练、空态；"""
     tag = f'{w}×{h}'
     pg = b.new_page(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True)
     pg.on('pageerror', lambda e: errors.append(f'{tag} log pageerror: {e}'))
@@ -360,9 +360,6 @@ def log_checks(b, w, h):
     ok(min(bb for _, bb in sample[0][0]) > 12, f'{tag} 记录·钢板：最暗的孔也有底光，不是黑洞（{min(bb for _, bb in sample[0][0]):.0f}）')
     (l0, r0), (l1, r1) = sample[0][1], sample[192][1]
     ok(r0 > 0.9 and r1 < 0.2 and l0 < 0.1 and l1 > 0.7, f'{tag} 记录·钢板：两侧漏光换边（右 {r0}→{r1}，左 {l0}→{l1}）')
-    # 细栏随大标题出现
-    sl = pg.evaluate(SLIM)
-    ok(sl is not None and sl['op'] > 0.95 and sl['txt'] == '记录', f'{tag} 页头 C·记录：大标题滑走后出现细栏 {sl}')
     pg.evaluate('document.querySelector("[class*=_scroll_]").scrollTo(0, 0)'); pg.wait_for_timeout(300)
     if not args.no_shots: pg.screenshot(path=os.path.join(OUT, 'log-plate-rest.png'))
     # 减少动态效果：板后没有任何动画，两个位置的亮度一样
@@ -489,7 +486,7 @@ def me_checks(b, w, h):
         ok(pg.get_by_role('button', name=re.compile(f'^{t}：')).count() == 1, f'{tag} 我的：档案格「{t}」是一个按钮')
     ok(pg.get_by_role('button', name=re.compile(r'^牛龄 .+，连胜 \d+ 周，本周已练')).count() == 1, f'{tag} 我的：第一屏是成长卡（整张卡是按钮）')
     ok(pg.get_by_role('listitem').filter(has_text='钱包').count() == 0 and pg.get_by_text('会员', exact=True).count() == 0, f'{tag} 我的：钱包 · 商城 / 会员两行还没有页面，不放死路按钮')
-    # 页头 C：大标题滑走后顶上留细栏
+    # 页头跟着内容滑走
     pg.locator('[class*=_scroll_]').first.evaluate('e => e.scrollTo(0, 600)'); pg.wait_for_timeout(500)
     ok(pg.evaluate('document.querySelector("h1").getBoundingClientRect().bottom < 0'), f'{tag} 我的：大标题滑出了屏幕')
     pg.locator('[class*=_scroll_]').first.evaluate('e => e.scrollTo(0, 0)'); pg.wait_for_timeout(300)

@@ -1,4 +1,4 @@
-/* 记录页：整页一个滚动区（页头 C：页头和内容一起滚，大标题滑走后顶上留细栏）。钢板的光随这个滚动区的滚动位置变化，所以滚动区本身不能再被别的 overflow 包着。 */
+/* 记录页：整页一个滚动区（页头和内容一起滚）。钢板的光随这个滚动区的滚动位置变化，所以滚动区本身不能再被别的 overflow 包着。 */
 .scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 .lead { margin: 0; color: var(--milo-color-text-secondary); }
 .lead b { font-family: var(--milo-font-number); font-weight: 700; font-size: 1.25em; color: var(--milo-color-text-primary); }

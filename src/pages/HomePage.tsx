@@ -4,13 +4,13 @@
  *  训练就在首页打卡（2026-10-06 用户：取消独立训练页 P03）：「开始训练」把处方抄成进行中的训练，主角卡原地展开成组行（M03），见 TrainingView。
  *  今天已练完（ia §1.2）：主角换成「今天已练完」——睡着的小牛、本次三格摘要、这次练到的肌头离黄金窗还有几小时；
  *  不在练完的瞬间就推下一份处方，「再练一次」是次要操作，点了才展开现算的处方。 */
-import { useMemo, useState, type CSSProperties } from 'react';
+import { useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router';
 import { startSession } from '../data/session';
 import { useStore } from '../data/store';
 import { useSource } from '../data/useSource';
 import { useTrainingNav } from '../data/useTrainingNav';
-import { Banner, Button, Card, Cascade, ExerciseRow, Icon, Mascot, Nav, Num, PageHeader, PrescriptionHero, Screen, SectionLabel, Sheet, SheetBlock, Tag, sharedName, sharedTransition, useToast, type Tab } from '../components';
+import { BackToTop, Banner, Button, Card, Cascade, ExerciseRow, Icon, Mascot, Nav, Num, PageHeader, PrescriptionHero, Screen, SectionLabel, Sheet, SheetBlock, Tag, sharedName, sharedTransition, useToast, type Tab } from '../components';
 import { dateLabel, env, fmt, homeData, PHASE_NAME, REGION_NAME, type DoneToday } from '../data/demo';
 import type { Prescription } from '../engine';
 import { DeloadBanner } from './DeloadBanner';
@@ -20,6 +20,7 @@ import s from './HomePage.module.css';
 
 export function HomePage({ scenario, now, onTab }: { scenario?: string; now: number; onTab?: (tab: Tab, path: string) => void }) {
   const st = useStore(), nav = useNavigate(), toast = useToast();
+  const topRef = useRef<HTMLDivElement>(null);
   const { src, adopt, skip } = useSource(scenario, now);
   const d = useMemo(() => homeData(src, now), [src, now]);
   const [deloadOpen, setDeloadOpen] = useState(false);
@@ -42,9 +43,10 @@ export function HomePage({ scenario, now, onTab }: { scenario?: string; now: num
   );
   return (
     <Screen label="首页">
-      {/* 页头 C：页头和内容在同一个滚动区里，大标题滑走后顶上留一条细标题栏（训练中不收缩：有「结束」和进度，见 TrainingView） */}
-      <div className={s.scroll}>
-      <PageHeader collapse title={done ? '今天' : '今日处方'} eyebrow={dateLabel(now)} trailing={done || rx.kind !== 'plan' ? undefined : <button type="button" className={`milo-press milo-focus ${s.link}`} onClick={() => setWhy(true)}>为什么是这些</button>}>
+      {/* 页头和内容在同一个滚动区里，跟着滑走；日期写在标题下面（标题上方不放东西，五个 Tab 的大标题同一个位置） */}
+      <div ref={topRef} className={s.scroll}>
+      <PageHeader title={done ? '今天' : '今日处方'} trailing={done || rx.kind !== 'plan' ? undefined : <button type="button" className={`milo-press milo-focus ${s.link}`} onClick={() => setWhy(true)}>为什么是这些</button>}>
+        <p className={`milo-text-caption ${s.date}`}>{dateLabel(now)}</p>
         {rx.kind === 'plan' && !done && (
           <div className={s.tags}>
             <Tag>{rx.totals.exercises} 个动作</Tag><Tag>{rx.totals.sets} 组</Tag><Tag>{rx.totals.regions.map((r) => REGION_NAME[r]).join(' · ')}</Tag>
@@ -83,6 +85,7 @@ export function HomePage({ scenario, now, onTab }: { scenario?: string; now: num
       {deloadOpen && <DeloadSheet hits={d.sig.hits} onClose={() => setDeloadOpen(false)}
         onAdopt={() => { adopt(); setDeloadOpen(false); toast.show(`已进入减量周 · ${env.cfg.deload.days} 天`); }}
         onSkip={() => { skip(); setDeloadOpen(false); toast.show(`这次不减，${env.cfg.deload.days} 天内不再提醒`); }} />}
+      <BackToTop target={topRef} lift={!!done || rx.kind === 'plan'} />
     </Screen>
   );
 }

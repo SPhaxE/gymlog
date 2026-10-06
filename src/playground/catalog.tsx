@@ -4,7 +4,7 @@
  *  按下 / 聚焦在代码里是 :active / :focus-visible，这里经 state 强制显示（state.ts）。 */
 import { useRef, type ReactNode } from 'react';
 import {
-  Banner, BodyFigure, DotCalendar, SteelPlate, GainGroupHead, GainRow, GainSummary, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
+  BackToTop, Banner, BodyFigure, DotCalendar, SteelPlate, GainGroupHead, GainRow, GainSummary, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
   ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProfileTile, ProgressSteps, RestBar, SectionLabel, Segmented,
   SessionRow, SetEditor, SetLine, SetRow, NumPad, Sheet, Tilt, SheetBlock, Skeleton, Sparkline, StateView, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
   AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, PropGlyph, type PropKind, RewardCard, AgeBadge, Coupon, FreezeCard, GrowthBar, GrowthCard, StageHero, StreakWeeks, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, ProductCard, StreakBar,
@@ -64,7 +64,7 @@ export const CN: Record<string, string> = {
   recovering: '恢复中', golden: '黄金窗', decayed: '已回落', near: '邻近', focus: '焦点', front: '正面', back: '背面', male: '男', female: '女',
   track: '已开始 · 0 组', partial: '进行中', full: '满环', home: '首页', body: '身体', gains: '增量', log: '记录', me: '我的', success: '成功', undo: '可撤销',
   suggest: '建议减量', week: '减量周', quiet: '一行小字', 'pool-empty': '动作池不足', resume: '继续上次训练', info: '信息', page: '子页', session: '训练中',
-  eyebrow: '带日期与附件', pill: '小胶囊', open: '展开', loadingState: '加载中', top: '在顶部', scrolled: '已滚过大标题', 'today-done': '今天练过',
+  sub: '标题下带日期与附件', pill: '小胶囊', open: '展开', loadingState: '加载中', shown: '已出现', lifted: '抬到主按钮上面', 'today-done': '今天练过',
   experience: '训练经验', minutes: '单次时长', equipment: '可用器械', 'w-steady': '稳定守约', 'w-mixed': '有减量也有冻结', 'w-cold': '刚起步',
   'g-cycles': '涨幅太大 · 只写周期', 'g-bare': '牛龄页（不重复段名）',
   newborn: '牛犊', young: '小牛', sturdy: '壮牛', bull: '公牛', milo: 'Milo', 'm-idle': '平常', 'm-focused': '专注', 'm-happy': '开心', 'm-rest': '恢复日', 'm-pr': '破纪录', 'm-deload': '减量周', idle: '平常', training: '训练中',
@@ -249,12 +249,14 @@ export const CATALOG: Entry[] = [
     render: () => <SectionLabel trailing={<span className="milo-text-caption">3 个</span>}>接下来</SectionLabel>,
   },
   {
-    name: 'PageHeader', group: '列表与页头', desc: 'Tab 根页的页头：Title/L，上边距 space/l；日期等小字放标题上方，分段控件等放右侧。页头 C：页头在滚动区里时（collapse），大标题滑出屏幕顶后顶上留一条 44 高的细标题栏（SlimBar：半透明 + 虚化 + 发丝线，只有标题）；矩阵里不会滚，「已滚过」态强制显示细栏，真滚动见下面的交互演示。',
-    axes: { kind: ['plain', 'eyebrow'], scroll: ['top', 'scrolled'] }, size: 'screen', covers: ['SlimBar'],
-    render: (p) => {
-      const scrolled = p.scroll === 'scrolled';
-      return p.kind === 'plain' ? <PageHeader collapse={scrolled} collapsed={scrolled} title="记录" /> : <PageHeader collapse={scrolled} collapsed={scrolled} title="今日处方" eyebrow="10月3日 周六" trailing={<Segmented label="视图" items={[['f', '正面'], ['b', '背面']]} value="f" />} />;
-    },
+    name: 'PageHeader', group: '列表与页头', desc: 'Tab 根页的页头：Title/L，上边距 space/l；标题行固定一个命中区高（48），右侧有没有分段控件 / 链接标题都在同一个 y 上——五个 Tab 切换时大标题不跳。标题上方不放任何东西；日期、计数、标签一律写在标题下面。页头跟着内容滑走，不留细标题栏（2026-10-06 用户）。',
+    axes: { kind: ['plain', 'sub'] }, size: 'screen',
+    render: (p) => p.kind === 'plain' ? <PageHeader title="记录" /> : <PageHeader title="今日处方" trailing={<Segmented label="视图" items={[['f', '正面'], ['b', '背面']]} value="f" />}><p className="milo-text-caption">10月3日 周六</p></PageHeader>,
+  },
+  {
+    name: 'BackToTop', group: '列表与页头', desc: '回到顶端：长页滚过一屏才出现（右下角、导航上方，命中 48），点了平滑滚回顶；有固定主按钮的页（首页）抬到主按钮上面。出现 / 收起从下往上弹入（spring-soft），按下 M08；中性配色，不占荧光。所有长页都有：首页、身体、增量、动作曲线、记录、训练详情、我的、牛龄、消息。',
+    axes: { state: ['shown', 'lifted'] }, size: 'screen',
+    render: (p) => <BackToTopCell lift={p.state === 'lifted'} />,
   },
   {
     name: 'TopBar', group: '列表与页头', desc: '没有 Tab 的子页：返回 + 标题（Heading）+ 右侧操作。训练中右侧是计时与「结束」。',
@@ -642,6 +644,12 @@ export const CATALOG: Entry[] = [
     axes: { tone: ['color', 'mono'] }, size: 'auto',
     render: (p) => <Lockup mark="bars" mono={p.tone === 'mono'} />,
   },];
+
+/** 回到顶端的静态格：一块不滚的页面底，按钮强制出现（真滚动见交互演示） */
+function BackToTopCell({ lift }: { lift: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  return <div ref={ref} className={s.backTopCell}><BackToTop target={ref} lift={lift} forceShown /></div>;
+}
 
 function FigureCell({ view, sex, f }: { view: 'front' | 'back'; sex: 'male' | 'female'; f: Fixtures }) {
   return <div className={s.figureBox}><FigureInner view={view} sex={sex} f={f} /></div>;

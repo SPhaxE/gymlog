@@ -29,6 +29,7 @@ export {
   DayCell, ExerciseRow, MediaFrame, PrescriptionHero, RestBar, SessionRow, SetEditor, SetLine, SetRow, NumPad, WeekStrip, clock, useCountdown,
   type DayProps, type DayStatus, type ExerciseStatus, type MediaState, type SetStatus, type SetType,
 } from './training';
-export { Banner, Card, Delta, List, ListRow, Num, PageHeader, ProfileTile, SectionLabel, SlimBar, StatusStrip, Tag, TierLegend, TopBar, type DeltaDir, type NumSize, type TagTone } from './ui';
+export { BackToTop } from './BackToTop';
+export { Banner, Card, Delta, List, ListRow, Num, PageHeader, ProfileTile, SectionLabel, StatusStrip, Tag, TierLegend, TopBar, type DeltaDir, type NumSize, type TagTone } from './ui';
 export { RewardCard, RewardModal, REWARD_NAME, type Reward, type RewardKind } from './Reward';
 export { AgeBadge, Coupon, FreezeCard, GrowthBar, GrowthCard, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, ProductCard, StageHero, StreakBar, StreakWeeks, type StreakStatus, type StreakWeekStatus } from './growth';
