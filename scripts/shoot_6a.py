@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """阶段 6a 门禁（运行时）：演示里展示的全部交互，一路真点，每一步都查。
 流程：故事 8 幕 → 建档 3 步 → 载入演示数据 → 首页处方（含「为什么是这些」）→ 开始训练（就在首页打卡）→ 打卡 → 休息胶囊展开
-      → 点组行改数（键盘面板）→ 换到首次动作 →「填重量」→ 键盘输入 → 打卡 → 身体页（训练中）→ 结束 → 结算 → 今天已练完 → 再练一次；外加 /demo 电脑版。
+      → 点组行改数（键盘面板）→ 换动作 → 清空重量 →「填重量」→ 键盘输入 → 打卡 → 身体页（训练中）→ 结束 → 结算 → 今天已练完 → 再练一次；外加 /demo 电脑版。
 每一步检查：地址；360 宽无横向溢出；滚动区里没有被压扁的块；命中区（scripts/lib/hit_audit.js，看得见、能点的都 ≥ 48 × 48）；无页面错误。
 两种尺寸：360 × 800（设计基准，出截图）和 412 × 915（常见安卓真机，只查不截）。
 截图：screenshots/stage6a/<序号>-<步骤>.png（360 × 800 @2x）、story-<幕>.png、demo-desk.png。
@@ -71,10 +71,17 @@ def run(b, w, h, shots):
     ok('休息剩余' in (pg.get_by_role('navigation', name='主导航').locator('[aria-current=page]').get_attribute('aria-label') or ''), f'{tag} 休息时导航选中项写剩余时间')
     click(pg, pg.get_by_role('button', name='组间休息剩余')); step('train-rest-open', None, 900)
     click(pg, pg.get_by_role('button', name='第 2 组')); step('editor', None, 1000)
+    kg0 = float(pg.locator('[aria-pressed=true]').get_attribute('aria-label').split()[1])
     click(pg, pg.get_by_role('button', name='加 2.5 kg')); pg.wait_for_timeout(500)
-    ok(pg.get_by_role('button', name='重量 82.5 kg').count() == 1, f'{tag} 改数面板 ±2.5 生效')
+    kg1 = float(pg.locator('[aria-pressed=true]').get_attribute('aria-label').split()[1])
+    ok(abs(kg1 - kg0 - 2.5) < 1e-6, f'{tag} 改数面板 +2.5 生效（{kg0} → {kg1}）')
     click(pg, pg.get_by_role('button', name='好了')); step('edited', None, 700)
-    click(pg, pg.locator('button:has-text("首次")')); step('switch', None, 1200)
+    # 换到列表里的第一个动作（M03），再把它当前组的重量清空，走「填重量」这条路（首次动作的样子；演示数据保证今天没有首次，所以自己造）
+    click(pg, pg.locator('[class*=cascadeItem] button').first); step('switch', None, 1200)
+    click(pg, pg.get_by_role('button', name='第 1 组，')); pg.wait_for_timeout(900)
+    for _ in range(7): click(pg, pg.get_by_role('button', name='删除')); pg.wait_for_timeout(60)
+    ok(pg.get_by_role('button', name='好了').is_disabled(), f'{tag} 重量清空后「好了」不可用、提示行不位移')
+    pg.keyboard.press('Escape'); pg.wait_for_timeout(600)
     click(pg, pg.get_by_role('button', name='填重量 · 第 1 组')); step('fill', None, 1000)
     for k in ['4', '0']: click(pg, pg.get_by_role('button', name=k, exact=True)); pg.wait_for_timeout(150)
     click(pg, pg.get_by_role('button', name='打卡', exact=True)); step('filled', None, 900)
