@@ -6,7 +6,8 @@
  *  - 结构：Tab 根页（导航「记录」选中）；整页一个滚动区；没有任何训练时钢板是一块没有孔的板，唯一出路是回今日处方。
  *  - 框架：页头（跟着滑走，长了右下角有回到顶端）→ 一句话「近 3 个月练了 N 天」→ 钢板 → 周头（本周 · 日期范围 | 三个带单位的合计）→ 票根行。
  *    列表区最大；这一页没有主操作按钮（浏览页）；点一行进训练详情 P08（M09 钻入转场：日期飞成详情标题、部位飞成副标题），返回还原滚动位置和展开的周数。
- *  - 表现：钢板是这一页唯一的荧光（孔 + 板两侧的漏光），随页面滑动换亮区（见 components/plate.*）；PR 标用骨白；周合计的数字用压缩粗体。
+ *  - 表现：钢板是这一页唯一的荧光（孔 + 透孔光束；光源固定在屏幕上，滚动时光影真实变化，见 components/plate.*）；PR 标用骨白；周合计的数字用压缩粗体。
+ *  - 钢板可交互（M04）：拖 / 点选中某一天，读数行写那天的部位、组数、总负荷（码表），「查看」钻进那次训练（和点列表行同一个转场）。
  *  设计过程与取舍见 design/hifi/log/（Stitch l6 的 C 票根行、钢板方案 plate-plan.md）。 */
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
@@ -31,6 +32,12 @@ export function LogPage({ scenario, now, onTab }: { scenario?: string; now: numb
   const d = useMemo(() => logData(src, now), [src, now]);
   const months = useMemo(() => dotMonths(d.trained, now, 3), [d.trained, now]);
   const days = dotDays(months);
+  // 钢板上选中的那天（M04）：默认最近练过的一天；读数行写那天的部位、组数、总负荷，「查看」打开那次训练
+  const [pickDay, setPickDay] = useState<number | null>(null);
+  const latest = useMemo(() => Math.max(-Infinity, ...d.byDay.keys()), [d.byDay]);
+  const selDay = pickDay != null && d.byDay.has(pickDay) ? pickDay : Number.isFinite(latest) ? latest : null;
+  const info = selDay != null ? d.byDay.get(selDay)! : null;
+  const plateDay = info ? { t: info.t, title: info.date, sub: `${info.regions} · ${info.sets} 组${info.prs ? ` · ${info.prs} 个新纪录` : ''}`, value: fmt(info.load), unit: 'kg' } : null;
   const [shown, setShown] = useState(() => memo.get(key)?.shown ?? CHUNK);
   const weeks = d.weeks.slice(0, shown), more = d.weeks.length - weeks.length;
   useLayoutEffect(() => { const m = memo.get(key); if (m && scroll.current) scroll.current.scrollTop = m.top; }, [key]);
@@ -55,7 +62,7 @@ export function LogPage({ scenario, now, onTab }: { scenario?: string; now: numb
           <p className={s.lead}>{days > 0 ? <>近 3 个月练了 <b>{days}</b> 天</> : '近 3 个月还没练过'}</p>
         </PageHeader>
         <div className={s.body}>
-          <SteelPlate months={months} />
+          <SteelPlate months={months} selected={selDay} onSelect={setPickDay} day={plateDay} onOpen={(t) => { const x = d.byDay.get(t); if (x) open(x.id); }} />
           {d.empty ? (
             <StateView kind="empty" title="还没有训练记录" detail="练完第一次，这里会按周列出每次训练，并在钢板上冲出一个孔。" action="去今日处方" onAction={() => nav('/today' + (scenario ? `?scenario=${scenario}` : ''))} />
           ) : (

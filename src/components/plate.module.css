@@ -1,46 +1,36 @@
-/* 钢板打孔日历（设计见 design/hifi/log/plate-plan.md；光强 --plate-k：0.6 弱 / 1 中 / 1.45 强，默认中档）。
-   板后几层灯箱（软光、光心、两侧漏光）+ 钢面一道淡反光，全部只做 transform / opacity 动画，由页面滚动位置驱动（animation-timeline: scroll()）：
-   静止（滚动 0）= 亮区在右（用户选的「右边那张」），滚到行程（--travel）= 亮区到了左边，右边漏光熄、左边漏光亮。
-   坑：圆角裁切一律 overflow: clip——overflow: hidden 本身是个滚动容器，scroll() 会绑到 .plate 上，进度永远是 0，光不动。 */
-.wrap { --plate-k: 1; --amb: calc(11 * var(--plate-k)); --soft: calc(98 * var(--plate-k)); --core: calc(62 * var(--plate-k)); --leak: calc(80 * var(--plate-k));
-  --travel: calc(var(--milo-size-hit-min) * 4); position: relative; isolation: isolate; }
-.plate { position: relative; margin: 0; border-radius: var(--milo-radius-m); overflow: clip; isolation: isolate;
-  background: color-mix(in srgb, var(--milo-prim-lime-500) calc(var(--amb) * 1%), var(--milo-color-bg-base)); }
-/* 外沿一圈发丝亮边（跟着 CSS 圆角走） */
+/* 钢板打孔日历（2026-10-06 第 7 轮重做）：读数行 → 钢板（板后灯箱画布 + 钢面 SVG + 选中光晕）→ 板前光束画布。
+   光源固定在屏幕上，画布在脚本里按板相对光源的位置画（见 plate.tsx）；这里只管叠放与交互态。 */
+.wrap { position: relative; isolation: isolate; display: grid; gap: var(--milo-space-s); }
+
+/* 读数行（M04 的「码表」）：日期 · 部位 | 数值（按位滚）| 查看 */
+.readout { display: flex; align-items: center; gap: var(--milo-space-s); min-height: var(--milo-size-hit-min); color: var(--milo-color-text-secondary); }
+.rdText { flex: 1; min-width: 0; display: grid; }
+.rdText b { color: var(--milo-color-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rdText span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rdVal { display: inline-flex; align-items: baseline; gap: var(--milo-space-2xs); color: var(--milo-color-text-primary); }
+.rdVal > i { font-style: normal; font-size: var(--milo-font-size-caption); color: var(--milo-color-text-secondary); }
+.rdGo { display: grid; place-items: center; width: var(--milo-size-hit-min); height: var(--milo-size-hit-min); margin-right: calc(var(--milo-space-s) * -1); border: 0; border-radius: var(--milo-radius-pill);
+  background: var(--milo-color-bg-raised-2); color: var(--milo-color-text-primary); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); }
+
+/* 钢板：圆角裁切用 clip（不做滚动容器）；底色是没点灯时的深底 */
+.plate { position: relative; margin: 0; border-radius: var(--milo-radius-m); overflow: clip; isolation: isolate; background: var(--milo-color-bg-raised); }
 .plate::after { content: ''; position: absolute; inset: 0; z-index: 3; border-radius: inherit; pointer-events: none;
-  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-color-text-primary) 20%, transparent); }
+  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-color-text-primary) 18%, transparent); }
+/* 可拖：竖向滑动交给页面滚动，横向拖是游标；按下时整块板有 M08 的按压感 */
+.live { touch-action: pan-y; cursor: pointer; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none;
+  transition: transform var(--milo-motion-spring-ms) var(--milo-motion-ease-spring); }
+.live:focus-visible { outline: var(--milo-stroke-focus) solid var(--milo-color-text-primary); outline-offset: var(--milo-stroke-ring-gap); }
+.pressing { transform: scale(0.995); }
+.back { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; display: block; }
 .svg { position: relative; z-index: 1; display: block; width: 100%; height: auto; }
 .svg text { font-family: var(--milo-font-ui); }
 
-.lamp { position: absolute; pointer-events: none; }
-/* 一大团软光：静止时亮区在板的右中偏下，往左、往上渐暗；中间一大块亮得均匀，边缘慢慢暗下去 */
-.soft { left: -25%; top: -14%; width: 200%; height: 150%; will-change: transform;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--milo-prim-lime-500) calc(var(--soft) * 1%), transparent) 0%, color-mix(in srgb, var(--milo-prim-lime-500) calc(var(--soft) * 0.8%), transparent) 28%,
-    color-mix(in srgb, var(--milo-prim-lime-500) calc(var(--soft) * 0.3%), transparent) 55%, color-mix(in srgb, var(--milo-prim-lime-500) calc(var(--soft) * 0.05%), transparent) 80%, transparent 100%); }
-/* 光心：更小更亮（偏黄），移得比光晕快一点（有景深） */
-.core { left: 52%; top: 14%; width: 60%; height: 90%; will-change: transform;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--milo-prim-lime-300) calc(var(--core) * 1%), transparent) 0%, color-mix(in srgb, var(--milo-prim-lime-500) calc(var(--core) * 0.3%), transparent) 60%, transparent 100%); }
-/* 两侧漏光：在板外缘，被板盖住内半边，只露外半边（正好是页面左右 gutter 那一圈） */
-.leak { top: 5%; bottom: 5%; width: calc(var(--milo-size-gutter) * 2); z-index: -1; will-change: opacity;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--milo-prim-lime-500) calc(var(--leak) * 1%), transparent), color-mix(in srgb, var(--milo-prim-lime-500) calc(var(--leak) * 0.25%), transparent) 55%, transparent); }
-.leakR { right: calc(var(--milo-size-gutter) * -1); opacity: 1; }
-.leakL { left: calc(var(--milo-size-gutter) * -1); opacity: 0; }
-/* 钢面一道很淡的竖向反光，只照在钢上（soft-light 叠在孔上几乎不可见） */
-.sheen { z-index: 2; top: -10%; bottom: -10%; left: 0; width: 16%; opacity: 0.38; mix-blend-mode: soft-light; transform: translateX(30%) skewX(-8deg); will-change: transform;
-  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--milo-prim-gray-900) 70%, transparent) 50%, transparent); }
+/* 选中的孔：骨白细环 + 荧光光晕呼吸（不改布局，只动 transform / opacity） */
+.focus { position: absolute; z-index: 2; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none;
+  box-shadow: 0 0 0 var(--milo-stroke-focus) var(--milo-color-text-primary), 0 0 var(--milo-space-m) var(--milo-space-2xs) color-mix(in srgb, var(--milo-prim-lime-300) 70%, transparent);
+  animation: breathe calc(var(--milo-motion-slow) * 5) var(--milo-motion-ease-standard) infinite; }
+@keyframes breathe { 50% { transform: translate(-50%, -50%) scale(1.18); opacity: 0.75; } }
 
-@keyframes soft { from { transform: translate(0, 0); } to { transform: translate(-30%, 3%); } }
-@keyframes core { from { transform: translate(0, 0); } to { transform: translate(-123%, 2%); } }
-@keyframes leakR { from { opacity: 1; } to { opacity: 0.06; } }
-@keyframes leakL { from { opacity: 0; } to { opacity: 0.9; } }
-@keyframes sheen { from { transform: translateX(30%) skewX(-8deg); } to { transform: translateX(560%) skewX(-8deg); } }
-/* 不守卫的话，不支持滚动驱动动画的浏览器会立刻播完动画（停在「滚到头」的样子）；守卫后它们就是静止位置 */
-@supports (animation-timeline: scroll()) {
-  .soft, .core, .leak, .sheen { animation-duration: auto; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: scroll(nearest block); animation-range: 0 var(--travel); }
-  .soft { animation-name: soft; }
-  .core { animation-name: core; }
-  .leakR { animation-name: leakR; }
-  .leakL { animation-name: leakL; }
-  .sheen { animation-name: sheen; }
-}
-@media (prefers-reduced-motion: reduce) { .soft, .core, .leak, .sheen { animation: none; } }
+/* 板前的光束画布：和板同宽，比板高出一截（光束可以略微落到板下面），不接触摸 */
+.beams { position: absolute; left: 0; top: 0; z-index: 4; width: 100%; pointer-events: none; display: block; mix-blend-mode: screen; }
+@media (prefers-reduced-motion: reduce) { .focus { animation: none; } .live { transition: none; } }

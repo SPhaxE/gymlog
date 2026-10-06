@@ -199,8 +199,12 @@ function BackTopDemo({ f }: { f: Fixtures }) {
   );
 }
 
-/** 钢板日历：往下滑，亮区从右移到中间、左边，两侧漏光换边，钢面一道淡反光扫过（滚动位置驱动，滑回去还原） */
+const noop = () => {};
+
+/** 钢板日历：光源固定在屏幕左上角，往下滑时孔的亮暗和光束角度跟着变；按住横向拖吸到练过的日子，读数行按位滚 */
 function PlateDemo({ f }: { f: Fixtures }) {
+  const [sel, setSel] = useState<number | null>(() => Math.max(...f.trainedDays));
+  const d = sel != null ? new Date(sel) : null;
   return (
     <div className={s.demoCol}>
       <Stage tall label="钢板日历演示">
@@ -208,13 +212,14 @@ function PlateDemo({ f }: { f: Fixtures }) {
           <div className={s.headerDemoScroll}>
             <PageHeader title="记录" />
             <div className={s.headerDemoBody}>
-              <SteelPlate months={dotMonths(f.trainedDays, f.now)} />
+              <SteelPlate months={dotMonths(f.trainedDays, f.now)} selected={sel} onSelect={setSel} onOpen={noop}
+                day={d && sel != null ? { t: sel, title: `${d.getMonth() + 1}月${d.getDate()}日`, sub: '演示数据', value: String(4000 + (d.getDate() * 173) % 3000), unit: 'kg' } : null} />
               {f.items.concat(f.items).map((x, i) => <ExerciseRow key={i} name={x.name} detail={`${x.sets} × ${x.repRange.join('–')}`} weight={x.suggestion.weightKg} />)}
             </div>
           </div>
         </Screen>
       </Stage>
-      <Note>往下滑：板后那团软光从右（静止）移到中间、左边，孔的亮暗跟着换；亮区靠哪边，那边的板外缘漏光；钢面一道淡反光慢慢扫过。滑回去还原。减少动态效果 / 不支持滚动驱动动画的浏览器里是静止的。</Note>
+      <Note>按住钢板横向拖：游标吸到最近的练过的日子，孔口光晕呼吸，读数行按位滚。往下滑：光源固定在屏幕左上角不动，板升上去，孔的亮暗和光束角度跟着真实变化（光束里有浮尘）。减少动态效果时浮尘不动。</Note>
     </div>
   );
 }

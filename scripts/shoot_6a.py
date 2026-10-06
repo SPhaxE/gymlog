@@ -359,7 +359,6 @@ def gains_checks(b, w, h):
 # 孔心（用 <use> 的包围盒中心：<mask> 里的圆不在渲染树里，量不到）
 PLATE_HOLES = """() => [...document.querySelectorAll('[data-plate] svg use')].filter((u) => (u.getAttribute('href') || '').endsWith('-hole')).map((u) => { const r = u.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; })"""
 PLATE_BOX = """() => { const r = document.querySelector('[data-plate]').getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height }; }"""
-LEAKS = """() => ['leakL', 'leakR'].map((k) => { const e = document.querySelector('[data-plate] [class*=' + k + ']'); return e ? +(+getComputedStyle(e).opacity).toFixed(3) : null; })"""
 
 def hole_lums(pg):
     """每个孔心的亮度（绿通道，3×3 平均，截图里采样）；返回 [(相对板左边的 x 比例, 亮度)]"""
@@ -372,12 +371,8 @@ def hole_lums(pg):
         out.append(((x - box['x']) / box['w'], sum(px) / len(px)))
     return out
 
-def centroid(ls):
-    tot = sum(b for _, b in ls) or 1
-    return sum(x * b for x, b in ls) / tot
-
 def log_checks(b, w, h):
-    """记录页（P07）：钢板上的孔数 = 练过的天数、板的节点数、光随滚动从右移到左、两侧漏光换边、减少动态效果下静止、周合计自洽、更早的训练、空态；"""
+    """记录页（P07）：钢板上的孔数 = 练过的天数、板的节点数、固定光源下的亮暗与光束、拖动吸附与读数、减少动态效果下静止、周合计自洽、更早的训练、空态；"""
     tag = f'{w}×{h}'
     pg = b.new_page(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True)
     pg.on('pageerror', lambda e: errors.append(f'{tag} log pageerror: {e}'))
@@ -393,7 +388,7 @@ def log_checks(b, w, h):
     holes = pg.evaluate(PLATE_HOLES)
     ok(len(holes) == n_days and n_days > 0, f'{tag} 记录：钢板上的孔数 = 一句话里的练过天数（{len(holes)} / {n_days}）')
     ok(pg.evaluate('document.querySelectorAll("[data-plate] *").length') < 400, f'{tag} 记录：整块板 < 400 个节点（{pg.evaluate("document.querySelectorAll(\"[data-plate] *\").length")}）')
-    ok(pg.get_by_role('img', name=re.compile(r'练了 \d+ 天')).count() == 1, f'{tag} 记录：钢板对读屏是一张图「近 3 个月练了 N 天」')
+    ok(pg.get_by_role('slider', name=re.compile(r'练了 \d+ 天')).count() == 1, f'{tag} 记录：钢板对读屏是一个滑块「近 3 个月练了 N 天」（左右键换日子）')
     # 周头合计自洽：每个周头的「组」= 这一周各行写的组数之和
     heads = pg.evaluate("""() => [...document.querySelectorAll('section[class*=_week_]')].map((sec) => ({
         sets: +([...sec.querySelectorAll('[class*=_totals_] b')][1]?.textContent || 0),
@@ -402,28 +397,45 @@ def log_checks(b, w, h):
     ok(len(heads) >= 2 and all(hd['sets'] == sum(hd['rows']) for hd in heads), f'{tag} 记录：每周合计的组数 = 这一周各行组数之和 {[(hd["sets"], sum(hd["rows"])) for hd in heads[:3]]}')
     ok(all(re.fullmatch(r'\d+ 次 · \d+ 组 · [\d,.]+ kg', hd['txt']) for hd in heads), f'{tag} 记录：周合计三个数都带单位 {heads[0]["txt"]}')
     ok(pg.locator('button[class*=_session_]').count() == sum(len(x) for x in [pg.locator('[class*=_session_]').all()]), f'{tag} 记录：每一行都是可点的按钮（点进训练详情，不给死路）')
-    # 光随滚动从右移到左：把板往下挪一段（只为让板在三个滚动位置都完整在屏幕里），在 0 / 96 / 192 三处采样孔心亮度
-    pg.evaluate('document.querySelector("[class*=_body_]").style.paddingTop = "300px"'); pg.wait_for_timeout(300)
-    sample = {}
-    for y in (0, 96, 192):
-        pg.evaluate(f'document.querySelector("[class*=_scroll_]").scrollTo(0, {y})'); pg.wait_for_timeout(450)
-        sample[y] = (hole_lums(pg), pg.evaluate(LEAKS))
-    cs = {y: centroid(v[0]) for y, v in sample.items()}
-    ok(cs[0] > cs[96] > cs[192] and cs[0] - cs[192] > 0.06, f'{tag} 记录·钢板：亮区随滚动从右移到左（亮度重心 {cs[0]:.2f} → {cs[96]:.2f} → {cs[192]:.2f}）')
-    top = lambda y: max(sample[y][0], key=lambda t: t[1])[0]
-    ok(top(0) > top(192), f'{tag} 记录·钢板：最亮的孔换了（{top(0):.2f} → {top(192):.2f}）')
-    ok(min(bb for _, bb in sample[0][0]) > 12, f'{tag} 记录·钢板：最暗的孔也有底光，不是黑洞（{min(bb for _, bb in sample[0][0]):.0f}）')
-    (l0, r0), (l1, r1) = sample[0][1], sample[192][1]
-    ok(r0 > 0.9 and r1 < 0.2 and l0 < 0.1 and l1 > 0.7, f'{tag} 记录·钢板：两侧漏光换边（右 {r0}→{r1}，左 {l0}→{l1}）')
-    pg.evaluate('document.querySelector("[class*=_scroll_]").scrollTo(0, 0)'); pg.wait_for_timeout(300)
+    # 光（2026-10-06 第 7 轮）：光源固定在屏幕左上角——离光越近的孔越亮；板随滚动移动，孔的亮暗跟着变；孔向右下射出光束；浮尘只在光束里、会动
+    pg.evaluate('document.querySelector("[class*=_body_]").style.paddingTop = "300px"'); pg.wait_for_timeout(500)
+    s0 = hole_lums(pg)
+    left = [bb for x, bb in s0 if x < 0.4]; right = [bb for x, bb in s0 if x > 0.6]
+    ok(left and right and sum(left) / len(left) > sum(right) / len(right) + 4, f'{tag} 记录·钢板：离光源近的（左边）孔更亮（左 {sum(left) / max(1, len(left)):.0f} / 右 {sum(right) / max(1, len(right)):.0f}）')
+    ok(min(bb for _, bb in s0) > 12, f'{tag} 记录·钢板：最远的孔也有底光，不是黑洞（{min(bb for _, bb in s0):.0f}）')
+    pg.evaluate('document.querySelector("[class*=_scroll_]").scrollTo(0, 260)'); pg.wait_for_timeout(500)
+    s1 = hole_lums(pg)
+    ok(max(abs(a[1] - c[1]) for a, c in zip(s0, s1)) > 6, f'{tag} 记录·钢板：光源固定、板滚上去后孔的亮暗跟着变（最大变化 {max(abs(a[1] - c[1]) for a, c in zip(s0, s1)):.0f}）')
+    beam = pg.evaluate("""() => { const c = document.querySelector('[data-plate] canvas[class*=_beams_]'); if (!c) return null; const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 16) if (d[i] > 12) n++; return n / (d.length / 16); }""")
+    ok(beam is not None and beam > 0.08, f'{tag} 记录·钢板：孔前有光束（光束画布 {0 if beam is None else beam * 100:.0f}% 有光）')
+    snap = "() => { const c = document.querySelector('[data-plate] canvas[class*=_beams_]'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let h = 0; for (let i = 0; i < d.length; i += 97) h = (h * 31 + d[i]) | 0; return h; }"
+    f0 = pg.evaluate(snap); pg.wait_for_timeout(400); f1 = pg.evaluate(snap)
+    ok(f0 != f1, f'{tag} 记录·钢板：光束里的浮尘在飘')
+    pg.evaluate('document.querySelector("[class*=_scroll_]").scrollTo(0, 0)'); pg.evaluate('document.querySelector("[class*=_body_]").style.paddingTop = ""'); pg.wait_for_timeout(500)
     if not args.no_shots: pg.screenshot(path=os.path.join(OUT, 'log-plate-rest.png'))
-    # 减少动态效果：板后没有任何动画，两个位置的亮度一样
+    # 交互（M04）：默认选中最近练过的一天；按住横向拖吸到别的日子（读数行跟着换、孔口有光晕）；左右键换日子；「查看」进那天的训练
+    rd = lambda: pg.locator('[data-plate] [class*=_rdText_] b').first.inner_text()
+    first_row = pg.locator('button[class*=_session_]').first.inner_text().split('\n')
+    d0 = rd()
+    ok(d0.startswith(f"{first_row[0].split('/')[0]}月{first_row[0].split('/')[1]}日"), f'{tag} 记录·钢板：默认选中最近练过的一天，读数行写那天（{d0} / {first_row[0]}）')
+    ok(pg.locator('[data-plate] [class*=_focus_]').count() == 1, f'{tag} 记录·钢板：选中的孔有一圈光晕')
+    fb = pg.locator('[data-plate] figure').bounding_box(); seen = set()
+    pg.mouse.move(fb['x'] + fb['width'] * 0.9, fb['y'] + fb['height'] * 0.55); pg.mouse.down()
+    for k in range(12):
+        pg.mouse.move(fb['x'] + fb['width'] * (0.9 - 0.07 * k), fb['y'] + fb['height'] * 0.55, steps=2); pg.wait_for_timeout(60); seen.add(rd())
+    pg.mouse.up(); pg.wait_for_timeout(300)
+    ok(len(seen) >= 3 and rd() != d0, f'{tag} 记录·钢板：横向拖吸到一个个练过的日子（{len(seen)} 个），读数行跟着换')
+    pg.locator('[data-plate] figure').focus(); before = rd(); pg.keyboard.press('ArrowRight'); pg.wait_for_timeout(200)
+    ok(rd() != before, f'{tag} 记录·钢板：右键换到下一个练过的日子（{before} → {rd()}）')
+    picked = rd(); click(pg, pg.get_by_role('button', name=re.compile(r'^查看.+的训练$'))); pg.wait_for_selector('[data-drill-ready=logdetail]'); pg.wait_for_timeout(1000)
+    m = re.match(r'(\d+)月(\d+)日', picked)
+    ok('/log/' in pg.url and pg.get_by_role('heading', name=re.compile(f'^{m.group(1)}月{m.group(2)}日')).count() >= 1, f'{tag} 记录·钢板：「查看」进到选中那天的训练（{picked}）')
+    # 减少动态效果：浮尘不动（光束是静止的一张图），呼吸光晕不动
     ctx = b.new_context(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True, reduced_motion='reduce'); rp = ctx.new_page()
     rp.goto(f'{args.base}/log?scenario=plain-prescription'); rp.wait_for_selector('h1'); rp.wait_for_timeout(900)
-    rp.evaluate('document.querySelector("[class*=_body_]").style.paddingTop = "300px"'); rp.wait_for_timeout(300)
-    ok(rp.evaluate('[...document.querySelectorAll("[data-plate], [data-plate] *")].flatMap((e) => e.getAnimations()).length') == 0, f'{tag} 记录·钢板：减少动态效果时板后没有任何动画')
-    a0 = hole_lums(rp); rp.evaluate('document.querySelector("[class*=_scroll_]").scrollTo(0, 192)'); rp.wait_for_timeout(400); a1 = hole_lums(rp)
-    ok(max(abs(x[1] - y[1]) for x, y in zip(a0, a1)) < 3, f'{tag} 记录·钢板：减少动态效果时滚动前后亮度一致')
+    g0 = rp.evaluate(snap); rp.wait_for_timeout(400); g1 = rp.evaluate(snap)
+    ok(g0 == g1, f'{tag} 记录·钢板：减少动态效果时浮尘不动')
+    ok(rp.evaluate('[...document.querySelectorAll("[data-plate] *")].flatMap((e) => e.getAnimations()).length') == 0, f'{tag} 记录·钢板：减少动态效果时没有 CSS 动画（光晕不呼吸）')
     ctx.close()
     # 训练详情（P08）：点一行进去，标题 / 汇总 / 动作卡与那一行一致；点动作卡头进曲线页再返回；返回记录页还原滚动位置；共享名飞进飞出
     pg.goto(f'{args.base}/log?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(900)
@@ -505,12 +517,12 @@ def log_checks(b, w, h):
     click(lp, more.first); lp.wait_for_timeout(500)
     n1 = lp.locator('section[class*=_week_]').count()
     ok(n1 == 16, f'{tag} 记录：点「更早的训练」再展开 8 周（{n0} → {n1}）')
-    ok(lp.get_by_role('img', name=re.compile(r'练了 \d+ 天')).count() == 1 and len(lp.evaluate(PLATE_HOLES)) > 0, f'{tag} 记录（真存储）：钢板有孔')
+    ok(lp.get_by_role('slider', name=re.compile(r'练了 \d+ 天')).count() == 1 and len(lp.evaluate(PLATE_HOLES)) > 0, f'{tag} 记录（真存储）：钢板有孔')
     lp.close()
     # 空态：钢板没有孔、板后不点灯，唯一出路是回今日处方
     open_log('cold-start', 'empty')
     ok(pg.get_by_text('还没有训练记录').count() == 1 and pg.get_by_role('button', name='去今日处方').count() == 1, f'{tag} 记录：没练过 = 空状态，有「去今日处方」')
-    ok(pg.evaluate(PLATE_HOLES) == [] and pg.evaluate('document.querySelectorAll("[data-plate] [class*=lamp]").length') == 0, f'{tag} 记录：空板没有孔、板后不点灯（页面唯一的荧光是「去今日处方」）')
+    ok(pg.evaluate(PLATE_HOLES) == [] and pg.evaluate('document.querySelectorAll("[data-plate] canvas").length') == 0, f'{tag} 记录：空板没有孔、板后不点灯（页面唯一的荧光是「去今日处方」）')
     click(pg, pg.get_by_role('button', name='去今日处方')); pg.wait_for_timeout(700)
     ok('/today' in pg.url, f'{tag} 记录：空态的出口回到今日处方（{pg.url.split("5199")[-1]}）')
     pg.close()

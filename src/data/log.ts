@@ -41,11 +41,15 @@ export interface LogData {
   weeks: LogWeek[];
   /** 练过的日子（startOfDay 毫秒），钢板日历用 */
   trained: Set<number>;
+  /** 每个练过的日子 → 那天（最晚的）一次训练：钢板上选中一天时的读数，点「查看」打开它 */
+  byDay: Map<number, PlateDayInfo>;
   total: number;
   empty: boolean;
 }
 
 const WD = '日一二三四五六';
+
+export interface PlateDayInfo { id: string; t: number; date: string; regions: string; sets: number; load: number; prs: number }
 
 /** 周一到周日的范围写法：同月省略后一个月份，跨年写完整年月日；只有不在今年才带年 */
 export function weekRange(start: number, now: number): string {
@@ -59,7 +63,7 @@ export function weekRange(start: number, now: number): string {
 export function logData(scenario: string | Source, now: number): LogData {
   const { history } = typeof scenario === 'string' ? sourceOf(scenario, now) : scenario;
   const prs = prMap(env, history), thisWeek = weekStart(now), y = new Date(now).getFullYear();
-  const byWeek = new Map<number, LogWeek>(), trained = new Set<number>();
+  const byWeek = new Map<number, LogWeek>(), trained = new Set<number>(), byDay = new Map<number, PlateDayInfo>();
   for (const s of [...history].sort((a, b) => b.startMs - a.startMs)) {
     const k = weekStart(s.startMs), d = new Date(s.startMs), st = sessionStats(s);
     let w = byWeek.get(k);
@@ -71,9 +75,11 @@ export function logData(scenario: string | Source, now: number): LogData {
       title: regions || '训练', meta: `${s.exercises.filter((e) => !e.skipped).length} 个动作 · ${st.sets} 组${s.durationMin ? ` · ${s.durationMin} 分钟` : ''}`, prs: prs.get(s.id)?.size ?? 0,
     });
     trained.add(startOfDay(s.startMs));
+    const day = startOfDay(s.startMs);
+    if (!byDay.has(day)) byDay.set(day, { id: s.id, t: day, date: `${d.getMonth() + 1}月${d.getDate()}日 周${WD[d.getDay()]}`, regions: regions || '训练', sets: st.sets, load: st.load, prs: prs.get(s.id)?.size ?? 0 });
   }
   const weeks = [...byWeek.values()].sort((a, b) => b.key - a.key);
-  return { weeks, trained, total: history.length, empty: history.length === 0 };
+  return { weeks, trained, byDay, total: history.length, empty: history.length === 0 };
 }
 
 /** 一周的合计行：「2 次 · 25 组 · 9,244 kg」（读屏和测试用；页面上拆成三个带单位的数） */
