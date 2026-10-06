@@ -9,6 +9,7 @@ import { Banner, Button, FluidBackdrop, OverlayHost, ScreenAtmosphere, ToastProv
 import { T } from '../styles/tokens.gen';
 import { BodyPage } from '../pages/BodyPage';
 import { DemoPage } from '../pages/DemoPage';
+import { GainsPage } from '../pages/GainsPage';
 import { HomePage } from '../pages/HomePage';
 import { OnboardingPage } from '../pages/OnboardingPage';
 import { SummaryPage } from '../pages/SummaryPage';
@@ -87,7 +88,7 @@ function Routed() {
       <Route path="/today" element={needProfile ?? tab(<HomePage scenario={scenario} now={now} onTab={onTab} />)} />
       <Route path="/body" element={needProfile ?? tab(<BodyPage key={scenario} scenario={scenario} now={now} onTab={onTab}
         initialFocus={focus && focus !== "none" ? focus : null} />)} />
-      <Route path="/gains" element={tab(<TabStub tab="gains" onTab={onTab} />)} />
+      <Route path="/gains" element={needProfile ?? tab(<GainsPage key={scenario} scenario={scenario} now={now} onTab={onTab} />)} />
       <Route path="/log" element={tab(<TabStub tab="log" onTab={onTab} />)} />
       <Route path="/me" element={tab(<TabStub tab="me" onTab={onTab} />)} />
       <Route path="/patterns/:kind" element={tab(<PatternRoute onTab={onTab} />)} />

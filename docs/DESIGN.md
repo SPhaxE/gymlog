@@ -264,6 +264,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 | | `SectionLabel`、`PageHeader`、`TopBar` | —；普通 / 带日期与附件；子页 / 训练中 | Tab 根页用 `PageHeader`，没有 Tab 的子页用 `TopBar` |
 | 训练与记录 | `PrescriptionHero` | 加重 / 保持 / 减重 / 首次 / 减量周 | 首页第一个动作 |
 | | `ExerciseRow` | 待做 / 首次 / 进行中 / 已完成 / 未做 × 3 种交互态 | 处方、训练中 |
+| | `GainRow`、`GainGroupHead` | 涨跌 上升 / 持平 / 下降 / 基线 × PR × 按下 / 聚焦 / 加载中；组头 该加重 / 保持 / 该减重 / 本周目标 · 减量 | 增量页。没有 onClick 是静态行；「该加重」图标底是整页唯一荧光 |
 | | `SetRow` | 待做 / 进行中 / 缺值 / 已完成 / 修改中 / 错误 / 热身组 / 递减组 | 「完成」是唯一入口 |
 | | `RestBar` | 计时中 / 即将结束 / 结束 | 结束时间戳；±15、跳过 |
 | | `SessionRow` | 普通 / 有 PR / 减量周 × 3 种交互态 | 记录列表 |
@@ -309,7 +310,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 
 | 路由 | 页面 |
 |---|---|
-| `/today` · `/body` · `/gains` · `/log` · `/me` | 5 个 Tab 根页；首页、身体读本机存储（阶段 6a），增量、记录、我的还是说明占位（阶段 6b 起） |
+| `/today` · `/body` · `/gains` · `/log` · `/me` | 5 个 Tab 根页；首页、身体、增量读本机存储，记录、我的还是说明占位（阶段 6c、6d） |
 | `/onboarding` | 没建档时进这里：故事引导（8 幕，`StoryScreens`）→ 建档 3 步（可选载入演示数据） |
 | `/summary/:id` | 训练结算（新纪录卡 M01、力竭度、成长）；任务流，没有导航。训练本身在首页打卡（2026-10-06，ia v1.5），`/session` 旧地址重定向到 `/today` |
 | `/demo` | 第一版实机演示：电脑上左讲解 + 演示路线、右手机壳里是 App 本体；手机上清空后全屏进故事 |

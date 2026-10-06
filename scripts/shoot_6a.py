@@ -106,6 +106,9 @@ def run(b, w, h, shots):
     ok(pg.evaluate('(el) => getComputedStyle(el).backgroundColor !== "rgba(0, 0, 0, 0)"', again.element_handle()), f'{tag} 悬浮的「再练一次」有实底（滚动内容不会从字后面穿过）')
     ok(pg.evaluate('() => !!document.querySelector("[class*=scrimLow]")'), f'{tag} 「再练一次」下面垫了渐隐层')
     click(pg, pg.get_by_role('button', name='再练一次')); step('again')
+    # 增量页（真实数据：这一次刚练完的记录也在里面）
+    click(pg, pg.get_by_role('link', name='增量')); step('gains', '/gains', 1500)
+    ok(pg.get_by_text('近 4 周破纪录').count() == 1, f'{tag} 增量：有近 4 周摘要')
     pg.close()
 
 def story_checks(b, w, h):
@@ -160,12 +163,47 @@ def deload_checks(b, w, h):
     ok(pg.get_by_text('你选了这次不减').count() > 0, f'{tag} 减量：「这次不减」后只剩一行小字')
     pg.close()
 
+def gains_checks(b, w, h):
+    """增量页（P09）：演示数据三组都有、荧光只一处、下次目标与首页同一个数、减量周合成一组、没练过是空状态"""
+    tag = f'{w}×{h}'
+    pg = b.new_page(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True)
+    pg.on('pageerror', lambda e: errors.append(f'{tag} gains pageerror: {e}'))
+    def at(sc, shot=None):
+        pg.goto(f'{args.base}/gains?scenario={sc}'); pg.wait_for_timeout(2000)
+        ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} 增量·{sc}：无横向溢出')
+        small = pg.evaluate(AUDIT)
+        ok(not small, f'{tag} 增量·{sc}：命中区都 ≥ 48 {small[:3]}')
+        if shot and not args.no_shots: pg.screenshot(path=os.path.join(OUT, f'gains-{shot}.png'))
+    at('plain-prescription', 'plain')
+    ok(pg.get_by_role('heading', name='该加重').count() == 1, f'{tag} 增量：有「该加重」组')
+    ok(pg.get_by_role('heading', name='该减重').count() == 1, f'{tag} 增量：有「该减重」组')
+    ok(pg.get_by_role('heading', name='保持，次数 +1').count() == 1, f'{tag} 增量：有「保持」组')
+    ok(pg.locator('[class*=headLit]').count() == 1, f'{tag} 增量：荧光只有「该加重」一处')
+    chips = pg.get_by_role('button', name='胸')
+    ok(chips.count() == 1, f'{tag} 增量：有部位筛选')
+    click(pg, chips); pg.wait_for_timeout(700)
+    ok(chips.first.get_attribute('aria-pressed') == 'true', f'{tag} 增量：选中「胸」')
+    ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} 增量·筛选后：无横向溢出')
+    if not args.no_shots: pg.screenshot(path=os.path.join(OUT, 'gains-chest.png'))
+    at('deload-suggested', 'deload-suggested')
+    ok(pg.get_by_role('button', name='看看').count() == 1, f'{tag} 增量：建议减量时状态行有「看看」')
+    click(pg, pg.get_by_role('button', name='看看')); pg.wait_for_timeout(900)
+    click(pg, pg.get_by_role('button', name='采纳减量')); pg.wait_for_timeout(1200)
+    ok(pg.get_by_text('减量周 · 还剩').count() > 0 and pg.get_by_role('heading', name='本周目标 · 减量').count() == 1, f'{tag} 增量：采纳后合成一组「本周目标 · 减量」')
+    ok(pg.get_by_role('heading', name='该加重').count() == 0, f'{tag} 增量：减量周没有「该加重」')
+    at('deload-adopted', 'deload-adopted')
+    ok(pg.get_by_role('heading', name='本周目标 · 减量').count() == 1, f'{tag} 增量：减量周场景是一组')
+    at('cold-start', 'cold-start')
+    ok(pg.get_by_role('button', name='去今日处方').count() == 1, f'{tag} 增量：没练过 = 空状态，有回首页的出口')
+    pg.close()
+
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path=args.chromium if os.path.exists(args.chromium) else None)
     run(b, 360, 800, True)
     run(b, 412, 915, False)
     story_checks(b, 360, 800); story_checks(b, 412, 915)
     deload_checks(b, 360, 800); deload_checks(b, 412, 915)
+    gains_checks(b, 360, 800); gains_checks(b, 412, 915)
     # /demo 电脑版
     d = b.new_page(viewport={'width': 1440, 'height': 900})
     d.on('pageerror', lambda e: errors.append(f'demo pageerror: {e}'))

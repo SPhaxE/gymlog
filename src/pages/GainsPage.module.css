@@ -1,0 +1,26 @@
+/* 增量页：页头右上角装饰 = 三层同心杠铃片（纯装饰、不可点）；内容区可滚，底部给导航留空 */
+.plates { position: relative; display: block; width: var(--milo-space-4xl); height: var(--milo-space-4xl); margin-right: var(--milo-space-xs); pointer-events: none; }
+.plates i { position: absolute; border-radius: 50%; box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); }
+.plates i:nth-child(1) { inset: 0; }
+.plates i:nth-child(2) { inset: 18%; background: var(--milo-color-bg-raised-2); }
+.plates i:nth-child(3) { inset: 42%; background: var(--milo-color-line-strong); }
+
+.body { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; display: grid; align-content: start; grid-auto-rows: max-content; gap: var(--milo-space-m);
+  padding: var(--milo-space-l) var(--milo-size-gutter) calc(var(--nav-clear) + var(--milo-space-2xl)); }
+
+/* 摘要卡：左边破纪录大数字，右边四个涨跌计数 */
+.sum { display: grid; gap: var(--milo-space-m); }
+.pr { display: flex; align-items: baseline; justify-content: space-between; gap: var(--milo-space-m); color: var(--milo-color-text-secondary); }
+.prNum { display: inline-flex; align-items: baseline; gap: var(--milo-space-xs); color: var(--milo-color-text-primary); }
+.stats { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--milo-space-s); }
+.stats li { display: grid; gap: var(--milo-space-2xs); justify-items: start; min-width: 0; }
+.idle { margin: 0; color: var(--milo-color-text-secondary); }
+
+/* 部位筛选：横向滚动；上下留白让 Chip 外扩的命中区不被滚动容器裁掉；右侧渐隐提示还有 */
+.chips { display: flex; gap: var(--milo-space-s); min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+  padding: var(--milo-space-s) var(--milo-space-3xl) var(--milo-space-s) 0; margin: calc(var(--milo-space-s) * -1) calc(var(--milo-size-gutter) * -1) calc(var(--milo-space-s) * -1) 0;
+  -webkit-mask-image: linear-gradient(90deg, var(--milo-color-text-primary) calc(100% - var(--milo-space-3xl)), transparent); mask-image: linear-gradient(90deg, var(--milo-color-text-primary) calc(100% - var(--milo-space-3xl)), transparent); }
+.chips::-webkit-scrollbar { display: none; }
+.chips > * { flex: none; min-width: var(--milo-size-hit-min); justify-content: center; }
+
+.group { display: grid; gap: var(--milo-space-2xs); margin-bottom: var(--milo-space-m); }

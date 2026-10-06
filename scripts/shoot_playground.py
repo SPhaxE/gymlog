@@ -91,7 +91,7 @@ with sync_playwright() as p:
 
     # ---------- App 壳 ----------
     # 首页、身体页带演示场景（不带时读本机存储，没建档会进故事引导）
-    routes = [('today', '/today?scenario=plain-prescription'), ('body', '/body?scenario=done-today'), ('gains', '/gains'), ('log', '/log'), ('me', '/me'),
+    routes = [('today', '/today?scenario=plain-prescription'), ('body', '/body?scenario=done-today'), ('gains', '/gains?scenario=plain-prescription'), ('log', '/log'), ('me', '/me'),
               ('patterns-loading', '/patterns/loading'), ('patterns-empty', '/patterns/empty'), ('patterns-error', '/patterns/error')]
     os.makedirs(os.path.join(OUT, 'app'), exist_ok=True)
     for name, url in routes:

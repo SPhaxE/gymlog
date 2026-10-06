@@ -4,7 +4,7 @@
  *  按下 / 聚焦在代码里是 :active / :focus-visible，这里经 state 强制显示（state.ts）。 */
 import { useRef, type ReactNode } from 'react';
 import {
-  Banner, BodyFigure, DotCalendar, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
+  Banner, BodyFigure, DotCalendar, GainGroupHead, GainRow, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
   ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProgressSteps, RestBar, SectionLabel, Segmented,
   SessionRow, SetEditor, SetLine, SetRow, NumPad, Sheet, Tilt, SheetBlock, Skeleton, Sparkline, StateView, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
   AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, PropGlyph, type PropKind, RewardCard, AgeBadge, Coupon, FreezeCard, GrowthBar, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, ProductCard, StreakBar,
@@ -263,6 +263,22 @@ export const CATALOG: Entry[] = [
       return <ExerciseRow name={it?.name ?? '窄握下拉'} detail={`${it ? REGION_NAME[it.region] : '背'} · ${it?.sets ?? 3} × ${(it?.repRange ?? [6, 8]).join('–')}`}
         weight={p.status === 'first' ? null : it?.suggestion.weightKg ?? 50} status={status as 'todo'} sets={[p.status === 'done' ? it?.sets ?? 3 : 1, it?.sets ?? 3]} state={st(p.state)} />;
     },
+  },
+  {
+    name: 'GainRow', group: '训练与记录', desc: '增量页的一行（P09）：名称（近 4 周 PR 打标）+ 下次目标、迷你曲线、最近预估值 + 涨跌（▲▼ 形状 + 文字）。没有点击回调时是静态行，不假装能点；首次没有工作组时不给目标。',
+    axes: { dir: ['up', 'flat', 'down', 'baseline'], pr: ['false', 'true'], state: ['default', 'pressed', 'focused', 'loading'] }, rows: ['dir', 'pr'], cols: 'state', size: 'card',
+    skip: (p) => p.pr === 'true' && p.dir !== 'up',
+    render: (p, f) => (
+      <GainRow name="杠铃卧推" latest={p.dir === 'baseline' ? null : 92.5} delta={{ dir: p.dir as DeltaDir, value: p.dir === 'up' ? '+2.5 kg' : p.dir === 'down' ? '−3 kg' : undefined }}
+        pr={p.pr === 'true'} points={p.dir === 'down' ? f.trends.falling : p.dir === 'baseline' ? f.trends.one : f.trends.normal}
+        target={p.dir === 'baseline' ? null : '85 kg × 6'} note={p.dir === 'down' ? '6 周前' : undefined}
+        onClick={p.state === 'default' && p.pr === 'false' ? undefined : () => {}} state={p.state === 'loading' ? 'loading' : st(p.state)} />
+    ),
+  },
+  {
+    name: 'GainGroupHead', group: '训练与记录', desc: '增量页的结论组头：该加重（整页唯一荧光，图标底）/ 保持，次数 +1 / 该减重 / 本周目标 · 减量；每组一句话说明为什么这样分。',
+    axes: { kind: ['add', 'hold', 'cut', 'week'] }, size: 'card',
+    render: (p) => <GainGroupHead kind={p.kind as 'add'} count={p.kind === 'week' ? 6 : 3} />,
   },
   {
     name: 'NumPad', group: '训练与记录',

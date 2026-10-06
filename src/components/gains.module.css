@@ -1,0 +1,24 @@
+/* GainRow：三列两行。左：名称（+PR 标）/ 下次目标；中：迷你曲线（跨两行）；右：最近预估值 / 涨跌。 */
+.row { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: 'name spark value' 'target spark delta'; align-items: center; column-gap: var(--milo-space-m); row-gap: var(--milo-space-2xs);
+  width: 100%; min-height: calc(var(--milo-size-hit-min) + var(--milo-space-m)); padding: var(--milo-space-s) var(--milo-space-m); border: 0; border-radius: var(--milo-radius-m); font: inherit; text-align: left;
+  background-color: transparent; color: var(--milo-color-text-primary); }
+.btn { cursor: pointer; }
+.loading { display: block; }
+.name { grid-area: name; display: flex; align-items: center; flex-wrap: wrap; gap: var(--milo-space-xs); min-width: 0; }
+.name b { min-width: 0; overflow-wrap: anywhere; }
+.spark { grid-area: spark; display: grid; place-items: center; }
+.value { grid-area: value; justify-self: end; text-align: right; }
+.target { grid-area: target; display: flex; align-items: baseline; flex-wrap: wrap; column-gap: var(--milo-space-xs); color: var(--milo-color-text-secondary); min-width: 0; }
+.target i { font-style: normal; font-size: var(--milo-font-size-caption); }
+.target b { color: var(--milo-color-text-primary); }
+.note { color: var(--milo-color-text-secondary); }
+.delta { grid-area: delta; justify-self: end; }
+
+/* GainGroupHead：图标底 + 标题 / 说明 + 个数；「该加重」是整页唯一的荧光。 */
+.head { display: flex; align-items: center; gap: var(--milo-space-s); margin: 0; padding: var(--milo-space-s) var(--milo-space-m) var(--milo-space-xs); }
+.headIcon { display: grid; place-items: center; flex: none; width: var(--milo-space-3xl); height: var(--milo-space-3xl); border-radius: var(--milo-radius-pill);
+  background: var(--milo-color-bg-raised-2); color: var(--milo-color-text-primary); }
+.headLit .headIcon { background: var(--milo-color-accent-default); color: var(--milo-color-text-on-accent); box-shadow: 0 0 var(--milo-space-l) var(--milo-color-accent-glow); }
+.headText { flex: 1; min-width: 0; display: grid; gap: var(--milo-space-2xs); }
+.headText .milo-text-caption { color: var(--milo-color-text-secondary); }
+.count { flex: none; color: var(--milo-color-text-secondary); }
