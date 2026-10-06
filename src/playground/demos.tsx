@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import {
-  BackToTop, Banner, Button, Cascade, Collapsible, GainGroupHead, GainRow, Dialog, ExerciseRow, PageHeader, RestDock, SharedDetail, SteelPlate, dotMonths, sharedTransition, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
+  BackToTop, Banner, Button, Icon, ICONS, Cascade, Collapsible, GainGroupHead, GainRow, Dialog, ExerciseRow, PageHeader, RestDock, SharedDetail, SteelPlate, dotMonths, sharedTransition, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
   LandmarkRuler, PhaseSegments, Num, Screen, SetRow, clock, useCountdown, useToast, type Tab,
   Mascot, MASCOT_MOODS, MASCOT_STAGES, MOOD_NAME, STAGE_NAME, RewardModal, REWARD_NAME, AgeBadge, GrowthBar, Paywall, type MascotMood, type MascotStage, type Reward,
 } from '../components';
@@ -292,6 +292,18 @@ function appFontFaces() {
     .filter((r) => r instanceof CSSFontFaceRule).map((r) => r.cssText).join('\n');
 }
 
+/** 选中描线：点「重播」，每枚图标按「横笔从左往右、竖笔从下往上，左下的笔先起」重新画一遍（导航选中、选项打勾都是这一套） */
+function IconTraceDemo() {
+  const [k, setK] = useState(1);
+  return (
+    <div className={s.demoPad}>
+      <Button kind="ghost" size="s" icon="refresh" onClick={() => setK((x) => x + 1)}>重播描线</Button>
+      <div className={s.traceGrid}>{ICONS.map((n) => <span key={`${n}-${k}`} className={s.iconCellBig}><Icon name={n} active /><span className="milo-text-micro">{n}</span></span>)}</div>
+      <Note>选中瞬间的描线（2026-10-06 用户）：横向为主的笔从左往右、竖向为主的笔从下往上；各笔按左下 → 右上依次起笔，已画出的那段由暗到亮，画满后整枚提亮定格。</Note>
+    </div>
+  );
+}
+
 /** 图标网格规范板（design/icon-grid/index.html）整页内嵌：同源 iframe，高度跟着内容走；字体用 App 自带的 */
 export function IconGridBoard() {
   const ref = useRef<HTMLIFrameElement>(null), [h, setH] = useState(0);
@@ -433,7 +445,7 @@ export const DEMOS: Record<string, (f: Fixtures) => ReactNode> = {
   AgeBadge: () => <AgeDemo />,
   Paywall: () => <PaywallDemo />,
   Mascot: () => <MascotDemo />,
-  Icon: () => <IconGridBoard />,
+  Icon: () => <><IconTraceDemo /><IconGridBoard /></>,
   ExerciseRow: (f) => <CascadeDemo f={f} />,
   SharedDetail: (f) => <div className={s.demoCol}><Stage tall label="共享元素演示"><ExpandInner f={f} /></Stage><Note>点一个动作：卡片原地长满屏，名称和重量飞到详情的位置并放大；点返回变回去。</Note></div>,
   Button: () => <ButtonDemo />,

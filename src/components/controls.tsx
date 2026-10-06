@@ -1,6 +1,6 @@
 /** 表单控件（DESIGN §9）：Chip、Switch、OptionCard、Stepper、NumberField、ProgressSteps。
  *  选中一律骨白（control/selected），不用荧光；命中区不小于 size/hit-min。 */
-import { useId, type ReactNode } from 'react';
+import { useId, useRef, type ReactNode } from 'react';
 import { Icon } from './Icon';
 import { cx, forced, type Forced } from './state';
 import s from './controls.module.css';
@@ -28,11 +28,14 @@ export function Switch({ checked, onChange, label, disabled, state }: { checked:
 export function OptionCard({ title, detail, selected, mode = 'single', onClick, disabled, state }: {
   title: string; detail?: string; selected: boolean; mode?: 'single' | 'multi'; onClick?: () => void; disabled?: boolean; state?: Forced;
 }) {
+  // 刚被选中（不是一挂载就选着的）才描一遍勾：从左到右、从下到上（Icon active，和导航选中同一套）
+  const prev = useRef(selected), fresh = useRef(false);
+  if (selected !== prev.current) { fresh.current = selected; prev.current = selected; }
   return (
     <button type="button" role={mode === 'single' ? 'radio' : 'checkbox'} aria-checked={selected} className={cx('milo-press milo-focus', s.option, selected && s.optionOn)}
       onClick={onClick} disabled={disabled} {...forced(state)}>
       <span className={s.optionText}><b className="milo-text-body-strong">{title}</b>{detail && <span className="milo-text-caption">{detail}</span>}</span>
-      <i className={cx(mode === 'single' ? s.radio : s.check, selected && s.markOn)}>{selected && mode === 'multi' && <Icon name="check" small />}</i>
+      <i className={cx(mode === 'single' ? s.radio : s.check, selected && s.markOn)}>{selected && mode === 'multi' && <Icon name="check" small active={fresh.current} />}</i>
     </button>
   );
 }

@@ -107,7 +107,7 @@ const cap = (f: Fixtures, tier: string, size: string) => {
 export const CATALOG: Entry[] = [
   /* ---------------- 基础 ---------------- */
   {
-    name: 'Icon', group: '基础', desc: 'I3：24u 网格上 2u 圆头断笔线稿，画完整体 skewX(−11°)；颜色跟随 currentColor；默认 size/icon，小号 size/icon-s。导航五个图标按图标网格规范对齐（下方内嵌整页规范板，源文件 design/icon-grid/index.html）。装饰性，含义由文字或 aria-label 给出。',
+    name: 'Icon', group: '基础', desc: 'I3：24u 网格上 2u 圆头断笔线稿，画完整体 skewX(−11°)；颜色跟随 currentColor；默认 size/icon，小号 size/icon-s。导航五个图标按图标网格规范对齐（下方内嵌整页规范板，源文件 design/icon-grid/index.html）。选中描线（导航、选项打勾）：横笔从左往右、竖笔从下往上、左下的笔先起，下面「重播描线」可看。装饰性，含义由文字或 aria-label 给出。',
     axes: { name: ICONS }, size: 'auto',
     render: (p) => <span className={s.iconCell}><Icon name={p.name as IconName} /><span className="milo-text-micro">{p.name}</span></span>,
   },
@@ -156,7 +156,7 @@ export const CATALOG: Entry[] = [
     render: (p) => <Switch checked={p.on === 'true'} label="显示今日进度环" state={st(p.state)} disabled={p.state === 'disabled'} />,
   },
   {
-    name: 'OptionCard', group: '表单', desc: '建档与设置的选项：single = 单选（训练经验），multi = 多选（可用器械）。选中为骨白描边 + 实心标记。',
+    name: 'OptionCard', group: '表单', desc: '建档与设置的选项：single = 单选（训练经验），multi = 多选（可用器械）。选中为骨白描边 + 实心标记；多选刚被选中时，勾按导航同一套描线画出来（从左到右、从下到上）。',
     axes: { mode: ['single', 'multi'], selected: ['false', 'true'], state: STATE }, rows: ['mode', 'selected'], cols: 'state', size: 'card',
     render: (p) => <OptionCard mode={p.mode as 'single'} selected={p.selected === 'true'} state={st(p.state)} disabled={p.state === 'disabled'}
       title={p.mode === 'single' ? '进阶' : '杠铃'} detail={p.mode === 'single' ? '规律训练 1–3 年' : undefined} />,
