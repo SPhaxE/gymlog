@@ -5,79 +5,45 @@
  *  GainRow：三列固定宽度——名称（近 4 周有 PR 的打 PR 标）+ 下次目标（本行最大的数字）｜迷你曲线｜最近预估值 + 涨跌；
  *   曲线和数值各占固定宽度的列，所有行的曲线从同一条竖线开始，每条曲线下一条淡基线（每条自己缩放，只表达形状，不同动作之间不比大小）。
  *   ExerciseRow 右侧只有一个重量，装不下这些，所以单独一个件。没有 onClick 时是静态行（不假装能点）。 */
-import { useId } from 'react';
 import { Icon, type IconName } from './Icon';
 import { Skeleton } from './feedback';
 import { Sparkline, type Point } from './charts';
 import { Odometer } from './dataviz';
 import { cx, forced, type Forced } from './state';
-import { Ticks } from './Ticks';
 import { Delta, Num, Tag, type DeltaDir } from './ui';
-import { T } from '../styles/tokens.gen';
 import s from './gains.module.css';
 
 const fmt = (x: number) => (Math.round(x * 10) / 10).toLocaleString('en-US');
 
 export interface GainCounts { up: number; flat: number; down: number; baseline: number }
-const SEGMENTS: { key: keyof GainCounts; label: string; glyph: string }[] = [
-  { key: 'up', label: '在涨', glyph: '▲' }, { key: 'flat', label: '持平', glyph: '=' }, { key: 'down', label: '在退', glyph: '▼' }, { key: 'baseline', label: '刚开始记', glyph: '○' },
-];
 
-/** 配重片环：四段弧长按个数占比，弧之间留 stroke/ring-gap 的缝；外圈一圈刻度，整环从 12 点顺时针 */
-function PlateDial({ counts, total }: { counts: GainCounts; total: number }) {
-  const hatch = `hatch-${useId().replace(/[^a-zA-Z0-9-]/g, '')}`, hp = T['space/s'];
-  const box = T['space/5xl'] * 3, sw = T['stroke/ring-progress'] * 2, c = box / 2;
-  const r = c - T['size/tick-major'] - T['space/xs'] - sw / 2, len = 2 * Math.PI * r, gap = T['stroke/ring-gap'] / len;
-  const n = SEGMENTS.filter((g) => counts[g.key] > 0).length;
-  let at = 0;
-  const arcs = SEGMENTS.map((g) => {
-    const f = total ? counts[g.key] / total : 0;
-    if (!f) return null;
-    const draw = Math.max(0.004, f - (n > 1 ? gap : 0)), start = at + (n > 1 ? gap / 2 : 0);
-    at += f;
-    return <circle key={g.key} className={s[`arc_${g.key}`]} cx={c} cy={c} r={r} pathLength={1} strokeWidth={g.key === 'baseline' ? sw / 2 : sw}
-      stroke={g.key === 'down' ? `url(#${hatch})` : undefined} strokeDasharray={`${draw} ${1 - draw}`} strokeDashoffset={-start} transform={`rotate(-90 ${c} ${c})`} />;
-  });
-  const ticks = Array.from({ length: 60 }, (_, i) => {
-    const a = (i / 60) * 2 * Math.PI, major = i % 5 === 0, r1 = c - T['space/2xs'], r0 = r1 - (major ? T['size/tick-major'] : T['size/tick-minor']);
-    return <line key={i} className={major ? s.tickMajor : s.tickMinor} x1={c + r0 * Math.sin(a)} y1={c - r0 * Math.cos(a)} x2={c + r1 * Math.sin(a)} y2={c - r1 * Math.cos(a)} />;
-  });
-  return (
-    <svg className={s.dial} width={box} height={box} viewBox={`0 0 ${box} ${box}`} aria-hidden="true">
-      <defs><pattern id={hatch} width={hp} height={hp} patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line className={s.hatchLine} x1={0} y1={0} x2={0} y2={hp} /></pattern></defs>
-      {ticks}
-      <circle className={s.dialTrack} cx={c} cy={c} r={r} strokeWidth={sw} />
-      {arcs}
-    </svg>
-  );
-}
 
+/** 刻度尺：整条尺按「在涨 / 持平 / 在退」的个数占比分段，字直接写在段上（数字 + 形状 + 名称，不只靠颜色）；「刚开始记」只有一个基线记录，
+ *  没有涨跌可比，所以不占尺的长度，写在尺下面一行。上下各一排刻度，像卷尺。 */
 export function GainSummary({ trained, up, flat, down, baseline, pr }: GainCounts & { trained: number; pr: number }) {
-  const counts = { up, flat, down, baseline };
+  const trend = [{ key: 'up' as const, n: up, label: '个在涨', glyph: '▲' }, { key: 'flat' as const, n: flat, label: '个持平', glyph: '=' }, { key: 'down' as const, n: down, label: '个在退', glyph: '▼' }].filter((g) => g.n > 0);
   return (
     <section className={s.sum} aria-label="近 4 周摘要">
-      <div className={s.dialRow}>
-        <div className={s.dialBox}>
-          <PlateDial counts={counts} total={trained} />
-          <div className={s.dialCenter}><b className="milo-text-number-l">{trained}</b><span className="milo-text-caption">个动作 · 近 4 周</span></div>
-        </div>
-        {trained === 0 ? (
-          <p className={cx('milo-text-body', s.idle)}>近 4 周还没练。<br />下面是之前的记录。</p>
-        ) : (
-          <ul className={s.legend} aria-label={`近 4 周练了 ${trained} 个动作`}>
-            {SEGMENTS.map((g) => (
-              <li key={g.key} className={cx(s[`lg_${g.key}`], !counts[g.key] && s.legendZero)}>
-                <i aria-hidden="true">{g.glyph}</i><Num size="m" value={counts[g.key]} /><span className="milo-text-body">个{g.label}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <p className={cx('milo-text-heading', s.lead)}>{trained === 0 ? '近 4 周还没练，下面是之前的记录' : <>近 4 周练了 <b>{trained}</b> 个动作</>}</p>
+      {trained > 0 && (
+        <>
+          {trend.length > 0 ? (
+            <ul className={s.ruler} aria-label={`近 4 周练了 ${trained} 个动作`}>
+              {trend.map((g) => (
+                <li key={g.key} className={s[`seg_${g.key}`]} style={{ flexGrow: g.n }}>
+                  <span className={s.segTop}><b className="milo-text-number-m">{g.n}</b><i aria-hidden="true">{g.glyph}</i></span>
+                  <span className="milo-text-caption">{g.label}</span>
+                </li>
+              ))}
+            </ul>
+          ) : <div className={s.rulerEmpty} aria-hidden="true" />}
+          {baseline > 0 && <p className={cx('milo-text-caption', s.footnote)}><i aria-hidden="true">○</i> {baseline} 个刚开始记（只有 1 次记录，还没有涨跌可比）</p>}
+        </>
+      )}
       <div className={s.prRow}>
-        <span className={s.prNum}><Odometer value={String(pr)} size="xl" /><span className="milo-text-heading">次破纪录</span></span>
+        <span className={s.prNum}><Odometer value={String(pr)} size="hero" /><span className="milo-text-heading">次破纪录</span></span>
         <span className="milo-text-caption">近 4 周</span>
       </div>
-      <Ticks />
     </section>
   );
 }
@@ -97,7 +63,7 @@ export function GainRow({ name, latest, unit = 'kg', delta, pr, points, target, 
   const body = (
     <>
       <span className={s.name}><b className="milo-text-body-strong">{name}</b>{pr && <Tag tone="strong">PR</Tag>}</span>
-      <span className={s.spark}><Sparkline points={points} label={`${name} 预估 1RM`} /></span>
+      <span className={s.spark}><Sparkline area points={points} label={`${name} 预估 1RM`} /></span>
       <span className={s.value}>{latest != null ? <Num size="s" value={fmt(latest)} unit={unit} /> : <span className="milo-text-caption">—</span>}</span>
       <span className={s.target}>
         {target ? <><i>下次</i> <b className="milo-text-number-m">{target}</b></> : <span className="milo-text-caption">先做出一组工作组</span>}

@@ -5,7 +5,7 @@
 .eyebrow { margin: 0; color: var(--milo-color-text-secondary); }
 /* 配重片同心纹：很淡的一圈圈车削纹，圆心落在右上角、被屏幕边切掉，向下渐隐；每页只此一处 */
 .plate { position: absolute; z-index: -1; right: calc(var(--milo-space-5xl) * -2); top: calc(var(--milo-space-5xl) * -2); width: calc(var(--milo-space-5xl) * 8); height: calc(var(--milo-space-5xl) * 8); border-radius: 50%; pointer-events: none;
-  background: repeating-radial-gradient(circle at 50% 50%, transparent 0 var(--milo-space-m), var(--milo-color-line-default) var(--milo-space-m) calc(var(--milo-space-m) + var(--milo-stroke-hairline)));
+  background: repeating-radial-gradient(circle at 50% 50%, transparent 0 var(--milo-space-m), var(--milo-color-line-strong) var(--milo-space-m) calc(var(--milo-space-m) + var(--milo-stroke-hairline)));
   -webkit-mask-image: radial-gradient(closest-side, var(--milo-color-text-primary), transparent); mask-image: radial-gradient(closest-side, var(--milo-color-text-primary), transparent); }
 
 .body { display: grid; align-content: start; grid-auto-rows: max-content; gap: var(--milo-space-m); padding: 0 var(--milo-size-gutter) calc(var(--nav-clear) + var(--milo-space-2xl)); }

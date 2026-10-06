@@ -24,3 +24,6 @@
 .plot { touch-action: pan-y; cursor: ew-resize; }
 .dates { display: flex; justify-content: space-between; padding-right: var(--milo-space-3xl); color: var(--milo-color-text-secondary); }
 .empty { padding: var(--milo-space-2xl) 0; text-align: center; color: var(--milo-color-text-secondary); font-size: var(--milo-font-size-body); }
+
+/* Sparkline area：曲线下面一层很淡的填充（增量页的行用，和基线一起让一列曲线读起来是「同一把尺」） */
+.area { fill: color-mix(in srgb, var(--milo-color-text-secondary) 22%, transparent); stroke: none; }

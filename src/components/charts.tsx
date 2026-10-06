@@ -18,12 +18,13 @@ function scale(ps: Point[], w: number, h: number, pad: number) {
 }
 const diamond = (x: number, y: number, r: number) => `M${x},${y - r * 1.4} L${x + r * 1.4},${y} L${x},${y + r * 1.4} L${x - r * 1.4},${y} Z`;
 
-export function Sparkline({ points, label }: { points: Point[]; label: string }) {
+export function Sparkline({ points, label, area }: { points: Point[]; label: string; area?: boolean }) {
   const ps = asc(points), w = T['size/spark-w'], h = T['size/spark-h'], r = T['stroke/ring-progress'] / 2 + T['stroke/hairline'];
   if (ps.length < 2) return <svg className={s.spark} viewBox={`0 0 ${w} ${h}`} role="img" aria-label={`${label}：只有 1 次记录`}><line className={s.base} x1={0} x2={w} y1={h / 2} y2={h / 2} /></svg>;
   const at = scale(ps, w, h, r * 1.6), last = at(ps.at(-1)!);
   return (
     <svg className={s.spark} viewBox={`0 0 ${w} ${h}`} role="img" aria-label={`${label}：${fmt(ps[0].v)} → ${fmt(ps.at(-1)!.v)}`}>
+      {area && <polygon className={s.area} points={`${at(ps[0])[0]},${h} ${ps.map((p) => at(p).join(',')).join(' ')} ${last[0]},${h}`} />}
       <polyline className={s.line} points={ps.map((p) => at(p).join(',')).join(' ')} />
       {ps.map((p, i) => p.pr && i < ps.length - 1 ? <path key={i} className={s.pr} d={diamond(...at(p), r * 0.8)} /> : null)}
       {ps.at(-1)!.pr ? <path className={s.pr} d={diamond(...last, r)} /> : <circle className={s.last} cx={last[0]} cy={last[1]} r={r} />}

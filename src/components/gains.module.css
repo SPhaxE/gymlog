@@ -28,26 +28,24 @@
 .count { flex: none; opacity: 0.8; }
 .hint { margin: 0; padding: 0 var(--milo-space-m); color: var(--milo-color-text-secondary); }
 
-/* GainSummary：配重片环 + 图例 + 破纪录一行 */
+/* GainSummary：一句话 + 刻度尺（按涨 / 持平 / 退的个数分段，字写在段上）+ 「刚开始记」小注 + 破纪录大数字 */
 .sum { position: relative; display: grid; gap: var(--milo-space-m); }
-.dialRow { display: flex; align-items: center; gap: var(--milo-space-l); }
-.dialBox { position: relative; flex: none; display: grid; place-items: center; }
-.dialCenter { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: var(--milo-space-2xs); text-align: center; }
-.dialCenter .milo-text-caption { color: var(--milo-color-text-secondary); }
-.dial { display: block; overflow: visible; }
-.dialTrack { fill: none; stroke: var(--milo-color-data-track); }
-.tickMinor, .tickMajor { stroke: var(--milo-color-line-strong); stroke-width: var(--milo-stroke-hairline); }
-.tickMajor { stroke: var(--milo-color-text-secondary); }
-.arc_up, .arc_flat, .arc_down, .arc_baseline { fill: none; stroke-linecap: butt; }
-.arc_up { stroke: var(--milo-color-control-selected); }
-.arc_flat { stroke: var(--milo-color-text-secondary); }
-.hatchLine { stroke: var(--milo-color-text-primary); stroke-width: calc(var(--milo-stroke-focus) * 1.5); }
-.arc_baseline { stroke: var(--milo-color-text-secondary); opacity: 0.6; }
-.legend { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--milo-space-xs); min-width: 0; }
-.legend li { display: flex; align-items: baseline; gap: var(--milo-space-xs); color: var(--milo-color-text-primary); }
-.legend li i { font-style: normal; width: var(--milo-space-l); text-align: center; color: var(--milo-color-text-secondary); }
-.legend li .milo-text-body { color: var(--milo-color-text-secondary); }
-.legendZero { opacity: 0.5; }
-.idle { margin: 0; color: var(--milo-color-text-secondary); }
+.lead { margin: 0; color: var(--milo-color-text-primary); }
+.lead b { font-family: var(--milo-font-number); font-weight: 700; font-size: 1.25em; }
+/* 尺：上下各一排刻度（每 tick-pitch 一根细线），中间是分段；段宽按个数占比，最窄也留得下「2 ▼ 个在退」 */
+.ruler { list-style: none; margin: 0; padding: 0; position: relative; display: flex; gap: 0; min-height: calc(var(--milo-size-hit-min) + var(--milo-space-xl)); isolation: isolate; border-radius: var(--milo-radius-s); overflow: hidden; }
+.ruler::before, .ruler::after { content: ''; position: absolute; left: 0; right: 0; height: var(--milo-size-tick-major); z-index: 2; pointer-events: none;
+  background: repeating-linear-gradient(90deg, var(--milo-color-line-strong) 0 var(--milo-stroke-hairline), transparent var(--milo-stroke-hairline) var(--milo-size-tick-pitch)); }
+.ruler::before { top: 0; }
+.ruler::after { bottom: 0; }
+.ruler li { flex-basis: 0; min-width: calc(var(--milo-space-5xl) + var(--milo-space-s)); display: grid; place-content: center; justify-items: center; gap: var(--milo-space-2xs); padding: var(--milo-size-tick-major) var(--milo-space-xs); }
+.segTop { display: inline-flex; align-items: baseline; gap: var(--milo-space-2xs); }
+.segTop i { font-style: normal; font-size: var(--milo-font-size-caption); }
+.seg_up { background: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); }
+.seg_flat { background: color-mix(in srgb, var(--milo-color-text-secondary) 45%, var(--milo-color-bg-base)); color: var(--milo-color-text-primary); }
+.seg_down { background: repeating-linear-gradient(135deg, var(--milo-color-line-strong) 0 var(--milo-stroke-focus), var(--milo-color-bg-raised-2) var(--milo-stroke-focus) var(--milo-space-s)); color: var(--milo-color-text-primary); }
+.rulerEmpty { min-height: calc(var(--milo-size-hit-min) + var(--milo-space-xl)); border-radius: var(--milo-radius-s); outline: var(--milo-stroke-hairline) dashed var(--milo-color-line-strong); outline-offset: calc(var(--milo-stroke-hairline) * -1); }
+.footnote { margin: 0; color: var(--milo-color-text-secondary); }
+.footnote i { font-style: normal; }
 .prRow { display: flex; align-items: baseline; justify-content: space-between; gap: var(--milo-space-m); color: var(--milo-color-text-secondary); }
 .prNum { display: inline-flex; align-items: baseline; gap: var(--milo-space-xs); color: var(--milo-color-text-primary); }
