@@ -1,0 +1,48 @@
+/* 训练结算（P05）：主角结果 → 三格统计 → 逐个动作 → 成长 → 力竭度 → 完成 */
+.body { flex: 1; min-height: 0; overflow-y: auto; display: grid; align-content: start; grid-auto-rows: max-content; gap: var(--milo-space-m);
+  padding: var(--milo-space-l) var(--milo-size-gutter) calc(var(--milo-size-button-h) + var(--milo-space-4xl)); }
+.hero, .heroQuiet { display: grid; gap: var(--milo-space-xs); padding: var(--milo-space-l); border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised); }
+/* 新纪录（Stitch s6 V3）：整块荧光、黑字，这一屏唯一的荧光；进场时从下往上弹出、扫过一道光 */
+.hero { position: relative; overflow: hidden; background: var(--milo-color-accent-default); color: var(--milo-color-text-on-accent); box-shadow: 0 0 var(--milo-space-3xl) var(--milo-color-accent-glow);
+  animation: heroIn var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring) both; }
+.hero::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 35%, color-mix(in srgb, var(--milo-prim-bone-100) 55%, transparent) 50%, transparent 65%) no-repeat;
+  background-size: 260% 100%; animation: shine calc(var(--milo-motion-slow) * 4) var(--milo-motion-ease-standard) calc(var(--milo-motion-slow) * 2) both; mix-blend-mode: soft-light; }
+@keyframes heroIn { from { opacity: 0; transform: translateY(12%) scale(0.96); } }
+@keyframes shine { from { background-position: 160% 0; } to { background-position: -60% 0; } }
+.hero * { color: inherit; }
+.heroTop { display: flex; align-items: center; gap: var(--milo-space-s); }
+.pr { padding: var(--milo-space-2xs) var(--milo-space-xs); border-radius: var(--milo-radius-s); background: var(--milo-color-text-on-accent); color: var(--milo-color-accent-default) !important;
+  font-family: var(--milo-font-number); font-weight: 900; font-size: var(--milo-font-size-caption); }
+.prev { margin-left: auto; white-space: nowrap; padding: var(--milo-space-2xs) var(--milo-space-s); border-radius: var(--milo-radius-pill); background: color-mix(in srgb, var(--milo-color-text-on-accent) 12%, transparent);
+  font-size: var(--milo-font-size-caption); font-weight: 700; }
+.heroNum { display: flex; align-items: baseline; gap: var(--milo-space-s); }
+.plus { margin-left: auto; white-space: nowrap; padding: var(--milo-space-2xs) var(--milo-space-s); border-radius: var(--milo-radius-s); background: var(--milo-color-text-on-accent); color: var(--milo-color-accent-default) !important;
+  font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-m); }
+.ticks { display: flex; justify-content: space-between; align-items: flex-end; height: var(--milo-space-m); margin-top: var(--milo-space-2xs);
+  border-top: var(--milo-stroke-hairline) solid color-mix(in srgb, var(--milo-color-text-on-accent) 35%, transparent); }
+.ticks i { width: var(--milo-stroke-hairline); height: 40%; background: color-mix(in srgb, var(--milo-color-text-on-accent) 45%, transparent); }
+.ticks .tickL { height: 90%; background: var(--milo-color-text-on-accent); }
+.heroQuiet > span:first-child, .heroQuiet > span:last-child { color: var(--milo-color-text-secondary); }
+.odo { display: flex; align-items: baseline; gap: var(--milo-space-xs); }
+.odo > i { font-style: normal; font-size: var(--milo-font-size-body); color: var(--milo-color-text-secondary); }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--milo-space-s); }
+.stats > div { display: grid; gap: var(--milo-space-2xs); padding: var(--milo-space-m); border-radius: var(--milo-radius-m); background: var(--milo-color-bg-raised); }
+.stats span { color: var(--milo-color-text-secondary); }
+.rows { display: grid; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: var(--milo-space-s); min-height: var(--milo-size-hit-min);
+  border-bottom: var(--milo-stroke-hairline) solid var(--milo-color-line-default); color: var(--milo-color-text-primary); }
+.val { display: flex; align-items: baseline; gap: var(--milo-space-s); }
+.muted { color: var(--milo-color-text-secondary); }
+.exertion { display: flex; align-items: center; justify-content: space-between; gap: var(--milo-space-m); }
+/* 力竭度：十格（Stitch s6 V2），选中骨白实心。360 宽里一排十格每格不到 30，比手指窄 → 两排各五格，每格不低于命中区（DESIGN §9.6） */
+.rate { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--milo-space-s); }
+.rate button { height: var(--milo-size-hit-min); border: 0; border-radius: var(--milo-radius-s); background: var(--milo-color-bg-raised); color: var(--milo-color-text-secondary);
+  font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-body); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
+.rate .rateOn { background: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); box-shadow: none; }
+.exertion > div { display: grid; gap: var(--milo-space-2xs); color: var(--milo-color-text-primary); }
+.body > p { margin: 0; }
+.cta { position: absolute; z-index: 9; left: var(--milo-size-gutter); right: var(--milo-size-gutter); bottom: var(--milo-space-2xl); display: grid; }
+/* 按钮下面垫一层渐隐的底色，滚动时文字不会从按钮下面透出来 */
+.cta { isolation: isolate; }
+.cta::before { content: ''; position: absolute; z-index: -1; pointer-events: none; left: calc(var(--milo-size-gutter) * -1); right: calc(var(--milo-size-gutter) * -1);
+  top: calc(var(--milo-space-3xl) * -1); bottom: calc(var(--milo-space-2xl) * -1); background: linear-gradient(to bottom, transparent, var(--milo-color-bg-base) 55%); }

@@ -8,11 +8,11 @@ from playwright.sync_api import sync_playwright
 
 NOW = int(datetime(2026, 10, 3, 18, 0).timestamp() * 1000)
 SHOTS = [
-    ('body', 'final-mag', '/body?focus=mid-lower-pectoralis'),
-    ('body', 'final-rest', '/body'),
-    ('body', 'final-sheet', '/body?tap=mid-lower-pectoralis'),
+    ('body', 'final-mag', '/body?scenario=done-today&focus=mid-lower-pectoralis'),
+    ('body', 'final-rest', '/body?scenario=done-today'),
+    ('body', 'final-sheet', '/body?scenario=done-today&tap=mid-lower-pectoralis'),
     ('body', 'final-empty', '/body?scenario=cold-start'),
-    ('home', 'final-plan', '/today'),
+    ('home', 'final-plan', '/today?scenario=plain-prescription'),
     ('home', 'final-deload', '/today?scenario=deload-suggested'),
     ('home', 'final-rest', '/today?scenario=rest-day'),
     ('home', 'final-cold', '/today?scenario=cold-start'),

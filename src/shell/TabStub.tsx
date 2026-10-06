@@ -1,5 +1,6 @@
 /** 阶段 6 才搭的 Tab 根页：先用规范组件占位，说明这一页回答什么问题、按哪张线框搭。 */
 import { Button, Nav, PageHeader, Screen, StateView, type Tab } from '../components';
+import { useTrainingNav } from '../data/useTrainingNav';
 import s from './Shell.module.css';
 
 const INFO: Record<string, { title: string; q: string; wf: string }> = {
@@ -9,7 +10,7 @@ const INFO: Record<string, { title: string; q: string; wf: string }> = {
 };
 
 export function TabStub({ tab, onTab }: { tab: Tab; onTab: (t: Tab, path: string) => void }) {
-  const i = INFO[tab];
+  const i = INFO[tab], navState = useTrainingNav(undefined, 0);
   return (
     <Screen label={i.title}>
       <PageHeader title={i.title} />
@@ -17,7 +18,7 @@ export function TabStub({ tab, onTab }: { tab: Tab; onTab: (t: Tab, path: string
         <StateView kind="empty" title="阶段 6 搭建" detail={`这一页回答：${i.q}。线框 ${i.wf}。`} />
         <a className={s.stubLink} href="/playground"><Button kind="ghost" size="s">看组件与交互态</Button></a>
       </div>
-      <Nav selected={tab} progress={0} onSelect={onTab} />
+      <Nav selected={tab} {...navState} onSelect={onTab} />
     </Screen>
   );
 }

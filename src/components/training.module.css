@@ -8,6 +8,9 @@
 .exText > span { color: var(--milo-color-text-secondary); }
 .ex_current { background-color: var(--milo-color-bg-raised); box-shadow: inset var(--milo-space-xs) 0 0 var(--milo-color-control-selected); }
 .ex_done, .ex_skipped { opacity: var(--milo-opacity-done-row); }
+.dots { display: flex; gap: var(--milo-space-xs); margin-top: var(--milo-space-2xs); }
+.dots i { width: var(--milo-space-s); height: var(--milo-space-s); border-radius: var(--milo-radius-pill); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); transition: background var(--milo-motion-base) var(--milo-motion-ease-standard), box-shadow var(--milo-motion-base); }
+.dots i.dotOn { background: var(--milo-color-text-primary); box-shadow: none; }
 .doneMark { display: inline-flex; align-items: center; gap: var(--milo-space-xs); color: var(--milo-color-text-primary); }
 
 /* 主角卡 */
@@ -28,15 +31,18 @@
 .setAction { display: flex; justify-content: flex-end; }
 .set_todo .vals { opacity: var(--milo-opacity-disabled); }
 .set_current, .set_editing { background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
+.set_current .idx, .set_editing .idx, .set_current .setAction, .set_editing .setAction { grid-row: 1; }
 .set_current .idx { background: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); box-shadow: none; }
 .set_done .idx { background: var(--milo-color-data-gauge); color: var(--milo-color-text-primary); box-shadow: none; }
-.inputs { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; column-gap: var(--milo-space-s); row-gap: var(--milo-space-2xs); min-width: 0; }
-/* 提示在出错 / 缺值的那一格正下方、和它同宽 */
-.fieldNote { grid-column: 1; grid-row: 2; text-wrap: balance; }
+.inputs { display: grid; grid-template-columns: minmax(0, 1fr) var(--milo-space-m) minmax(0, 1fr); justify-items: stretch; align-items: center; column-gap: var(--milo-space-s); row-gap: var(--milo-space-2xs); min-width: 0; }
+/* 提示是组行的第二行（只占输入框那一列），里面再按输入框的三列排：提示在出错 / 缺值的那一格正下方、和它同宽 */
+.noteRow { grid-column: 2; grid-row: 2; display: grid; grid-template-columns: minmax(0, 1fr) var(--milo-space-m) minmax(0, 1fr); column-gap: var(--milo-space-s); }
+.fieldNote { grid-column: 1; text-wrap: balance; }
 .fieldNoteReps { grid-column: 3; }
 .setInput { display: flex; align-items: baseline; gap: var(--milo-space-2xs); min-width: 0; height: var(--milo-size-button-h-s); padding: 0 var(--milo-space-s);
   border-radius: var(--milo-radius-s); background: var(--milo-color-bg-raised-2); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); align-items: center; }
 .setInput:focus-within { box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-control-selected); }
+.setInputOn { box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-control-selected); background: var(--milo-color-bg-raised); }
 .setInputBad, .setInputBad:focus-within { box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-feedback-danger); }
 .setInput input { flex: 1; min-width: 0; width: 100%; border: 0; background: none; outline: none; padding: 0; color: var(--milo-color-text-primary);
   font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-m); font-variant-numeric: tabular-nums; }
@@ -52,7 +58,7 @@
 .restIcon { display: grid; place-items: center; color: var(--milo-color-text-secondary); }
 .restText { flex: 1; display: grid; color: var(--milo-color-text-secondary); }
 .restBtns { display: flex; gap: var(--milo-space-xs); }
-.restBtn { position: relative; display: grid; place-items: center; min-width: var(--milo-size-button-h-s); height: var(--milo-size-button-h-s); padding: 0 var(--milo-space-s);
+.restBtn { position: relative; display: grid; place-items: center; min-width: var(--milo-size-hit-min); height: var(--milo-size-hit-min); padding: 0 var(--milo-space-s);
   border: 0; border-radius: var(--milo-radius-pill); font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-body);
   background-color: var(--milo-color-bg-raised); color: var(--milo-color-text-primary); }
 .restTrack { position: absolute; left: 0; right: 0; bottom: 0; height: var(--milo-space-xs); background: var(--milo-color-data-track); }
@@ -100,3 +106,45 @@
 .credit a { color: inherit; }
 
 @media (prefers-reduced-motion: reduce) { .mediaLoading { animation: none; } .restTrack i { transition: none; } }
+
+/* 训练页自带数字键盘：深色圆角键、等宽数字；步进键略暗；「下一组」骨白实心（这一屏的主操作） */
+.pad { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--milo-space-xs); padding: var(--milo-space-s) var(--milo-size-gutter) var(--milo-space-m);
+  background: var(--milo-color-bg-base); border-top: var(--milo-stroke-hairline) solid var(--milo-color-line-default); }
+.key { display: flex; align-items: baseline; justify-content: center; gap: var(--milo-space-2xs); height: var(--milo-size-hit-min); border: 0; border-radius: var(--milo-radius-m);
+  background: var(--milo-color-bg-raised-2); color: var(--milo-color-text-primary); font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-m);
+  align-items: center; -webkit-tap-highlight-color: transparent; }
+.key small { font-family: var(--milo-font-ui); font-weight: 500; font-size: var(--milo-font-size-min); color: var(--milo-color-text-secondary); }
+.keyStep { background: var(--milo-color-bg-raised); font-size: var(--milo-font-size-body); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
+.keyNext { grid-column: span 2; background: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); font-family: var(--milo-font-ui); font-size: var(--milo-font-size-body); font-weight: 900; }
+.keyNext:disabled { opacity: var(--milo-opacity-disabled); }
+
+/* 组行（首页即打卡）：整行是按钮，高度不低于命中区；当前组选中描边，已打卡的数字变灰 */
+.line { display: grid; grid-template-columns: var(--milo-space-3xl) 1fr auto; align-items: center; column-gap: var(--milo-space-m); width: 100%;
+  min-height: calc(var(--milo-size-hit-min) + var(--milo-space-xs)); padding: var(--milo-space-xs) var(--milo-space-m); border: 0; border-radius: var(--milo-radius-m);
+  font: inherit; text-align: left; background-color: transparent; color: var(--milo-color-text-secondary); }
+.line > svg { color: var(--milo-color-text-disabled); }
+.lineIdx { display: grid; place-items: center; width: var(--milo-space-3xl); height: var(--milo-space-3xl); border-radius: var(--milo-radius-pill);
+  font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-body); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); }
+.lineVals { display: flex; align-items: baseline; gap: var(--milo-space-s); min-width: 0; color: var(--milo-color-text-primary); }
+.lineEmpty { font-weight: 700; font-size: var(--milo-font-size-body); color: var(--milo-color-text-primary); text-decoration: underline dotted; text-underline-offset: var(--milo-space-2xs); }
+.line_current { background-color: var(--milo-color-bg-raised-2); box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-control-selected); }
+.line_current .lineIdx { background: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); box-shadow: none; }
+.line_current > svg { color: var(--milo-color-text-secondary); }
+.line_done .lineIdx { background: var(--milo-color-data-gauge); color: var(--milo-color-text-primary); box-shadow: none; }
+.line_done .lineVals { color: var(--milo-color-text-secondary); }
+.line_done .lineVals b { color: var(--milo-color-text-secondary); }
+.line_todo .lineVals { opacity: var(--milo-opacity-disabled); }
+
+/* 改数面板：两块大格子 + 永远占一行的提示 + 键盘 */
+.editor { display: grid; gap: var(--milo-space-s); }
+.tiles { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: var(--milo-space-s); padding: 0 var(--milo-size-gutter); }
+.tile { display: grid; gap: var(--milo-space-2xs); justify-items: start; min-height: calc(var(--milo-size-field-h) + var(--milo-space-l)); padding: var(--milo-space-s) var(--milo-space-m);
+  border: 0; border-radius: var(--milo-radius-m); font: inherit; text-align: left; background: var(--milo-color-bg-raised-2); color: var(--milo-color-text-secondary);
+  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); }
+.tileOn { background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-control-selected); }
+.tileBad, .tileBad.tileOn { box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-feedback-danger); }
+.tileNum { display: flex; align-items: baseline; gap: var(--milo-space-2xs); }
+.tileNum > i { font-style: normal; font-size: var(--milo-font-size-caption); color: var(--milo-color-text-secondary); }
+.tileEmpty { font-family: var(--milo-font-number); font-size: var(--milo-font-size-l); color: var(--milo-color-text-disabled); }
+.editorNote { margin: 0; min-height: 1lh; padding: 0 var(--milo-size-gutter); }
+.editor .pad { border-top: 0; padding-bottom: 0; }

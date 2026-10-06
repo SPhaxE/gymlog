@@ -1,5 +1,5 @@
 /** /brand：阶段 5.5b · IP 小牛与 Logo（2026-10-05）。
- *  IP：用户用 Nano Banana 按意向图 3_27AM 高清重制的 PNG（docs/A.jpg、B1–B5.jpg），scripts/mascot_png.py 切图、超分、抠图后进 public/mascot/；
+ *  IP：用户用 Nano Banana 按意向图 3_27AM 高清重制的 PNG（docs/sources/mascot/A.jpg、B1–B5.jpg），scripts/mascot_png.py 切图、超分、抠图后进 public/mascot/；
  *  5 种牛龄 × 6 种状态。Logo 为 B 递增条牛头（3_44AM）。
  *  这一页只给用户评审用：同一组件在不同尺寸、状态下的样子，以及放进启动页和奖励弹窗的样子。 */
 import { Fragment } from 'react';

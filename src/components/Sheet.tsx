@@ -55,9 +55,10 @@ export function Sheet({ title, meta, onClose, children, docked }: { title: strin
         style={hgt != null ? { height: hgt } : undefined}>
         <div className={s.grip} onPointerDown={docked ? undefined : down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} aria-hidden="true"><i /></div>
         <div className={s.head}>
-          <h2 className="milo-text-title-m">{title}</h2>
-          {meta && <span className={`milo-text-caption ${s.meta}`}>{meta}</span>}
-          <span className={s.sp} />
+          <div className={s.headText}>
+            <h2 className="milo-text-title-m">{title}</h2>
+            {meta && <span className={`milo-text-caption ${s.meta}`}>{meta}</span>}
+          </div>
           <IconButton icon="close" label="关闭" onClick={onClose} />
         </div>
         {children}

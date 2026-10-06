@@ -2,8 +2,8 @@
 """IP 小牛 PNG 素材（2026-10-05，用户决定 IP 改用 PNG）：从用户用 Nano Banana 出的状态板里切出 5 种牛龄 × 6 种状态，
 高清化、抠图、按牛龄统一比例和地面线，导出进 App 的素材。
 
-来源：docs/B1.jpg … B5.jpg（每种牛龄一张 3 × 2 状态板：平常 / 专注 / 开心 | 恢复日 / 破纪录 / 减量周），
-      docs/A.jpg（5 种牛龄的平常状态排一排，只用来量各牛龄的相对身高）。
+来源：docs/sources/mascot/B1.jpg … B5.jpg（每种牛龄一张 3 × 2 状态板：平常 / 专注 / 开心 | 恢复日 / 破纪录 / 减量周），
+      docs/sources/mascot/A.jpg（5 种牛龄的平常状态排一排，只用来量各牛龄的相对身高）。
 
 流程：
 1. 切图：按颜色和背景的距离找连通块，每格最大的一块是牛身——只要牛本身，z、碎屑、速度线、星光、Milo 的泛光都不要
@@ -13,7 +13,7 @@
 3. 抠图（在 4 倍图上做）：
    - 实心区 = 和背景色差够大的像素；被实心区包住的暗色小洞（眼睛、鼻孔、四角星眼）也算实心；
    - 边缘按「像素 = α·前景 + (1−α)·背景」反解 α，前景色取最近的实心像素（去掉黑边）；
-   - Milo 的源图换成 docs/B5-noglow.jpg（2026-10-05）：B5 的泛光贴着牛身、越近越亮，阈值法和 BiRefNet（试过，2026-10-05）都扣不干净，
+   - Milo 的源图换成 docs/sources/mascot/B5-noglow.jpg（2026-10-05）：B5 的泛光贴着牛身、越近越亮，阈值法和 BiRefNet（试过，2026-10-05）都扣不干净，
      用户用 Nano Banana 出了无泛光、品红纯色底的版本（角和眼改成最亮的荧光，提示词 nanobanana-ip-hd.md §D）。
      它本身就是 B5 的 4 倍大小，跳过超分，和其余牛龄走同一套抠图。光晕由 App 叠加。
 4. 规整：同一牛龄的 6 张用同一个比例、同一条地面线、同一块画布（换状态不跳）；各牛龄的大小按 A 的相对身高；
@@ -34,7 +34,7 @@ CACHE = os.path.join(ROOT, '.cache', 'mascot')
 WEIGHTS_URL = 'https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth'
 STAGES = ['newborn', 'young', 'sturdy', 'bull', 'milo']
 MOODS = ['idle', 'focused', 'happy', 'rest', 'pr', 'deload']  # 状态板里的顺序：上排 3 个、下排 3 个
-SHEET = {**{s: f'docs/B{i + 1}.jpg' for i, s in enumerate(STAGES)}, 'milo': 'docs/B5-noglow.jpg'}
+SHEET = {**{s: f'docs/sources/mascot/B{i + 1}.jpg' for i, s in enumerate(STAGES)}, 'milo': 'docs/sources/mascot/B5-noglow.jpg'}
 NATIVE = {'milo'}  # 源图已是 4 倍大小，不再超分
 SR = 4
 OUT_H = {'bull': 560}  # 公牛平常状态的身高（像素）；其余牛龄按 A 的比例换算
@@ -152,6 +152,10 @@ def matte(sr, bg, member, hi, lo, key=None, shrink=0, open_bg_holes=False):
         # （小牛不能开：它的眼睛和深色底一样黑）
         if st[j, cv2.CC_STAT_AREA] < 0.008 * fig_area and not (open_bg_holes and np.median(d[cc == j]) < hi / 2): fill |= cc == j
     solid = core | fill
+    purple = None
+    if key == 'magenta' and open_bg_holes:  # 品红度高的（暗品红阴影、石缝里的底）不可能是画面内容：不填实、最后透明
+        px = sr.astype(np.float32); purple = (np.minimum(px[..., 0], px[..., 2]) - px[..., 1]) > 70
+        solid &= ~purple
     # 边缘：像素 = α·F + (1−α)·底，F 取最近的实心像素颜色（换掉边上混进去的底色，不留黑边 / 绿边）
     _, lab = cv2.distanceTransformWithLabels((~core).astype(np.uint8), cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)
     cy, cx = np.nonzero(core); lut = np.zeros((lab.max() + 1, 3), np.float32); lut[1:len(cy) + 1] = sr[cy, cx]
@@ -162,6 +166,7 @@ def matte(sr, bg, member, hi, lo, key=None, shrink=0, open_bg_holes=False):
     a = np.where(solid, 1.0, np.where(near & member, a, 0.0))
     rgb = np.where(solid[..., None], sr.astype(np.float32), Fc)
     a = cv2.GaussianBlur(a.astype(np.float32), (0, 0), 0.5) * (~solid) + solid
+    if purple is not None: a = a * ~purple
     return np.dstack([np.clip(rgb, 0, 255), np.clip(a * 255, 0, 255)]).astype(np.uint8)
 
 
@@ -182,7 +187,7 @@ def feather(rgba, sigma=FEATHER):
 
 def heights_from_A():
     """A 里 5 种牛龄（平常）的身高，返回相对公牛的比例"""
-    img = cv2.imread(os.path.join(ROOT, 'docs', 'A.jpg'))
+    img = cv2.imread(os.path.join(ROOT, 'docs', 'sources', 'mascot', 'A.jpg'))
     bg = bg_color(img); d = dist(img, bg)
     m = (cv2.GaussianBlur(d, (0, 0), 1.2) > 34).astype(np.uint8)
     cnt, cc, st, cen = cv2.connectedComponentsWithStats(m, connectivity=8)

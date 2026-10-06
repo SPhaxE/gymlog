@@ -23,6 +23,16 @@ describe('PR 与基线（ia §1.7）', () => {
     const w = session(DAYS(1), [{ exerciseId: BENCH, skipped: false, sets: [{ type: 'warmup', weightKg: 140, reps: 3 }, { type: 'work', weightKg: 90, reps: 5 }] }], { id: 'w' });
     expect(exerciseRecords(env, [a, w], BENCH).at(-1)!.isPR).toBe(false);
   });
+  it('结算：逐动作与上次比（prevE1rm / delta），新纪录的增幅以之前最好为准（prevBest）', () => {
+    const top = session(DAYS(5), [entry(BENCH, [[110, 5]])], { id: 'top' });
+    const low = session(DAYS(4), [entry(BENCH, [[100, 5]])], { id: 'low' });
+    const pr = session(DAYS(1), [entry(BENCH, [[115, 5]])], { id: 'pr' });
+    const row = summarize(env, [a, top, low, pr], pr).rows[0];
+    expect(row.isPR).toBe(true);
+    expect(row.prevE1rm).toBeCloseTo(summarize(env, [a, low], low).rows[0].e1rm!, 5);
+    expect(row.prevBest).toBeCloseTo(summarize(env, [a, top], top).rows[0].e1rm!, 5);
+    expect(row.prevBest!).toBeGreaterThan(row.prevE1rm!);
+  });
   it('prMap 随历史重算：删掉更高的那次，后面的就成了 PR', () => {
     const top = session(DAYS(4), [entry(BENCH, [[110, 5]])], { id: 'top' });
     expect(prMap(env, [a, top, c]).get('c')!.has(BENCH)).toBe(false);

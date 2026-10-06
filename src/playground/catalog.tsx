@@ -6,7 +6,7 @@ import { useRef, type ReactNode } from 'react';
 import {
   Banner, BodyFigure, DotCalendar, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
   ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProgressSteps, RestBar, SectionLabel, Segmented,
-  SessionRow, SetRow, Sheet, SheetBlock, Skeleton, Sparkline, StateView, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
+  SessionRow, SetEditor, SetLine, SetRow, NumPad, Sheet, Tilt, SheetBlock, Skeleton, Sparkline, StateView, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
   AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, PropGlyph, type PropKind, RewardCard, AgeBadge, Coupon, FreezeCard, GrowthBar, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, ProductCard, StreakBar,
   type LogoState, type MascotMood, type MascotStage, type StreakStatus,
   type Forced, type IconName, type NumSize, type SkeletonShape, type Tab, type TagTone,
@@ -55,7 +55,7 @@ const noop = () => {};
 /** 轴取值的中文标注（矩阵表头与单元格说明） */
 export const CN: Record<string, string> = {
   default: '默认', pressed: '按下', focused: '聚焦', disabled: '禁用', loading: '加载中', primary: '主操作', primary_glow: '主操作 · 光晕', neutral: '中性', ghost: '描边', danger: '危险',
-  l: '大', s: '小', raised: '实底', plain: '无底', true: '是', false: '否', single: '单选', multi: '多选', empty: '空', filled: '已填', error: '错误', 'error-reps': '次数错误', 'pk-freeze': '冻结卡', 'pk-niujin': '牛劲', 'pk-trial': 'Pro 体验', 'pk-shipping': '免邮券', 'pk-merchant': '商家券', 'ps-normal': '可用', 'ps-used': '刚用掉', 'ps-dim': '已用 / 过期',
+  l: '大', s: '小', raised: '实底', plain: '无底', true: '是', false: '否', single: '单选', multi: '多选', empty: '空', filled: '已填', error: '错误', 'error-reps': '次数错误', 'np-ready': '可完成', 'np-blocked': '缺值 / 超范围', 'pk-freeze': '冻结卡', 'pk-niujin': '牛劲', 'pk-trial': 'Pro 体验', 'pk-shipping': '免邮券', 'pk-merchant': '商家券', 'ps-normal': '可用', 'ps-used': '刚用掉', 'ps-dim': '已用 / 过期',
   min: '到下限', max: '到上限', strong: '强调', outline: '虚线', up: '上升', down: '下降', flat: '持平', baseline: '基线', static: '只读', nav: '可进入',
   toggle: '开关', plain_card: '普通', hero: '主角', todo: '待做', first: '首次', current: '进行中', done: '已完成', skipped: '未做', missing: '缺值',
   editing: '修改中', warmup: '热身组', drop: '递减组', running: '计时中', ending: '即将结束', normal: '普通', pr: '有 PR', deload: '减量周', trained: '已练',
@@ -263,6 +263,43 @@ export const CATALOG: Entry[] = [
       return <ExerciseRow name={it?.name ?? '窄握下拉'} detail={`${it ? REGION_NAME[it.region] : '背'} · ${it?.sets ?? 3} × ${(it?.repRange ?? [6, 8]).join('–')}`}
         weight={p.status === 'first' ? null : it?.suggestion.weightKg ?? 50} status={status as 'todo'} sets={[p.status === 'done' ? it?.sets ?? 3 : 1, it?.sets ?? 3]} state={st(p.state)} />;
     },
+  },
+  {
+    name: 'NumPad', group: '训练与记录',
+    desc: '训练页自带数字键盘（Stitch s6 V2 + V1 的「下一组」键）：输入框不弹系统键盘；上面一排是步进（重量 ±2.5 kg，次数 ±1）；右下「下一组」= 完成当前这一组（唯一入口），缺值或超范围时不可用。',
+    axes: { state: ['np-ready', 'np-blocked'] }, size: 'card',
+    render: (p) => <NumPad onKey={() => {}} onStep={() => {}} step={2.5} unit="kg" onNext={() => {}} nextDisabled={p.state === 'np-blocked'} />,
+  },
+  {
+    name: 'SetLine', group: '训练与记录',
+    desc: '首页即打卡（2026-10-06）的组行：一整行就是按钮（命中区整行、不低于 hit-min），点开改数面板（SetEditor），行里没有输入框。当前组选中描边；首次动作重量空时写「填重量」，不预先报红；已打卡的序号换成勾、数字变灰。',
+    axes: { status: ['sl-current', 'sl-empty', 'sl-done', 'sl-todo'] }, size: 'card',
+    render: (p) => {
+      const m: Record<string, ReactNode> = {
+        'sl-current': <SetLine index={2} weight="82.5" reps="6" status="current" />, 'sl-empty': <SetLine index={1} weight="" reps="10" status="current" />,
+        'sl-done': <SetLine index={1} weight="80" reps="7" status="done" />, 'sl-todo': <SetLine index={3} weight="82.5" reps="6" status="todo" />,
+      };
+      return m[p.status];
+    },
+  },
+  {
+    name: 'SetEditor', group: '训练与记录',
+    desc: '改数面板（放在 Sheet 里，M05）：重量 / 次数两块大格子，点一下切换正在改的那格；数字用滚动码表（M04），±2.5 时按位滚；提示行永远占位，提示、报错不挤动格子和键盘；主键「打卡」（从主按钮「填重量」进来）或「好了」（改已有的组）。',
+    axes: { state: ['se-weight', 'se-first', 'se-error'] }, size: 'screen',
+    render: (p) => {
+      const m: Record<string, ReactNode> = {
+        'se-weight': <SetEditor weight="82.5" reps="6" field="weight" onField={noop} onKey={noop} onStep={noop} step={2.5} hint="建议 82.5 kg · 步进 ±2.5" onDone={noop} doneLabel="好了" />,
+        'se-first': <SetEditor weight="" reps="10" field="weight" onField={noop} onKey={noop} onStep={noop} step={2.5} hint="首次：选一个能干净做完 10 次的重量" onDone={noop} doneLabel="打卡" doneDisabled />,
+        'se-error': <SetEditor weight="620" reps="6" field="weight" onField={noop} onKey={noop} onStep={noop} step={2.5} error="最多 500 kg" onDone={noop} doneLabel="好了" doneDisabled />,
+      };
+      return <div className={s.sheetBox}>{m[p.state]}</div>;
+    },
+  },
+  {
+    name: 'Tilt', group: '训练与记录',
+    desc: 'M01 3D 倾斜光影：按住核心卡片移动时随触点俯仰微倾（±5°），一道径向高光跟手，松手弹簧回正；竖滑交给页面滚动。只给「这一刻的主角」——结算页的新纪录卡。在这里按住卡片拖一拖。',
+    axes: {}, size: 'card',
+    render: () => <Tilt><Card hero><span className="milo-text-caption">新纪录 · 杠铃卧推</span><Num size="hero" value="102.5" unit="kg" /></Card></Tilt>,
   },
   {
     name: 'SetRow', group: '训练与记录', desc: '记组。当前组预填建议值，「完成」是唯一入口（一次点击记完一组）；缺值时禁用、在缺的那格下面说明；超范围只圈出错的那一格，红字就在它正下方、同宽（不整行描红）。热身组不计入。',
