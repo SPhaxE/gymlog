@@ -25,11 +25,16 @@ const deltaText = (r: Row) => {
 /** 目标后的小字：减量周写系数；很久没练写「N 周前」 */
 const noteOf = (r: Row) => (r.deloaded ? `减量 ×${env.cfg.deload.intensity}` : r.daysAgo >= 56 ? `${Math.floor(r.daysAgo / 7)} 周前` : undefined);
 
+/** 导航单独一个组件：休息倒计时每 200 毫秒刷新一次，只重画导航，不连累整页的 19 行曲线（CI 上整页重画会把页面拖到卡死） */
+function GainsNav({ scenario, now, onTab }: { scenario?: string; now: number; onTab?: (tab: Tab, path: string) => void }) {
+  const navState = useTrainingNav(scenario, 0, now);
+  return <Nav selected="gains" {...navState} onSelect={onTab} />;
+}
+
 export function GainsPage({ scenario, now, onTab }: { scenario?: string; now: number; onTab?: (tab: Tab, path: string) => void }) {
   const nav = useNavigate(), toast = useToast();
   const { src, adopt, skip } = useSource(scenario, now);
   const d = useMemo(() => gainsData(src, now), [src, now]);
-  const navState = useTrainingNav(scenario, 0, now);
   const [region, setRegion] = useState<Region | 'all'>('all');
   const [deloadOpen, setDeloadOpen] = useState(false);
   const week = d.dv.kind === 'week';
@@ -89,7 +94,7 @@ export function GainsPage({ scenario, now, onTab }: { scenario?: string; now: nu
           </>
         )}
       </div>
-      <Nav selected="gains" {...navState} onSelect={onTab} />
+      <GainsNav scenario={scenario} now={now} onTab={onTab} />
       {deloadOpen && <DeloadSheet hits={d.sig.hits} onClose={() => setDeloadOpen(false)}
         onAdopt={() => { adopt(); setDeloadOpen(false); toast.show(`已进入减量周 · ${env.cfg.deload.days} 天`); }}
         onSkip={() => { skip(); setDeloadOpen(false); toast.show(`这次不减，${env.cfg.deload.days} 天内不再提醒`); }} />}

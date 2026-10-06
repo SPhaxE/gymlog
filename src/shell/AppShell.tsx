@@ -111,10 +111,11 @@ function PatternRoute({ onTab }: { onTab: (t: Tab, path: string) => void }) {
   return <Pattern kind={kind} onTab={onTab} />;
 }
 
+/** 路由更新不走 transition（BrowserRouter useTransitions={false}）：休息倒计时每 200 毫秒刷一次，页面重时 transition 渲染会被一次次打断重来，点了 Tab 迟迟不切（CI 与整套测试里出现过）；同步提交也让切 Tab 的共享元素转场更可预期 */
 export function AppShell() {
   const [host, setHost] = useState<HTMLElement | null>(null);
   return (
-    <BrowserRouter>
+    <BrowserRouter useTransitions={false}>
       <ToastProvider>
         <OverlayHost.Provider value={host}>
           <Routed />
