@@ -45,20 +45,25 @@ function Routed() {
   useBackButton();
   const q = new URLSearchParams(loc.search);
   const now = Number(q.get('now')) || Date.now();
-  // 切 Tab：休息计时在走时，计时胶囊（首页主按钮旁 ↔ 别的 Tab 的导航滑块）借 View Transitions 同元素飞过去（Nav.tsx 的 REST_VT）
+  // 切 Tab：休息计时在走时，首页的计时胶囊下滑消失，只有里面的进度条借 View Transitions 飞进被点的导航滑块（反过来亦然，Nav.tsx 的 REST_RING_VT）。
+  // 只有首页这一头有胶囊：别的 Tab 之间互切照旧，进度条在滑块里跟着滑，不走转场
   const onTab = (_: Tab, path: string) => {
     const go = () => nav(path + loc.search);
-    if (!document.querySelector('[style*="x-rest-timer"]')) { go(); return; }
-    const doc = document as Document & { startViewTransition?: (cb: () => Promise<void>) => unknown };
-    if (!doc.startViewTransition || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) { go(); return; }
-    if (path !== '/today') navHandoff.skipSlide = true;  // 目标页的滑块直接停好，胶囊飞进去
+    const leaving = loc.pathname === '/today' && !!document.querySelector('[style*="x-rest-timer"]');
+    const returning = path === '/today' && loc.pathname !== '/today' && !!document.querySelector('[style*="x-rest-ring"]');
+    const doc = document as Document & { startViewTransition?: (cb: () => Promise<void>) => { finished: Promise<unknown> } };
+    if (!(leaving || returning) || !doc.startViewTransition || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) { go(); return; }
+    if (leaving) navHandoff.skipSlide = true;  // 目标页的滑块直接停好，进度条才飞得到准确的落点
+    const html = document.documentElement;
+    html.dataset.restFly = leaving ? 'out' : 'in';
     // 路由更新不是同步提交的：等目标页的导航选中项出现了再拍「新」快照（最多等 motion/slow）；转场回调期间页面暂停渲染、rAF 不跑，所以用 setTimeout 轮询
-    doc.startViewTransition(() => new Promise<void>((done) => {
+    const vt = doc.startViewTransition(() => new Promise<void>((done) => {
       go();
       const t0 = performance.now();
       const ready = () => (document.querySelector(`nav [aria-current="page"][href="${path}"]`) || performance.now() - t0 > T['motion/slow'] ? done() : window.setTimeout(ready, 16));
       ready();
     }));
+    void vt.finished.finally(() => { delete html.dataset.restFly; });
   };
   const focus = q.get('focus');
   // 数据源：?scenario= 走演示场景（截图、回归）；否则读本机存储，没建档先去故事引导 + 建档（ia §4 P12）

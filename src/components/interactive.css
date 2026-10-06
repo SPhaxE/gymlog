@@ -56,10 +56,26 @@
 ::view-transition-old(*.swap) { animation: vtOut var(--milo-motion-fast) var(--milo-motion-ease-standard) both; }
 ::view-transition-new(*.swap) { animation: vtIn var(--milo-motion-base) var(--milo-motion-ease-standard) var(--milo-motion-press) both; }
 @keyframes vtOut { to { opacity: 0; } }
-/* 休息计时（.rest，2026-10-06）：首页主按钮旁的计时胶囊 ↔ 导航选中滑块（切 Tab）、胶囊 ↔ 休息面板（点开 / 收起）。
-   同样是「窗口」：快照按原尺寸居中、不拉伸（文字不变形），框按软弹簧变形，旧的先淡出、新的随后淡入 */
+/* 休息计时（.rest，2026-10-06）：首页主按钮旁的计时胶囊 ↔ 休息面板（点开 / 收起）。
+   同样是「窗口」：快照按原尺寸居中、不拉伸（文字不变形），框按软弹簧变形，旧的先淡出、新的随后淡入。
+   切 Tab 时胶囊（或面板）只有旧快照 / 只有新快照（:only-child）：不飞，往下滑着淡出 / 从下方升起 */
 ::view-transition-group(*.rest) { animation-duration: var(--milo-motion-spring-soft-ms); animation-timing-function: var(--milo-motion-ease-spring-soft); }
 ::view-transition-image-pair(*.rest) { overflow: clip; border-radius: var(--milo-radius-l); }
 ::view-transition-old(*.rest), ::view-transition-new(*.rest) { inset: 0; width: 100%; height: 100%; object-fit: none; object-position: center; }
 ::view-transition-old(*.rest) { animation: vtOut var(--milo-motion-fast) var(--milo-motion-ease-standard) both; }
 ::view-transition-new(*.rest) { animation: vtIn var(--milo-motion-base) var(--milo-motion-ease-standard) var(--milo-motion-press) both; }
+::view-transition-old(*.rest):only-child { animation: restSlideOut var(--milo-motion-base) var(--milo-motion-ease-standard) both; }
+::view-transition-new(*.rest):only-child { animation: restSlideIn var(--milo-motion-base) var(--milo-motion-ease-decelerate) var(--milo-motion-press) both; }
+@keyframes restSlideOut { to { opacity: 0; transform: translateY(var(--milo-space-2xl)); } }
+@keyframes restSlideIn { from { opacity: 0; transform: translateY(var(--milo-space-2xl)); } }
+/* 休息进度条（.ring）：切 Tab 时唯一飞过去的东西，借共享元素从计时胶囊移进被点的导航滑块（反过来亦然），几何完全一致，按软弹簧走。
+   换色不做交叉淡化：旧色一直不透明，新色盖上去——出发（out，胶囊 → 滑块）在快到滑块时才换成深色（到之前一直是骨白，深色在深底上看不见），
+   返回（in，滑块 → 胶囊）一离开滑块就换回骨白。滑块本身跟着页面一起出现，轻轻放大淡入（html[data-rest-fly] 由 AppShell 切 Tab 时设置） */
+::view-transition-group(*.ring) { animation-duration: var(--milo-motion-spring-ms); animation-timing-function: var(--milo-motion-ease-spring); }
+::view-transition-old(*.ring), ::view-transition-new(*.ring) { inset: 0; width: 100%; height: 100%; object-fit: fill; }
+::view-transition-old(*.ring) { animation: none; }
+::view-transition-new(*.ring) { animation: vtIn var(--milo-motion-base) var(--milo-motion-ease-standard) both; }
+html[data-rest-fly='out']::view-transition-new(*.ring) { animation-delay: calc(var(--milo-motion-spring-ms) * 0.4); }
+html[data-rest-fly='in']::view-transition-new(*.ring) { animation-duration: var(--milo-motion-fast); }
+html[data-rest-fly='out'] nav[aria-label='主导航'] > span[aria-hidden] { animation: pillIn var(--milo-motion-base) var(--milo-motion-ease-decelerate) both; }
+@keyframes pillIn { from { opacity: 0; scale: 0.85; } }

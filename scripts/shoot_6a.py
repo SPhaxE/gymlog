@@ -87,7 +87,11 @@ def run(b, w, h, shots):
     for k in ['4', '0']: click(pg, pg.get_by_role('button', name=k, exact=True)); pg.wait_for_timeout(150)
     click(pg, pg.get_by_role('button', name='打卡', exact=True)); step('filled', None, 900)
     # 切到身体页：计时胶囊借共享元素飞进导航滑块（点导航，不是直接改地址）
-    click(pg, pg.get_by_role('link', name='身体')); step('body-training', '/body', 2500)
+    click(pg, pg.get_by_role('link', name='身体')); pg.wait_for_timeout(120)
+    fly = pg.evaluate('''() => [...document.getAnimations()].map((a) => a.effect && a.effect.pseudoElement || '')''')
+    ok(any('x-rest-ring' in x for x in fly), f'{tag} 切 Tab：只有进度条（x-rest-ring）作为共享元素飞进导航滑块')
+    ok(pg.locator('nav [style*="x-rest-timer"]').count() == 0, f'{tag} 切 Tab：导航滑块不带整颗胶囊的共享名（不会盖住图标和文字）')
+    step('body-training', '/body', 2500)
     ok('休息剩余' in navlabel() or pg.get_by_role('button', name='组间休息剩余').count() == 0, f'{tag} 身体页：休息计时在导航滑块上')
     pg.goto(args.base + '/today'); pg.wait_for_timeout(1200)
     click(pg, pg.get_by_role('button', name='结束', exact=True)); step('end-confirm')

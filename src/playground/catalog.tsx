@@ -344,7 +344,7 @@ export const CATALOG: Entry[] = [
   },
   /* ---------------- 数据图形 ---------------- */
   {
-    name: 'RestDock', group: '训练与记录', desc: 'M02 流体胶囊形变：组间休息平时是一颗小胶囊（底边一道骨白细线 = 剩余比例），点开原地长成休息面板（±15、跳过），尺寸与圆角按软弹簧一起过渡。ring（首页训练中，2026-10-06）：胶囊和导航选中滑块一模一样（骨白、图标在上时间在下、内描边按剩余比例收短），首页导航不再重复显示休息；切 Tab 时这颗胶囊借共享元素飞进导航滑块（navHandoff 让目标页滑块先停好），胶囊 ↔ 面板也是共享元素。',
+    name: 'RestDock', group: '训练与记录', desc: 'M02 流体胶囊形变：组间休息平时是一颗小胶囊（底边一道骨白细线 = 剩余比例），点开原地长成休息面板（±15、跳过），尺寸与圆角按软弹簧一起过渡。ring（首页训练中，2026-10-06）：胶囊与导航一项同宽、页面配色（凹底 + 细线，图标在上时间在下，内描边骨白、按剩余比例收短），首页导航不再重复显示休息；切 Tab 时胶囊往下滑着淡出，只有进度条借共享元素飞进被点的导航滑块并换成深色（navHandoff 让目标页滑块先停好），胶囊 ↔ 面板也是共享元素。',
     axes: { state: ['pill', 'open', 'done', 'ring', 'ring-done'] }, size: 'card', covers: ['navHandoff'],
     render: (p) => <RestDock remaining={p.state === 'done' || p.state === 'ring-done' ? 0 : 95} total={180} open={p.state === 'open'} onToggle={noop}
       ring={p.state.startsWith('ring') ? { width: 64, endAt: Date.now() + 95e3 } : undefined} />,

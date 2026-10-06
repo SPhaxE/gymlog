@@ -173,7 +173,7 @@ python3 scripts/shoot_growth.py     # 奖励弹窗 GIF → screenshots/growth/
 | 建档 | 3 步，草稿实时保存；最后可选「载入演示数据」（进阶用户 30 周） | `pages/OnboardingPage.*` |
 | 首页 P01 | 处方主角卡 + 增量尺；「为什么是这些」面板（每个动作练到哪些肌头、时相、近 7 天组数、重量理由）；**今天已练完**：睡着的小牛 + 摘要 + 恢复进度，「再练一次」才展开处方 | `pages/HomePage.*` |
 | 首页训练中（原 P03） | 开始训练 → 主角卡原地展开成组行（M03）；拇指区唯一主操作「打卡 · 第 N 组」（首次动作变「填重量」，直接拉出键盘）；点组行拉出改数面板（`Sheet` + `SetEditor`，M05 + M04 码表）；休息：导航选中胶囊 + 主按钮左边的休息胶囊（M02，点别处缩回）；换动作：列表行长成主角卡（M03 `.swap`）；列表每行一排组点；导航外圈今日进度，切到身体页也在 | `pages/TrainingView.tsx`、`components/training.tsx`（SetLine、SetEditor、NumPad）、`data/useTrainingNav.ts` |
-| 休息计时（最后一项，2026-10-06） | 同一时刻屏上只有一个计时器：首页训练中是主按钮左边一颗和导航选中滑块同形的胶囊（骨白、图标在上时间在下、里面一道实线按剩余比例收短），首页导航不显示休息；切到别的 Tab，胶囊借 View Transitions 飞进导航滑块（`Nav.tsx` 的 `REST_VT` / `navHandoff`，`AppShell.tsx` 的 `onTab` 等路由提交后再拍新快照），切回再飞回；胶囊 ↔ 休息面板也是同一个共享元素 | `components/motion.tsx`（`RestDock ring`）、`components/Nav.tsx`、`shell/AppShell.tsx` |
+| 休息计时（最后一项，2026-10-06） | 同一时刻屏上只有一个计时器：首页训练中是主按钮左边一颗页面配色的胶囊（凹底 + 细线、图标在上时间在下，里面一道骨白实线按剩余比例收短），首页导航不显示休息；切到别的 Tab，**胶囊自己往下滑着淡出，只有进度条**（`REST_RING_VT`，`.ring`）借 View Transitions 飞进被点的导航滑块，到位后才换成滑块上的深色，切回首页反过来（`Nav.tsx` 的 `REST_VT` / `REST_RING_VT` / `navHandoff`，`AppShell.tsx` 的 `onTab` 等路由提交后再拍新快照并设 `html[data-rest-fly]`，`interactive.css` 里 `.rest:only-child` 与 `.ring`）；别的 Tab 之间互切不走转场；胶囊 ↔ 休息面板仍是同一个共享元素 | `components/motion.tsx`（`RestDock ring`）、`components/Nav.tsx`、`shell/AppShell.tsx` |
 | 结算 P05 | 新纪录整块荧光卡（进场弹起 + 扫光 + 按住微倾 M01）；增幅按「之前最好」算（与奖励弹窗一致）；总负荷码表；逐个动作（与上次比）；牛龄成长；力竭度两排五格（每格 ≥ 48）；奖励弹窗（每条记录只弹一次） | `pages/SummaryPage.*` |
 | 实机演示 | 电脑上：讲解 + 演示路线，跟随手机当前步骤，每步可直接跳转；右侧手机壳里是 App 本体（同源 iframe）。手机上：清空后全屏进故事 | `pages/DemoPage.*` |
 

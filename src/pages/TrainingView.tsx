@@ -37,6 +37,9 @@ export function TrainingView({ a, now }: { a: ActiveSession; now: number }) {
   const dockRef = useRef<HTMLDivElement>(null);
   // 休息胶囊和导航选中滑块一样宽（量导航当前项），切 Tab 时才能「原地」飞进滑块
   const [pillW, setPillW] = useState(0);
+  // 刚挂载时胶囊宽度还没量到：主按钮的 left 过渡先关着，否则从别的 Tab 回来时按钮会从整宽「挤」到胶囊右边（2026-10-06 逐帧看到）
+  const [armed, setArmed] = useState(false);
+  useEffect(() => { let r = requestAnimationFrame(() => { r = requestAnimationFrame(() => setArmed(true)); }); return () => cancelAnimationFrame(r); }, []);
   useLayoutEffect(() => {
     const m = () => setPillW(document.querySelector('nav[aria-label="主导航"] [aria-current="page"]')?.getBoundingClientRect().width ?? 0);
     m(); window.addEventListener('resize', m); return () => window.removeEventListener('resize', m);
@@ -151,10 +154,10 @@ export function TrainingView({ a, now }: { a: ActiveSession; now: number }) {
       </div>
 
       <div className={s.scrim} aria-hidden="true" />
-      {/* 首页训练中唯一的计时器：和导航选中滑块同形（导航上不再显示），切 Tab 时飞进导航滑块（Nav.tsx 的 REST_VT） */}
+      {/* 首页训练中唯一的计时器：和导航选中滑块同形（导航上不再显示），切 Tab 时胶囊下滑消失、里面的进度条飞进导航滑块（Nav.tsx 的 REST_RING_VT） */}
       {st.rest && <div ref={dockRef} className={`${s.restDock} ${dock ? s.restDockOpen : ''}`}><RestDock remaining={left} total={st.rest.totalMs / 1000} open={dock} onToggle={setDock} onAdjust={adjustRest} onSkip={skipRest}
         ring={pillW ? { width: pillW, endAt: st.rest.endAt } : undefined} /></div>}
-      <div className={s.cta} style={st.rest && !dock && pillW ? { left: T['size/gutter'] + pillW + T['space/s'] } : undefined}><Button onClick={primary.run}>{primary.label}</Button></div>
+      <div className={s.cta} style={{ ...(st.rest && !dock && pillW ? { left: T['size/gutter'] + pillW + T['space/s'] } : {}), ...(armed ? {} : { transition: 'none' }) }}><Button onClick={primary.run}>{primary.label}</Button></div>
 
       {edit && er && (
         <Sheet title={`${en.name} · 第 ${edit.row + 1} 组`} meta={er.done ? '已打卡 · 改完点「好了」' : undefined} onClose={() => setEdit(null)}>
