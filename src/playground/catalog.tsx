@@ -41,6 +41,7 @@ export const GROUPS = ['基础', '表单', '反馈与悬浮层', '列表与页�
 /** 只在交互演示或页面里出现、不进矩阵的导出（catalog.test 读这张表） */
 export const NOT_IN_MATRIX: Record<string, string> = {
   Cascade: 'M07 交错入场是一段动画，见「训练与记录 · ExerciseRow」下的交互演示',
+  Collapsible: '可收起的一块（高度弹簧 + 展开时 M07 交错弹入），是一段动画，见「训练与记录 · GainGroupHead」下的交互演示',
   Screen: '页面框（版式容器），见 /preview §4 与整页演示',
   OptionGroup: '单选组的方向键行为，见「表单」交互演示',
   ToastViewport: 'Toast 的出口，见「反馈」交互演示',
@@ -64,7 +65,7 @@ export const CN: Record<string, string> = {
   recovering: '恢复中', golden: '黄金窗', decayed: '已回落', near: '邻近', focus: '焦点', front: '正面', back: '背面', male: '男', female: '女',
   track: '已开始 · 0 组', partial: '进行中', full: '满环', home: '首页', body: '身体', gains: '增量', log: '记录', me: '我的', success: '成功', undo: '可撤销',
   suggest: '建议减量', week: '减量周', quiet: '一行小字', 'pool-empty': '动作池不足', resume: '继续上次训练', info: '信息', page: '子页', session: '训练中',
-  sub: '标题下带日期与附件', pill: '小胶囊', open: '展开', loadingState: '加载中', shown: '已出现', lifted: '抬到主按钮上面', 'today-done': '今天练过',
+  sub: '标题下带日期与附件', fold: '收起', closed: '已收起', pill: '小胶囊', open: '展开', loadingState: '加载中', shown: '已出现', lifted: '抬到主按钮上面', 'today-done': '今天练过',
   experience: '训练经验', minutes: '单次时长', equipment: '可用器械', 'w-steady': '稳定守约', 'w-mixed': '有减量也有冻结', 'w-cold': '刚起步',
   'g-cycles': '涨幅太大 · 只写周期', 'g-bare': '牛龄页（不重复段名）',
   newborn: '牛犊', young: '小牛', sturdy: '壮牛', bull: '公牛', milo: 'Milo', 'm-idle': '平常', 'm-focused': '专注', 'm-happy': '开心', 'm-rest': '恢复日', 'm-pr': '破纪录', 'm-deload': '减量周', idle: '平常', training: '训练中',
@@ -300,9 +301,10 @@ export const CATALOG: Entry[] = [
     },
   },
   {
-    name: 'GainGroupHead', group: '训练与记录', desc: '增量页的结论色带：该加重（整行荧光，整页唯一）/ 保持，次数 +1 / 该减重 / 本周目标 · 减量（灰带）；带下面一句话说明引擎为什么这样分。',
-    axes: { kind: ['add', 'hold', 'cut', 'week'] }, size: 'card',
-    render: (p) => <GainGroupHead kind={p.kind as 'add'} count={p.kind === 'week' ? 6 : 3} />,
+    name: 'GainGroupHead', group: '训练与记录', desc: '增量页的结论色带：该加重（整行荧光，整页唯一）/ 保持，次数 +1 / 该减重 / 本周目标 · 减量（灰带）；带下面一句话说明引擎为什么这样分。可收起（2026-10-06 用户）：整条色带是按钮（aria-expanded，按下 M08），右边箭头随展开转 90°；收起时说明那句跟着收（Collapsible 高度弹簧）；增量页默认只展开第一组。减量周只有一组，是静态组头。',
+    axes: { kind: ['add', 'hold', 'cut', 'week'], fold: ['open', 'closed', 'static'], state: ['default', 'pressed', 'focused'] }, rows: ['kind', 'fold'], cols: 'state', size: 'card',
+    skip: (p) => (p.kind === 'week') !== (p.fold === 'static') || (p.fold === 'static' && p.state !== 'default'),
+    render: (p) => <GainGroupHead kind={p.kind as 'add'} count={p.kind === 'week' ? 6 : 3} expanded={p.fold !== 'closed'} onToggle={p.fold === 'static' ? undefined : noop} state={p.state as Forced} />,
   },
   {
     name: 'NumPad', group: '训练与记录',

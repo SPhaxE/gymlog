@@ -206,7 +206,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 
 ## 9. 组件与交互态（`src/components` → `/playground`）
 
-`/playground` 是这一节的实物：82 个组件、609 个变体，每个变体是 `catalog.tsx` 里各轴取值的组合。下面的表只写用法；尺寸都在 Token 里，状态在 Playground 里看。
+`/playground` 是这一节的实物：82 个组件、624 个变体，每个变体是 `catalog.tsx` 里各轴取值的组合。下面的表只写用法；尺寸都在 Token 里，状态在 Playground 里看。
 
 ### 9.1 交互态（所有可点的件共用 `interactive.css`）
 
@@ -265,7 +265,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 | | `SectionLabel`、`PageHeader`、`TopBar`、`BackToTop` | —；普通 / 标题下带日期与附件；子页 / 训练中；已出现 / 抬到主按钮上面 | Tab 根页用 `PageHeader`，没有 Tab 的子页用 `TopBar`。**页头**（2026-10-06 用户改）：标题上方不放任何东西（日期、计数、标签写在标题下面），标题行固定 48 高——右侧有没有附件，五个 Tab 的大标题都在同一个 y；页头跟着内容滑走，不留细标题栏。**回到顶端** `BackToTop`：所有长页都挂，滚过一屏才出现（右下、导航上方、命中 48），点了平滑滚回顶；首页有固定主按钮时抬高（`lift`）；中性配色 |
 | 训练与记录 | `PrescriptionHero` | 加重 / 保持 / 减重 / 首次 / 减量周 | 首页第一个动作 |
 | | `ExerciseRow` | 待做 / 首次 / 进行中 / 已完成 / 未做 × 3 种交互态 | 处方、训练中 |
-| | `GainSummary`、`GainRow`、`GainGroupHead` | 摘要 有涨有退 / 全在涨 / 都是基线 / 近 4 周没练；行 涨跌 × PR × 按下 / 聚焦 / 加载中；色带 该加重 / 保持 / 该减重 / 本周目标 · 减量 | 增量页。摘要是配重片环，每个数带单位；行的曲线 / 数值是固定宽度的列；没有 onClick 是静态行；「该加重」色带是整页唯一荧光 |
+| | `GainSummary`、`GainRow`、`GainGroupHead` | 摘要 有涨有退 / 全在涨 / 都是基线 / 近 4 周没练；行 涨跌 × PR × 按下 / 聚焦 / 加载中；色带 该加重 / 保持 / 该减重 / 本周目标 · 减量 × 展开 / 收起 / 静态 × 按下 / 聚焦 | 增量页。摘要是配重片环，每个数带单位；行的曲线 / 数值是固定宽度的列；没有 onClick 是静态行；「该加重」色带是整页唯一荧光。**组头可收起**（2026-10-06）：整条色带是按钮（`aria-expanded`），箭头转 90°；组内容包在 `Collapsible` 里（高度按 `motion/spring` 走 0fr ↔ 1fr，展开时行按 M07 依次弹入，收起后 `inert`）；默认只展开第一组，展开状态随滚动位置一起记忆 |
 | | `SetRow` | 待做 / 进行中 / 缺值 / 已完成 / 修改中 / 错误 / 热身组 / 递减组 | 「完成」是唯一入口 |
 | | `RestBar` | 计时中 / 即将结束 / 结束 | 结束时间戳；±15、跳过 |
 | | `SessionRow` | 普通 / 有 PR / 减量周 / 静态 × 3 种交互态（静态只有默认） | 记录列表（P07）。票根行：左边大号日期（10/6）+ 周几，虚线撕口，中间主要部位和动作 / 组 / 分钟，右边骨白 PR 标；不在今年的带年份；没有 `onClick` 是静态行（不画箭头、没有按下反馈）；`drillId`：M09 钻入转场的共享名（被点的那一行带，日期飞成详情标题、部位飞成副标题）；动作 / 组 / 分钟在窄屏只在「·」处换行 |
@@ -273,7 +273,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 | | `MediaFrame` | 加载中 / 已加载 / 缺素材 / 加载失败 | 只经 `media` 字段引用，保留署名 |
 | | `StepRing`、`DotCalendar` | 待做 / 进行中 / 已完成；— | E2 训练中的动作序号 + 组数环；E1 点阵日历（记录页已改用 `SteelPlate`，这个只剩 playground / lab） |
 | | `SteelPlate` | 已练 / 今天练过 / 空 | **记录页顶部的钢板打孔日历**（`design/hifi/log/plate-plan.md`）：深色冲压钢板，练过的日子是冲出来的孔、板后透出荧光，没练的只有淡淡的样冲点，今天刻一圈细环；光影随滚动变化（一大团软光从右移到左、两侧漏光换边、钢面一道淡反光，纯 CSS 滚动驱动，合成线程）；整块板对读屏是一张图，孔不单独点击；没练过任何一天时板后不点灯；一页只放一块（荧光只给它）。圆角裁切要写 `overflow: clip`，不能写 `hidden`（见 HANDOFF 的坑）。`dotMonths` 的格子带 `done`（今天练过也算） |
-| | `RestDock`、`SharedDetail`、`Cascade` | 小胶囊 / 展开 / 结束；展开；— | M02 / M03 / M07（§7） |
+| | `RestDock`、`SharedDetail`、`Cascade`、`Collapsible` | 小胶囊 / 展开 / 结束；展开；—；— | M02 / M03 / M07（§7）；`Collapsible` = 高度弹簧 + 展开时 M07 重播（增量分组） |
 | 数据图形 | `Sparkline`、`TrendChart` | 上升 / 下降 / 只有 1 次；多次 / 选中一次 / 只有 1 次 / 没有记录 | 时间按正序画（有单测）；PR 用菱形；TrendChart 是圆滑曲线 + 渐隐面积 + 拖动吸附 + 码表读数（E5 / M04） |
 | | `WeekBars`、`GiantNumber`、`Odometer` | —；—；3 档字号 | E3 增量页近 8 周组数；E4 结算页唯一一次「大声」；M04 数字按位滚动 |
 | | `IncrementRuler`、`LandmarkRuler`、`PhaseSegments`、`Ticks`、`TierLegend` | 加重 / 保持 / 减重；未练 / 不足 / 达标 / 超量；四个时相 | §5 |
@@ -357,7 +357,7 @@ Tab 之间切换走路由，不整页刷新；`?scenario=` 选演示场景，`?n
 | M04 码表 `Odometer` | 训练中「N / M 组」、改数面板的重量 / 次数（±2.5 按位滚）、结算页总负荷、奖励弹窗 | 数在变，就让它「转」过去 |
 | M05 阻尼底部面板 `Sheet` | 改数面板、「为什么是这些」、肌头详情 | 临时任务，拉得动、甩得掉 |
 | M06 光晕边框 `Button glow` | 首页「开始训练」（每屏最多一处） | 今天唯一要做的事 |
-| M07 交错流 `Cascade` | 首页「接下来」、训练中「全部动作」、各列表 | 列表进场有先后，不整块蹦出来 |
+| M07 交错流 `Cascade` | 首页「接下来」、训练中「全部动作」、各列表、增量分组每次展开时组内的行 | 列表进场有先后，不整块蹦出来 |
 | M08 按下回弹 `.milo-press` | 所有可点的件（组行、键盘键、按钮、列表行） | 手指按下去有「实」的感觉 |
 
 ## 10. 自检

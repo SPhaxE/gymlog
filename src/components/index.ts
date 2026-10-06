@@ -9,7 +9,7 @@ export { Sparkline, TrendChart, type Point } from './charts';
 export { GainGroupHead, GainRow, GainSummary, type GroupKind as GainGroupKind } from './gains';
 export { DotCalendar, GiantNumber, Odometer, StepRing, WeekBars, dotDays, dotMonths, type DotCell, type DotMonth } from './dataviz';
 export { SteelPlate } from './plate';
-export { Cascade, RestDock, SharedDetail, Tilt, drillName, drillTransition, guardTransitionTaps, sharedName, sharedTransition } from './motion';
+export { Cascade, Collapsible, RestDock, SharedDetail, Tilt, drillName, drillTransition, guardTransitionTaps, sharedName, sharedTransition } from './motion';
 export { Chip, NumberField, OptionCard, OptionGroup, ProgressSteps, Stepper, Switch } from './controls';
 export { Dialog, DialogCard, Skeleton, StateView, Toast, ToastViewport, type SkeletonShape, type StateKind } from './feedback';
 export { IncrementRuler, LandmarkRuler, PhaseSegments } from './Gauges';

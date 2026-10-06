@@ -21,7 +21,14 @@
 
 /* GainGroupHead：整行色带（图标 + 标题 + 个数）+ 下面一句话。「该加重」是整页唯一的荧光，其余灰带。 */
 .headWrap { display: grid; gap: var(--milo-space-xs); padding-bottom: var(--milo-space-xs); }
+.bandH { margin: 0; font: inherit; }
 .band { display: flex; align-items: center; gap: var(--milo-space-s); margin: 0; min-height: var(--milo-size-button-h-s); padding: 0 var(--milo-space-m); border-radius: var(--milo-radius-m); }
+/* 可收起的组头：整条色带是按钮，命中区上下外扩到 48 */
+.bandBtn { position: relative; width: 100%; border: 0; font: inherit; text-align: left; }
+.bandBtn::after { content: ''; position: absolute; left: 0; right: 0; top: calc((var(--milo-size-button-h-s) - var(--milo-size-hit-min)) / 2); bottom: calc((var(--milo-size-button-h-s) - var(--milo-size-hit-min)) / 2); }
+.chev { display: grid; place-items: center; transform: rotate(0deg); transition: transform var(--milo-motion-spring-ms) var(--milo-motion-ease-spring); }
+.chevOpen { transform: rotate(90deg); }
+@media (prefers-reduced-motion: reduce) { .chev { transition: none; } }
 .band b { flex: 1; min-width: 0; }
 .bandGrey { background: var(--milo-color-bg-raised-2); color: var(--milo-color-text-primary); }
 .headLit { background: var(--milo-color-accent-default); color: var(--milo-color-text-on-accent); }

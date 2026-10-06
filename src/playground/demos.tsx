@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import {
-  BackToTop, Banner, Button, Cascade, Dialog, ExerciseRow, PageHeader, RestDock, SharedDetail, SteelPlate, dotMonths, sharedTransition, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
+  BackToTop, Banner, Button, Cascade, Collapsible, GainGroupHead, GainRow, Dialog, ExerciseRow, PageHeader, RestDock, SharedDetail, SteelPlate, dotMonths, sharedTransition, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
   LandmarkRuler, PhaseSegments, Num, Screen, SetRow, clock, useCountdown, useToast, type Tab,
   Mascot, MASCOT_MOODS, MASCOT_STAGES, MOOD_NAME, STAGE_NAME, RewardModal, REWARD_NAME, AgeBadge, GrowthBar, Paywall, type MascotMood, type MascotStage, type Reward,
 } from '../components';
@@ -242,6 +242,25 @@ function CascadeDemo({ f }: { f: Fixtures }) {
   );
 }
 
+/** 增量分组：点组头收起 / 展开；高度按弹簧走，展开时一行行依次弹入（M07），箭头转向 */
+function GainGroupsDemo({ f }: { f: Fixtures }) {
+  const [open, setOpen] = useState<Record<string, boolean>>({ add: true });
+  const groups = [['add', f.items.slice(0, 3)], ['hold', f.items.slice(1, 4)], ['cut', f.items.slice(0, 2)]] as const;
+  return (
+    <div className={s.demoPad}>
+      {groups.map(([k, items]) => (
+        <section key={k}>
+          <GainGroupHead kind={k} count={items.length} expanded={!!open[k]} controls={`demo-${k}`} onToggle={() => setOpen((m) => ({ ...m, [k]: !m[k] }))} />
+          <Collapsible open={!!open[k]} id={`demo-${k}`}>
+            {items.map((x) => <GainRow key={x.exerciseId} name={x.name} latest={x.suggestion.weightKg} delta={{ dir: 'up', value: '+2.5 kg' }} points={f.trends.normal} target={`${x.suggestion.weightKg} kg × ${x.repRange[1]}`} />)}
+          </Collapsible>
+        </section>
+      ))}
+      <Note>点组头：整条色带是按钮，箭头转 90°；高度按弹簧收拢 / 展开，展开时一行行依次从下方弹入（M07）。增量页默认只展开第一组。</Note>
+    </div>
+  );
+}
+
 /** M03 共享元素展开：点一行，卡片、名称、重量原地变形成详情；返回变回去 */
 function ExpandInner({ f }: { f: Fixtures }) {
   const [open, setOpen] = useState<string | null>(null);
@@ -424,6 +443,7 @@ export const DEMOS: Record<string, (f: Fixtures) => ReactNode> = {
   Nav: () => <NavDemo />,
   CapsuleRail: (f) => <MagnifierDemo f={f} />,
   BackToTop: (f) => <BackTopDemo f={f} />,
+  GainGroupHead: (f) => <GainGroupsDemo f={f} />,
   SteelPlate: (f) => <PlateDemo f={f} />,
   TrendChart: (f) => <ChartDemo f={f} />,
   WeekStrip: (f) => <WeekDemo f={f} />,

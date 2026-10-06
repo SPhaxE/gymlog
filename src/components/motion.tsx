@@ -21,6 +21,20 @@ export function Cascade({ children, replayKey, still }: { children: ReactNode; r
   return <div key={replayKey} className={cx(s.cascade, still && s.cascadeStill)}>{items.map((c, i) => <div key={i} className={s.cascadeItem} style={{ animationDelay: `${Math.round(i * step)}ms` }}>{c}</div>)}</div>;
 }
 
+/** 可收起的一块（2026-10-06 用户：增量分组要能点标题收起）：
+ *  高度按 motion/spring 在 0 ↔ 内容高之间过渡（M02 的「尺寸弹簧」，grid-template-rows 0fr ↔ 1fr，不写死高度）；
+ *  每次展开，子项按 M07 依次从下方弹入（Cascade 重播）；第一次挂载不播（外层列表自己有入场）；收起后 inert（读屏、Tab 键都跳过）。 */
+export function Collapsible({ open, id, children }: { open: boolean; id?: string; children: ReactNode }) {
+  const seq = useRef(0), was = useRef(open);
+  if (open && !was.current) seq.current += 1;   // 渲染时同步记一次「展开」：子项的入场和高度过渡同一帧开始
+  was.current = open;
+  return (
+    <div id={id} className={cx(s.collapsible, open && s.collapsibleOpen)} inert={!open || undefined}>
+      <div className={s.collapsibleInner}><Cascade replayKey={seq.current} still={seq.current === 0}>{children}</Cascade></div>
+    </div>
+  );
+}
+
 export function RestDock({ remaining, total, open, onToggle, onAdjust, onSkip, ring }: {
   remaining: number; total: number; open: boolean; onToggle: (open: boolean) => void; onAdjust?: (d: number) => void; onSkip?: () => void;
   /** 「导航滑块」形态（2026-10-06，首页训练中）：和导航选中滑块一模一样——骨白胶囊、图标在上时间在下、里面一道按剩余比例收短的实线；
