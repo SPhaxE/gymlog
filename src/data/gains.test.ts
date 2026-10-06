@@ -27,8 +27,6 @@ describe('增量总览的数据（ia §1.9）', () => {
     for (const sc of ['plain-prescription', 'deload-suggested', 'advanced-profile']) {
       const d = gainsData(sc, NOW), m = d.summary;
       expect(m.up + m.flat + m.down + m.baseline, sc).toBe(m.trained);
-      expect(m.prWeeks.length, sc).toBe(4);
-      expect(m.prWeeks.reduce((a, b) => a + b, 0), sc).toBe(m.pr);
       const inWin = d.rows.filter((r) => r.lastMs > NOW - 28 * DAY);
       expect(inWin.filter((r) => r.delta.dir === 'up').length, sc).toBe(m.up);
       expect(inWin.filter((r) => r.delta.dir === 'down').length, sc).toBe(m.down);
@@ -64,7 +62,7 @@ describe('增量总览的数据（ia §1.9）', () => {
     const d = gainsData('cold-start', NOW);
     expect(d.empty).toBe(true);
     expect(d.rows).toEqual([]);
-    expect(d.summary).toEqual({ pr: 0, prWeeks: [0, 0, 0, 0], up: 0, flat: 0, down: 0, baseline: 0, trained: 0 });
+    expect(d.summary).toEqual({ pr: 0, up: 0, flat: 0, down: 0, baseline: 0, trained: 0 });
     expect(d.regions).toEqual([]);
   });
 

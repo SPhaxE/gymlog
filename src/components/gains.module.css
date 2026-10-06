@@ -1,26 +1,53 @@
-/* GainRow：三列两行。左：名称（+PR 标）/ 下次目标；中：迷你曲线（跨两行）；右：最近预估值 / 涨跌。 */
-.row { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: 'name spark value' 'target spark delta'; align-items: center; column-gap: var(--milo-space-m); row-gap: var(--milo-space-2xs);
-  width: 100%; min-height: calc(var(--milo-size-hit-min) + var(--milo-space-m)); padding: var(--milo-space-s) var(--milo-space-m); border: 0; border-radius: var(--milo-radius-m); font: inherit; text-align: left;
+/* GainRow：三列固定宽度，两行。左：名称（+PR 标）/ 下次目标；中：迷你曲线（跨两行，所有行同一条竖线开始）；右：最近预估值 / 涨跌。
+   中间和右边两列宽度固定，曲线才不会被「100.3」比「31.4」宽的数值推着走。 */
+.row { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) var(--milo-size-spark-w) calc(var(--milo-space-5xl) * 1.5); grid-template-areas: 'name spark value' 'target spark delta';
+  align-items: center; column-gap: var(--milo-space-s); row-gap: var(--milo-space-2xs);
+  width: 100%; min-height: calc(var(--milo-size-hit-min) + var(--milo-space-xl)); padding: var(--milo-space-s) var(--milo-space-m); border: 0; border-radius: var(--milo-radius-m); font: inherit; text-align: left;
   background-color: transparent; color: var(--milo-color-text-primary); }
-/* 行与行之间一道细线（同组内），读的时候一行一行扫；每组第一行上方是组头，不画 */
+/* 行与行之间一道细线（同组内），读的时候一行一行扫 */
 .row + .row::before { content: ''; position: absolute; top: 0; left: var(--milo-space-m); right: var(--milo-space-m); height: var(--milo-stroke-hairline); background: var(--milo-color-line-default); pointer-events: none; }
 .btn { cursor: pointer; }
 .loading { display: block; }
-.name { grid-area: name; display: flex; align-items: center; flex-wrap: wrap; gap: var(--milo-space-xs); min-width: 0; }
+.name { grid-area: name; display: flex; align-items: center; flex-wrap: wrap; column-gap: var(--milo-space-xs); row-gap: var(--milo-space-2xs); min-width: 0; }
 .name b { min-width: 0; overflow-wrap: anywhere; }
-.spark { grid-area: spark; display: grid; place-items: center; }
+/* 曲线列：垂直居中，曲线下面一条淡的虚线基线，列对没对齐一眼看得出 */
+.spark { grid-area: spark; display: grid; place-items: center; align-self: center; padding-bottom: var(--milo-space-2xs); border-bottom: var(--milo-stroke-hairline) dotted var(--milo-color-line-strong); }
 .value { grid-area: value; justify-self: end; text-align: right; }
 .target { grid-area: target; display: flex; align-items: baseline; flex-wrap: wrap; column-gap: var(--milo-space-xs); color: var(--milo-color-text-secondary); min-width: 0; }
 .target i { font-style: normal; font-size: var(--milo-font-size-caption); }
-.target b { color: var(--milo-color-text-primary); font-size: var(--milo-font-size-body); }
+.target b { color: var(--milo-color-text-primary); white-space: nowrap; }
 .note { color: var(--milo-color-text-secondary); }
 .delta { grid-area: delta; justify-self: end; }
 
-/* GainGroupHead：图标底 + 标题 / 说明 + 个数；「该加重」是整页唯一的荧光。 */
-.head { display: flex; align-items: center; gap: var(--milo-space-s); margin: 0; padding: var(--milo-space-s) var(--milo-space-m) var(--milo-space-xs); }
-.headIcon { display: grid; place-items: center; flex: none; width: var(--milo-space-3xl); height: var(--milo-space-3xl); border-radius: var(--milo-radius-pill);
-  background: var(--milo-color-bg-raised-2); color: var(--milo-color-text-primary); }
-.headLit .headIcon { background: var(--milo-color-accent-default); color: var(--milo-color-text-on-accent); box-shadow: 0 0 var(--milo-space-l) var(--milo-color-accent-glow); }
-.headText { flex: 1; min-width: 0; display: grid; gap: var(--milo-space-2xs); }
-.headText .milo-text-caption { color: var(--milo-color-text-secondary); }
-.count { flex: none; color: var(--milo-color-text-secondary); font-size: var(--milo-font-size-caption); }
+/* GainGroupHead：整行色带（图标 + 标题 + 个数）+ 下面一句话。「该加重」是整页唯一的荧光，其余灰带。 */
+.headWrap { display: grid; gap: var(--milo-space-xs); padding-bottom: var(--milo-space-xs); }
+.band { display: flex; align-items: center; gap: var(--milo-space-s); margin: 0; min-height: var(--milo-size-button-h-s); padding: 0 var(--milo-space-m); border-radius: var(--milo-radius-m); }
+.band b { flex: 1; min-width: 0; }
+.bandGrey { background: var(--milo-color-bg-raised-2); color: var(--milo-color-text-primary); }
+.headLit { background: var(--milo-color-accent-default); color: var(--milo-color-text-on-accent); }
+.count { flex: none; opacity: 0.8; }
+.hint { margin: 0; padding: 0 var(--milo-space-m); color: var(--milo-color-text-secondary); }
+
+/* GainSummary：配重片环 + 图例 + 破纪录一行 */
+.sum { position: relative; display: grid; gap: var(--milo-space-m); }
+.dialRow { display: flex; align-items: center; gap: var(--milo-space-l); }
+.dialBox { position: relative; flex: none; display: grid; place-items: center; }
+.dialCenter { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: var(--milo-space-2xs); text-align: center; }
+.dialCenter .milo-text-caption { color: var(--milo-color-text-secondary); }
+.dial { display: block; overflow: visible; }
+.dialTrack { fill: none; stroke: var(--milo-color-data-track); }
+.tickMinor, .tickMajor { stroke: var(--milo-color-line-strong); stroke-width: var(--milo-stroke-hairline); }
+.tickMajor { stroke: var(--milo-color-text-secondary); }
+.arc_up, .arc_flat, .arc_down, .arc_baseline { fill: none; stroke-linecap: butt; }
+.arc_up { stroke: var(--milo-color-control-selected); }
+.arc_flat { stroke: var(--milo-color-text-secondary); }
+.hatchLine { stroke: var(--milo-color-text-primary); stroke-width: calc(var(--milo-stroke-focus) * 1.5); }
+.arc_baseline { stroke: var(--milo-color-text-secondary); opacity: 0.6; }
+.legend { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--milo-space-xs); min-width: 0; }
+.legend li { display: flex; align-items: baseline; gap: var(--milo-space-xs); color: var(--milo-color-text-primary); }
+.legend li i { font-style: normal; width: var(--milo-space-l); text-align: center; color: var(--milo-color-text-secondary); }
+.legend li .milo-text-body { color: var(--milo-color-text-secondary); }
+.legendZero { opacity: 0.5; }
+.idle { margin: 0; color: var(--milo-color-text-secondary); }
+.prRow { display: flex; align-items: baseline; justify-content: space-between; gap: var(--milo-space-m); color: var(--milo-color-text-secondary); }
+.prNum { display: inline-flex; align-items: baseline; gap: var(--milo-space-xs); color: var(--milo-color-text-primary); }

@@ -264,7 +264,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 | | `SectionLabel`、`PageHeader`、`TopBar` | —；普通 / 带日期与附件；子页 / 训练中 | Tab 根页用 `PageHeader`，没有 Tab 的子页用 `TopBar` |
 | 训练与记录 | `PrescriptionHero` | 加重 / 保持 / 减重 / 首次 / 减量周 | 首页第一个动作 |
 | | `ExerciseRow` | 待做 / 首次 / 进行中 / 已完成 / 未做 × 3 种交互态 | 处方、训练中 |
-| | `GainRow`、`GainGroupHead` | 涨跌 上升 / 持平 / 下降 / 基线 × PR × 按下 / 聚焦 / 加载中；组头 该加重 / 保持 / 该减重 / 本周目标 · 减量 | 增量页。没有 onClick 是静态行；「该加重」图标底是整页唯一荧光 |
+| | `GainSummary`、`GainRow`、`GainGroupHead` | 摘要 有涨有退 / 全在涨 / 都是基线 / 近 4 周没练；行 涨跌 × PR × 按下 / 聚焦 / 加载中；色带 该加重 / 保持 / 该减重 / 本周目标 · 减量 | 增量页。摘要是配重片环，每个数带单位；行的曲线 / 数值是固定宽度的列；没有 onClick 是静态行；「该加重」色带是整页唯一荧光 |
 | | `SetRow` | 待做 / 进行中 / 缺值 / 已完成 / 修改中 / 错误 / 热身组 / 递减组 | 「完成」是唯一入口 |
 | | `RestBar` | 计时中 / 即将结束 / 结束 | 结束时间戳；±15、跳过 |
 | | `SessionRow` | 普通 / 有 PR / 减量周 × 3 种交互态 | 记录列表 |
@@ -273,7 +273,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 | | `StepRing`、`DotCalendar` | 待做 / 进行中 / 已完成；— | E2 训练中的动作序号 + 组数环；E1 记录页近 3 个月点阵 |
 | | `RestDock`、`SharedDetail`、`Cascade` | 小胶囊 / 展开 / 结束；展开；— | M02 / M03 / M07（§7） |
 | 数据图形 | `Sparkline`、`TrendChart` | 上升 / 下降 / 只有 1 次；多次 / 选中一次 / 只有 1 次 / 没有记录 | 时间按正序画（有单测）；PR 用菱形；TrendChart 是圆滑曲线 + 渐隐面积 + 拖动吸附 + 码表读数（E5 / M04） |
-| | `WeekBars`、`GiantNumber`、`Odometer` | 高柱 / 矮柱（增量页摘要）；—；3 档字号 | E3 增量页近 8 周组数；E4 结算页唯一一次「大声」；M04 数字按位滚动 |
+| | `WeekBars`、`GiantNumber`、`Odometer` | —；—；3 档字号 | E3 增量页近 8 周组数；E4 结算页唯一一次「大声」；M04 数字按位滚动 |
 | | `IncrementRuler`、`LandmarkRuler`、`PhaseSegments`、`Ticks`、`TierLegend` | 加重 / 保持 / 减重；未练 / 不足 / 达标 / 超量；四个时相 | §5 |
 | 身体 | `Capsule` | 未练 / 不足 / 达标 / 超量 × 静止 / 邻近 / 焦点 | 胶囊即量尺；超量加斜纹 |
 | | `CapsuleRail` | 静止 / 焦点；交互演示里是整张身体页 | 几何在 `capsuleLayout.ts`（有单测） |

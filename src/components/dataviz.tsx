@@ -61,10 +61,10 @@ export function StepRing({ n, ratio, title, sub, done }: { n: number; ratio: num
 }
 
 /* ---------- E3 竖向胶囊量表 ---------- */
-export function WeekBars({ weeks, unit = '组', compact }: { weeks: { label: string; value: number; current?: boolean }[]; unit?: string; compact?: boolean }) {
+export function WeekBars({ weeks, unit = '组' }: { weeks: { label: string; value: number; current?: boolean }[]; unit?: string }) {
   const max = Math.max(1, ...weeks.map((w) => w.value));
   return (
-    <div className={cx(s.bars, compact && s.barsCompact)} style={{ gridTemplateColumns: `repeat(${weeks.length}, 1fr)` }} role="img" aria-label={weeks.map((w) => `${w.label} ${w.value} ${unit}`).join('，')}>
+    <div className={s.bars} style={{ gridTemplateColumns: `repeat(${weeks.length}, 1fr)` }} role="img" aria-label={weeks.map((w) => `${w.label} ${w.value} ${unit}`).join('，')}>
       {weeks.map((w) => (
         <div key={w.label} className={s.barCol}>
           <span className={s.barVal}>{w.value}</span>
