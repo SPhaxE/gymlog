@@ -21,10 +21,12 @@ export function pillPath(x: number, y: number, w: number, h: number) {
   return `M${cx},${y} H${x + w - r} A${r},${r} 0 0 1 ${x + w},${y + r} V${y + h - r} A${r},${r} 0 0 1 ${x + w - r},${y + h} H${x + r} A${r},${r} 0 0 1 ${x},${y + h - r} V${y + r} A${r},${r} 0 0 1 ${x + r},${y} Z`;
 }
 
-/** 休息计时的共享元素名（2026-10-06）：首页训练中，休息计时是主按钮旁一颗和这里选中滑块一模一样的胶囊（导航上不再重复显示）；
- *  切到别的 Tab 时，那颗胶囊借 View Transitions 原地飞进这里的滑块，切回首页再飞回去——同一时刻屏上只有一个计时器。 */
+/** 休息计时的共享元素（2026-10-06 第二版）：首页训练中，休息计时是主按钮旁一颗页面配色的胶囊（导航上不再重复显示）。
+ *  切到别的 Tab：胶囊（REST_VT）自己往下滑着消失，只有里面的进度条（REST_RING_VT）借 View Transitions 飞进被点的选中滑块，到位后才换成滑块上的深色；
+ *  切回首页反过来。同一时刻屏上只有一个计时器。 */
 export const REST_VT = { viewTransitionName: 'x-rest-timer', viewTransitionClass: 'rest' } as CSSProperties;
-/** 计时胶囊飞进来时，这一页的滑块直接停在目标位置（不再从上一个 Tab 滑过来），否则转场结束后会跳一下 */
+export const REST_RING_VT = { viewTransitionName: 'x-rest-ring', viewTransitionClass: 'ring' } as CSSProperties;
+/** 进度条飞进来时，这一页的滑块直接停在目标位置（不再从上一个 Tab 滑过来），否则进度条落点和滑块对不上 */
 export const navHandoff = { skipSlide: false };
 
 /** 跨页面记住上一个 Nav 的选中项和滑块位置（模块级，App 里同一时刻只有一个 Nav 在屏上） */
@@ -113,9 +115,9 @@ export function Nav({ selected, progress, started, rest, restRatio, restEndAt, r
         {showRing && <path className={s.progress} d={ring} pathLength={1} style={{ strokeDasharray: `${shown} 1` }} />}
       </svg>
       {p && (
-        <span className={s.pill} aria-hidden="true" style={{ transform: `translate(${p[0]}px, ${p[1]}px)`, width: p[2], height: p[3], ...(rest ? REST_VT : {}) }}>
+        <span className={s.pill} aria-hidden="true" style={{ transform: `translate(${p[0]}px, ${p[1]}px)`, width: p[2], height: p[3] }}>
           {/* 休息内描边：画在小胶囊里面，滑动时和小胶囊同步；实线、无端点，按剩余比例收短 */}
-          {restRing && <svg className={s.restLayer}><path className={s.rest} d={restRing} pathLength={1} style={{ strokeDasharray: `${rr} 1` }} /></svg>}
+          {restRing && <svg className={s.restLayer} style={REST_RING_VT}><path className={s.rest} d={restRing} pathLength={1} style={{ strokeDasharray: `${rr} 1` }} /></svg>}
         </span>
       )}
       {TABS.map(([k, label, href]) => (

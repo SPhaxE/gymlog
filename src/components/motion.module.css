@@ -18,15 +18,17 @@
 .dockBody > div { box-shadow: none; }
 .collapse { justify-self: center; min-height: var(--milo-size-hit-min); border: 0; background: none; color: var(--milo-color-text-secondary); font: inherit; font-size: var(--milo-font-size-caption); padding: 0 var(--milo-space-xl); }
 @keyframes fadeIn { from { opacity: 0; } }
-/* 休息胶囊的「导航滑块」形态：同导航选中滑块（骨白、图标在上时间在下、里面一道实线内描边按剩余比例收短）；宽度由页面量导航一项给 */
+/* 休息胶囊的「导航滑块」形态：尺寸同导航一项（里面的进度条几何才和滑块一致），配色跟页面组件（凹底 + 细线），不抢荧光；
+   进度条是骨白实线，飞到导航滑块上才换成深色（转场样式在 interactive.css 的 .ring） */
 .ringPill { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--milo-space-2xs);
   height: var(--milo-size-nav-item-h); padding: 0; border: 0; border-radius: var(--milo-radius-pill); font: inherit; font-size: var(--milo-font-size-min); line-height: 1;
-  background: var(--milo-color-nav-pill); color: var(--milo-color-nav-pill-ink); box-shadow: 0 var(--milo-space-s) var(--milo-space-2xl) var(--milo-color-shadow-float); }
+  background: var(--milo-color-bg-raised-2); color: var(--milo-color-text-primary);
+  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong), 0 var(--milo-space-s) var(--milo-space-2xl) var(--milo-color-shadow-float); }
 .ringPill b { position: relative; font-family: var(--milo-font-number); font-weight: 700; font-variant-numeric: tabular-nums; }
 .ringPill > svg:not(.ringLayer) { position: relative; }
 .ringLayer { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-.ringRest { fill: none; stroke: var(--milo-color-nav-rest); stroke-width: var(--milo-stroke-ring-rest); stroke-linecap: round; }
-.ringDone { background: var(--milo-color-accent-default); color: var(--milo-color-text-on-accent); }
+.ringRest { fill: none; stroke: var(--milo-color-control-selected); stroke-width: var(--milo-stroke-ring-rest); stroke-linecap: round; }
+.ringDone { box-shadow: inset 0 0 0 var(--milo-stroke-ring-rest) var(--milo-color-control-selected), 0 var(--milo-space-s) var(--milo-space-2xl) var(--milo-color-shadow-float); }
 
 /* M03 共享元素展开：整屏详情；卡片、标题、数字由 View Transitions 从列表行变形过来，正文随后淡入 */
 .detail { position: absolute; inset: 0; z-index: 25; display: grid; grid-template-rows: auto auto 1fr; align-content: start; background: var(--milo-color-bg-raised); }

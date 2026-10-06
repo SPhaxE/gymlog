@@ -6,7 +6,7 @@
  *  Tilt — M01 3D 倾斜光影（2026-10-06 加）：按住核心卡片移动时随触点微倾、高光跟手，松手弹簧回正。只给「这一刻的主角」（结算页新纪录卡）。
  *  都有「减少动态效果」降级：直接到位。 */
 import { Children, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { pillPath, REST_VT, useRestRatio } from './Nav';
+import { pillPath, REST_RING_VT, REST_VT, useRestRatio } from './Nav';
 import { flushSync } from 'react-dom';
 import { T } from '../styles/tokens.gen';
 import { IconButton } from './Button';
@@ -24,7 +24,7 @@ export function Cascade({ children, replayKey }: { children: ReactNode; replayKe
 export function RestDock({ remaining, total, open, onToggle, onAdjust, onSkip, ring }: {
   remaining: number; total: number; open: boolean; onToggle: (open: boolean) => void; onAdjust?: (d: number) => void; onSkip?: () => void;
   /** 「导航滑块」形态（2026-10-06，首页训练中）：和导航选中滑块一模一样——骨白胶囊、图标在上时间在下、里面一道按剩余比例收短的实线；
-   *  width = 导航一项的宽度，endAt 让描边按帧走；收起时带共享名 REST_VT，切 Tab 时飞进导航滑块 */
+   *  width = 导航一项的宽度，endAt 让描边按帧走；收起时带共享名 REST_VT（切 Tab 时胶囊下滑消失），里面的进度条带 REST_RING_VT（飞进导航滑块） */
   ring?: { width: number; endAt: number };
 }) {
   const ratio = Math.max(0, Math.min(1, remaining / total));
@@ -49,7 +49,7 @@ export function RestDock({ remaining, total, open, onToggle, onAdjust, onSkip, r
   );
 }
 
-/** 休息胶囊的「导航滑块」形态：尺寸、颜色、内描边都和导航选中滑块同一套（Nav.module.css 的 .pill / .rest），转场时看不出接缝 */
+/** 休息胶囊的「导航滑块」形态：尺寸和内描边的几何与导航选中滑块一致（进度条才能原样飞过去），配色跟页面组件（凹底 + 细线），进度条到了滑块上才换成滑块的深色 */
 function RingPill({ remaining, total, width, endAt, onOpen }: { remaining: number; total: number; width: number; endAt: number; onOpen: () => void }) {
   const ref = useRef<HTMLButtonElement>(null);
   const [box, setBox] = useState<[number, number] | null>(null);
@@ -62,7 +62,7 @@ function RingPill({ remaining, total, width, endAt, onOpen }: { remaining: numbe
   return (
     <button ref={ref} type="button" className={cx('milo-press milo-focus', s.ringPill, remaining <= 0 && s.ringDone)} style={{ width, ...REST_VT }} onClick={onOpen}
       aria-label={remaining > 0 ? `组间休息剩余 ${clock(remaining)}，展开` : '休息结束，展开'}>
-      {box && remaining > 0 && <svg className={s.ringLayer} aria-hidden="true"><path className={s.ringRest} d={pillPath(inset, inset, box[0] - inset * 2, box[1] - inset * 2)} pathLength={1} style={{ strokeDasharray: `${rr} 1` }} /></svg>}
+      {box && remaining > 0 && <svg className={s.ringLayer} style={REST_RING_VT} aria-hidden="true"><path className={s.ringRest} d={pillPath(inset, inset, box[0] - inset * 2, box[1] - inset * 2)} pathLength={1} style={{ strokeDasharray: `${rr} 1` }} /></svg>}
       <Icon name={remaining > 0 ? 'timer' : 'check'} small />
       <b>{remaining > 0 ? clock(remaining) : '好了'}</b>
     </button>
