@@ -179,7 +179,8 @@ describe('我的（P11）→ 牛龄（P13）→ 消息（2026-10-06）', () => {
     window.history.pushState({}, '', '/me');
     render(<App />);
     expect(await screen.findByRole('heading', { level: 1, name: '我的' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^牛龄 公牛 [123] 级，连胜 \d+ 周/ })  // 演示用户的小级随载入那天的星期几在 1–3 级之间（CI 时区不同）).toBeInTheDocument();
+    // 演示用户的小级随载入那天在公牛 1–3 级之间（CI 时区不同）
+    expect(screen.getByRole('button', { name: /^牛龄 公牛 [123] 级，连胜 \d+ 周/ })).toBeInTheDocument();
     for (const t of ['训练经验', '单次时长', '可用器械', '体型示意']) expect(screen.getByRole('button', { name: new RegExp(`^${t}：`) })).toBeInTheDocument();
     expect(screen.queryByText('钱包 · 商城')).toBeNull();
     const before = store.get().profile!.minutes;
