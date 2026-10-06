@@ -6,6 +6,8 @@
   padding: var(--milo-space-l) var(--milo-size-gutter) calc(var(--nav-clear) + var(--milo-size-button-h) + var(--milo-space-2xl)); }
 .primary { color: var(--milo-color-text-primary); }
 .cta { position: absolute; z-index: 9; left: var(--milo-size-gutter); right: var(--milo-size-gutter); bottom: calc(var(--nav-clear) + var(--milo-space-s)); }
+/* 悬浮的次要按钮（再练一次）：描边 + 实底，滚上来的列表从它后面被挡住 */
+.ctaSolid button { background-color: var(--milo-color-bg-raised); }
 .restList { list-style: none; margin: var(--milo-space-s) 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: var(--milo-space-s) var(--milo-space-l); }
 .restList li { display: flex; align-items: baseline; justify-content: space-between; gap: var(--milo-space-s); font-size: var(--milo-font-size-caption); color: var(--milo-color-text-primary); }
 /* 处方行自带 space/m 的内边距（按下时的底色范围），列表整体向外扩同样的量，文字与页边距对齐 */

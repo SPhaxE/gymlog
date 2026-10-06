@@ -69,7 +69,8 @@ export function HomePage({ scenario, now, onTab }: { scenario?: string; now: num
         )}
       </div>
 
-      {done ? <div className={s.cta}><Button kind="ghost" onClick={() => setAgain(true)}>再练一次</Button></div>
+      {/* 悬浮在滚动内容上方的按钮要有实底：ghost 本身是透明的，行和进度线会从字后面穿过去（2026-10-06 用户截图）；底下同样垫一层渐隐 */}
+      {done ? <><div className={s.scrimLow} aria-hidden="true" /><div className={`${s.cta} ${s.ctaSolid}`}><Button kind="ghost" onClick={() => setAgain(true)}>再练一次</Button></div></>
         : rx.kind === 'plan' && <><div className={s.scrimLow} aria-hidden="true" /><div className={s.cta}><Button glow onClick={start}>开始训练</Button></div></>}
       <Nav selected="home" {...navState} onSelect={onTab} />
       {why && rx.kind === 'plan' && <WhySheet rx={rx} onClose={() => setWhy(false)} />}

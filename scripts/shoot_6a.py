@@ -102,6 +102,9 @@ def run(b, w, h, shots):
     pg.keyboard.press('Escape'); pg.mouse.move(w / 2, h / 2); pg.mouse.wheel(0, 900); step('summary-bottom')
     click(pg, pg.get_by_role('button', name='完成', exact=True)); step('done-today', '/today', 2500)
     ok(pg.get_by_text('今天已练完').count() > 0, f'{tag} 首页显示「今天已练完」')
+    again = pg.get_by_role('button', name='再练一次')
+    ok(pg.evaluate('(el) => getComputedStyle(el).backgroundColor !== "rgba(0, 0, 0, 0)"', again.element_handle()), f'{tag} 悬浮的「再练一次」有实底（滚动内容不会从字后面穿过）')
+    ok(pg.evaluate('() => !!document.querySelector("[class*=scrimLow]")'), f'{tag} 「再练一次」下面垫了渐隐层')
     click(pg, pg.get_by_role('button', name='再练一次')); step('again')
     pg.close()
 
