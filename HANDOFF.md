@@ -142,12 +142,12 @@ python3 scripts/shoot_growth.py     # 奖励弹窗 GIF → screenshots/growth/
 - SPA 改写规则见 `vercel.json`，静态文件优先；
 - 只改了 `apk/` 的提交不触发构建（`ignoreCommand`）。
 
-**合并流程**（用户约定）：
+**上线流程**（用户 2026-10-06 改，原来的「PR → 等 CI → 合并」太拖开发）：
 
-1. 开 PR；
-2. 等 CI 绿；
-3. 用 merge 方式合并（不用 squash）；
-4. 等 Vercel 生产部署完成。
+1. 本机 `npm run check` 和相关 `gate` 过了；
+2. 直接推 `main`（不开 PR）；
+3. Vercel 自动部署；CI 在后台跑，红了马上补修复提交；
+4. 跟用户只讲结果，不汇报 PR / CI / 命令过程。
 
 提交信息末尾带协作者署名（见 git log）。
 
@@ -210,7 +210,7 @@ python3 scripts/shoot_growth.py     # 奖励弹窗 GIF → screenshots/growth/
 
 ## 8. 下一步（2026-10-06 重排：目标是作品集展示，不是上线）
 
-**取舍原则**：以展示为准。做就做完整（数据态、空态、动效都齐），不值得展示的功能直接划掉。每步都走「线框（有就直接写）→ 代码定稿 → 截图验收」，改完走完 PR → CI → 合并 → 核对线上 /demo（不用再问，见 `CLAUDE.md`）。
+**取舍原则**：以展示为准。做就做完整（数据态、空态、动效都齐），不值得展示的功能直接划掉。每步都走「线框（有就直接写）→ 代码定稿 → 截图验收」，改完直接推 `main` → 核对线上 /demo（不用再问，见 `CLAUDE.md`）。
 
 | 阶段 | 内容 | 补的闭环缺口 |
 |---|---|---|
@@ -250,7 +250,7 @@ python3 scripts/shoot_playground.py # 组件矩阵门禁
 - **Stitch**（可选）：`export STITCH_API_KEY=…`，或在本地 Claude Code 里配置名为 stitch 的 MCP；密钥不进仓库。
 - **APK**：本地有 Android SDK（JDK 21）时 `npm run android:apk`；没有就用 CI 产物或 `apk/milo-debug.apk`。
 - **给 AI 客户端**：根目录 `CLAUDE.md`（Claude Code 自动读）和 `AGENTS.md`（Codex / Cursor 等读）都指向本文件，并列了不许破的规则。
-- **提交与合并**：在功能分支上开发 → 开 PR → CI 绿 → merge 方式合并 → 等 Vercel 生产部署。`main` 上的 APK 由 CI 自动提交，本地 `git pull` 会拿到。
+- **提交与上线**：本机检查过了直接推 `main` → Vercel 自动部署；CI 在后台跑，红了补修复提交。`main` 上的 APK 由 CI 自动提交，本地 `git pull` 会拿到。
 
 ## 10. 目录速查
 

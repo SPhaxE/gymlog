@@ -23,6 +23,6 @@ npx vite --port 5199 --host 127.0.0.1 & python3 scripts/shoot_6a.py   # 演示�
 
 日常迭代别每次跑全套：`npm run test:changed`（只跑改到的测试）、`python3 scripts/shoot_6a.py --no-shots --only gains`（只跑某类：flow / story / deload / gains / demo）；提交前再跑一遍完整的 `npm run check` 和 `npm run gate`。
 
-合并流程：功能分支 → PR → CI 绿 → merge 方式合并 → 等 Vercel 生产部署（https://gymlog-taupe.vercel.app/demo）。
+上线流程（用户 2026-10-06 改：PR / CI 来回太拖开发）：本机 `npm run check` + 相关 `gate` 过了，**直接推 `main`，不开 PR**；Vercel 自动部署（https://gymlog-taupe.vercel.app/demo），CI 在后台跑，红了马上补一个修复提交推上去。
 
-**改完默认走完这条流程，不用再问用户**（用户 2026-10-06 定的标准操作）：开 PR、等 CI 绿、merge 合并、核对线上 /demo 已是新代码，最后一并汇报。只有改动范围不清楚、或 CI 红且不是这次改动造成时才停下来问。
+**改完默认走完这条流程，不用再问用户**：推 `main` → 核对线上 /demo 已是新代码。**跟用户说话只讲改了什么、线上能看了，不汇报 PR、CI、命令这些过程**（用户 2026-10-06：经常看到这些，拖慢开发）。只有改动范围不清楚、或 CI 红且不是这次改动造成时才停下来问。
