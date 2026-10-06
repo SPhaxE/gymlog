@@ -42,7 +42,9 @@ export function HomePage({ scenario, now, onTab }: { scenario?: string; now: num
   );
   return (
     <Screen label="首页">
-      <PageHeader title={done ? '今天' : '今日处方'} eyebrow={dateLabel(now)} trailing={done || rx.kind !== 'plan' ? undefined : <button type="button" className={`milo-press milo-focus ${s.link}`} onClick={() => setWhy(true)}>为什么是这些</button>}>
+      {/* 页头 C：页头和内容在同一个滚动区里，大标题滑走后顶上留一条细标题栏（训练中不收缩：有「结束」和进度，见 TrainingView） */}
+      <div className={s.scroll}>
+      <PageHeader collapse title={done ? '今天' : '今日处方'} eyebrow={dateLabel(now)} trailing={done || rx.kind !== 'plan' ? undefined : <button type="button" className={`milo-press milo-focus ${s.link}`} onClick={() => setWhy(true)}>为什么是这些</button>}>
         {rx.kind === 'plan' && !done && (
           <div className={s.tags}>
             <Tag>{rx.totals.exercises} 个动作</Tag><Tag>{rx.totals.sets} 组</Tag><Tag>{rx.totals.regions.map((r) => REGION_NAME[r]).join(' · ')}</Tag>
@@ -50,7 +52,7 @@ export function HomePage({ scenario, now, onTab }: { scenario?: string; now: num
         )}
       </PageHeader>
 
-      <div className={s.body}>
+      <div className={s.content}>
         <DeloadBanner dv={dv} hits={d.hits} onOpen={() => setDeloadOpen(true)} />
         {rx.kind === 'pool-empty' && <Banner title="当前器械下没有可排的动作" detail="去「我的」里加器械" actions={<Button kind="ghost" size="s">去设置</Button>} />}
         {done && <Done d={done} onSummary={live ? () => nav(`/summary/${done.session.id}`) : undefined} />}
@@ -70,6 +72,7 @@ export function HomePage({ scenario, now, onTab }: { scenario?: string; now: num
             </div>
           </>
         )}
+      </div>
       </div>
 
       {/* 悬浮在滚动内容上方的按钮要有实底：ghost 本身是透明的，行和进度线会从字后面穿过去（2026-10-06 用户截图）；底下同样垫一层渐隐 */}

@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>钢板打孔日历 · 原型 v2（一次性，不进 App）</title>
+<link rel="stylesheet" href="../../../tokens/tokens.css">
+<style>
+  /* 原型 v2（2026-10-06）：冲压糙钢板 + 四种冲孔 + 一大团软光 + 两侧漏光；光强 --k（0.6 弱 / 1 中 / 1.45 强）由地址 ?k= 传入。
+     光影全部是合成线程的 transform / opacity 动画，由页面滚动位置驱动（animation-timeline: scroll()），SVG 本身是静态的。 */
+  :root{--k:1;--travel:200px}
+  html,body{margin:0;background:var(--milo-color-bg-base);color:var(--milo-color-text-primary);font-family:var(--milo-font-ui)}
+  .page{position:fixed;inset:0;max-width:360px;margin:0 auto;overflow:hidden}
+  .scroll{height:100%;overflow-y:auto;scrollbar-width:none}
+  .scroll::-webkit-scrollbar{display:none}
+  header{padding:20px 16px 0}
+  header small{color:var(--milo-color-text-secondary);font-size:12px}
+  header h1{margin:6px 0 0;font-size:30px;line-height:1.1}
+  .lead{margin:14px 16px 12px;font-size:15px;color:var(--milo-color-text-secondary)}
+  .lead b{color:var(--milo-color-text-primary);font-size:22px;font-family:var(--milo-font-number)}
+
+  /* 板：外壳不裁切（两侧漏光要溢出去），里面的 .plate 裁圆角；板后面几层灯箱，只从孔里透出来 */
+  .plateWrap{--amb:calc(11*var(--k));--soft:calc(98*var(--k));--core:calc(62*var(--k));--leak:calc(80*var(--k));
+    position:relative;margin:0 16px;isolation:isolate}
+  .plate{position:relative;border-radius:10px;overflow:clip;isolation:isolate;
+    background:color-mix(in srgb,var(--milo-prim-lime-500) calc(var(--amb)*1%),var(--milo-color-bg-base))}
+  .plate svg{position:relative;z-index:1;display:block;width:100%;height:auto}
+  .lamp{position:absolute;pointer-events:none;will-change:transform}
+  /* 一大团软光：静止时亮区在板的右中偏下（= 三联图右边那张），往左、往上渐暗；中间一大块亮得均匀，边缘慢慢暗下去 */
+  .soft{left:-25%;top:-14%;width:200%;height:150%;
+    background:radial-gradient(closest-side,color-mix(in srgb,var(--milo-prim-lime-500) calc(var(--soft)*1%),transparent) 0%,color-mix(in srgb,var(--milo-prim-lime-500) calc(var(--soft)*.8%),transparent) 28%,color-mix(in srgb,var(--milo-prim-lime-500) calc(var(--soft)*.3%),transparent) 55%,color-mix(in srgb,var(--milo-prim-lime-500) calc(var(--soft)*.05%),transparent) 80%,transparent 100%)}
+  /* 光心：更小更亮（偏黄），移得比光晕快一点（有景深） */
+  .core{left:52%;top:14%;width:60%;height:90%;
+    background:radial-gradient(closest-side,color-mix(in srgb,var(--milo-prim-lime-300) calc(var(--core)*1%),transparent) 0%,color-mix(in srgb,var(--milo-prim-lime-500) calc(var(--core)*.3%),transparent) 60%,transparent 100%)}
+  /* 两侧漏光：在板外缘，被板盖住内半边，只露外半边 */
+  .leak{top:5%;bottom:5%;width:34px;z-index:-1;
+    background:radial-gradient(closest-side,color-mix(in srgb,var(--milo-prim-lime-500) calc(var(--leak)*1%),transparent),color-mix(in srgb,var(--milo-prim-lime-500) calc(var(--leak)*.25%),transparent) 55%,transparent)}
+  .leakR{right:-17px;opacity:1}
+  .leakL{left:-17px;opacity:0}
+  /* 钢面一道很淡的竖向反光，只照在钢上（soft-light 叠在孔上几乎不可见） */
+  .sheen{z-index:2;top:-10%;bottom:-10%;left:0;width:16%;opacity:.38;mix-blend-mode:soft-light;transform:translateX(30%) skewX(-8deg);
+    background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--milo-prim-gray-900) 70%,transparent) 50%,transparent)}
+  @keyframes soft{from{transform:translate(0,0)}to{transform:translate(-30%,3%)}}
+  @keyframes core{from{transform:translate(0,0)}to{transform:translate(-123%,2%)}}
+  @keyframes leakR{from{opacity:1}to{opacity:.06}}
+  @keyframes leakL{from{opacity:0}to{opacity:.9}}
+  @keyframes sheen{from{transform:translateX(30%) skewX(-8deg)}to{transform:translateX(560%) skewX(-8deg)}}
+  @supports (animation-timeline: scroll()){
+    .soft,.core,.leak,.sheen{animation-duration:auto;animation-timing-function:linear;animation-fill-mode:both;animation-timeline:scroll(nearest block);animation-range:0 var(--travel)}
+    .soft{animation-name:soft}.core{animation-name:core}.leakR{animation-name:leakR}.leakL{animation-name:leakL}.sheen{animation-name:sheen}
+  }
+  @media (prefers-reduced-motion:reduce){.soft,.core,.leak,.sheen{animation:none}}
+
+  /* 下面的列表只是陪衬 */
+  .week{margin:22px 16px 6px;display:flex;justify-content:space-between;font-size:13px;color:var(--milo-color-text-secondary)}
+  .row{margin:0 16px;padding:14px 0;border-bottom:1px solid var(--milo-color-line-default);display:grid;gap:4px}
+  .row b{font-size:15px}.row span{font-size:12px;color:var(--milo-color-text-secondary)}
+
+  /* 孔放大展示页（?mode=holes） */
+  body.holes{background:var(--milo-color-bg-base)}
+  .showcase{display:block;width:100%;height:auto}
+</style></head><body>
+<div class="page"><div class="scroll" id="sc">
+  <header><small>过去每一次练了什么</small><h1>记录</h1></header>
+  <p class="lead">近 3 个月练了 <b id="n">0</b> 天</p>
+  <div class="plateWrap" id="wrap"><i class="lamp leak leakL"></i><i class="lamp leak leakR"></i>
+    <figure class="plate" style="margin:0"><i class="lamp soft"></i><i class="lamp core"></i><svg id="plate" xmlns="http://www.w3.org/2000/svg"></svg><i class="lamp sheen"></i></figure></div>
+  <div id="rows"></div>
+</div></div>
+<script>
+const DATA=__DATA__, DAY=864e5;
+const Q=new URLSearchParams(location.search);
+if(Q.get('k')) document.documentElement.style.setProperty('--k',Q.get('k'));
+if(Q.get('lead')) document.querySelector('header').style.paddingTop=(20+ +Q.get('lead'))+'px';
+const trained=new Set(DATA.days), today=DATA.today, now=today+DAY/2;
+const sod=(t)=>{const d=new Date(t);d.setHours(0,0,0,0);return d.getTime()};
+// ---- 和 src/components/dataviz.tsx 的 dotMonths 同一套规则（今天练过时额外带 done）
+function dotMonths(count=3){
+  const d=new Date(now),out=[];
+  for(let m=count-1;m>=0;m--){
+    const first=new Date(d.getFullYear(),d.getMonth()-m,1),last=new Date(d.getFullYear(),d.getMonth()-m+1,0);
+    let t=sod(first.getTime()-((first.getDay()+6)%7)*DAY);const weeks=[];
+    while(t<=last.getTime()){const col=[];for(let i=0;i<7;i++,t=sod(t+DAY*1.5)){const inM=new Date(t).getMonth()===first.getMonth();
+      col.push({t,state:!inM?'out':t===today?'today':t>today?'future':trained.has(t)?'trained':'rest',done:trained.has(t)})}weeks.push(col)}
+    out.push({label:(first.getMonth()+1)+'月',weeks})}
+  return out}
+const months=dotMonths();
+document.getElementById('n').textContent=months.flatMap(m=>m.weeks.flat()).filter(x=>x.state==='trained'||x.state==='today'&&x.done).length;
+
+// ---- 颜色：全部来自 Token（原型也不写十六进制，便于以后原样搬进 App）
+const css=(v)=>`var(--milo-prim-${v})`;
+const mix=(c,p)=>`color-mix(in srgb, ${c} ${p}%, transparent)`;
+const hi=(p)=>mix(css('gray-900'),p);   // 骨白（高光）
+const lo=(p)=>mix(css('gray-0'),p);     // 近黑（暗部）
+const lime=(p)=>mix(css('lime-500'),p); // 荧光
+const E=(a)=>(+a).toFixed(2);
+const circ=(cx,cy,r)=>`M${E(cx-r)} ${E(cy)}a${E(r)} ${E(r)} 0 1 0 ${E(2*r)} 0a${E(r)} ${E(r)} 0 1 0 ${E(-2*r)} 0Z`;
+const pol=(a,r)=>[Math.cos(a*Math.PI/180)*r,Math.sin(a*Math.PI/180)*r];   // 0° = +x，90° = 向下；光从左上（−135°）来
+const poly=(pts)=>'M'+pts.map(p=>E(p[0])+' '+E(p[1])).join('L')+'Z';
+// 确定性的小随机：同一个种子永远同一个结果
+const rnd=(seed)=>{let s=seed>>>0;return()=>((s=Math.imul(s^(s>>>15),2246822507)>>>0,s=Math.imul(s^(s>>>13),3266489909)>>>0,(s^(s>>>16))>>>0)/4294967296)};
+const hash=(n)=>{n=Math.imul(n^(n>>>16),2246822507);n=Math.imul(n^(n>>>13),3266489909);return(n^(n>>>16))>>>0};
+
+// ---- 冲孔（用户 2026-10-06 定：只留第一种「净冲孔」，所有练过的日子同一种孔）。对照 H1 样图：孔有厚度（暗壁），亮的只有冲切面右下的一小段碎光
+function holeDefs(R){
+  // 孔壁：露出的亮窗向右下偏一点，左上的暗壁厚、右下的薄（四周都能看到一圈壁）
+  const wall=`<path fill-rule="evenodd" d="${circ(0,0,R)} ${circ(.04*R,.05*R,.86*R)}" style="fill:${lo(90)}"/>`;
+  return `<circle id="cutA" r="${E(R)}" fill="#000"/>
+  <g id="dA">${wall}
+    <circle r="${E(R+.4)}" fill="none" stroke="url(#gRimHi)" stroke-width=".7"/>
+    <circle r="${E(R*1.28)}" fill="url(#gDish)"/></g>`;
+}
+const grain=()=>{const r=rnd(77);return `<pattern id="pGrain" width="37" height="29" patternUnits="userSpaceOnUse">`+Array.from({length:46},()=>`<circle cx="${E(r()*37)}" cy="${E(r()*29)}" r="${E(.2+r()*.25)}" style="fill:${r()<.5?hi(7+r()*7):lo(30+r()*25)}"/>`).join('')+`</pattern>`};
+const GRADS=`
+  <linearGradient id="gRimHi" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:${hi(0)}"/><stop offset=".5" style="stop-color:${hi(0)}"/><stop offset=".78" style="stop-color:${hi(34)}"/><stop offset="1" style="stop-color:${hi(66)}"/></linearGradient>
+  <radialGradient id="gDish"><stop offset=".70" style="stop-color:${lo(0)}"/><stop offset=".79" style="stop-color:${lo(30)}"/><stop offset="1" style="stop-color:${lo(0)}"/></radialGradient>
+  <radialGradient id="gDimple"><stop offset="0" style="stop-color:${lo(85)}"/><stop offset=".6" style="stop-color:${lo(42)}"/><stop offset="1" style="stop-color:${lo(0)}"/></radialGradient>
+  <linearGradient id="gDimpleHi" x1="0" y1="0" x2="1" y2="1"><stop offset=".5" style="stop-color:${hi(0)}"/><stop offset="1" style="stop-color:${hi(48)}"/></linearGradient>`;
+
+// ---- 孔放大展示（?mode=holes）：同一套定义，矢量放大 7 倍，看设计意图
+if(Q.get('mode')==='holes'){
+  document.body.className='holes';
+  const R=6.7,S=9,cell=190,lamps=[['亮',100],['中',45],['暗',12]];
+  const cells=lamps.map(([n,a],i)=>{const cx=cell*(i+.5);return `
+    <g transform="translate(${cx} 100)"><g transform="scale(${S})">
+      <rect x="-10.5" y="-10.5" width="21" height="21" fill="${lime(a)}"/>
+      <mask id="m${i}" maskUnits="userSpaceOnUse" x="-10.5" y="-10.5" width="21" height="21"><rect x="-10.5" y="-10.5" width="21" height="21" fill="#fff"/><use href="#cutA"/></mask>
+      <g mask="url(#m${i})"><rect x="-10.5" y="-10.5" width="21" height="21" fill="url(#gSteel)"/><rect x="-10.5" y="-10.5" width="21" height="21" fill="url(#pGrain)"/></g>
+      <use href="#dA"/></g></g>
+    <text x="${cx}" y="208" text-anchor="middle" fill="${css('gray-600')}" font-size="12">背光：${n}</text>`}).join('');
+  const sv=document.getElementById('plate');sv.outerHTML=`<svg class="showcase" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${cell*3} 220">
+    <defs>${GRADS}${holeDefs(R)}
+      <linearGradient id="gSteel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb, ${css('gray-400')} 92%, ${css('lime-900')})"/><stop offset="1" style="stop-color:color-mix(in srgb, ${css('gray-300')} 90%, ${css('lime-900')})"/></linearGradient>
+      ${grain()}</defs>${cells}</svg>`;
+  document.querySelector('.page').style.maxWidth='none';document.querySelector('header').remove();document.querySelector('.lead').remove();document.getElementById('rows').remove();
+  document.querySelector('.plateWrap').style.margin='0';document.querySelectorAll('.lamp').forEach(e=>e.remove());document.querySelector('.plate').style.background='transparent';
+} else {
+// ---- 钢板几何
+const W=328,PADX=22,TOP=30,BOT=18,GAPW=.7;
+const ncol=months.reduce((k,m)=>k+m.weeks.length,0), units=ncol+GAPW*(months.length-1);
+const P=(W-PADX*2)/units, R=P*.36, H=TOP+7*P+BOT;
+const pos=[];let x=PADX+P/2;const labels=[];
+months.forEach((m)=>{labels.push({x:x-P/2+1,text:m.label});m.weeks.forEach(col=>{col.forEach((c,r)=>pos.push({...c,x,y:TOP+P/2+r*P}));x+=P});x+=P*GAPW});
+const holes=pos.filter(c=>c.state==='trained'||(c.state==='today'&&c.done));
+const rest=pos.filter(c=>c.state==='rest'||c.state==='today'&&!c.done);
+const fut=pos.filter(c=>c.state==='future');
+const todayPt=pos.find(c=>c.state==='today');
+const hs=holes.map(c=>({c,k:'A',t:`translate(${E(c.x)} ${E(c.y)})`}));
+// 糙钢板：划痕（两张平铺的小图案，错开角度，看不出重复）+ 几块脏污
+const scratchPat=(id,w,h,seed,n,rot)=>{const r=rnd(seed);return `<pattern id="${id}" width="${w}" height="${h}" patternUnits="userSpaceOnUse" patternTransform="rotate(${rot})">`+Array.from({length:n},()=>{const x1=r()*w,y1=r()*h,L=4+r()*20,a=(r()-.5)*.5;return `<path d="M${E(x1)} ${E(y1)}l${E(Math.cos(a)*L)} ${E(Math.sin(a)*L)}" stroke="${r()<.75?hi(3+r()*6):lo(24+r()*22)}" stroke-width="${E(.3+r()*.35)}" fill="none"/>`}).join('')+`</pattern>`};
+const rb=rnd(21);const blots=Array.from({length:8},()=>`<ellipse cx="${E(rb()*W)}" cy="${E(rb()*H)}" rx="${E(18+rb()*46)}" ry="${E(8+rb()*20)}" fill="${rb()<.55?'url(#gBlotD)':'url(#gBlotL)'}" transform="rotate(${E(rb()*60-30)} ${E(rb()*W)} ${E(rb()*H)})"/>`).join('');
+const svg=document.getElementById('plate');
+svg.setAttribute('viewBox',`0 0 ${W} ${E(H)}`);
+svg.innerHTML=`
+<defs>${GRADS}${holeDefs(R)}
+  <linearGradient id="gSteel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb, ${css('gray-400')} 92%, ${css('lime-900')})"/><stop offset="1" style="stop-color:color-mix(in srgb, ${css('gray-300')} 90%, ${css('lime-900')})"/></linearGradient>
+  <radialGradient id="gVig" cx=".5" cy=".5" r=".72"><stop offset=".5" style="stop-color:${lo(0)}"/><stop offset="1" style="stop-color:${lo(58)}"/></radialGradient>
+  <radialGradient id="gBlotD"><stop offset="0" style="stop-color:${lo(22)}"/><stop offset="1" style="stop-color:${lo(0)}"/></radialGradient>
+  <radialGradient id="gBlotL"><stop offset="0" style="stop-color:${hi(5)}"/><stop offset="1" style="stop-color:${hi(0)}"/></radialGradient>
+  ${scratchPat('pScr1',120,70,3,11,-3)}${scratchPat('pScr2',150,90,9,6,33)}${grain()}
+  <mask id="holes" maskUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${E(H)}"><rect width="${W}" height="${E(H)}" fill="#fff"/>${hs.map(h=>`<use href="#cut${h.k}" transform="${h.t}"/>`).join('')}</mask>
+</defs>
+<g mask="url(#holes)">
+  <rect width="${W}" height="${E(H)}" fill="url(#gSteel)"/>${blots}
+  <rect width="${W}" height="${E(H)}" fill="url(#pScr1)"/><rect width="${W}" height="${E(H)}" fill="url(#pScr2)"/><rect width="${W}" height="${E(H)}" fill="url(#pGrain)"/>
+  <rect width="${W}" height="${E(H)}" fill="url(#gVig)"/>
+</g>
+<rect x=".5" y=".5" width="${W-1}" height="${E(H-1)}" rx="9.5" fill="none" style="stroke:${hi(20)}"/>
+<rect x="7" y="7" width="${W-14}" height="${E(H-14)}" rx="4" fill="none" style="stroke:${lo(78)}" stroke-width="2"/>
+<rect x="8.4" y="8.4" width="${W-16.8}" height="${E(H-16.8)}" rx="3.2" fill="none" style="stroke:${hi(7)}" stroke-width=".8"/>
+${labels.map(l=>`<text x="${E(l.x+.6)}" y="${TOP-9+.6}" font-size="9.5" letter-spacing="1" style="fill:${hi(20)}">${l.text}</text><text x="${E(l.x)}" y="${TOP-9}" font-size="9.5" letter-spacing="1" style="fill:${lo(65)}">${l.text}</text>`).join('')}
+${hs.map(h=>`<use href="#d${h.k}" transform="${h.t}"/>`).join('')}
+${rest.map(c=>`<g transform="translate(${E(c.x)} ${E(c.y)})"><circle r="${E(P*.12)}" fill="url(#gDimple)"/><circle r="${E(P*.12+.25)}" fill="none" stroke="url(#gDimpleHi)" stroke-width=".6"/></g>`).join('')}
+${fut.map(c=>`<circle cx="${E(c.x)}" cy="${E(c.y)}" r=".55" style="fill:${hi(9)}"/>`).join('')}
+${todayPt?`<g transform="translate(${E(todayPt.x)} ${E(todayPt.y)})"><circle r="${E(R*1.42)}" fill="none" style="stroke:${lo(62)}" stroke-width="1"/><circle r="${E(R*1.42+.6)}" fill="none" style="stroke:${hi(22)}" stroke-width=".7"/></g>`:''}`;
+// 陪衬列表
+const rows=[['本周 · 10月5日–10月11日','1 次 · 14 组'],['上周 · 9月28日–10月4日','4 次 · 62 组']];
+document.getElementById('rows').innerHTML=rows.map(([a,b],i)=>`<div class="week"><span>${a}</span><span>${b}</span></div>`+[0,1,2,3].map(k=>`<div class="row"><b>10月${6-i*3-k}日</b><span>下肢 · 背 · 手臂 · 6 个动作 · 14 组 · 52 分钟</span></div>`).join('')).join('')+'<div style="height:260px"></div>';
+}
+</script></body></html>
