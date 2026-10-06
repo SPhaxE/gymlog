@@ -2,9 +2,11 @@
  *  - 一个键 milo:v1，整份 JSON；每次改动立即写入（每完成一组也是），杀进程后能恢复。
  *  - 写入失败（隐私模式、配额满）不静默：state.saveError 有值，外壳显示可见提示和「重试」；内存里的数据不丢。
  *  - 演示数据：建档最后一步可选「载入演示数据」——成长引擎的进阶用户练了 30 周（与奖励、牛龄同一套模拟），「我的」里可清除或重新载入。
+ *    加的辅助动作过一遍守约检查（keepCompliant），不让演示用户的连胜被「练了没恢复的肌头」冲成 0；模拟里的减量周同时存进 deloads。
+ *  - deloads：采纳过的每一次减量（时间戳）。守约周按计划减量也算守约，成长引擎要知道是哪几周；deload 只记最近一次，不够用。
  *  - 页面带 ?scenario=… 时不读这里，走 mock 场景（截图、回归测试、Playground 用）。 */
 import { useSyncExternalStore } from 'react';
-import { DAY, planFor, prescribe, simulateUser, startOfDay } from '../engine';
+import { DAY, blockedHeads, planFor, prescribe, simulateUser, startOfDay } from '../engine';
 import { demoEnv } from '../engine/demo';
 import type { DeloadState, Profile, Session } from '../engine/types';
 
@@ -25,6 +27,8 @@ export interface AppState {
   draft: { step: 1 | 2 | 3; profile: Profile } | null;
   history: Session[];
   deload: DeloadState;
+  /** 采纳过的减量周（每次采纳的时间，毫秒）：守约周的判定要知道哪几周是按计划减量的，`deload` 只记最近一次 */
+  deloads: number[];
   active: ActiveSession | null;
   /** 组间休息：按结束时间戳算（ia §1.6），App 切后台回来剩余时间仍然对 */
   rest: { endAt: number; totalMs: number } | null;
@@ -34,7 +38,7 @@ export interface AppState {
 }
 
 export const DEFAULT_PROFILE: Profile = { experience: 'intermediate', equipment: ['barbell', 'dumbbell', 'machine', 'cable', 'smith', 'bodyweight'], minutes: 60, gender: 'male' };
-const EMPTY: AppState = { v: 1, profile: null, draft: null, history: [], deload: { status: 'none', atMs: 0 }, active: null, rest: null, demo: false };
+const EMPTY: AppState = { v: 1, profile: null, draft: null, history: [], deload: { status: 'none', atMs: 0 }, deloads: [], active: null, rest: null, demo: false };
 
 function read(): AppState {
   try {
@@ -90,23 +94,25 @@ const ACCESSORY: [string, number, number, number][][] = [
 ];
 
 /** 演示数据：进阶用户、每周 4 练，练到昨天为止的 30 周（成长引擎同一套模拟，数字全部实算），每次训练再加辅助动作 */
-export function demoState(now: number, profile?: Profile, phase = DEMO_PHASE): Pick<AppState, 'profile' | 'history' | 'deload' | 'demo'> {
+export function demoState(now: number, profile?: Profile, phase = DEMO_PHASE): Pick<AppState, 'profile' | 'history' | 'deload' | 'deloads' | 'demo'> {
   // 模拟里每 5 周一个减量周（w % 5 === 4）。多模拟 phase 周、再截掉开头，让展示的最后一周落在减量之后的正常周：
   // 否则演示用户正好停在减量周，增量页「与上一次比」几乎全是 ▼，像是全面退步（2026-10-06）
   const total = DEMO_WEEKS + phase;
   const u = simulateUser('intermediate', total, startOfDay(now) - total * 7 * DAY);
-  const history = u.history.filter((s) => s.startMs >= startOfDay(now) - DEMO_WEEKS * 7 * DAY && s.startMs < startOfDay(now)).map((s) => {
+  const from = startOfDay(now) - DEMO_WEEKS * 7 * DAY;
+  const history = u.history.filter((s) => s.startMs >= from && s.startMs < startOfDay(now)).map((s) => {
     const [, , w, i] = s.id.split('-').map(Number);
     const deload = (s.exertion ?? 8) < 8, grow = 1 + 0.2 * (w / DEMO_WEEKS);
     const extra = ACCESSORY[i % ACCESSORY.length].map(([exerciseId, kg, reps, sets]) => ({
       exerciseId, skipped: false,
       sets: Array.from({ length: deload ? Math.max(1, Math.round(sets / 2)) : sets }, () => ({ type: 'work' as const, weightKg: Math.round((deload ? 0.9 : 1) * kg * grow / 2.5) * 2.5, reps, rpe: deload ? 6 : 8 })),
     }));
+    extra.forEach((e) => ADDED.add(e));
     return { ...s, exercises: [...s.exercises, ...extra] };
   });
   shapeNextSteps(history);
   backfill(history, profile ?? u.profile, now);
-  return { profile: profile ?? u.profile, history, deload: { status: 'none', atMs: 0 }, demo: true };
+  return { profile: profile ?? u.profile, history, deload: { status: 'none', atMs: 0 }, deloads: u.deloads.filter((ms) => ms >= from && ms < startOfDay(now)), demo: true };
 }
 
 /** 让演示用户的「下一步」有升有保有降（增量页分三组、首页处方都靠它），不动预估 1RM 的走向：
@@ -144,14 +150,43 @@ let ENV: ReturnType<typeof demoEnv> | null = null;
 function backfill(history: Session[], profile: Profile, now: number) {
   const env = (ENV ??= demoEnv());
   const old = history.filter((s) => s.startMs < now - 14 * DAY && s.startMs >= now - 28 * DAY).slice(-6);
+  keepCompliant(history, profile);
   for (let round = 0; round < 4 && old.length; round++) {
     const rx = prescribe(env, history, profile, { now });
     const missing = rx.kind === 'plan' ? rx.items.filter((it) => it.suggestion.weightKg == null) : [];
     if (!missing.length) return;
     for (const it of missing) {
       const kg = START_KG[env.ex.get(it.exerciseId)?.equipmentType ?? 'machine'] ?? 30;
-      old.forEach((s, k) => s.exercises.push({ exerciseId: it.exerciseId, skipped: false,
-        sets: Array.from({ length: it.sets }, () => ({ type: 'work' as const, weightKg: kg + Math.floor(k / 2) * 2.5, reps: it.repRange[1], rpe: 8 })) }));
+      old.forEach((s, k) => {
+        const e = { exerciseId: it.exerciseId, skipped: false,
+          sets: Array.from({ length: it.sets }, () => ({ type: 'work' as const, weightKg: kg + Math.floor(k / 2) * 2.5, reps: it.repRange[1], rpe: 8 })) };
+        ADDED.add(e); s.exercises.push(e);
+      });
+    }
+    keepCompliant(history, profile);
+  }
+}
+
+/** 我们给演示数据加的动作（每次训练的辅助动作、补进旧训练的动作）；守约检查只动它们，不动模拟本身的训练 */
+const ADDED = new WeakSet<object>();
+
+/** 守约检查：模拟本身按处方练、不会练到没恢复的肌头，而我们加的辅助动作不管恢复度——比如周六的飞鸟练到了周四刚练过上斜卧推的上胸（恢复度 40%），
+ *  成长引擎就判这一周违规，演示用户的连胜永远是 0（2026-10-06 探针）。
+ *  按时间顺序逐次训练找出练到恢复度 < 50% 的肌头：先拿掉这次训练里我们加的、主要练这些肌头的动作；还不行，再从前 21 天的训练里（最近的优先）
+ *  拿掉我们加的、练这些肌头的动作（前几次加的动作把肌头练累了，这次的模拟训练才会撞上）。拿掉只会让后面的训练恢复得更好，所以按顺序一遍就够。 */
+function keepCompliant(history: Session[], profile: Profile) {
+  const env = (ENV ??= demoEnv());
+  const trains = (e: Session['exercises'][number], heads: string[], primaryOnly: boolean) => {
+    const ex = env.ex.get(e.exerciseId);
+    return !!ex && (ex.primaryHeads.some((h) => heads.includes(h)) || (!primaryOnly && ex.secondaryHeads.some((h) => heads.includes(h))));
+  };
+  for (let i = 0; i < history.length; i++) {
+    let bad = blockedHeads(env, history, i, profile);
+    for (let j = i; bad.length && j >= 0 && history[j].startMs > history[i].startMs - 21 * DAY; j--) {
+      const keep = history[j].exercises.filter((e) => !(ADDED.has(e) && trains(e, bad, j === i)));
+      if (keep.length === history[j].exercises.length) continue;
+      history[j].exercises = keep;
+      bad = blockedHeads(env, history, i, profile);
     }
   }
 }

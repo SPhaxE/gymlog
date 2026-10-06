@@ -1,7 +1,7 @@
 /** 增长层规则（brief §3–§4，ia §1.14–§1.15）的逐条测试 */
 import { describe, expect, it } from 'vitest';
 import { demoEnv } from './demo';
-import { exerciseWeight, growth, GROWTH_CONFIG, pickRewards, weekStart, weeklyTarget, type GrowthEvent } from './growth';
+import { blockedHeads, exerciseWeight, growth, GROWTH_CONFIG, pickRewards, weekStart, weeklyTarget, type GrowthEvent } from './growth';
 import { SIM_START } from './growth.sim';
 import { DAY } from './sets';
 import type { Profile, Session } from './types';
@@ -80,6 +80,13 @@ describe('守约周连胜', () => {
     const g = growth(env, { history: bad, profile: P, now: at(1, 1) });
     expect(g.streak.history[0].violation).toBe(true);
     expect(g.streak.weeks).toBe(0);
+  });
+
+  it('blockedHeads：说出练到了哪些恢复度 < 50% 的肌头，和「违规」同一口径', () => {
+    const bad = [S(at(0, 0, 8), [[SQ, 100, 5]]), S(at(0, 0, 14), [[SQ, 100, 5]]), S(at(0, 2), [[BP, 80, 5]]), S(at(0, 4), [[BP, 80, 5]])];
+    expect(blockedHeads(env, bad, 0, P)).toEqual([]);   // 第一次训练：前面没有训练，不会违规
+    expect(blockedHeads(env, bad, 1, P).length).toBeGreaterThan(0);   // 同一天下午又练深蹲，早上练的还没恢复
+    expect(blockedHeads(env, week(0), 2, P)).toEqual([]);   // 互不冲突的一周
   });
 
   it('漏练：没有冻结卡就断；有冻结卡自动用一张，连胜保住（冻结周不加周数）', () => {

@@ -120,18 +120,19 @@ export function exerciseWeight(env: Env, ex: Exercise, cfg: GrowthConfig = GROWT
 
 const levelOf = (points: number, levels: number[]) => { let l = 0; while (l + 1 < levels.length && points >= levels[l + 1]) l++; return l; };
 
-/** 某次训练有没有练到恢复度 < 50% 的肌头（只看前 21 天的训练，够算恢复窗口） */
-function violates(env: Env, history: Session[], i: number, profile: Profile | null): boolean {
+/** 第 i 次训练（history 按时间正序）练到了哪些恢复度 < 50% 的肌头（只看主要肌头；只看前 21 天的训练，够算恢复窗口）。
+ *  守约周的「违规」就是这个；演示数据也用它检查自己（data/store.ts）。 */
+export function blockedHeads(env: Env, history: Session[], i: number, profile: Profile | null): string[] {
   const s = history[i];
   const prior = history.slice(0, i).filter((h) => h.startMs > s.startMs - 21 * DAY);
-  if (!prior.length) return false;
+  if (!prior.length) return [];
   const stats = headStats(env, prior, profile, s.startMs);
-  for (const h of sessionHeadSets(env, s, true).keys()) {
+  return [...sessionHeadSets(env, s, true).keys()].filter((h) => {
     const r = stats.get(h)?.recovery;
-    if (r != null && r < env.cfg.readiness.block) return true;
-  }
-  return false;
+    return r != null && r < env.cfg.readiness.block;
+  });
 }
+const violates = (env: Env, history: Session[], i: number, profile: Profile | null) => blockedHeads(env, history, i, profile).length > 0;
 
 /** 从历史算出完整的成长状态与事件时间线 */
 export function growth(env: Env, input: GrowthInput): GrowthState {
