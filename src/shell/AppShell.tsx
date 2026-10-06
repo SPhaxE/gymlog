@@ -5,7 +5,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';
 import { App as CapApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
-import { Banner, Button, FluidBackdrop, OverlayHost, ScreenAtmosphere, ToastProvider, ToastViewport, handleBack, navHandoff, type Tab } from '../components';
+import { Banner, Button, FluidBackdrop, OverlayHost, ScreenAtmosphere, ToastProvider, ToastViewport, guardTransitionTaps, handleBack, navHandoff, type Tab } from '../components';
 import { T } from '../styles/tokens.gen';
 import { BodyPage } from '../pages/BodyPage';
 import { DemoPage } from '../pages/DemoPage';
@@ -44,6 +44,7 @@ function useBackButton() {
 function Routed() {
   const nav = useNavigate(), loc = useLocation();
   useBackButton();
+  useEffect(() => { guardTransitionTaps(); }, []);  // 转场进行中点按会落在 <html> 上：改成点坐标处的真元素（motion.tsx）
   const q = new URLSearchParams(loc.search);
   const now = Number(q.get('now')) || Date.now();
   // 切 Tab：休息计时在走时，首页的计时胶囊下滑消失，只有里面的进度条借 View Transitions 飞进被点的导航滑块（反过来亦然，Nav.tsx 的 REST_RING_VT）。

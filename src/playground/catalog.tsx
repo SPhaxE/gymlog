@@ -374,8 +374,8 @@ export const CATALOG: Entry[] = [
       ring={p.state.startsWith('ring') ? { width: 64, endAt: Date.now() + 95e3 } : undefined} />,
   },
   {
-    name: 'SharedDetail', group: '训练与记录', desc: 'M03 共享元素展开（View Transitions）：列表行（ExerciseRow sharedId）的卡片底、名称、重量与详情同名，点开时原地变形成整屏详情——卡片长满屏、名称与数字飞到新位置并放大，正文随后淡入；返回时变回去。真实动画见下方交互演示。',
-    axes: { state: ['open'] }, size: 'screen', covers: ['sharedName', 'sharedTransition'],
+    name: 'SharedDetail', group: '训练与记录', desc: 'M03 共享元素展开（View Transitions）：列表行（ExerciseRow sharedId）的卡片底、名称、重量与详情同名，点开时原地变形成整屏详情——卡片长满屏、名称与数字飞到新位置并放大，正文随后淡入；返回时变回去。真实动画见下方交互演示。转场进行中 Chrome 会把点按落在 <html> 上（点不到页面元素）：`guardTransitionTaps`（App 启动时装一次）在按下时打断转场，并把那一下点击改投给坐标处的真元素，所以转场期间点按不丢。',
+    axes: { state: ['open'] }, size: 'screen', covers: ['sharedName', 'sharedTransition', 'guardTransitionTaps'],
     render: () => <div className={s.sheetBox}><SharedDetail id="demo" title="杠铃深蹲" sub="下肢 · 3 × 6–8" hero={<Num size="hero" value="85" unit="kg" />} onBack={noop}>
       <span className="milo-text-caption">上次 8/8/8 全部顶到 8 次上限 → +5 kg</span></SharedDetail></div>,
   },

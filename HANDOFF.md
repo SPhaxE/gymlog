@@ -114,7 +114,7 @@ npm run check                   # = CI 的 web job（typecheck + test + hardcode
 python3 scripts/build_tokens.py [--check]   # 改 design/tokens/tokens.json 后重生成 tokens.css、tokens.gen.ts、Figma 插件
 node scripts/test_figma_plugin.cjs
 # 截图门禁（先 npx vite --port 5199 --host 127.0.0.1）
-python3 scripts/shoot_6a.py         # 演示全流程 + 故事 8 幕 + /demo → screenshots/stage6a/（命中区审计在 scripts/lib/hit_audit.js）
+python3 scripts/shoot_6a.py         # 演示全流程 + 故事 8 幕 + /demo → screenshots/stage6a/（命中区审计在 scripts/lib/hit_audit.js）；日常迭代用 --no-shots --only <flow|story|deload|gains|demo>，npm run test:changed 只跑改到的测试
 python3 scripts/shoot_playground.py # 组件矩阵 + App 壳 → screenshots/stage5/
 python3 scripts/shoot_growth.py     # 奖励弹窗 GIF → screenshots/growth/
 ```
@@ -183,6 +183,8 @@ python3 scripts/shoot_growth.py     # 奖励弹窗 GIF → screenshots/growth/
 
 **这一轮回改的规范（组件层，别的页面也受益）**：小按钮命中区上下外扩到 48；分段控件每项 ≥ 48 宽、命中区算上内边距；`Sheet` 标题和说明上下叠、滚动行高修复；`RestDock` 胶囊 48 高、「收起」48 高；`SetRow` 提示不再挤动第一行对齐；`Odometer` 按位配对滚动（97.5 → 100 不错位）；`NumPad` 步进键有读屏名；新组件 `SetLine`、`SetEditor`、`Tilt`（都在 `/playground`）。
 
+- **转场进行中点按会落在 <html> 上**（2026-10-06 查出）：View Transitions 进行时页面元素点不到，`::view-transition{pointer-events:none}` 在 Chrome 里不起作用；`guardTransitionTaps`（motion.tsx，AppShell 启动时装一次）在按下时打断转场并把点击改投给真元素。新增转场照常用 `sharedTransition` / `document.startViewTransition`，不用再管；整套检查里「点组行改数」偶发失败就是这个（`scripts/shoot_6a.py` 失败时会打印点击与转场的时间线）。
+
 ## 7. 已知问题与待验证
 
 - **演示数据的形状**：`DEMO_PHASE = 3`——模拟时长多 3 周，让演示停在「普通训练周」而不是减量周末尾；`shapeNextSteps` 再把辅助动作的最后一次调成「次数做满 / 差 1 次 / 有一组没做满」三种，所以增量页三组都有（主力三项 5 次 × 引擎 6–8 区间，不调就永远是「该减重」）。
@@ -227,7 +229,7 @@ npm run check                       # 类型检查 + 215 个测试 + 写死值 +
 python3 -m pip install playwright numpy opencv-python-headless Pillow
 python3 -m playwright install chromium   # 本地没有 /opt/pw-browsers，脚本会自动用 Playwright 自带的 Chromium
 npx vite --port 5199 --host 127.0.0.1 &  # 截图门禁默认连这个端口
-python3 scripts/shoot_6a.py         # 演示全流程门禁（约 3 分钟），应输出「全部通过」
+python3 scripts/shoot_6a.py         # 演示全流程门禁（两个宽度并行，约 1 分钟），应输出「全部通过」；--no-shots 不截图、--only gains 只跑一类、--serial 不并行
 python3 scripts/shoot_playground.py # 组件矩阵门禁
 ```
 
