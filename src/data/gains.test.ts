@@ -134,6 +134,7 @@ describe('动作进步曲线的数据（P10）', () => {
       expect(tr, r.name).not.toBeNull();
       expect(tr.row, r.name).toEqual(r);
       expect(tr.sessions.at(-1)?.v, r.name).toBe(r.latest);
+      expect(tr.sessions.at(-1)?.delta, r.name).toEqual(r.delta);   // 最后一次的涨跌 = 增量页那一行的涨跌
     }
   });
 
@@ -157,6 +158,11 @@ describe('动作进步曲线的数据（P10）', () => {
     const tr = exerciseTrend(src(history), BENCH, NOW)!;
     expect(tr.sessions[0].sets).toEqual(['60 kg × 8', '62.5 kg × 6', '60 kg × 7']);
     expect(tr.sessions[0].best).toBe('60 kg × 8');          // 60×8 ≈ 76 > 62.5×6 ≈ 75
+  });
+
+  it('每次的涨跌：第一次是基线，后面逐次与上一次比', () => {
+    const tr = exerciseTrend(src([sess('a', 30, BENCH, [[60, 8]]), sess('b', 20, BENCH, [[65, 8]]), sess('c', 10, BENCH, [[65, 8]]), sess('d', 3, BENCH, [[60, 8]])]), BENCH, NOW)!;
+    expect(tr.sessions.map((x) => x.delta.dir)).toEqual(['baseline', 'up', 'flat', 'down']);
   });
 
   it('只练过 1 次：一个点，是基线', () => {

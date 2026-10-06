@@ -11,7 +11,7 @@
   - --no-shots 不再等故事 8 幕自己播完（只为截图）；
   - --only 只跑某几类：flow（主流程）、story、deload、gains、demo，逗号分隔——改哪页只跑哪页，提交前再跑一遍完整的；
   - --width 360|412 只跑一种宽度（并行时内部用）。"""
-import argparse, os, subprocess, sys
+import argparse, os, re, subprocess, sys
 from playwright.sync_api import sync_playwright
 
 ap = argparse.ArgumentParser()
@@ -225,6 +225,35 @@ def gains_checks(b, w, h):
     ok(chips.first.get_attribute('aria-pressed') == 'true', f'{tag} 增量：选中「胸」')
     ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} 增量·筛选后：无横向溢出')
     if not args.no_shots: pg.screenshot(path=os.path.join(OUT, 'gains-chest.png'))
+    # 曲线页（P10）：点一行进去，大数字和增量页那一行是同一个数；点明细的一行换成那天；返回后筛选和滚动位置还在
+    pg.goto(f'{args.base}/gains?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(700)
+    rows_all = pg.get_by_role('button', name=re.compile(r'^查看.+的进步曲线$'))
+    rows_all.last.scroll_into_view_if_needed(); pg.wait_for_timeout(500)
+    top_before = pg.evaluate('document.querySelector("[class*=_scroll_]").scrollTop')
+    row = rows_all.last
+    row_name = row.get_attribute('aria-label')[2:-5]
+    click(pg, row); pg.wait_for_selector('text=下次目标'); pg.wait_for_timeout(900)
+    ok('/gains/' in pg.url and pg.get_by_role('heading', name=row_name).count() == 1, f'{tag} 曲线页：点增量页的一行进到这个动作（{row_name}）')
+    ok(pg.get_by_text('和首页处方、增量页是同一个数').count() == 1 and pg.locator('[class*=_next_]').count() == 1, f'{tag} 曲线页：有下次目标')
+    ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} 曲线页：无横向溢出')
+    small = pg.evaluate(AUDIT)
+    ok(not small, f'{tag} 曲线页：命中区都 ≥ 48 {small[:3]}')
+    recs = pg.locator('[class*=_rec_]')
+    ok(recs.count() >= 2, f'{tag} 曲线页：最近几次明细可点（{recs.count()} 行）')
+    day0 = pg.locator('[class*=_label_]').first.inner_text()
+    pg.locator('[class*=_scroll_]').first.evaluate('(e) => e.scrollTo(0, e.scrollHeight)'); pg.wait_for_timeout(400)
+    click(pg, recs.nth(1)); pg.wait_for_timeout(600)
+    pg.locator('[class*=_scroll_]').first.evaluate('(e) => e.scrollTo(0, 0)'); pg.wait_for_timeout(400)
+    ok(pg.locator('[class*=_label_]').first.inner_text() != day0 and recs.nth(1).get_attribute('aria-pressed') == 'true', f'{tag} 曲线页：点明细的一行，大数字换成那一天')
+    click(pg, pg.get_by_role('button', name='返回')); pg.wait_for_selector('h1'); pg.wait_for_timeout(900)
+    top_after = pg.evaluate('document.querySelector("[class*=_scroll_]").scrollTop')
+    ok(abs(top_after - top_before) <= 2 and top_before > 0, f'{tag} 曲线页：返回后滚动位置还在（{top_before:.0f} → {top_after:.0f}）')
+    click(pg, pg.get_by_role('button', name='背')); pg.wait_for_timeout(500)
+    click(pg, pg.get_by_role('button', name=re.compile(r'^查看.+的进步曲线$')).first); pg.wait_for_selector('text=下次目标'); pg.wait_for_timeout(600)
+    click(pg, pg.get_by_role('button', name='返回')); pg.wait_for_selector('h1'); pg.wait_for_timeout(700)
+    ok(pg.get_by_role('button', name='背').first.get_attribute('aria-pressed') == 'true', f'{tag} 曲线页：返回后部位筛选还在（背）')
+    pg.goto(f'{args.base}/gains/not-an-exercise?scenario=plain-prescription'); pg.wait_for_timeout(700)
+    ok(pg.get_by_role('button', name='回增量页').count() == 1, f'{tag} 曲线页：动作不存在时有回增量页的出口')
     at('deload-suggested', 'deload-suggested')
     ok(pg.get_by_role('button', name='看看').count() == 1, f'{tag} 增量：建议减量时状态行有「看看」')
     click(pg, pg.get_by_role('button', name='看看')); pg.wait_for_timeout(900)

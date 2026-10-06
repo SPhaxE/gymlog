@@ -1,0 +1,34 @@
+/* 曲线页：整页一个滚动区；页头首屏（大数字）跟着滑走 */
+.scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.hero { position: relative; isolation: isolate; display: grid; gap: var(--milo-space-xs); padding: var(--milo-space-l) var(--milo-size-gutter) var(--milo-space-m); overflow: hidden; }
+.label { color: var(--milo-color-text-secondary); }
+.big { display: inline-flex; align-items: baseline; gap: var(--milo-space-xs); color: var(--milo-color-text-primary); }
+.deltaRow { display: flex; align-items: center; gap: var(--milo-space-s); color: var(--milo-color-text-secondary); }
+/* 配重片同心纹：和增量页同一处理，圆心在右上角、被屏幕边切掉、向下渐隐 */
+.plate { position: absolute; z-index: -1; right: calc(var(--milo-space-5xl) * -2); top: calc(var(--milo-space-5xl) * -2); width: calc(var(--milo-space-5xl) * 8); height: calc(var(--milo-space-5xl) * 8); border-radius: 50%; pointer-events: none;
+  background: repeating-radial-gradient(circle at 50% 50%, transparent 0 var(--milo-space-m), var(--milo-color-line-strong) var(--milo-space-m) calc(var(--milo-space-m) + var(--milo-stroke-hairline)));
+  -webkit-mask-image: radial-gradient(closest-side, var(--milo-color-text-primary), transparent); mask-image: radial-gradient(closest-side, var(--milo-color-text-primary), transparent); }
+
+.body { display: grid; align-content: start; grid-auto-rows: max-content; gap: var(--milo-space-l); padding: 0 var(--milo-size-gutter) var(--milo-space-4xl); }
+.empty { flex: 1; display: grid; align-content: center; padding: 0 var(--milo-size-gutter); }
+
+/* 选中那天的每一组：一行一组，数字靠右 */
+.sets, .recent { list-style: none; margin: 0; padding: 0; display: grid; }
+.sets li { display: flex; align-items: baseline; justify-content: space-between; gap: var(--milo-space-m); min-height: var(--milo-size-hit-min); align-items: center;
+  border-bottom: var(--milo-stroke-hairline) solid var(--milo-color-line-default); }
+.sets li:last-child { border-bottom: 0; }
+.sets li > span { color: var(--milo-color-text-secondary); }
+
+.next { display: grid; gap: var(--milo-space-xs); padding-left: var(--milo-space-m); box-shadow: inset var(--milo-space-2xs) 0 0 var(--milo-color-control-selected); }
+.next p { margin: 0; }
+.same { color: var(--milo-color-text-secondary); }
+
+/* 最近 8 次：整行可点，选中的一行左侧一道骨白竖条 */
+.rec { position: relative; display: grid; grid-template-columns: var(--milo-space-5xl) minmax(0, 1fr) auto auto; align-items: center; column-gap: var(--milo-space-s); width: 100%; min-height: var(--milo-size-hit-min);
+  padding: 0 var(--milo-space-m); border: 0; border-radius: var(--milo-radius-m); background: transparent; color: var(--milo-color-text-primary); font: inherit; text-align: left; }
+.rec[aria-pressed='true'] { background: var(--milo-color-bg-raised-2); box-shadow: inset var(--milo-space-2xs) 0 0 var(--milo-color-control-selected); }
+.recDate { font-family: var(--milo-font-number); font-weight: 700; font-variant-numeric: tabular-nums; }
+.recBest { color: var(--milo-color-text-secondary); min-width: 0; }
+.recPr { grid-column: 3; }
+.recV { grid-column: 4; justify-self: end; min-width: calc(var(--milo-space-5xl) + var(--milo-space-s)); text-align: right; }
+.recV i { font-style: normal; font-size: var(--milo-font-size-caption); color: var(--milo-color-text-secondary); margin-left: var(--milo-space-2xs); }

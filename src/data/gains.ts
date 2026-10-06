@@ -159,6 +159,8 @@ export interface TrendSession {
   best: string;
   /** 这次每一组（热身组不计），如「26 kg × 8」 */
   sets: string[];
+  /** 比上一次的涨跌（±trendEps 内算持平；第一次是基线），和增量页行里的 delta 同一个口径 */
+  delta: { dir: DeltaDir; diff: number | null };
 }
 export interface TrendData {
   now: number;
@@ -181,12 +183,16 @@ export function exerciseTrend(scenario: string | Source, exerciseId: string, now
   const { dv } = deloadInfo(src, now);
   const b = build(src.history, exerciseId, now, dv.kind === 'week');
   if (!b) return null;
-  const sessions: TrendSession[] = b.valid.slice(-24).map(({ r, v }) => {
+  const from = Math.max(0, b.valid.length - 24);
+  const sessions: TrendSession[] = b.valid.slice(from).map(({ r, v }, k) => {
     const sets = countedSets(r.entry);
     const best = b.metric === 'e1rm'
       ? sets.reduce((m, s) => ((e1rm(s.weightKg, bestReps(s)) ?? 0) > (e1rm(m.weightKg, bestReps(m)) ?? 0) ? s : m), sets[0])
       : sets.reduce((m, s) => (bestReps(s) > bestReps(m) ? s : m), sets[0]);
-    return { t: r.session.startMs, label: md(r.session.startMs), v: Math.round(v * 10) / 10, pr: r.isPR, best: setText(best), sets: sets.map(setText) };
+    const prev = b.valid[from + k - 1]?.v;
+    const dir: DeltaDir = prev == null ? 'baseline' : b.metric === 'e1rm' ? trendDir(prev, v, env.cfg.trendEps) : v > prev ? 'up' : v < prev ? 'down' : 'flat';
+    return { t: r.session.startMs, label: md(r.session.startMs), v: Math.round(v * 10) / 10, pr: r.isPR, best: setText(best), sets: sets.map(setText),
+      delta: { dir, diff: prev == null ? null : Math.round((v - prev) * 10) / 10 } };
   });
   return { now, row: b.row, sessions, recent: [...sessions].reverse().slice(0, 8) };
 }

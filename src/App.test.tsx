@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import tokens from '../design/tokens/tokens.json';
 import { App } from './App';
@@ -100,5 +100,27 @@ describe('App 壳：5 个 Tab', () => {
     render(<App />);
     await screen.findByRole('navigation', { name: '主导航' });
     expect(window.location.pathname).toBe('/today');
+  });
+});
+
+describe('动作进步曲线页（/gains/:exerciseId）', () => {
+  it('演示场景：显示动作名、大数字、下次目标和最近几次；点明细的一行换成那一天', async () => {
+    window.history.pushState({}, '', '/gains/dumbbell-incline-bench-press-398?scenario=plain-prescription');
+    render(<App />);
+    expect(await screen.findByRole('heading', { name: '上斜哑铃卧推' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: '下次目标' })).toBeInTheDocument();
+    const rows = screen.getAllByRole('button', { pressed: undefined }).filter((b) => b.getAttribute('aria-pressed') != null);
+    expect(rows.length).toBeGreaterThanOrEqual(2);
+    expect(rows[0].getAttribute('aria-pressed')).toBe('true');
+    rows[1].click();
+    await waitFor(() => expect(rows[1].getAttribute('aria-pressed')).toBe('true'));
+    expect(rows[0].getAttribute('aria-pressed')).toBe('false');
+  });
+  it('动作不存在：提示找不到，给回增量页的按钮', async () => {
+    window.history.pushState({}, '', '/gains/not-an-exercise?scenario=plain-prescription');
+    render(<App />);
+    expect(await screen.findByText('找不到这个动作')).toBeInTheDocument();
+    screen.getByRole('button', { name: '回增量页' }).click();
+    await waitFor(() => expect(window.location.pathname).toBe('/gains'));
   });
 });
