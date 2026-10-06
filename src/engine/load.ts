@@ -1,6 +1,7 @@
 import { regionOfEx, type Env } from './env';
 import { exerciseRecords } from './records';
 import { bestReps, halfUp, r1, roundStep } from './sets';
+import { trendDir } from './trend';
 import type { Exercise, Session } from './types';
 
 export interface Plan { sets: number; repRange: [number, number]; restSec: number }
@@ -37,7 +38,7 @@ export function suggest(env: Env, history: Session[], ex: Exercise, plan: Plan, 
   const W = Math.max(...work.map((s) => s.weightKg ?? 0));
   const lastTxt = `${W > 0 ? r1(W) + ' kg × ' : ''}${reps.join('/')}`;
   const prev = recs[recs.length - 2];
-  const trendDown = !!prev && last.e1rm != null && prev.e1rm != null && last.e1rm < prev.e1rm * 0.99;
+  const trendDown = !!prev && last.e1rm != null && prev.e1rm != null && trendDir(prev.e1rm, last.e1rm, env.cfg.trendEps) === 'down';
   const isLower = regionOfEx(env, ex) === 'lower';
   let weightKg = W, kind: ReasonKind, text: string, repsPerSet: number[];
   const allTop = reps.every((r) => r >= upper), anyLow = reps.some((r) => r < lower);

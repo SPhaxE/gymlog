@@ -138,11 +138,34 @@ def story_checks(b, w, h):
     ok(cards[0][1] <= cards[1][0] and cards[1][1] + 8 <= txt['y'], f'{tag} 故事第 7 幕：两张卡之间、卡和文字之间都不重叠')
     pg.close()
 
+def deload_checks(b, w, h):
+    """减量闭环（2026-10-06）：首页「看看」→ 面板（依据 + 两个按钮）→ 采纳变减量周 / 这次不减变一行小字；演示场景里也要能走完，没有点了没反应的按钮"""
+    tag = f'{w}×{h}'
+    pg = b.new_page(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True)
+    pg.on('pageerror', lambda e: errors.append(f'{tag} deload pageerror: {e}'))
+    def open_home():
+        pg.goto(f'{args.base}/today?scenario=deload-suggested'); pg.wait_for_timeout(2200)
+    open_home()
+    ok(pg.get_by_role('button', name='看看').count() == 1, f'{tag} 减量：首页「建议本周减量」有可点的「看看」')
+    click(pg, pg.get_by_role('button', name='看看')); pg.wait_for_timeout(900)
+    ok(pg.get_by_role('button', name='采纳减量').count() == 1 and pg.get_by_role('button', name='这次不减').count() == 1, f'{tag} 减量：面板里有「采纳」和「这次不减」')
+    ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} 减量面板：无横向溢出')
+    small = pg.evaluate(AUDIT)
+    ok(not small, f'{tag} 减量面板：命中区都 ≥ 48 {small[:3]}')
+    click(pg, pg.get_by_role('button', name='采纳减量')); pg.wait_for_timeout(900)
+    ok(pg.get_by_text('减量周 · 还剩').count() > 0 and pg.get_by_role('button', name='看看').count() == 0, f'{tag} 减量：采纳后首页变「减量周 · 还剩 N 天」')
+    open_home()
+    click(pg, pg.get_by_role('button', name='看看')); pg.wait_for_timeout(900)
+    click(pg, pg.get_by_role('button', name='这次不减')); pg.wait_for_timeout(900)
+    ok(pg.get_by_text('你选了这次不减').count() > 0, f'{tag} 减量：「这次不减」后只剩一行小字')
+    pg.close()
+
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path=args.chromium if os.path.exists(args.chromium) else None)
     run(b, 360, 800, True)
     run(b, 412, 915, False)
     story_checks(b, 360, 800); story_checks(b, 412, 915)
+    deload_checks(b, 360, 800); deload_checks(b, 412, 915)
     # /demo 电脑版
     d = b.new_page(viewport={'width': 1440, 'height': 900})
     d.on('pageerror', lambda e: errors.append(f'demo pageerror: {e}'))

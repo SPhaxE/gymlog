@@ -34,12 +34,18 @@ export function bodyData(scenario: string | Source, now: number): BodyData {
 
 /** 今天已练完（ia §1.2）：本次摘要 + 这次练到的肌头离黄金窗还有几小时（最快的在前） */
 export interface DoneToday { session: Session; sets: number; load: number; stage: Stage; heads: { id: string; name: string; hours: number; recovery: number }[] }
-export interface HomeData { rx: Prescription; dv: DeloadView; hits: number; now: number; lastWeight: (exerciseId: string) => number | null; done: DoneToday | null }
+export interface HomeData { rx: Prescription; dv: DeloadView; hits: number; sig: DeloadSignal; now: number; lastWeight: (exerciseId: string) => number | null; done: DoneToday | null }
+
+/** 减量信号 + 它在此刻的状态（建议 / 减量周 / 这次不减 / 无）：首页、增量页都从这里取，状态行和面板才不会各说各话 */
+export type DeloadSignal = ReturnType<typeof deloadSignal>;
+export function deloadInfo(src: Pick<Source, 'history' | 'deload'>, now: number): { sig: DeloadSignal; dv: DeloadView } {
+  const sig = deloadSignal(env, src.history);
+  return { sig, dv: deloadView(env, sig, src.deload, now) };
+}
 
 export function homeData(scenario: string | Source, now: number): HomeData {
   const { history, profile, deload } = typeof scenario === 'string' ? sourceOf(scenario, now) : scenario;
-  const sig = deloadSignal(env, history);
-  const dv = deloadView(env, sig, deload, now);
+  const { sig, dv } = deloadInfo({ history, deload }, now);
   const rx = prescribe(env, history, profile!, { now, deload: dv.kind === 'week' });
   const lastWeight = (id: string) => {
     const r = exerciseRecords(env, history, id).at(-1);
@@ -55,5 +61,5 @@ export function homeData(scenario: string | Source, now: number): HomeData {
     const heads = ids.flatMap((id) => { const h = stats.get(id); return h ? [{ id, name: h.name, hours: h.hoursLeft, recovery: h.recovery ?? 0 }] : []; }).sort((a, b) => a.hours - b.hours);
     done = { session: last, sets, load, heads, stage: growth(env, { history, profile, now }).stage };
   }
-  return { rx, dv, hits: sig.hits.length, now, lastWeight, done };
+  return { rx, dv, hits: sig.hits.length, sig, now, lastWeight, done };
 }

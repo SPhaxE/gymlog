@@ -20,6 +20,8 @@ export interface EngineConfig {
   deload: { volume: number; intensity: number; days: number };
   /** PR 门槛：比此前最好成绩至少高 0.05 kg（ia §1.7） */
   prMinKg: number;
+  /** 趋势的「持平」带：与上一次相比 ±1% 以内算持平（ia §1.9）；减量信号、处方的「先不加重」、增量页的涨跌都用同一个 */
+  trendEps: number;
 }
 
 export const DEFAULT_CONFIG: EngineConfig = {
@@ -36,6 +38,7 @@ export const DEFAULT_CONFIG: EngineConfig = {
   progress: { upUpper: 0.025, upLower: 0.05, down: 0.075 },
   deload: { volume: 0.5, intensity: 0.9, days: 6 },
   prMinKg: 0.05,
+  trendEps: 0.01,
 };
 
 /** 低保真原型（prototype/engine.js）用的系数：只给对照测试用 */

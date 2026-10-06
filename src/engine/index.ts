@@ -6,6 +6,7 @@ export * from './env';
 export * from './stats';
 export * from './personal';
 export * from './records';
+export * from './trend';
 export * from './deload';
 export * from './load';
 export * from './prescribe';

@@ -1,6 +1,7 @@
 import type { Env } from './env';
 import { exerciseRecords } from './records';
 import { DAY, r1 } from './sets';
+import { trendDir } from './trend';
 import type { DeloadState, Session } from './types';
 
 export interface DeloadHit { exerciseId: string; name: string; series: number[]; dropPct: number }
@@ -14,7 +15,7 @@ export function deloadSignal(env: Env, history: Session[]): { active: boolean; h
     const v = exerciseRecords(env, history, id).map((r) => r.e1rm).filter((x): x is number => x != null);
     if (v.length < 3) continue;
     const [a, b, c] = v.slice(-3);
-    if (b < a * 0.99 && c < b * 0.99) hits.push({ exerciseId: id, name: env.ex.get(id)?.name ?? id, series: [a, b, c].map(r1), dropPct: r1((1 - c / a) * 100) });
+    if (trendDir(a, b, env.cfg.trendEps) === 'down' && trendDir(b, c, env.cfg.trendEps) === 'down') hits.push({ exerciseId: id, name: env.ex.get(id)?.name ?? id, series: [a, b, c].map(r1), dropPct: r1((1 - c / a) * 100) });
   }
   return { active: hits.length >= 2, hits };
 }
