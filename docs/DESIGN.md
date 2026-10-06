@@ -312,6 +312,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 |---|---|
 | `/today` · `/body` · `/gains` · `/log` · `/me` | 5 个 Tab 根页；首页、身体、增量读本机存储，记录、我的还是说明占位（阶段 6c、6d） |
 | `/onboarding` | 没建档时进这里：故事引导（8 幕，`StoryScreens`）→ 建档 3 步（可选载入演示数据） |
+| `/gains/:exerciseId` | 动作进步曲线（P10）：子页，没有导航；大数字 + 曲线 + 选中那天的各组 + 下次目标 + 最近 8 次；返回还原增量页的筛选和滚动位置 |
 | `/summary/:id` | 训练结算（新纪录卡 M01、力竭度、成长）；任务流，没有导航。训练本身在首页打卡（2026-10-06，ia v1.5），`/session` 旧地址重定向到 `/today` |
 | `/demo` | 第一版实机演示：电脑上左讲解 + 演示路线、右手机壳里是 App 本体；手机上清空后全屏进故事 |
 | `/brand` · `/lab` | IP 与 Logo 评审页；参考要素实验室 |

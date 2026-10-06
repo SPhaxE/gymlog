@@ -13,7 +13,7 @@
 /* 页头：上边距 space/l，块间 space/s */
 .header { display: grid; gap: var(--milo-space-s); padding: var(--milo-space-l) var(--milo-size-gutter) 0; }
 .header h1 { margin: 0; }
-.topBar { display: flex; align-items: center; gap: var(--milo-space-s); min-height: var(--milo-size-hit-min); padding: var(--milo-space-s) var(--milo-size-gutter) 0; }
+.topBar { position: relative; z-index: 1; /* 返回键的命中区向下外扩 2px，要盖在下面的滚动区上面，否则点它的下沿点到列表 */ display: flex; align-items: center; gap: var(--milo-space-s); min-height: var(--milo-size-hit-min); padding: var(--milo-space-s) var(--milo-size-gutter) 0; }
 .topBar h1 { margin: 0; }
 .topTitle { flex: 1; min-width: 0; }
 .back { position: relative; display: grid; place-items: center; width: var(--milo-size-button-h-s); height: var(--milo-size-button-h-s); margin-left: calc(var(--milo-space-s) * -1);

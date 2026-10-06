@@ -44,7 +44,8 @@ function smooth(xy: [number, number][]) {
 /** 动作进步曲线（P10；2026-10-04 用户选定 E5 + M04）：预估 1RM 对日期，时间按正序画。
  *  圆滑曲线 + 下方荧光渐隐面积；按住横向拖，竖向游标吸到最近一次训练（吸附时轻振），顶部读数按位滚动（Odometer）；
  *  选中点有一圈呼吸光晕。也可以点、或聚焦后用 ← → 逐次看。PR 点是菱形。少于 2 次不画线。 */
-export function TrendChart({ points, selected, onSelect, unit = 'kg' }: { points: Point[]; selected?: number | null; onSelect?: (i: number) => void; unit?: string }) {
+export function TrendChart({ points, selected, onSelect, unit = 'kg', readout = true }: { points: Point[]; selected?: number | null; onSelect?: (i: number) => void; unit?: string;
+  /** 图上方那一行读数。页面自己有大数字（曲线页）时关掉，同一个数屏上只出现一次 */ readout?: boolean }) {
   const box = useRef<HTMLDivElement>(null), drag = useRef(false), gid = useId().replace(/[^a-zA-Z0-9-]/g, '');
   const [w, setW] = useState(T['size/screen-w'] - T['size/gutter'] * 2);
   useLayoutEffect(() => {
@@ -76,10 +77,10 @@ export function TrendChart({ points, selected, onSelect, unit = 'kg' }: { points
   const line = ps.length > 1 ? smooth(xy) : '';
   return (
     <div ref={box} className={s.chart}>
-      <div className={s.readout} aria-live="polite">
+      {readout && <div className={s.readout} aria-live="polite">
         {sel != null ? <><Odometer value={fmt(ps[sel].v)} size="m" /><i>{unit}</i><span className="milo-text-caption">{ps[sel].label}{ps[sel].pr ? ' · PR' : ''}</span></>
           : <span className="milo-text-caption">{ps.length > 1 ? '按住横向拖，或点一个点查看当次' : '再练一次就能看到趋势'}</span>}
-      </div>
+      </div>}
       <svg className={cx('milo-focus', s.plot)} width={w} height={h} tabIndex={onSelect ? 0 : -1} onKeyDown={key} role="img"
         aria-label={`预估 1RM，共 ${ps.length} 次：${fmt(ps[0].v)} 到 ${fmt(ps.at(-1)!.v)} ${unit}`}
         onPointerDown={(e) => { if (!onSelect) return; e.currentTarget.setPointerCapture(e.pointerId); drag.current = true; pick(e.clientX, e.currentTarget); }}

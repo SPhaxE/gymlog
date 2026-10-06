@@ -1,7 +1,7 @@
 /** 增量总览页（P09，ia §1.9）：一屏回答「我有没有在变强、下一次该加多少」。
  *  五层：
  *  - 战略：用户在两次训练之间翻一眼，确认力量在涨，并且知道下次每个动作做多少——下次的数必须和首页处方是同一个数。
- *  - 范围：近 4 周摘要、减量状态行（可点开面板）、按部位筛选、按引擎结论分组的动作列表；列表行点进曲线页在下一次交付接。
+ *  - 范围：近 4 周摘要、减量状态行（可点开面板）、按部位筛选、按引擎结论分组的动作列表；点一行进这个动作的曲线页（/gains/:exerciseId），返回时还原筛选和滚动位置。
  *  - 结构：Tab 根页（导航「增量」选中）；没练过任何动作时是空状态，唯一出路是回首页。
  *  - 框架：整页是一个滚动区——页头首屏（标题 + 配重片环摘要 + 破纪录）跟着内容一起滑走，不钉在顶上，列表区最大；
  *    只有「部位筛选」一行滑到顶后贴住（半透明虚化底），随时能换部位。首屏 → 减量状态 → 筛选 → 三组（该加重 / 保持 / 该减重；减量周合成一组）。
@@ -9,8 +9,8 @@
  *  - 表现：页头背景是一圈很淡的配重片同心纹（每页一处）；环 = 近 4 周练过的动作按涨 / 持平 / 退 / 刚开始记分段，每个数后面写「个动作」；
  *    破纪录次数用码表滚动（M04）；切部位时列表交错弹入（M07）；涨跌一律 ▲▼= 形状 + 文字。
  *  （2026-10-06 返工：用户验收「页头没有设计感、摘要数字看不懂、页头贴顶、曲线对不齐」；Stitch g8 的取舍见 design/hifi/gains/decision.md） */
-import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router';
 import { Cascade, Chip, GainGroupHead, GainRow, GainSummary, Nav, Screen, StateView, useToast, type Tab } from '../components';
 import { env, fmt, REGION_NAME } from '../data/demo';
 import { gainsData, groupGains, type GainRow as Row } from '../data/gains';
@@ -20,6 +20,9 @@ import type { Region } from '../engine';
 import { DeloadBanner } from './DeloadBanner';
 import { DeloadSheet } from './DeloadSheet';
 import s from './GainsPage.module.css';
+
+/** 点进曲线页前记下部位筛选和滚动位置，返回时还原（按场景分开记；刷新页面就忘了，不写存储） */
+const memo = new Map<string, { region: Region | 'all'; top: number }>();
 
 /** 涨跌文字：重量动作 ±kg，自重动作 ±次 */
 const deltaText = (r: Row) => {
@@ -36,10 +39,13 @@ function GainsNav({ scenario, now, onTab }: { scenario?: string; now: number; on
 }
 
 export function GainsPage({ scenario, now, onTab }: { scenario?: string; now: number; onTab?: (tab: Tab, path: string) => void }) {
-  const nav = useNavigate(), toast = useToast();
+  const nav = useNavigate(), loc = useLocation(), toast = useToast();
   const { src, adopt, skip } = useSource(scenario, now);
+  const key = scenario ?? 'live', scroll = useRef<HTMLDivElement>(null);
   const d = useMemo(() => gainsData(src, now), [src, now]);
-  const [region, setRegion] = useState<Region | 'all'>('all');
+  const [region, setRegion] = useState<Region | 'all'>(() => memo.get(key)?.region ?? 'all');
+  useLayoutEffect(() => { const m = memo.get(key); if (m && scroll.current) scroll.current.scrollTop = m.top; }, [key]);
+  const open = (id: string) => { memo.set(key, { region, top: scroll.current?.scrollTop ?? 0 }); nav(`/gains/${id}${loc.search}`); };
   const [deloadOpen, setDeloadOpen] = useState(false);
   const week = d.dv.kind === 'week';
   const shown = region === 'all' || !d.regions.includes(region) ? d.rows : d.rows.filter((r) => r.region === region);
@@ -48,7 +54,7 @@ export function GainsPage({ scenario, now, onTab }: { scenario?: string; now: nu
 
   return (
     <Screen label="增量">
-      <div className={s.scroll}>
+      <div ref={scroll} className={s.scroll}>
         <header className={s.hero}>
           <span className={s.plate} aria-hidden="true" />
           <p className={`milo-text-caption ${s.eyebrow}`}>力量有没有在涨</p>
@@ -77,7 +83,7 @@ export function GainsPage({ scenario, now, onTab }: { scenario?: string; now: nu
                     <GainGroupHead kind={g.kind} count={g.rows.length} />
                     {g.rows.map((r) => (
                       <GainRow key={r.exerciseId} name={r.name} latest={r.latest} unit={r.unit} delta={{ dir: r.delta.dir, value: deltaText(r) }} pr={r.pr4w}
-                        points={r.points} target={r.target?.text ?? null} note={noteOf(r)} />
+                        points={r.points} target={r.target?.text ?? null} note={noteOf(r)} onClick={() => open(r.exerciseId)} />
                     ))}
                   </section>
                 ))}

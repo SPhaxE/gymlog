@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { DAY } from '../engine';
 import type { Session } from '../engine';
 import { homeData, sourceOf, type Source } from './demo';
-import { gainsData, groupGains } from './gains';
+import { exerciseTrend, gainsData, groupGains } from './gains';
 import { demoState } from './store';
 
 // 同 scenarios.test.ts：取傍晚
@@ -123,5 +123,64 @@ describe('增量总览的数据（ia §1.9）', () => {
   it('暴露减量信号，页面不用再算一遍', () => {
     expect(gainsData('deload-suggested', NOW).dv.kind).toBe('suggest');
     expect(gainsData('deload-suggested', NOW).sig.hits.length).toBeGreaterThan(0);
+  });
+});
+
+describe('动作进步曲线的数据（P10）', () => {
+  it('和增量页同一行：最新值、涨跌、下次目标一字不差', () => {
+    const list = gainsData('plain-prescription', NOW);
+    for (const r of list.rows) {
+      const tr = exerciseTrend('plain-prescription', r.exerciseId, NOW)!;
+      expect(tr, r.name).not.toBeNull();
+      expect(tr.row, r.name).toEqual(r);
+      expect(tr.sessions.at(-1)?.v, r.name).toBe(r.latest);
+      expect(tr.sessions.at(-1)?.delta, r.name).toEqual(r.delta);   // 最后一次的涨跌 = 增量页那一行的涨跌
+    }
+  });
+
+  it('曲线时间正序、最多 24 点；明细最近 8 次、新的在前', () => {
+    const tr = exerciseTrend('plain-prescription', BENCH, NOW) ?? exerciseTrend('plain-prescription', gainsData('plain-prescription', NOW).rows[0].exerciseId, NOW)!;
+    const ts = tr.sessions.map((x) => x.t);
+    expect(ts).toEqual([...ts].sort((a, b) => a - b));
+    expect(tr.sessions.length).toBeLessThanOrEqual(24);
+    expect(tr.recent.length).toBeLessThanOrEqual(8);
+    expect(tr.recent.map((x) => x.t)).toEqual([...tr.recent.map((x) => x.t)].sort((a, b) => b - a));
+  });
+
+  it('PR 点和结算页同一口径（exerciseRecords 的 isPR）；第一次是基线不算 PR', () => {
+    const tr = exerciseTrend(src([sess('a', 30, BENCH, [[60, 8]]), sess('b', 20, BENCH, [[65, 8]]), sess('c', 10, BENCH, [[65, 8]])]), BENCH, NOW)!;
+    expect(tr.sessions.map((x) => x.pr)).toEqual([false, true, false]);
+  });
+
+  it('每次的各组与最好一组：热身组不计，最好一组按预估 1RM 选', () => {
+    const history: Session[] = [{ id: 'a', startMs: NOW - 3 * DAY, exercises: [{ exerciseId: BENCH, skipped: false, sets: [
+      { type: 'warmup', weightKg: 20, reps: 10 }, { type: 'work', weightKg: 60, reps: 8 }, { type: 'work', weightKg: 62.5, reps: 6 }, { type: 'work', weightKg: 60, reps: 7 }] }] }];
+    const tr = exerciseTrend(src(history), BENCH, NOW)!;
+    expect(tr.sessions[0].sets).toEqual(['60 kg × 8', '62.5 kg × 6', '60 kg × 7']);
+    expect(tr.sessions[0].best).toBe('60 kg × 8');          // 60×8 ≈ 76 > 62.5×6 ≈ 75
+  });
+
+  it('每次的涨跌：第一次是基线，后面逐次与上一次比', () => {
+    const tr = exerciseTrend(src([sess('a', 30, BENCH, [[60, 8]]), sess('b', 20, BENCH, [[65, 8]]), sess('c', 10, BENCH, [[65, 8]]), sess('d', 3, BENCH, [[60, 8]])]), BENCH, NOW)!;
+    expect(tr.sessions.map((x) => x.delta.dir)).toEqual(['baseline', 'up', 'flat', 'down']);
+  });
+
+  it('只练过 1 次：一个点，是基线', () => {
+    const tr = exerciseTrend(src([sess('a', 3, BENCH, [[60, 8]])]), BENCH, NOW)!;
+    expect(tr.sessions).toHaveLength(1);
+    expect(tr.row.baseline).toBe(true);
+  });
+
+  it('自重动作：用次数，单位「次」，组写「自重 × N」', () => {
+    const tr = exerciseTrend(src([sess('a', 10, PULLUP, [[null, 5], [null, 5]]), sess('b', 3, PULLUP, [[null, 7], [null, 6]])]), PULLUP, NOW)!;
+    expect(tr.row.unit).toBe('次');
+    expect(tr.sessions.map((x) => x.v)).toEqual([5, 7]);
+    expect(tr.sessions[1].sets).toEqual(['自重 × 7', '自重 × 6']);
+    expect(tr.sessions[1].best).toBe('自重 × 7');
+  });
+
+  it('动作不存在或没有记录：null（页面给「找不到」和回增量页的出口）', () => {
+    expect(exerciseTrend('plain-prescription', 'not-an-exercise', NOW)).toBeNull();
+    expect(exerciseTrend('cold-start', BENCH, NOW)).toBeNull();
   });
 });

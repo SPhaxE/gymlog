@@ -5,7 +5,7 @@
  *   - 涨跌 = 最近一次与上一次比，±trendEps（1%）以内算持平，减量信号用的是同一个 trendDir；
  *   - PR = exerciseRecords 的 isPR，和结算页、奖励弹窗是同一个。
  *  传场景名走 mock，传 Source 走本机存储（同 homeData / bodyData）。 */
-import { countedSets, DAY, exerciseRecords, planFor, REGION_ORDER, regionOfEx, suggest, trendDir, bestReps } from '../engine';
+import { countedSets, DAY, e1rm, exerciseRecords, planFor, REGION_ORDER, regionOfEx, suggest, trendDir, bestReps } from '../engine';
 import type { DeloadView, Region } from '../engine';
 import type { Point } from '../components/charts';
 import type { DeltaDir } from '../components/ui';
@@ -72,6 +72,42 @@ function repsText(reps: number[]) {
   return new Set(reps).size === 1 ? String(reps[0]) : reps.join('/');
 }
 
+/** 一个动作的一行（增量页列表与曲线页共用，数字是同一份）：没有这个动作或没有记录返回 null */
+function build(history: Source['history'], id: string, now: number, week: boolean) {
+  const ex = env.ex.get(id);
+  if (!ex) return null;                                  // 动作库里已经没有的动作不出行
+  const recs = exerciseRecords(env, history, id).filter((r) => r.session.startMs <= now);
+  if (!recs.length) return null;
+
+  // 指标：有预估 1RM 就用它；自重动作（算不出 1RM）退回每次最好一组的次数
+  const metric: GainRow['metric'] = recs.some((r) => r.e1rm != null) ? 'e1rm' : 'reps';
+  const val = (r: (typeof recs)[number]) => (metric === 'e1rm' ? r.e1rm : Math.max(0, ...countedSets(r.entry).map(bestReps)));
+  const valid = recs.flatMap((r) => { const v = val(r); return v != null && v > 0 ? [{ r, v }] : []; });
+  const last = recs[recs.length - 1];
+  const cur = valid.at(-1)?.v ?? null, prev = valid.at(-2)?.v ?? null;
+  const baseline = valid.length < 2;
+  const dir: DeltaDir = baseline || cur == null || prev == null ? 'baseline'
+    : metric === 'e1rm' ? trendDir(prev, cur, env.cfg.trendEps) : cur > prev ? 'up' : cur < prev ? 'down' : 'flat';
+  const diff = baseline || cur == null || prev == null ? null : Math.round((cur - prev) * 10) / 10;
+
+  const sg = suggest(env, history, ex, planFor(env, ex, week), week);
+  const first = sg.reason.kind === 'first';
+  const reps = repsText(sg.repsPerSet);
+  const target = first ? null : { weightKg: sg.weightKg, text: (sg.weightKg ?? 0) > 0 ? `${fmt(sg.weightKg!)} kg × ${reps}` : `自重 × ${reps}` };
+
+  const row: GainRow = {
+    exerciseId: id, name: ex.name, region: regionOfEx(env, ex),
+    verdict: first ? 'hold' : (sg.reason.kind as Verdict), first, metric, unit: metric === 'e1rm' ? 'kg' : '次',
+    n: recs.length, baseline, latest: cur == null ? null : Math.round(cur * 10) / 10,
+    delta: { dir, diff },
+    points: valid.slice(-POINTS).map(({ r, v }) => ({ t: r.session.startMs, v, pr: r.isPR, label: md(r.session.startMs) })),
+    pr4w: recs.some((r) => r.isPR && r.session.startMs > now - WINDOW),
+    lastMs: last.session.startMs, daysAgo: Math.max(0, Math.floor((now - last.session.startMs) / DAY)),
+    target, deloaded: week && !first, reason: sg.reason.text,
+  };
+  return { row, valid, metric };
+}
+
 export function gainsData(scenario: string | Source, now: number): GainsData {
   const src = typeof scenario === 'string' ? sourceOf(scenario, now) : scenario;
   const { history } = src;
@@ -83,37 +119,8 @@ export function gainsData(scenario: string | Source, now: number): GainsData {
 
   const rows: GainRow[] = [];
   for (const id of ids) {
-    const ex = env.ex.get(id);
-    if (!ex) continue;                                   // 动作库里已经没有的动作不出行
-    const recs = exerciseRecords(env, history, id).filter((r) => r.session.startMs <= now);
-    if (!recs.length) continue;
-
-    // 指标：有预估 1RM 就用它；自重动作（算不出 1RM）退回每次最好一组的次数
-    const metric: GainRow['metric'] = recs.some((r) => r.e1rm != null) ? 'e1rm' : 'reps';
-    const val = (r: (typeof recs)[number]) => (metric === 'e1rm' ? r.e1rm : Math.max(0, ...countedSets(r.entry).map(bestReps)));
-    const valid = recs.flatMap((r) => { const v = val(r); return v != null && v > 0 ? [{ r, v }] : []; });
-    const last = recs[recs.length - 1];
-    const cur = valid.at(-1)?.v ?? null, prev = valid.at(-2)?.v ?? null;
-    const baseline = valid.length < 2;
-    const dir: DeltaDir = baseline || cur == null || prev == null ? 'baseline'
-      : metric === 'e1rm' ? trendDir(prev, cur, env.cfg.trendEps) : cur > prev ? 'up' : cur < prev ? 'down' : 'flat';
-    const diff = baseline || cur == null || prev == null ? null : Math.round((cur - prev) * 10) / 10;
-
-    const sg = suggest(env, history, ex, planFor(env, ex, week), week);
-    const first = sg.reason.kind === 'first';
-    const reps = repsText(sg.repsPerSet);
-    const target = first ? null : { weightKg: sg.weightKg, text: (sg.weightKg ?? 0) > 0 ? `${fmt(sg.weightKg!)} kg × ${reps}` : `自重 × ${reps}` };
-
-    rows.push({
-      exerciseId: id, name: ex.name, region: regionOfEx(env, ex),
-      verdict: first ? 'hold' : (sg.reason.kind as Verdict), first, metric, unit: metric === 'e1rm' ? 'kg' : '次',
-      n: recs.length, baseline, latest: cur == null ? null : Math.round(cur * 10) / 10,
-      delta: { dir, diff },
-      points: valid.slice(-POINTS).map(({ r, v }) => ({ t: r.session.startMs, v, pr: r.isPR, label: md(r.session.startMs) })),
-      pr4w: recs.some((r) => r.isPR && r.session.startMs > now - WINDOW),
-      lastMs: last.session.startMs, daysAgo: Math.max(0, Math.floor((now - last.session.startMs) / DAY)),
-      target, deloaded: week && !first, reason: sg.reason.text,
-    });
+    const b = build(history, id, now, week);
+    if (b) rows.push(b.row);
   }
   rows.sort((a, b) => Number(b.pr4w) - Number(a.pr4w) || b.lastMs - a.lastMs || a.name.localeCompare(b.name, 'zh'));
 
@@ -136,4 +143,56 @@ export function gainsData(scenario: string | Source, now: number): GainsData {
 export function groupGains(rows: GainRow[], week: boolean): { kind: GroupKind; rows: GainRow[] }[] {
   if (week) return rows.length ? [{ kind: 'week', rows }] : [];
   return (['add', 'hold', 'cut'] as const).map((kind) => ({ kind, rows: rows.filter((r) => r.verdict === kind) })).filter((g) => g.rows.length);
+}
+
+
+/* ---------- 动作进步曲线页（P10）---------- */
+export interface TrendSession {
+  /** 开始时间（毫秒），也是曲线的横坐标 */
+  t: number;
+  /** 「10/3」 */
+  label: string;
+  /** 这次的值：预估 1RM（kg），自重动作是最好一组的次数 */
+  v: number;
+  pr: boolean;
+  /** 最好一组，如「26 kg × 8」「自重 × 9」 */
+  best: string;
+  /** 这次每一组（热身组不计），如「26 kg × 8」 */
+  sets: string[];
+  /** 比上一次的涨跌（±trendEps 内算持平；第一次是基线），和增量页行里的 delta 同一个口径 */
+  delta: { dir: DeltaDir; diff: number | null };
+}
+export interface TrendData {
+  now: number;
+  /** 和增量页同一行：最新值、涨跌、下次目标、理由都从这里取，两页的数一定一样 */
+  row: GainRow;
+  /** 时间正序，最多最近 24 次（曲线用） */
+  sessions: TrendSession[];
+  /** 最近 8 次，新的在前（明细表用） */
+  recent: TrendSession[];
+}
+
+const setText = (s: { weightKg: number | null; reps?: number | null; repsLeft?: number | null; repsRight?: number | null }) => {
+  const reps = bestReps(s as Parameters<typeof bestReps>[0]);
+  return (s.weightKg ?? 0) > 0 ? `${fmt(s.weightKg!)} kg × ${reps}` : `自重 × ${reps}`;
+};
+
+/** 某个动作的全部曲线数据；动作不在库里、或还没有任何记录返回 null（页面提示「找不到」并给回增量页的出口） */
+export function exerciseTrend(scenario: string | Source, exerciseId: string, now: number): TrendData | null {
+  const src = typeof scenario === 'string' ? sourceOf(scenario, now) : scenario;
+  const { dv } = deloadInfo(src, now);
+  const b = build(src.history, exerciseId, now, dv.kind === 'week');
+  if (!b) return null;
+  const from = Math.max(0, b.valid.length - 24);
+  const sessions: TrendSession[] = b.valid.slice(from).map(({ r, v }, k) => {
+    const sets = countedSets(r.entry);
+    const best = b.metric === 'e1rm'
+      ? sets.reduce((m, s) => ((e1rm(s.weightKg, bestReps(s)) ?? 0) > (e1rm(m.weightKg, bestReps(m)) ?? 0) ? s : m), sets[0])
+      : sets.reduce((m, s) => (bestReps(s) > bestReps(m) ? s : m), sets[0]);
+    const prev = b.valid[from + k - 1]?.v;
+    const dir: DeltaDir = prev == null ? 'baseline' : b.metric === 'e1rm' ? trendDir(prev, v, env.cfg.trendEps) : v > prev ? 'up' : v < prev ? 'down' : 'flat';
+    return { t: r.session.startMs, label: md(r.session.startMs), v: Math.round(v * 10) / 10, pr: r.isPR, best: setText(best), sets: sets.map(setText),
+      delta: { dir, diff: prev == null ? null : Math.round((v - prev) * 10) / 10 } };
+  });
+  return { now, row: b.row, sessions, recent: [...sessions].reverse().slice(0, 8) };
 }
