@@ -9,21 +9,21 @@
 提速（2026-10-06）：
   - 默认两个宽度各开一个进程同时跑（--serial 关掉），总时间约减半；
   - --no-shots 不再等故事 8 幕自己播完（只为截图）；
-  - --only 只跑某几类：flow（主流程）、story、deload、gains、demo，逗号分隔——改哪页只跑哪页，提交前再跑一遍完整的；
+  - --only 只跑某几类：flow（主流程）、story、deload、gains、log、demo，逗号分隔——改哪页只跑哪页，提交前再跑一遍完整的；
   - --width 360|412 只跑一种宽度（并行时内部用）。"""
-import argparse, os, re, subprocess, sys
+import argparse, io, os, re, subprocess, sys
 from playwright.sync_api import sync_playwright
 
 ap = argparse.ArgumentParser()
 ap.add_argument('--base', default='http://127.0.0.1:5199')
 ap.add_argument('--chromium', default=os.environ.get('CHROMIUM', '/opt/pw-browsers/chromium'))
 ap.add_argument('--no-shots', action='store_true')
-ap.add_argument('--only', default='', help='flow,story,deload,gains,demo 逗号分隔；默认全部')
+ap.add_argument('--only', default='', help='flow,story,deload,gains,log,demo 逗号分隔；默认全部')
 ap.add_argument('--width', type=int, choices=[360, 412], help='只跑一种宽度（并行时内部用）')
 ap.add_argument('--serial', action='store_true', help='两个宽度不并行')
 args = ap.parse_args()
 SIZES = {360: (360, 800), 412: (412, 915)}
-ALL = ['flow', 'story', 'deload', 'gains', 'demo']
+ALL = ['flow', 'story', 'deload', 'gains', 'log', 'demo']
 only = [x for x in args.only.split(',') if x] or ALL
 if any(x not in ALL for x in only): sys.exit(f'--only 只能是 {",".join(ALL)}')
 
@@ -300,6 +300,102 @@ def gains_checks(b, w, h):
     ok(pg.get_by_role('button', name='去今日处方').count() == 1, f'{tag} 增量：没练过 = 空状态，有回首页的出口')
     pg.close()
 
+# ---- 记录页（P07）：钢板日历 + 周列表 ----
+# 孔心（用 <use> 的包围盒中心：<mask> 里的圆不在渲染树里，量不到）
+PLATE_HOLES = """() => [...document.querySelectorAll('[data-plate] svg use')].filter((u) => (u.getAttribute('href') || '').endsWith('-hole')).map((u) => { const r = u.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; })"""
+PLATE_BOX = """() => { const r = document.querySelector('[data-plate]').getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height }; }"""
+LEAKS = """() => ['leakL', 'leakR'].map((k) => { const e = document.querySelector('[data-plate] [class*=' + k + ']'); return e ? +(+getComputedStyle(e).opacity).toFixed(3) : null; })"""
+
+def hole_lums(pg):
+    """每个孔心的亮度（绿通道，3×3 平均，截图里采样）；返回 [(相对板左边的 x 比例, 亮度)]"""
+    from PIL import Image
+    box, pts = pg.evaluate(PLATE_BOX), pg.evaluate(PLATE_HOLES)
+    im = Image.open(io.BytesIO(pg.screenshot())).convert('RGB'); sx, sy = im.width / pg.evaluate('innerWidth'), im.height / pg.evaluate('innerHeight')
+    out = []
+    for x, y in pts:
+        px = [im.getpixel((int(x * sx) + dx, int(y * sy) + dy))[1] for dx in (-1, 0, 1) for dy in (-1, 0, 1)]
+        out.append(((x - box['x']) / box['w'], sum(px) / len(px)))
+    return out
+
+def centroid(ls):
+    tot = sum(b for _, b in ls) or 1
+    return sum(x * b for x, b in ls) / tot
+
+def log_checks(b, w, h):
+    """记录页（P07）：钢板上的孔数 = 练过的天数、板的节点数、光随滚动从右移到左、两侧漏光换边、减少动态效果下静止、周合计自洽、更早的训练、空态；细栏随大标题出现"""
+    tag = f'{w}×{h}'
+    pg = b.new_page(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True)
+    pg.on('pageerror', lambda e: errors.append(f'{tag} log pageerror: {e}'))
+    def open_log(sc, shot=None):
+        pg.goto(f'{args.base}/log?scenario={sc}'); pg.wait_for_selector('h1'); pg.wait_for_timeout(900)
+        ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} 记录·{sc}：无横向溢出')
+        ok(pg.evaluate('(() => { const e = document.querySelector("[class*=_scroll_]"); return e.scrollWidth <= e.clientWidth; })()'), f'{tag} 记录·{sc}：滚动区里也没有横向滚动（漏光不能把它撑宽）')
+        small = pg.evaluate(AUDIT); ok(not small, f'{tag} 记录·{sc}：命中区都 ≥ 48 {small[:3]}')
+        ok(not pg.evaluate(CRUSH), f'{tag} 记录·{sc}：滚动区里没有被压扁的块')
+        if shot and not args.no_shots: pg.screenshot(path=os.path.join(OUT, f'log-{shot}.png'))
+    open_log('plain-prescription', 'plain')
+    n_days = int(re.search(r'练了\s*(\d+)\s*天', pg.locator('p', has_text='近 3 个月练了').first.inner_text()).group(1))
+    holes = pg.evaluate(PLATE_HOLES)
+    ok(len(holes) == n_days and n_days > 0, f'{tag} 记录：钢板上的孔数 = 一句话里的练过天数（{len(holes)} / {n_days}）')
+    ok(pg.evaluate('document.querySelectorAll("[data-plate] *").length') < 400, f'{tag} 记录：整块板 < 400 个节点（{pg.evaluate("document.querySelectorAll(\"[data-plate] *\").length")}）')
+    ok(pg.get_by_role('img', name=re.compile(r'练了 \d+ 天')).count() == 1, f'{tag} 记录：钢板对读屏是一张图「近 3 个月练了 N 天」')
+    # 周头合计自洽：每个周头的「组」= 这一周各行写的组数之和
+    heads = pg.evaluate("""() => [...document.querySelectorAll('section[class*=_week_]')].map((sec) => ({
+        sets: +([...sec.querySelectorAll('[class*=_totals_] b')][1]?.textContent || 0),
+        rows: [...sec.querySelectorAll('[class*=_session_] [class*=_exText_] span')].map((e) => +((e.textContent.match(/(\\d+) 组/) || [0, 0])[1])),
+        txt: sec.querySelector('[class*=_totals_]').getAttribute('aria-label') }))""")
+    ok(len(heads) >= 2 and all(hd['sets'] == sum(hd['rows']) for hd in heads), f'{tag} 记录：每周合计的组数 = 这一周各行组数之和 {[(hd["sets"], sum(hd["rows"])) for hd in heads[:3]]}')
+    ok(all(re.fullmatch(r'\d+ 次 · \d+ 组 · [\d,.]+ kg', hd['txt']) for hd in heads), f'{tag} 记录：周合计三个数都带单位 {heads[0]["txt"]}')
+    ok(pg.locator('[class*=_session_] button, button[class*=_session_]').count() == 0, f'{tag} 记录：详情页还没做，行是静态行（不给死路按钮）')
+    # 光随滚动从右移到左：把板往下挪一段（只为让板在三个滚动位置都完整在屏幕里），在 0 / 96 / 192 三处采样孔心亮度
+    pg.evaluate('document.querySelector("[class*=_body_]").style.paddingTop = "300px"'); pg.wait_for_timeout(300)
+    sample = {}
+    for y in (0, 96, 192):
+        pg.evaluate(f'document.querySelector("[class*=_scroll_]").scrollTo(0, {y})'); pg.wait_for_timeout(450)
+        sample[y] = (hole_lums(pg), pg.evaluate(LEAKS))
+    cs = {y: centroid(v[0]) for y, v in sample.items()}
+    ok(cs[0] > cs[96] > cs[192] and cs[0] - cs[192] > 0.06, f'{tag} 记录·钢板：亮区随滚动从右移到左（亮度重心 {cs[0]:.2f} → {cs[96]:.2f} → {cs[192]:.2f}）')
+    top = lambda y: max(sample[y][0], key=lambda t: t[1])[0]
+    ok(top(0) > top(192), f'{tag} 记录·钢板：最亮的孔换了（{top(0):.2f} → {top(192):.2f}）')
+    ok(min(bb for _, bb in sample[0][0]) > 12, f'{tag} 记录·钢板：最暗的孔也有底光，不是黑洞（{min(bb for _, bb in sample[0][0]):.0f}）')
+    (l0, r0), (l1, r1) = sample[0][1], sample[192][1]
+    ok(r0 > 0.9 and r1 < 0.2 and l0 < 0.1 and l1 > 0.7, f'{tag} 记录·钢板：两侧漏光换边（右 {r0}→{r1}，左 {l0}→{l1}）')
+    # 细栏随大标题出现
+    sl = pg.evaluate(SLIM)
+    ok(sl is not None and sl['op'] > 0.95 and sl['txt'] == '记录', f'{tag} 页头 C·记录：大标题滑走后出现细栏 {sl}')
+    pg.evaluate('document.querySelector("[class*=_scroll_]").scrollTo(0, 0)'); pg.wait_for_timeout(300)
+    if not args.no_shots: pg.screenshot(path=os.path.join(OUT, 'log-plate-rest.png'))
+    # 减少动态效果：板后没有任何动画，两个位置的亮度一样
+    ctx = b.new_context(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True, reduced_motion='reduce'); rp = ctx.new_page()
+    rp.goto(f'{args.base}/log?scenario=plain-prescription'); rp.wait_for_selector('h1'); rp.wait_for_timeout(900)
+    rp.evaluate('document.querySelector("[class*=_body_]").style.paddingTop = "300px"'); rp.wait_for_timeout(300)
+    ok(rp.evaluate('[...document.querySelectorAll("[data-plate], [data-plate] *")].flatMap((e) => e.getAnimations()).length') == 0, f'{tag} 记录·钢板：减少动态效果时板后没有任何动画')
+    a0 = hole_lums(rp); rp.evaluate('document.querySelector("[class*=_scroll_]").scrollTo(0, 192)'); rp.wait_for_timeout(400); a1 = hole_lums(rp)
+    ok(max(abs(x[1] - y[1]) for x, y in zip(a0, a1)) < 3, f'{tag} 记录·钢板：减少动态效果时滚动前后亮度一致')
+    ctx.close()
+    # 更早的训练：用「载入演示数据」的真用户（30 周）走真实存储——一次渲染 8 周，点了再展开 8 周
+    lp = b.new_page(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True)
+    lp.on('pageerror', lambda e: errors.append(f'{tag} log(live) pageerror: {e}'))
+    lp.goto(args.base + '/onboarding'); lp.wait_for_selector('button:has-text("跳过")'); lp.wait_for_timeout(600)
+    click(lp, lp.get_by_role('button', name='跳过')); click(lp, lp.get_by_role('button', name='下一步')); click(lp, lp.get_by_role('button', name='下一步'))
+    click(lp, lp.get_by_role('button', name='载入演示数据 · 练了 30 周的进阶用户')); lp.wait_for_url('**/today**'); lp.wait_for_timeout(900)
+    click(lp, lp.get_by_role('link', name='记录')); lp.wait_for_url('**/log**'); lp.wait_for_selector('section[class*=_week_]'); lp.wait_for_timeout(700)
+    n0 = lp.locator('section[class*=_week_]').count(); more = lp.get_by_role('button', name=re.compile(r'^更早的训练'))
+    ok(n0 == 8 and more.count() == 1, f'{tag} 记录（真存储，30 周）：一次渲染 8 周，底部有「更早的训练」（{n0} 周）')
+    lp.evaluate('document.querySelector("[class*=_scroll_]").scrollTo(0, 1e6)'); lp.wait_for_timeout(400)  # 到底：按钮在底部留白里、导航上面
+    click(lp, more.first); lp.wait_for_timeout(500)
+    n1 = lp.locator('section[class*=_week_]').count()
+    ok(n1 == 16, f'{tag} 记录：点「更早的训练」再展开 8 周（{n0} → {n1}）')
+    ok(lp.get_by_role('img', name=re.compile(r'练了 \d+ 天')).count() == 1 and len(lp.evaluate(PLATE_HOLES)) > 0, f'{tag} 记录（真存储）：钢板有孔')
+    lp.close()
+    # 空态：钢板没有孔、板后不点灯，唯一出路是回今日处方
+    open_log('cold-start', 'empty')
+    ok(pg.get_by_text('还没有训练记录').count() == 1 and pg.get_by_role('button', name='去今日处方').count() == 1, f'{tag} 记录：没练过 = 空状态，有「去今日处方」')
+    ok(pg.evaluate(PLATE_HOLES) == [] and pg.evaluate('document.querySelectorAll("[data-plate] [class*=lamp]").length') == 0, f'{tag} 记录：空板没有孔、板后不点灯（页面唯一的荧光是「去今日处方」）')
+    click(pg, pg.get_by_role('button', name='去今日处方')); pg.wait_for_timeout(700)
+    ok('/today' in pg.url, f'{tag} 记录：空态的出口回到今日处方（{pg.url.split("5199")[-1]}）')
+    pg.close()
+
 widths = [args.width] if args.width else list(SIZES)
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path=args.chromium if os.path.exists(args.chromium) else None)
@@ -309,6 +405,7 @@ with sync_playwright() as p:
         if 'story' in only: story_checks(b, W, H)
         if 'deload' in only: deload_checks(b, W, H)
         if 'gains' in only: gains_checks(b, W, H)
+        if 'log' in only: log_checks(b, W, H)
     # /demo 电脑版（只和 360 宽的那一份一起跑，不分宽度）
     if 'demo' in only and 360 in widths:
         d = b.new_page(viewport={'width': 1440, 'height': 900})

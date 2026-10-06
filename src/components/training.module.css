@@ -68,12 +68,15 @@
 .rest_done { background: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); box-shadow: 0 var(--milo-space-s) var(--milo-space-2xl) var(--milo-color-shadow-float); }
 .rest_done .restIcon, .rest_done .restText, .rest_done button { color: var(--milo-color-control-selected-ink); }
 
-/* 训练记录行 */
-.session { display: flex; align-items: center; gap: var(--milo-space-m); width: 100%; min-height: calc(var(--milo-size-hit-min) + var(--milo-space-l)); padding: var(--milo-space-s) 0;
-  border: 0; border-radius: var(--milo-radius-s); font: inherit; text-align: left; background-color: transparent; color: var(--milo-color-text-secondary); }
+/* 训练记录行：票根（实底卡 + 发丝描边），左边日期块和中间内容之间一道虚线（撕口） */
+.session { display: flex; align-items: center; gap: var(--milo-space-m); width: 100%; min-height: calc(var(--milo-size-hit-min) + var(--milo-space-xl)); padding: var(--milo-space-s) var(--milo-space-m);
+  border: 0; border-radius: var(--milo-radius-m); font: inherit; text-align: left; background-color: var(--milo-color-bg-raised); color: var(--milo-color-text-secondary);
+  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
 .session .exText b { color: var(--milo-color-text-primary); }
 .session:active, .session[data-pressed] { transform: none; }
-.date { display: grid; justify-items: center; width: var(--milo-space-5xl); flex: none; color: var(--milo-color-text-secondary); }
+.date { position: relative; display: grid; align-content: center; justify-items: center; gap: var(--milo-space-2xs); align-self: stretch; flex: none; min-width: calc(var(--milo-space-5xl) + var(--milo-space-s)); padding-right: var(--milo-space-m);
+  color: var(--milo-color-text-secondary); white-space: nowrap; }
+.date::after { content: ''; position: absolute; right: 0; top: var(--milo-space-xs); bottom: var(--milo-space-xs); border-right: var(--milo-stroke-hairline) dashed var(--milo-color-line-strong); }
 .date b { color: var(--milo-color-text-primary); }
 
 /* 周历 */

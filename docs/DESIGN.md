@@ -206,7 +206,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 
 ## 9. 组件与交互态（`src/components` → `/playground`）
 
-`/playground` 是这一节的实物：76 个组件、568 个变体，每个变体是 `catalog.tsx` 里各轴取值的组合。下面的表只写用法；尺寸都在 Token 里，状态在 Playground 里看。
+`/playground` 是这一节的实物：77 个组件、572 个变体，每个变体是 `catalog.tsx` 里各轴取值的组合。下面的表只写用法；尺寸都在 Token 里，状态在 Playground 里看。
 
 ### 9.1 交互态（所有可点的件共用 `interactive.css`）
 
@@ -267,10 +267,11 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 | | `GainSummary`、`GainRow`、`GainGroupHead` | 摘要 有涨有退 / 全在涨 / 都是基线 / 近 4 周没练；行 涨跌 × PR × 按下 / 聚焦 / 加载中；色带 该加重 / 保持 / 该减重 / 本周目标 · 减量 | 增量页。摘要是配重片环，每个数带单位；行的曲线 / 数值是固定宽度的列；没有 onClick 是静态行；「该加重」色带是整页唯一荧光 |
 | | `SetRow` | 待做 / 进行中 / 缺值 / 已完成 / 修改中 / 错误 / 热身组 / 递减组 | 「完成」是唯一入口 |
 | | `RestBar` | 计时中 / 即将结束 / 结束 | 结束时间戳；±15、跳过 |
-| | `SessionRow` | 普通 / 有 PR / 减量周 × 3 种交互态 | 记录列表 |
+| | `SessionRow` | 普通 / 有 PR / 减量周 / 静态 × 3 种交互态（静态只有默认） | 记录列表（P07）。票根行：左边大号日期（10/6）+ 周几，虚线撕口，中间主要部位和动作 / 组 / 分钟，右边骨白 PR 标；不在今年的带年份；没有 `onClick` 是静态行（不画箭头、没有按下反馈） |
 | | `DayCell`、`WeekStrip` | 已练 / 已练 · PR / 休息 / 今天 / 未来 × 默认 / 选中 / 按下 / 聚焦 | 记录页顶部 |
 | | `MediaFrame` | 加载中 / 已加载 / 缺素材 / 加载失败 | 只经 `media` 字段引用，保留署名 |
-| | `StepRing`、`DotCalendar` | 待做 / 进行中 / 已完成；— | E2 训练中的动作序号 + 组数环；E1 记录页近 3 个月点阵 |
+| | `StepRing`、`DotCalendar` | 待做 / 进行中 / 已完成；— | E2 训练中的动作序号 + 组数环；E1 点阵日历（记录页已改用 `SteelPlate`，这个只剩 playground / lab） |
+| | `SteelPlate` | 已练 / 今天练过 / 空 | **记录页顶部的钢板打孔日历**（`design/hifi/log/plate-plan.md`）：深色冲压钢板，练过的日子是冲出来的孔、板后透出荧光，没练的只有淡淡的样冲点，今天刻一圈细环；光影随滚动变化（一大团软光从右移到左、两侧漏光换边、钢面一道淡反光，纯 CSS 滚动驱动，合成线程）；整块板对读屏是一张图，孔不单独点击；没练过任何一天时板后不点灯；一页只放一块（荧光只给它）。圆角裁切要写 `overflow: clip`，不能写 `hidden`（见 HANDOFF 的坑）。`dotMonths` 的格子带 `done`（今天练过也算） |
 | | `RestDock`、`SharedDetail`、`Cascade` | 小胶囊 / 展开 / 结束；展开；— | M02 / M03 / M07（§7） |
 | 数据图形 | `Sparkline`、`TrendChart` | 上升 / 下降 / 只有 1 次；多次 / 选中一次 / 只有 1 次 / 没有记录 | 时间按正序画（有单测）；PR 用菱形；TrendChart 是圆滑曲线 + 渐隐面积 + 拖动吸附 + 码表读数（E5 / M04） |
 | | `WeekBars`、`GiantNumber`、`Odometer` | —；—；3 档字号 | E3 增量页近 8 周组数；E4 结算页唯一一次「大声」；M04 数字按位滚动 |
@@ -310,7 +311,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 
 | 路由 | 页面 |
 |---|---|
-| `/today` · `/body` · `/gains` · `/log` · `/me` | 5 个 Tab 根页；首页、身体、增量读本机存储，记录、我的还是说明占位（阶段 6c、6d） |
+| `/today` · `/body` · `/gains` · `/log` · `/me` | 5 个 Tab 根页；首页、身体、增量、记录读本机存储（`/log` 是钢板日历 + 按周分组的票根行 + 空态；训练详情 `/log/:id` 与删除在 6c 后两步），「我的」还是说明占位（阶段 6d） |
 | `/onboarding` | 没建档时进这里：故事引导（8 幕，`StoryScreens`）→ 建档 3 步（可选载入演示数据） |
 | `/gains/:exerciseId` | 动作进步曲线（P10）：子页，没有导航；大数字 + 曲线 + 选中那天的各组 + 下次目标 + 最近 8 次；返回还原增量页的筛选和滚动位置 |
 | `/summary/:id` | 训练结算（新纪录卡 M01、力竭度、成长）；任务流，没有导航。训练本身在首页打卡（2026-10-06，ia v1.5），`/session` 旧地址重定向到 `/today` |

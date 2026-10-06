@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import {
-  Banner, Button, Cascade, Dialog, ExerciseRow, PageHeader, RestDock, SharedDetail, sharedTransition, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
+  Banner, Button, Cascade, Dialog, ExerciseRow, PageHeader, RestDock, SharedDetail, SteelPlate, dotMonths, sharedTransition, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
   LandmarkRuler, PhaseSegments, Num, Screen, SetRow, clock, useCountdown, useToast, type Tab,
   Mascot, MASCOT_MOODS, MASCOT_STAGES, MOOD_NAME, STAGE_NAME, RewardModal, REWARD_NAME, AgeBadge, GrowthBar, Paywall, type MascotMood, type MascotStage, type Reward,
 } from '../components';
@@ -192,6 +192,26 @@ function HeaderDemo({ f }: { f: Fixtures }) {
         </Screen>
       </Stage>
       <Note>往下滑：大标题滑出屏幕顶的同时，顶上出现 44 高的细标题栏（半透明 + 虚化 + 发丝线，只有标题）；滑回去收起。不写死滚动距离，跟着大标题走。</Note>
+    </div>
+  );
+}
+
+/** 钢板日历：往下滑，亮区从右移到中间、左边，两侧漏光换边，钢面一道淡反光扫过（滚动位置驱动，滑回去还原） */
+function PlateDemo({ f }: { f: Fixtures }) {
+  return (
+    <div className={s.demoCol}>
+      <Stage tall label="钢板日历演示">
+        <Screen label="钢板日历">
+          <div className={s.headerDemoScroll}>
+            <PageHeader collapse title="记录" eyebrow="过去每一次练了什么" />
+            <div className={s.headerDemoBody}>
+              <SteelPlate months={dotMonths(f.trainedDays, f.now)} />
+              {f.items.concat(f.items).map((x, i) => <ExerciseRow key={i} name={x.name} detail={`${x.sets} × ${x.repRange.join('–')}`} weight={x.suggestion.weightKg} />)}
+            </div>
+          </div>
+        </Screen>
+      </Stage>
+      <Note>往下滑：板后那团软光从右（静止）移到中间、左边，孔的亮暗跟着换；亮区靠哪边，那边的板外缘漏光；钢面一道淡反光慢慢扫过。滑回去还原。减少动态效果 / 不支持滚动驱动动画的浏览器里是静止的。</Note>
     </div>
   );
 }
@@ -401,6 +421,7 @@ export const DEMOS: Record<string, (f: Fixtures) => ReactNode> = {
   Nav: () => <NavDemo />,
   CapsuleRail: (f) => <MagnifierDemo f={f} />,
   PageHeader: (f) => <HeaderDemo f={f} />,
+  SteelPlate: (f) => <PlateDemo f={f} />,
   TrendChart: (f) => <ChartDemo f={f} />,
   WeekStrip: (f) => <WeekDemo f={f} />,
 };

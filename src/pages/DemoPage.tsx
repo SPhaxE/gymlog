@@ -20,6 +20,7 @@ function stepOf(path: string): string {
   if (path.startsWith('/body')) return 'body';
   if (path.startsWith('/gains/')) return 'trend';
   if (path.startsWith('/gains')) return 'gains';
+  if (path.startsWith('/log')) return 'log';
   if (path.startsWith('/today')) return st.active ? 'session' : 'today';
   return '';
 }
@@ -63,6 +64,7 @@ export function DemoPage() {
     { id: 'body', t: '身体', d: '半身肌肉图 + 容量胶囊，长按胶囊放大，看哪块进了黄金窗。', go: { label: '打开身体页', run: withDemo('/body') } },
     { id: 'gains', t: '增量', d: '页头一个配重片环：近 4 周练的动作里几个在涨、几个持平、几个在退；下面按「该加重 / 保持 / 该减重」色带分组，每行最大的数「下次」就是首页处方里的重量。页头跟着滑走，大标题滑出后顶上收成一条细标题栏（身体、首页同样），部位筛选贴在它下面。', go: { label: '打开增量页', run: withDemo('/gains') } },
     { id: 'trend', t: '动作进步曲线', d: '点增量页的任意一行：大数字是选中那天的预估力量，曲线按住横向拖或点明细的一行切换日期，下面是那天每一组和「下次目标」（和首页、增量页同一个数）；返回回到原来的筛选和滚动位置。', go: { label: '从增量页进一个动作', run: withDemo('/gains') } },
+    { id: 'log', t: '记录', d: '页头下面是一块钢板日历：近 3 个月练过的日子是冲出来的孔，板后的荧光随页面往下滑从右移到左、两侧漏光换边；下面按周分组，每周一行合计（次数 · 组数 · 总负荷），一行一次训练。大标题滑走后顶上留细标题栏。', go: { label: '打开记录页', run: withDemo('/log') } },
   ];
 
   if (!desk) return null;
