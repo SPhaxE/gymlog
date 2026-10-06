@@ -112,3 +112,8 @@
 
 /* 回到顶端静态格：一块页面底，按钮绝对定位在右下（和 Screen 里一样留出导航的位置） */
 .backTopCell { position: relative; height: 100%; min-height: calc(var(--milo-size-hit-min) * 6); --nav-clear: calc(var(--milo-size-nav-bar-h) + var(--milo-size-nav-bottom) + var(--milo-space-s)); }
+
+/* 描线演示：图标一排排铺开，每格放大一点看笔画顺序 */
+.traceGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--milo-space-5xl), 1fr)); gap: var(--milo-space-m); }
+.iconCellBig { display: grid; justify-items: center; gap: var(--milo-space-xs); color: var(--milo-color-text-primary); }
+.iconCellBig svg { width: var(--milo-space-3xl); height: var(--milo-space-3xl); }
