@@ -1,10 +1,11 @@
-import { renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { act, renderHook } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { prescribe } from '../engine';
 import { env } from './demo';
 import { completeSet, setField, startSession } from './session';
 import { setSettings } from './settings';
 import { DEFAULT_SETTINGS, demoState, STORE_KEY, store } from './store';
+import { useRestEndBuzz } from './useRestEndBuzz';
 import { useTrainingNav } from './useTrainingNav';
 
 const NOW = new Date(2026, 9, 6, 18, 0).getTime();
@@ -31,6 +32,16 @@ describe('导航设置（ia §1.11）：存储', () => {
     store.reload();
     expect(store.get().settings).toEqual({ ...DEFAULT_SETTINGS, restEnd: 'outline' });
     expect(store.get().deloads).toEqual([]);
+  });
+  it('旧存档没有「看过消息的时刻」：从读出来这一刻起算，不把历史消息全算成新的；有的原样；空存档是 0', () => {
+    localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, history: [] }));
+    store.reload();
+    expect(store.get().messagesSeenAt).toBeGreaterThan(Date.now() - 60e3);
+    localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, history: [], messagesSeenAt: 5 }));
+    store.reload();
+    expect(store.get().messagesSeenAt).toBe(5);
+    store.clear();
+    expect(store.get().messagesSeenAt).toBe(0);
   });
   it('清除全部数据：设置也回到默认', () => {
     setSettings({ ring: false, restEnd: 'outline' });
@@ -81,5 +92,33 @@ describe('导航设置：导航读到的状态', () => {
   it('演示场景（?scenario=）不读存储，也不受设置影响', () => {
     setSettings({ ring: false });
     expect(renderHook(() => useTrainingNav('plain-prescription', 0)).result.current).toEqual({ progress: 0 });
+  });
+});
+
+describe('休息结束提示：振动（挂在外壳上，哪一页都振）', () => {
+  const buzz = vi.fn();
+  beforeEach(() => {
+    vi.useFakeTimers(); localStorage.clear(); store.clear(); buzz.mockClear();
+    Object.defineProperty(navigator, 'vibrate', { value: buzz, configurable: true });
+  });
+  afterEach(() => { vi.useRealTimers(); });
+  const run = (endInMs: number) => {
+    store.update((s) => ({ ...s, rest: { endAt: Date.now() + endInMs, totalMs: 90e3 } }));
+    renderHook(() => useRestEndBuzz());
+    act(() => { vi.advanceTimersByTime(3e3); });
+  };
+
+  it('默认（描边 + 振动）：倒计时走完振一次', () => {
+    run(1e3);
+    expect(buzz).toHaveBeenCalledTimes(1);
+  });
+  it('选「仅描边」：不振', () => {
+    setSettings({ restEnd: 'outline' });
+    run(1e3);
+    expect(buzz).not.toHaveBeenCalled();
+  });
+  it('切后台回来才发现早就结束了：不补振', () => {
+    run(-60e3);
+    expect(buzz).not.toHaveBeenCalled();
   });
 });

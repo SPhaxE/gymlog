@@ -64,7 +64,8 @@ function read(): AppState {
     if (!raw) return { ...EMPTY };
     const s = JSON.parse(raw) as AppState;
     // settings 逐项补默认：旧存档没有这个字段，以后新加的设置项也不用迁移
-    return s && s.v === 1 ? { ...EMPTY, ...s, settings: { ...DEFAULT_SETTINGS, ...s.settings }, saveError: undefined } : { ...EMPTY };
+    // 「看过消息的时刻」：升级前的旧存档没有这个字段，从这一刻起算新消息，否则有历史的人一打开「我的」就是几十条「新」
+    return s && s.v === 1 ? { ...EMPTY, ...s, settings: { ...DEFAULT_SETTINGS, ...s.settings }, messagesSeenAt: s.messagesSeenAt ?? Date.now(), saveError: undefined } : { ...EMPTY };
   } catch {
     return { ...EMPTY };
   }

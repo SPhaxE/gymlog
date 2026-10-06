@@ -36,7 +36,8 @@ export function MePage({ scenario, now, onTab }: { scenario?: string; now: numbe
   const [local, setLocal] = useState<Profile | null>(null);
   const profile = local ?? src.profile ?? DEFAULT_PROFILE;
   const g = useMemo(() => growthOf({ ...src, profile }, now), [src, profile, now]);
-  const unread = useMemo(() => unreadOf(messagesOf(g), st.messagesSeenAt), [g, st.messagesSeenAt]);
+  // 演示场景不标已读（消息页同样不显示未读点），这里也不显示未读数，免得「N 条新」点进去清不掉
+  const unread = useMemo(() => (scenario ? 0 : unreadOf(messagesOf(g), st.messagesSeenAt)), [scenario, g, st.messagesSeenAt]);
   const facts = profileFacts(profile);
   const [edit, setEdit] = useState<ProfileField | null>(null);
   const [restSheet, setRestSheet] = useState(false);
@@ -46,7 +47,8 @@ export function MePage({ scenario, now, onTab }: { scenario?: string; now: numbe
   const save = (patch: Partial<Profile>): string | null => {
     if (scenario) { const next = mergeProfile(profile, patch), e = profileError(next); if (!e) setLocal(next); return e; }
     const e = updateProfile(patch);
-    if (!e) toast.show('已保存，今日处方按新档案重算');
+    // 体型示意 / 体重不影响处方（面板里写着），不说「处方重算」
+    if (!e) toast.show(Object.keys(patch).every((k) => k === 'gender' || k === 'weightKg') ? '已保存' : '已保存，今日处方按新档案重算');
     return e;
   };
   const exportCsv = async () => {
@@ -59,7 +61,8 @@ export function MePage({ scenario, now, onTab }: { scenario?: string; now: numbe
   };
   const load = () => {
     setConfirm(null);
-    store.update((x) => ({ ...x, ...demoState(Date.now(), x.profile ?? undefined), draft: null }));
+    // 旧数据删训练时写下的降级说明属于旧记录，换成示例数据后一起清掉
+    store.update((x) => ({ ...x, ...demoState(Date.now(), x.profile ?? undefined), draft: null, notes: [] }));
     toast.show('已载入示例数据：练了 30 周的进阶用户');
   };
   const clear = () => { setConfirm(null); store.clear(); nav('/onboarding', { replace: true }); };

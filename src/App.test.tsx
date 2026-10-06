@@ -208,6 +208,8 @@ describe('我的（P11）→ 牛龄（P13）→ 消息（2026-10-06）', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(store.get().profile?.weightKg).toBe(72);
     expect(screen.getByRole('button', { name: /^体型示意：男 · 72/ })).toBeInTheDocument();
+    expect(await screen.findByText('已保存')).toBeInTheDocument();   // 体型 / 体重不影响处方，不说「处方重算」
+    expect(screen.queryByText(/处方按新档案重算/)).toBeNull();
   });
 
   it('导航设置：开关立即写进存储；休息结束提示选「仅描边」', async () => {
@@ -272,6 +274,23 @@ describe('我的（P11）→ 牛龄（P13）→ 消息（2026-10-06）', () => {
     window.dispatchEvent(new PopStateEvent('popstate'));
     expect(await screen.findByText('删除训练后重新计算')).toBeInTheDocument();
     expect(screen.getByText('连胜 21 周 → 0 周')).toBeInTheDocument();
+  });
+
+  it('载入示例数据：旧数据删训练写下的降级说明一起清掉', async () => {
+    store.update((x) => ({ ...x, notes: [{ atMs: Date.now(), kind: 'demote', text: '连胜 9 周 → 0 周' }] }));
+    window.history.pushState({}, '', '/me');
+    render(<App />);
+    (await screen.findByRole('button', { name: /^载入示例数据/ })).click();
+    within(await screen.findByRole('alertdialog', { name: '载入示例数据？' })).getByRole('button', { name: '载入' }).click();
+    await waitFor(() => expect(store.get().notes).toEqual([]));
+    expect(store.get().history.length).toBeGreaterThan(0);
+  });
+
+  it('演示场景（?scenario=）：「我的」不显示未读数（场景里消息页不标已读，显示了就清不掉）', async () => {
+    store.clear(); store.update((x) => ({ ...x, profile: { ...DEFAULT_PROFILE } }));
+    window.history.pushState({}, '', '/me?scenario=plain-prescription');
+    render(<App />);
+    expect((await screen.findByRole('button', { name: /^消息/ })).textContent).not.toMatch(/条新/);
   });
 
   it('没有历史：牛龄页写「完成第一次训练开始长大」，导出 CSV 不可用', async () => {

@@ -20,6 +20,7 @@ import { MessagesPage } from '../pages/MessagesPage';
 import { OnboardingPage } from '../pages/OnboardingPage';
 import { SummaryPage } from '../pages/SummaryPage';
 import { store, useStore } from '../data/store';
+import { useRestEndBuzz } from '../data/useRestEndBuzz';
 import { backAction } from './back';
 import { Pattern } from './Patterns';
 import s from './Shell.module.css';
@@ -121,6 +122,9 @@ function PatternRoute({ onTab }: { onTab: (t: Tab, path: string) => void }) {
   return <Pattern kind={kind} onTab={onTab} />;
 }
 
+/** 休息结束振动：单独一个空组件，倒计时每次刷新只重渲染它，不牵动整个路由树 */
+function RestEndBuzz() { useRestEndBuzz(); return null; }
+
 /** 路由更新不走 transition（BrowserRouter useTransitions={false}）：休息倒计时每 200 毫秒刷一次，页面重时 transition 渲染会被一次次打断重来，点了 Tab 迟迟不切（CI 与整套测试里出现过）；同步提交也让切 Tab 的共享元素转场更可预期 */
 export function AppShell() {
   const [host, setHost] = useState<HTMLElement | null>(null);
@@ -129,6 +133,7 @@ export function AppShell() {
       <ToastProvider>
         <OverlayHost.Provider value={host}>
           <Routed />
+          <RestEndBuzz />
           <div ref={setHost} className={s.layer}><ToastViewport /></div>
         </OverlayHost.Provider>
       </ToastProvider>
