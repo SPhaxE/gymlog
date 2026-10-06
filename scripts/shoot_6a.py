@@ -87,8 +87,11 @@ def run(b, w, h, shots):
     for k in ['4', '0']: click(pg, pg.get_by_role('button', name=k, exact=True)); pg.wait_for_timeout(150)
     click(pg, pg.get_by_role('button', name='打卡', exact=True)); step('filled', None, 900)
     # 切到身体页：计时胶囊借共享元素飞进导航滑块（点导航，不是直接改地址）
-    click(pg, pg.get_by_role('link', name='身体')); pg.wait_for_timeout(120)
-    fly = pg.evaluate('''() => [...document.getAnimations()].map((a) => a.effect && a.effect.pseudoElement || '')''')
+    # 转场一就绪就记下转场层里有哪些共享元素（不靠睡眠时间采样，时序抖动也不会漏）
+    pg.evaluate('''() => { window.__vt = null; const o = document.startViewTransition.bind(document);
+      document.startViewTransition = (cb) => { const vt = o(cb); vt.ready.then(() => { window.__vt = [...document.getAnimations()].map((a) => (a.effect && a.effect.pseudoElement) || ''); }, () => {}); return vt; }; }''')
+    click(pg, pg.get_by_role('link', name='身体')); pg.wait_for_function('window.__vt !== null', timeout=5000)
+    fly = pg.evaluate('window.__vt')
     ok(any('x-rest-ring' in x for x in fly), f'{tag} 切 Tab：只有进度条（x-rest-ring）作为共享元素飞进导航滑块')
     ok(pg.locator('nav [style*="x-rest-timer"]').count() == 0, f'{tag} 切 Tab：导航滑块不带整颗胶囊的共享名（不会盖住图标和文字）')
     step('body-training', '/body', 2500)

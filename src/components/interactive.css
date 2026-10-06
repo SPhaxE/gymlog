@@ -68,14 +68,12 @@
 ::view-transition-new(*.rest):only-child { animation: restSlideIn var(--milo-motion-base) var(--milo-motion-ease-decelerate) var(--milo-motion-press) both; }
 @keyframes restSlideOut { to { opacity: 0; transform: translateY(var(--milo-space-2xl)); } }
 @keyframes restSlideIn { from { opacity: 0; transform: translateY(var(--milo-space-2xl)); } }
-/* 休息进度条（.ring）：切 Tab 时唯一飞过去的东西，借共享元素从计时胶囊移进被点的导航滑块（反过来亦然），几何完全一致，按软弹簧走。
+/* 休息进度条（.ring）：切 Tab 时唯一飞过去的东西，借共享元素从计时胶囊移进被点的导航滑块（反过来亦然），几何完全一致、快照不拉伸（用默认的等比映射；拉伸会让环在转场里比落地后大一圈，转场一结束环缩进去、外圈多出一圈骨白，像填色块在放大），按减速曲线走（不过冲）。
    换色不做交叉淡化：旧色一直不透明，新色盖上去——出发（out，胶囊 → 滑块）在快到滑块时才换成深色（到之前一直是骨白，深色在深底上看不见），
-   返回（in，滑块 → 胶囊）一离开滑块就换回骨白。滑块本身跟着页面一起出现，轻轻放大淡入（html[data-rest-fly] 由 AppShell 切 Tab 时设置） */
-::view-transition-group(*.ring) { animation-duration: var(--milo-motion-spring-ms); animation-timing-function: var(--milo-motion-ease-spring); }
-::view-transition-old(*.ring), ::view-transition-new(*.ring) { inset: 0; width: 100%; height: 100%; object-fit: fill; }
+   返回（in，滑块 → 胶囊）一离开滑块就换回骨白。滑块本身跟着页面一起出现：只淡入、从第一帧起就是全尺寸，不放大（进度条落下时填色块还在长大会像「收尾放大」，2026-10-06 用户）（html[data-rest-fly] 由 AppShell 切 Tab 时设置） */
+::view-transition-group(*.ring) { animation-duration: var(--milo-motion-spring-ms); animation-timing-function: var(--milo-motion-ease-decelerate); }  /* 不带过冲：环冲出滑块边缘再缩回，看着像收尾时胀了一下 */
 ::view-transition-old(*.ring) { animation: none; }
 ::view-transition-new(*.ring) { animation: vtIn var(--milo-motion-base) var(--milo-motion-ease-standard) both; }
 html[data-rest-fly='out']::view-transition-new(*.ring) { animation-delay: calc(var(--milo-motion-spring-ms) * 0.4); }
 html[data-rest-fly='in']::view-transition-new(*.ring) { animation-duration: var(--milo-motion-fast); }
-html[data-rest-fly='out'] nav[aria-label='主导航'] > span[aria-hidden] { animation: pillIn var(--milo-motion-base) var(--milo-motion-ease-decelerate) both; }
-@keyframes pillIn { from { opacity: 0; scale: 0.85; } }
+html[data-rest-fly='out'] nav[aria-label='主导航'] > span[aria-hidden] { animation: vtIn var(--milo-motion-fast) var(--milo-motion-ease-standard) both; }
