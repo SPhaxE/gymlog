@@ -1,5 +1,6 @@
 /* M07 交错入场（软弹簧，带一点过冲） */
 .cascade { display: grid; }
+.cascadeStill .cascadeItem { animation: none; }
 .cascadeItem { animation: rise var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring-soft) both; }
 @keyframes rise { from { opacity: 0; transform: translateY(var(--milo-space-2xl)); } }
 

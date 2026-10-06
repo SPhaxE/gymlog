@@ -27,3 +27,10 @@
 
 /* Sparkline area：曲线下面一层很淡的填充（增量页的行用，和基线一起让一列曲线读起来是「同一把尺」） */
 .area { fill: color-mix(in srgb, var(--milo-color-text-secondary) 22%, transparent); stroke: none; }
+
+/* 进场画线：曲线从左到右画出来（pathLength=1），面积和点随后淡入；减少动态效果时直接到位 */
+.trendDraw { stroke-dasharray: 1; animation: drawLine calc(var(--milo-motion-spring-ms) * 1.4) var(--milo-motion-ease-decelerate) var(--milo-motion-fast) both; }
+.areaIn { animation: areaFade var(--milo-motion-slow) var(--milo-motion-ease-standard) calc(var(--milo-motion-spring-ms) * 0.8) both; }
+@keyframes drawLine { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes areaFade { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .trendDraw, .areaIn { animation: none; } }

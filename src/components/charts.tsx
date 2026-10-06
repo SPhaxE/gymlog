@@ -44,7 +44,8 @@ function smooth(xy: [number, number][]) {
 /** 动作进步曲线（P10；2026-10-04 用户选定 E5 + M04）：预估 1RM 对日期，时间按正序画。
  *  圆滑曲线 + 下方荧光渐隐面积；按住横向拖，竖向游标吸到最近一次训练（吸附时轻振），顶部读数按位滚动（Odometer）；
  *  选中点有一圈呼吸光晕。也可以点、或聚焦后用 ← → 逐次看。PR 点是菱形。少于 2 次不画线。 */
-export function TrendChart({ points, selected, onSelect, unit = 'kg', readout = true }: { points: Point[]; selected?: number | null; onSelect?: (i: number) => void; unit?: string;
+export function TrendChart({ points, selected, onSelect, unit = 'kg', readout = true, draw }: { points: Point[]; selected?: number | null; onSelect?: (i: number) => void; unit?: string;
+  /** 进场时曲线从左到右画出来、面积随后淡入（从列表钻进来的转场里，小曲线展开成这条真曲线） */ draw?: boolean;
   /** 图上方那一行读数。页面自己有大数字（曲线页）时关掉，同一个数屏上只出现一次 */ readout?: boolean }) {
   const box = useRef<HTMLDivElement>(null), drag = useRef(false), gid = useId().replace(/[^a-zA-Z0-9-]/g, '');
   const [w, setW] = useState(T['size/screen-w'] - T['size/gutter'] * 2);
@@ -87,9 +88,9 @@ export function TrendChart({ points, selected, onSelect, unit = 'kg', readout = 
         onPointerMove={(e) => drag.current && pick(e.clientX, e.currentTarget)} onPointerUp={() => { drag.current = false; }} onPointerCancel={() => { drag.current = false; }}>
         <defs><linearGradient id={`a${gid}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" className={s.areaTop} /><stop offset="1" className={s.areaBottom} /></linearGradient></defs>
         {grid.map((v) => { const y = at({ t: ps[0].t, v })[1]; return <g key={v}><line className={s.grid} x1={0} x2={w - gut + T['space/xs']} y1={y} y2={y} /><text className={s.axis} x={w} y={y + T['space/xs']}>{fmt(v)}</text></g>; })}
-        {line && <path d={`${line} L${xy.at(-1)![0]},${h} L${xy[0][0]},${h} Z`} fill={`url(#a${gid})`} />}
+        {line && <path className={cx(draw && s.areaIn)} d={`${line} L${xy.at(-1)![0]},${h} L${xy[0][0]},${h} Z`} fill={`url(#a${gid})`} />}
         {sel != null && <line className={s.rule} x1={xy[sel][0]} x2={xy[sel][0]} y1={0} y2={h} />}
-        {line && <path className={s.trend} d={line} />}
+        {line && <path className={cx(s.trend, draw && s.trendDraw)} d={line} pathLength={draw ? 1 : undefined} />}
         {ps.map((p, i) => p.pr ? <path key={i} className={cx(s.prDot, i === sel && s.on)} d={diamond(...xy[i], r)} /> : <circle key={i} className={cx(s.dot, i === sel && s.on)} cx={xy[i][0]} cy={xy[i][1]} r={r} />)}
         {sel != null && <circle className={s.halo} cx={xy[sel][0]} cy={xy[sel][1]} r={r * 3} />}
       </svg>

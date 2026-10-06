@@ -239,6 +239,16 @@ def gains_checks(b, w, h):
     small = pg.evaluate(AUDIT)
     ok(not small, f'{tag} 曲线页：命中区都 ≥ 48 {small[:3]}')
     recs = pg.locator('[class*=_rec_]')
+    # 钻入转场：返回时名称 / 最新值 / 小曲线作为共享元素飞回那一行，转场放完后列表里不留共享名
+    pg.evaluate('''() => { window.__vt = null; const o = document.startViewTransition.bind(document);
+      document.startViewTransition = (cb) => { const vt = o(cb); vt.ready.then(() => { window.__vt = [...document.getAnimations()].map((a) => (a.effect && a.effect.pseudoElement) || ''); }, () => {}); return vt; }; }''')
+    click(pg, pg.get_by_role('button', name='返回')); pg.wait_for_selector('h1'); pg.wait_for_timeout(300)
+    vt = pg.evaluate('window.__vt') or []
+    ok(all(any(k in x for x in vt) for k in ('x-drill-name', 'x-drill-num', 'x-drill-line')), f'{tag} 曲线页：返回时名称、最新值、小曲线作为共享元素飞回那一行')
+    pg.wait_for_timeout(1800)
+    ok(pg.locator('[style*="x-drill"]').count() == 0, f'{tag} 曲线页：转场放完后列表里不留共享名（同名不能有两份）')
+    click(pg, row); pg.wait_for_selector('text=下次目标'); pg.wait_for_timeout(900)
+    recs = pg.locator('[class*=_rec_]')
     ok(recs.count() >= 2, f'{tag} 曲线页：最近几次明细可点（{recs.count()} 行）')
     day0 = pg.locator('[class*=_label_]').first.inner_text()
     pg.locator('[class*=_scroll_]').first.evaluate('(e) => e.scrollTo(0, e.scrollHeight)'); pg.wait_for_timeout(400)

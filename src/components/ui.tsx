@@ -1,5 +1,5 @@
 /** 内容基础件（视觉语言 v2）。字号只用 .milo-text-* 文字样式，颜色、间距、圆角只用 tokens.css。 */
-import { useContext, type ReactNode } from 'react';
+import { useContext, type CSSProperties, type ReactNode } from 'react';
 import { BodyRender, PALETTE } from './thermal';
 import { Icon, type IconName } from './Icon';
 import { cx, forced, type Forced } from './state';
@@ -31,11 +31,11 @@ export function PageHeader({ title, eyebrow, trailing, children }: { title: stri
 }
 
 /** 子页页头（没有 Tab 的页：处方依据、动作详情、训练详情、训练进行中）：返回 + 标题（Heading）+ 右侧操作 */
-export function TopBar({ title, sub, onBack, trailing }: { title: string; sub?: ReactNode; onBack?: () => void; trailing?: ReactNode }) {
+export function TopBar({ title, sub, onBack, trailing, titleStyle }: { title: string; sub?: ReactNode; onBack?: () => void; trailing?: ReactNode; /** 标题的共享元素名（M09 钻入转场） */ titleStyle?: CSSProperties }) {
   return (
     <header className={s.topBar}>
       {onBack && <button type="button" className={cx('milo-press milo-focus', s.back)} onClick={onBack} aria-label="返回"><Icon name="back" /></button>}
-      <div className={s.topTitle}><h1 className="milo-text-heading">{title}</h1>{sub && <div className={`milo-text-caption ${s.secondary}`}>{sub}</div>}</div>
+      <div className={s.topTitle}><h1 className="milo-text-heading" style={titleStyle}>{title}</h1>{sub && <div className={`milo-text-caption ${s.secondary}`}>{sub}</div>}</div>
       {trailing}
     </header>
   );
