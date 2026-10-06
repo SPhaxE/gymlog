@@ -70,3 +70,20 @@
 .isoLayer { opacity: 0; animation: isoOn calc(var(--milo-motion-slow) * 16) var(--milo-motion-ease-standard) infinite both; }
 @keyframes isoOn { 0% { opacity: 0; } 6% { opacity: 0.9; } 45% { opacity: 0.55; } 60%, 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .rasterLine, .sliceLine, .waveLine, .isoLayer { animation: none; } .sliceLine, .isoLayer { opacity: 0; } }
+
+/* ---------- 描边四方案（ContourVariant）：都比默认的描出 + 游光安静 ---------- */
+.cHair path { fill: none; stroke: color-mix(in srgb, var(--milo-prim-lime-300) 24%, transparent); stroke-width: calc(var(--milo-stroke-hairline) * 0.6); }
+.cSoft path { fill: none; stroke: color-mix(in srgb, var(--milo-prim-lime-500) 26%, transparent); stroke-width: calc(var(--milo-stroke-hairline) * 1.6); }
+.cDot path { fill: none; stroke: color-mix(in srgb, var(--milo-prim-lime-300) 40%, transparent); stroke-width: calc(var(--milo-stroke-hairline) * 0.9); stroke-linecap: round; stroke-dasharray: 0.1 calc(var(--milo-stroke-hairline) * 3); }
+.cRimFlood { flood-color: var(--milo-prim-lime-300); flood-opacity: 0.4; }
+/* 外缘描边里用轮廓路径补上头部（头只有轮廓、没有肌肉路径），只作剪影用 */
+.cRimFill path { fill: white; stroke: white; stroke-width: calc(var(--milo-stroke-hairline) * 2); }
+/* ---------- 填充四方案（FillLayer） ---------- */
+.htBase { fill: var(--milo-prim-gray-100); }
+.htDot { fill: var(--milo-prim-lime-500); }
+.htDotOff { fill: var(--milo-prim-gray-300); }
+.lqDeep { stop-color: var(--milo-prim-lime-700); }
+.lqFill { stop-color: var(--milo-prim-lime-500); }
+.lqSurface { stop-color: var(--milo-prim-lime-300); }
+.lqEmpty { stop-color: var(--milo-prim-gray-150); }
+.lqHead path { stroke: var(--milo-color-bg-base); stroke-width: calc(var(--milo-stroke-hairline) * 0.4); }

@@ -28,6 +28,12 @@ export function tables(p: ThermalPalette): [string, string, string] {
   return [0, 1, 2].map((ch) => cs.map((c) => c[ch].toFixed(3)).join(' ')) as [string, string, string];
 }
 
+/** 任意一串色标（原色 Token 名）→ feFuncR/G/B 的 tableValues（方案台的金属渐变、等高线用） */
+export function rampTables(keys: string[]): [string, string, string] {
+  const cs = keys.map(rgb);
+  return [0, 1, 2].map((ch) => cs.map((c) => c[ch].toFixed(3)).join(' ')) as [string, string, string];
+}
+
 /** CSS 里用的同一条色带（胶囊量尺联动）：在相邻两个色标之间 color-mix */
 export function heatCss(t: number, p: ThermalPalette) {
   const stops = PALETTE[p], x = Math.max(0, Math.min(1, t)) * (stops.length - 1), i = Math.min(stops.length - 2, Math.floor(x)), f = x - i;

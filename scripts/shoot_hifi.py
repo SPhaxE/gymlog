@@ -17,7 +17,7 @@ SHOTS = [
     ('home', 'final-rest', '/today?scenario=rest-day'),
     ('home', 'final-cold', '/today?scenario=cold-start'),
 ]
-FULL = [('spec', 'preview', '/preview')]  # 整页长图
+FULL = [('spec', 'preview', '/spec')]  # 整页长图
 ap = argparse.ArgumentParser()
 ap.add_argument('--base', default='http://127.0.0.1:5199')
 ap.add_argument('--chromium', default=os.environ.get('CHROMIUM', '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'))

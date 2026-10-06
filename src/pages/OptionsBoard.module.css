@@ -1,0 +1,10 @@
+.page { min-height: 100vh; background: var(--milo-color-bg-base); color: var(--milo-color-text-primary); padding: var(--milo-space-2xl) var(--milo-size-gutter) var(--milo-space-5xl); display: grid; gap: var(--milo-space-3xl); }
+.head { display: grid; gap: var(--milo-space-s); max-width: var(--milo-size-content-max-w); }
+.head h1, .group h2 { margin: 0; }
+.group { display: grid; gap: var(--milo-space-m); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--milo-space-5xl) * 5), 1fr)); gap: var(--milo-space-l); }
+.cell { margin: 0; display: grid; gap: var(--milo-space-s); align-content: start; }
+.cell figcaption { display: grid; gap: var(--milo-space-2xs); }
+.cell figcaption span { color: var(--milo-color-text-secondary); }
+.stage { position: relative; height: calc(var(--milo-space-5xl) * 9); overflow: clip; border-radius: var(--milo-radius-m); background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); display: grid; place-items: center; }
+.fig { position: relative; }

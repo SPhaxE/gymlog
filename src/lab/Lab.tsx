@@ -5,7 +5,6 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   Button, Cascade, DotCalendar, ExerciseRow, FluidBackdrop, GiantNumber, Icon, ICONS, Nav, Num, RestDock, ScreenAtmosphere, Sheet, SheetBlock, StepRing, TrendChart,
   WeekBars, dotMonths, LandmarkRuler, PhaseSegments, clock, type Tab,
-  ScanFx, type ScanFxKind,
 } from '../components';
 import { PALETTE } from '../components/thermal';
 import { BodyPage } from '../pages/BodyPage';
@@ -14,21 +13,6 @@ import { fixtures } from '../playground/fixtures';
 import { Stage } from '../playground/Stage';
 import { T } from '../styles/tokens.gen';
 import s from './lab.module.css';
-
-const SCAN_FX: [ScanFxKind, string][] = [['raster', 'A 逐行显影'], ['slice', 'B 切片扫描'], ['wave', 'C 呼吸波'], ['iso', 'D 等温分层']];
-/** 四个扫描线方案并排：容量页同款半身（同一份演示数据），每个外面套一个 ScanFx */
-function ScanCompare({ now }: { now: number }) {
-  return (
-    <div className={s.scanGrid}>
-      {SCAN_FX.map(([k, label]) => (
-        <div key={k} className={s.scanCell} data-scan={k}>
-          <span className="milo-text-caption">{label}</span>
-          <ScanFx.Provider value={k}><Stage tall label={label}><BodyPage scenario="plain-prescription" now={now} initialFocus={null} /></Stage></ScanFx.Provider>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 function Block({ id, title, src, children }: { id: string; title: string; src: string; children: ReactNode }) {
   return (
@@ -145,9 +129,6 @@ export function Lab({ now }: { now: number }) {
           <Block id="T4" title="荧光热 · 扫描线" src="容量页的正式渲染：热核 + 扩散 + 扫描线与颗粒；胶囊量尺同一条色带；按住胶囊列仍可放大">
             <Stage tall label="T4"><BodyPage scenario="rest-day" now={now} initialFocus={null} /></Stage>
             <Ramp />
-          </Block>
-          <Block id="S1" title="扫描线逐层 · 四个方案（2026-10-06 待选）" src="同一个人、同一份数据：逐行显影 / 切片扫描 / 呼吸波 / 等温分层；只动人体里的扫描线，热力本身不变">
-            <ScanCompare now={now} />
           </Block>
         </div>
       </section>

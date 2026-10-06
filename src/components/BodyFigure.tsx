@@ -4,10 +4,10 @@
  *  热成像上面再叠一层「光」（ThermalLight，混合模式 screen）：浅荧光轮廓从下往上描出、一道细光沿轮廓游走、扫描光带周期性从下往上扫过人体——
  *  动的东西都在这一层，下面带滤镜的热像层静止不重画。
  *  量完锚点后通过 onAnchors 交给胶囊列画引线（坐标相对 relativeTo）。 */
-import { createContext, useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import type { HeadStat } from '../engine';
 import { T } from '../styles/tokens.gen';
-import { BodyRender, heatOf, tables } from './thermal';
+import { BodyRender, heatOf, rampTables, tables } from './thermal';
 import s from './BodyFigure.module.css';
 
 type Path = { d: string; strokeWidth?: number };
@@ -28,6 +28,23 @@ export type Anchors = Record<string, [number, number]>;
  *  iso    等温分层：按每块肌肉的热度分层——最热的肌肉里的扫描线先亮，接着次热的，一层层亮到最凉的，再一起暗下去。 */
 export type ScanFxKind = 'raster' | 'slice' | 'wave' | 'iso';
 export const ScanFx = createContext<ScanFxKind | null>(null);
+
+/** 描边方案（2026-10-06 用户：现在的描边太抢眼，要四个方案）：
+ *  hair 发丝：极细、很淡的静态浅荧光线，没有描出和游光；
+ *  soft 柔光：不画清晰的线，只有轮廓位置一圈很淡的模糊光；
+ *  dot  点线：细点虚线，淡；
+ *  rim  只描外缘：人体内部的肌肉分界线不画，只在剪影最外圈有一道淡淡的内缘光。 */
+export type ContourFxKind = 'hair' | 'soft' | 'dot' | 'rim';
+export const ContourFx = createContext<ContourFxKind | null>(null);
+
+/** 肌头内部容量的显示方案（2026-10-06 用户要四个，其中一个是 Metallic Gradient）：
+ *  metal    金属渐变：Gradient Ramp（每块肌肉按热度的灰阶渐变）→ Turbulent Displace（湍流噪声置换，金属拉丝的不规则流纹）
+ *           → Fast Box Blur（轻模糊）→ Colorama（循环色带映射成枪灰 → 钢 → 骨白高光 → 荧光，热的偏亮偏荧光）；
+ *  topo     等高线：热度量化成几档，只画档与档之间的细线（像地形图），档内很淡；
+ *  halftone 半调点阵：同样大小的网格点，热度越高点越大（印刷网点）；
+ *  liquid   液位：每块肌肉像一个容器，近 7 天组数 ÷ 最大可恢复量 = 液面高度，液面一道亮线。 */
+export type FillFxKind = 'metal' | 'topo' | 'halftone' | 'liquid';
+export const FillFx = createContext<FillFxKind | null>(null);
 
 export function BodyFigure({ gender, view, stats, focus, height, onAnchors, relativeTo, onPick }: {
   gender: 'male' | 'female'; view: 'front' | 'back'; stats: Map<string, HeadStat>; focus: string | null; height: number;
@@ -106,7 +123,7 @@ function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pi
   const gray = (t: number) => `color-mix(in srgb, white ${Math.round(t * 100)}%, black)`;
   const heads = Object.keys(v).filter((k) => !NEUTRAL.includes(k) && k !== 'body');
   const fn = iso ? 'discrete' : 'table';
-  const fx = useContext(ScanFx);
+  const fx = useContext(ScanFx), contourFx = useContext(ContourFx), fill = useContext(FillFx);
   const w = (height * box[2]) / box[3];
   return (
     <span className={s.stack} style={{ width: w, height }}>
@@ -131,12 +148,13 @@ function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pi
           <filter id={`n${fid}`} x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves={2} stitchTiles="stitch" /><feColorMatrix type="saturate" values="0" /><feComposite in2="SourceAlpha" operator="in" /></filter>
         </>}
       </defs>
+      {fill ? <FillLayer kind={fill} v={v} heads={heads} stats={stats} fid={fid} unit={unit} gray={gray} /> : (
       <g filter={`url(#h${fid})`}>
         {NEUTRAL.flatMap((k) => (v[k]?.paths ?? []).map((p, i) => <path key={k + i} d={p.d} style={{ fill: gray(0.04) }} />))}
         {heads.map((k) => (
           <g key={k} data-head={k}>{(v[k].paths ?? []).map((p, i) => <path key={i} d={p.d} fill={`url(#g${fid}${k})`} />)}</g>
         ))}
-      </g>
+      </g>)}
       {thermal.style === 'scan' && (
         <g className={s.scan}>
           {Object.keys(v).filter((k) => k !== 'body').flatMap((k) => (v[k].paths ?? []).map((p, i) => <path key={k + i} d={p.d} fill={`url(#s${fid})`} />))}
@@ -147,7 +165,7 @@ function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pi
       {/* 轮廓画在上面的光层里；这里留一份不上色的，只为量包围盒（头部只有轮廓，没有肌肉路径，不量它头会被裁掉） */}
       <g className={s.measureOnly}>{(v.body?.paths ?? []).map((p, i) => <path key={i} d={p.d} />)}</g>
     </svg>
-    {vb && <ThermalLight box={box} height={height} width={w} v={v} fid={fid} noBeam={!!fx} />}
+    {vb && <ThermalLight box={box} height={height} width={w} v={v} fid={fid} noBeam={!!fx || !!contourFx} contour={contourFx} />}
     {vb && fx && <ScanLines kind={fx} box={box} height={height} width={w} v={v} fid={fid} heat={(k) => heatOf(stats.get(k))} />}
     </span>
   );
@@ -158,7 +176,7 @@ function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pi
  *  - 游光：同一组轮廓的更亮一份，被一条横向光带遮着，光带每隔一阵从下往上扫过一次（像光沿着轮廓爬上去）；
  *  - 扫描光带：裁在人体剪影里的一条荧光带（带细扫描线），周期性从下往上扫过热力图；
  *  整层 mix-blend-mode: screen（只提亮、不盖住热像）、不接触摸；减少动态效果时只留静止的轮廓。 */
-function ThermalLight({ box, height, width, v, fid, noBeam }: { box: number[]; height: number; width: number; v: Record<string, Part>; fid: string; noBeam?: boolean }) {
+function ThermalLight({ box, height, width, v, fid, noBeam, contour: kind }: { box: number[]; height: number; width: number; v: Record<string, Part>; fid: string; noBeam?: boolean; contour?: ContourFxKind | null }) {
   const [x, y, bw, bh] = box, unit = bh / 100;
   const silhouette = Object.keys(v).filter((k) => k !== 'body').flatMap((k) => (v[k].paths ?? []).map((p, i) => <path key={k + i} d={p.d} />));
   const contour = (v.body?.paths ?? []).map((p, i) => <path key={i} d={p.d} />);
@@ -178,10 +196,11 @@ function ThermalLight({ box, height, width, v, fid, noBeam }: { box: number[]; h
         <pattern id={`sl${fid}`} width={unit} height={unit * 0.8} patternUnits="userSpaceOnUse"><rect width={unit} height={unit * 0.25} className={s.beamLine} /></pattern>
         <mask id={`bm${fid}`} maskUnits="userSpaceOnUse" x={x} y={y} width={bw} height={bh * 0.14}><rect x={x} y={y} width={bw} height={bh * 0.14} fill={`url(#sb${fid})`} /></mask>
       </defs>
+      {kind ? <ContourVariant kind={kind} contour={contour} silhouette={silhouette} fid={fid} unit={unit} /> : (
       <g mask={`url(#r${fid})`}>
         <g className={s.contourLime}>{contour}</g>
         <g className={s.glint} mask={`url(#m${fid})`}>{contour}</g>
-      </g>
+      </g>)}
       {!noBeam && <g clipPath={`url(#c${fid})`} className={s.beamWrap}>
         <g className={s.beam}><rect x={x} y={y} width={bw} height={bh * 0.14} fill={`url(#sb${fid})`} /><rect x={x} y={y} width={bw} height={bh * 0.14} fill={`url(#sl${fid})`} mask={`url(#bm${fid})`} /></g>
       </g>}
@@ -223,5 +242,116 @@ function ScanLines({ kind, box, height, width, v, fid, heat }: { kind: ScanFxKin
         })}
       </g>
     </svg>
+  );
+}
+
+/** 描边的四个方案（ContourFxKind）：都是静态的，只换线的样子，不再描出 / 游光 */
+function ContourVariant({ kind, contour, silhouette, fid, unit }: { kind: ContourFxKind; contour: ReactNode; silhouette: ReactNode; fid: string; unit: number }) {
+  if (kind === 'hair') return <g className={s.cHair}>{contour}</g>;
+  if (kind === 'dot') return <g className={s.cDot}>{contour}</g>;
+  if (kind === 'soft') return (
+    <>
+      <defs><filter id={`cs${fid}`} x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation={unit * 0.35} /></filter></defs>
+      <g className={s.cSoft} filter={`url(#cs${fid})`}>{contour}</g>
+    </>
+  );
+  // rim：剪影收缩一点再和原剪影相减，只剩最外一圈边，模糊成内缘光；内部肌肉分界线不画
+  return (
+    <>
+      <defs>
+        <filter id={`cr${fid}`} x="-5%" y="-5%" width="110%" height="110%">
+          {/* 先膨胀再收缩（闭运算）把肌肉之间的缝合上，得到整个人的剪影；再收缩一圈和剪影相减，只剩最外一圈 */}
+          <feMorphology in="SourceAlpha" operator="dilate" radius={unit * 0.6} result="grow" />
+          <feMorphology in="grow" operator="erode" radius={unit * 0.6} result="solid" />
+          <feMorphology in="solid" operator="erode" radius={unit * 0.35} result="in" />
+          <feComposite in="solid" in2="in" operator="out" result="edge" />
+          <feGaussianBlur in="edge" stdDeviation={unit * 0.35} result="soft" />
+          <feFlood className={s.cRimFlood} result="c" />
+          <feComposite in="c" in2="soft" operator="in" />
+        </filter>
+      </defs>
+      <g filter={`url(#cr${fid})`}>{silhouette}<g className={s.cRimFill}>{contour}</g></g>
+    </>
+  );
+}
+
+/** 肌头内部容量的四个方案（FillFxKind）。每块肌肉仍是 g[data-head]（锚点、轻点要用） */
+function FillLayer({ kind, v, heads, stats, fid, unit, gray }: { kind: FillFxKind; v: Record<string, Part>; heads: string[]; stats: Map<string, HeadStat>; fid: string; unit: number; gray: (t: number) => string }) {
+  const neutral = NEUTRAL.flatMap((k) => (v[k]?.paths ?? []).map((p, i) => <path key={k + i} d={p.d} style={{ fill: gray(0.06) }} />));
+  const H = (k: string) => heatOf(stats.get(k));
+  if (kind === 'metal') {
+    // Colorama：灰阶输入循环两圈，暗处枪灰、中间钢、亮处骨白高光，最热的一端带荧光
+    const [r, g, b] = rampTables(['gray-50', 'gray-300', 'gray-600', 'gray-300', 'gray-800', 'gray-900', 'gray-500', 'lime-500', 'lime-300']);
+    return (
+      <>
+        <defs>
+          {heads.map((k) => { const h = H(k); return (
+            <linearGradient key={k} id={`mg${fid}${k}`} x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" style={{ stopColor: gray(Math.min(1, h * 1.1)) }} /><stop offset="0.55" style={{ stopColor: gray(h * 0.6) }} /><stop offset="1" style={{ stopColor: gray(Math.min(1, h * 0.95)) }} />
+            </linearGradient>); })}
+          <filter id={`mf${fid}`} colorInterpolationFilters="sRGB" x="-5%" y="-5%" width="110%" height="110%">
+            <feTurbulence type="turbulence" baseFrequency="0.012 0.05" numOctaves={3} seed={7} result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale={unit * 5} xChannelSelector="R" yChannelSelector="G" result="disp" />
+            {/* Fast Box Blur：SVG 没有盒式模糊，用小半径高斯模糊代替 */}
+            <feGaussianBlur in="disp" stdDeviation={unit * 0.45} result="soft" />
+            <feColorMatrix in="noise" type="matrix" values="0.33 0.33 0.33 0 0  0.33 0.33 0.33 0 0  0.33 0.33 0.33 0 0  0 0 0 0 1" result="grain" />
+            <feComposite in="soft" in2="grain" operator="arithmetic" k1="0" k2="1.25" k3="0.4" k4="-0.12" result="lum" />
+            <feComponentTransfer in="lum" result="metal"><feFuncR type="table" tableValues={r} /><feFuncG type="table" tableValues={g} /><feFuncB type="table" tableValues={b} /></feComponentTransfer>
+            <feComposite in="metal" in2="SourceAlpha" operator="in" />
+          </filter>
+        </defs>
+        <g filter={`url(#mf${fid})`}>
+          {neutral}
+          {heads.map((k) => <g key={k} data-head={k}>{(v[k].paths ?? []).map((p, i) => <path key={i} d={p.d} fill={`url(#mg${fid}${k})`} />)}</g>)}
+        </g>
+      </>
+    );
+  }
+  if (kind === 'topo') {
+    const [r, g, b] = rampTables(['gray-50', 'lime-900', 'lime-700', 'lime-500', 'lime-300']);
+    return (
+      <>
+        <defs>
+          {heads.map((k) => { const h = H(k); return (
+            <radialGradient key={k} id={`tg${fid}${k}`} cx="0.5" cy="0.45" r="0.7"><stop offset="0" style={{ stopColor: gray(Math.min(1, h * 1.15)) }} /><stop offset="1" style={{ stopColor: gray(h * 0.1) }} /></radialGradient>); })}
+          <filter id={`tf${fid}`} colorInterpolationFilters="sRGB" x="-5%" y="-5%" width="110%" height="110%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation={unit * 1.2} result="soft" />
+            <feComposite in="soft" in2="SourceAlpha" operator="in" result="inner" />
+            <feComponentTransfer in="inner" result="bands"><feFuncR type="discrete" tableValues="0 0.12 0.25 0.38 0.5 0.62 0.75 0.88 1" /><feFuncG type="discrete" tableValues="0 0.12 0.25 0.38 0.5 0.62 0.75 0.88 1" /><feFuncB type="discrete" tableValues="0 0.12 0.25 0.38 0.5 0.62 0.75 0.88 1" /></feComponentTransfer>
+            <feConvolveMatrix in="bands" order="3" kernelMatrix="-1 -1 -1 -1 8 -1 -1 -1 -1" preserveAlpha="true" result="edges" />
+            <feComponentTransfer in="edges" result="lines"><feFuncR type="linear" slope="4" /><feFuncG type="linear" slope="4" /><feFuncB type="linear" slope="4" /></feComponentTransfer>
+            <feComponentTransfer in="bands" result="dim"><feFuncR type="linear" slope="0.35" /><feFuncG type="linear" slope="0.35" /><feFuncB type="linear" slope="0.35" /></feComponentTransfer>
+            <feComposite in="lines" in2="dim" operator="arithmetic" k2="1" k3="1" result="sum" />
+            <feComponentTransfer in="sum"><feFuncR type="table" tableValues={r} /><feFuncG type="table" tableValues={g} /><feFuncB type="table" tableValues={b} /></feComponentTransfer>
+          </filter>
+        </defs>
+        <g filter={`url(#tf${fid})`}>
+          {neutral}
+          {heads.map((k) => <g key={k} data-head={k}>{(v[k].paths ?? []).map((p, i) => <path key={i} d={p.d} fill={`url(#tg${fid}${k})`} />)}</g>)}
+        </g>
+      </>
+    );
+  }
+  if (kind === 'halftone') {
+    const cell = unit * 1.5;
+    return (
+      <>
+        <defs>{heads.map((k) => { const h = H(k), rr = cell * 0.5 * Math.sqrt(Math.max(0.04, h)); return (
+          <pattern key={k} id={`hp${fid}${k}`} width={cell} height={cell} patternUnits="userSpaceOnUse"><rect width={cell} height={cell} className={s.htBase} /><circle cx={cell / 2} cy={cell / 2} r={rr} className={h > 0.05 ? s.htDot : s.htDotOff} /></pattern>); })}</defs>
+        {neutral}
+        {heads.map((k) => <g key={k} data-head={k}>{(v[k].paths ?? []).map((p, i) => <path key={i} d={p.d} fill={`url(#hp${fid}${k})`} />)}</g>)}
+      </>
+    );
+  }
+  // liquid：每块肌肉自己的包围盒里，从下往上灌到 组数 ÷ 最大可恢复量
+  return (
+    <>
+      <defs>{heads.map((k) => { const st = stats.get(k), lv = st && st.sets7d > 0 ? Math.min(1, st.sets7d / st.mrv) : 0; return (
+        <linearGradient key={k} id={`lq${fid}${k}`} x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0" className={s.lqDeep} /><stop offset={Math.max(0, lv - 0.04)} className={s.lqFill} /><stop offset={lv} className={s.lqSurface} /><stop offset={Math.min(1, lv + 0.001)} className={s.lqEmpty} /><stop offset="1" className={s.lqEmpty} />
+        </linearGradient>); })}</defs>
+      {neutral}
+      {heads.map((k) => <g key={k} data-head={k} className={s.lqHead}>{(v[k].paths ?? []).map((p, i) => <path key={i} d={p.d} fill={`url(#lq${fid}${k})`} />)}</g>)}
+    </>
   );
 }

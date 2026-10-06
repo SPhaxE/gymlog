@@ -42,7 +42,7 @@ export const GROUPS = ['基础', '表单', '反馈与悬浮层', '列表与页�
 export const NOT_IN_MATRIX: Record<string, string> = {
   Cascade: 'M07 交错入场是一段动画，见「训练与记录 · ExerciseRow」下的交互演示',
   Collapsible: '可收起的一块（高度弹簧 + 展开时 M07 交错弹入），是一段动画，见「训练与记录 · GainGroupHead」下的交互演示',
-  Screen: '页面框（版式容器），见 /preview §4 与整页演示',
+  Screen: '页面框（版式容器），见 /spec §4 与整页演示',
   OptionGroup: '单选组的方向键行为，见「表单」交互演示',
   ToastViewport: 'Toast 的出口，见「反馈」交互演示',
   Dialog: 'DialogCard 加遮罩、焦点圈定和返回键，见「反馈」交互演示',

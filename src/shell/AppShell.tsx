@@ -29,6 +29,7 @@ import s from './Shell.module.css';
 const Playground = lazy(() => import('../pages/Playground').then((m) => ({ default: m.Playground })));
 const Preview = lazy(() => import('../pages/Preview').then((m) => ({ default: m.Preview })));
 const Lab = lazy(() => import('../lab/Lab').then((m) => ({ default: m.Lab })));
+const OptionsBoard = lazy(() => import('../pages/OptionsBoard').then((m) => ({ default: m.OptionsBoard })));
 const Brand = lazy(() => import('../lab/Brand').then((m) => ({ default: m.Brand })));
 const TokenCheck = lazy(() => import('../pages/TokenCheck').then((m) => ({ default: m.TokenCheck })));
 
@@ -104,7 +105,9 @@ function Routed() {
       <Route path="/me/messages" element={needProfile ?? <MessagesPage key={scenario} scenario={scenario} now={now} />} />
       <Route path="/patterns/:kind" element={tab(<PatternRoute onTab={onTab} />)} />
       <Route path="/playground" element={<Playground now={now} />} />
-      <Route path="/preview" element={<Preview />} />
+      {/* /preview = 方案台（2026-10-06 用户）；原来的基础规范页挪到 /spec */}
+      <Route path="/preview" element={<OptionsBoard now={now} />} />
+      <Route path="/spec" element={<Preview />} />
       <Route path="/lab" element={<Lab now={now} />} />
       <Route path="/brand" element={<Brand />} />
       <Route path="/check" element={<TokenCheck />} />

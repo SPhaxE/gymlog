@@ -2,7 +2,7 @@
 
 > 2026-10-04 · **规范 v2**，取代阶段 4 的 v1。来源：用户选定的线框（`ia.md` §6）、54 张参考图提炼出的视觉语言 v2（`design/hifi/refs-analysis.md`），以及用户确认过视觉的身体页、首页代码定稿。
 > **数值的唯一源头是 `design/tokens/tokens.json`。** 本文只写使用规则。
-> **规范的实物有两页**：`/preview`（`src/pages/Preview.tsx`）放基础规范——颜色、文字、间距、圆角、版式；`/playground`（`src/pages/Playground.tsx`，目录在 `src/playground/catalog.tsx`）放**全部组件 × 全部交互态**和交互演示。阶段 6 每页开工前先对照这两页。
+> **规范的实物有两页**：`/spec`（`src/pages/Preview.tsx`，2026-10-06 从 `/preview` 挪过来）放基础规范——颜色、文字、间距、圆角、版式；`/playground`（`src/pages/Playground.tsx`，目录在 `src/playground/catalog.tsx`）放**全部组件 × 全部交互态**和交互演示。阶段 6 每页开工前先对照这两页。
 > 2026-10-04 用户决定：**Figma 暂缓**，组件与交互态以代码和 `/playground` 为准（§11）。
 
 ## 0. 流程与门禁
@@ -305,7 +305,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 | | `MessageRow` | 奖励 / 冻结卡 / 降级说明 × 未读 / 已读 | §8.6；奖励图标只有未读时是荧光，读过的变回中性；入账的牛劲单独一列右对齐的大数字（`amount`），日期在它下面；消息页按月分段 |
 | | `FluidBackdrop` | — | Tab 根页最底层的流体噪点渐变（§1 第 6 条）；页面隐藏时停 |
 
-不进矩阵的导出：`Screen`（页面框，见 `/preview` §4）、`OptionGroup`、`ToastViewport`、`Dialog`（都在交互演示里）、`StatusStrip`（`Banner` 的旧名，已弃用）。
+不进矩阵的导出：`Screen`（页面框，见 `/spec` §4）、`OptionGroup`、`ToastViewport`、`Dialog`（都在交互演示里）、`StatusStrip`（`Banner` 的旧名，已弃用）。
 
 **页面骨架**：
 - Tab 根页：`Screen` → 一个滚动区（`PageHeader` → 内容，左右 gutter）→（固定主按钮）→ `BackToTop` → `Nav`；页头跟着滑走，吸顶的部位筛选条贴顶（`top: 0`）。**坑**：滚动驱动动画的祖先上不能写 `overflow: hidden`（它本身是滚动容器，会把时间线绑走），要裁切用 `overflow: clip`。
@@ -325,7 +325,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 | `/demo` | 第一版实机演示：电脑上左讲解 + 演示路线、右手机壳里是 App 本体；手机上清空后全屏进故事 |
 | `/brand` · `/lab` | IP 与 Logo 评审页；参考要素实验室 |
 | `/patterns/loading` · `empty` · `error` | 页面级数据态示例 |
-| `/playground` · `/preview` | 组件与交互态；基础规范 |
+| `/playground` · `/spec` · `/preview` | 组件与交互态；基础规范；方案台（待选视觉方案并排实时渲染） |
 | `/check` | M1 的管线检查 |
 | `/explore/*` | 旧地址，重定向到 `/today`、`/body` |
 
@@ -372,7 +372,7 @@ npm run check:hardcoded                   # src/pages、components、playground�
 npm test                                  # 含目录覆盖（每个导出 × 每个变体能渲染、交互态落到 DOM）、胶囊几何、曲线正序、返回键
 npx vite --port 5199 &
 python3 scripts/shoot_playground.py       # 阶段 5 运行时门禁：变体数一致、记组 / 导航 / 对话框交互、5 个 Tab 无横向溢出 + 截图
-python3 scripts/shoot_hifi.py             # 身体页、首页 8 个状态 + /preview 整页截图
+python3 scripts/shoot_hifi.py             # 身体页、首页 8 个状态 + /spec 整页截图
 python3 scripts/shoot_6a.py               # 阶段 6a 演示全流程（360 与 412 两种宽）：命中区、被压扁的块、横向溢出、页面错误 + 截图
 node scripts/test_figma_plugin.cjs        # Figma 插件 mock 测试（62 项）
 ```
