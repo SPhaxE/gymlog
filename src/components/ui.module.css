@@ -13,6 +13,19 @@
 /* 页头：上边距 space/l，块间 space/s */
 .header { display: grid; gap: var(--milo-space-s); padding: var(--milo-space-l) var(--milo-size-gutter) 0; }
 .header h1 { margin: 0; }
+/* 页头 C：细栏（零高度 sticky 外壳 + 44 高的半透明虚化条 + 发丝线，只有标题）；大标题滑出屏幕顶时淡入并落位。
+   h1 的 view-timeline 与 Screen 上的 timeline-scope 配对；@supports 守卫：不守卫的话，不支持的浏览器会立刻播完动画 */
+.slimWrap { position: sticky; top: 0; z-index: 6; height: 0; pointer-events: none; }
+.slim { position: absolute; top: 0; left: 0; right: 0; /* 绝对定位：外壳是零高度，细栏不进文档流（滚动区里「被压扁的块」检查也不会把外壳当成压扁） */ display: flex; align-items: center; height: var(--milo-size-header-slim); padding: 0 var(--milo-size-gutter); opacity: 0;
+  background: color-mix(in srgb, var(--milo-color-bg-base) 80%, transparent); -webkit-backdrop-filter: blur(var(--milo-space-m)); backdrop-filter: blur(var(--milo-space-m));
+  box-shadow: 0 var(--milo-stroke-hairline) 0 var(--milo-color-line-default); color: var(--milo-color-text-primary); }
+.slim span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.slimShown { opacity: 1; }
+:global([data-title-collapse]) { view-timeline: --title block; }
+@keyframes slimIn { from { opacity: 0; transform: translateY(calc(var(--milo-space-s) * -1)); } to { opacity: 1; transform: none; } }
+@supports (animation-timeline: scroll()) {
+  .slim:not(.slimShown) { animation: slimIn linear both; animation-timeline: --title; animation-range: exit 0% exit 100%; }
+}
 .topBar { position: relative; z-index: 1; /* 返回键的命中区向下外扩 2px，要盖在下面的滚动区上面，否则点它的下沿点到列表 */ display: flex; align-items: center; gap: var(--milo-space-s); min-height: var(--milo-size-hit-min); padding: var(--milo-space-s) var(--milo-size-gutter) 0; }
 .topBar h1 { margin: 0; }
 .topTitle { flex: 1; min-width: 0; }

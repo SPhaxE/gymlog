@@ -71,7 +71,7 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
   return (
     <Screen label="身体">
       <div className={s.scroll}>
-      <PageHeader title="身体" trailing={<>
+      <PageHeader collapse title="身体" trailing={<>
         <Segmented label="视图" items={[['front', '正面'], ['back', '背面']]} value={view} onChange={(v) => v !== view && swap({ view: v }, v === 'back' ? 1 : -1)} />
         <Segmented label="体型示意" items={[['male', '男'], ['female', '女']]} value={gender} onChange={(v) => v !== gender && swap({ gender: v }, v === 'female' ? 1 : -1)} />
       </>}>

@@ -19,14 +19,26 @@ export function Delta({ dir, value }: { dir: DeltaDir; value?: string }) {
   return <span className={cx(s.delta, s[dir])}>{icon[dir] && <Icon name={icon[dir]!} small />}<b>{text}</b></span>;
 }
 
-/** Tab 根页的页头：标题（Title/L）+ 右侧附件；上方可有一行小字（日期） */
-export function PageHeader({ title, eyebrow, trailing, children }: { title: string; eyebrow?: ReactNode; trailing?: ReactNode; children?: ReactNode }) {
+/** 页头 C 的细栏：大标题（带 data-title-collapse 的 h1）滑出屏幕顶的同时淡入，只有标题。
+ *  外壳是零高度的 sticky——不占位、不挤版（身体页的舞台靠 ResizeObserver 算图高），必须放在滚动区里、页头前面；
+ *  时间线是「标题滑出」（Screen 上 timeline-scope），不写死像素；不支持滚动驱动动画的浏览器里它不出现，页面照常可用。
+ *  shown：强制显示（playground「已滚过大标题」态、截图用）。装饰性重复，读屏跳过。 */
+export function SlimBar({ title, shown }: { title: string; shown?: boolean }) {
+  return <div className={s.slimWrap} aria-hidden="true"><div className={cx(s.slim, shown && s.slimShown)}><span className="milo-text-heading">{title}</span></div></div>;
+}
+
+/** Tab 根页的页头：标题（Title/L）+ 右侧附件；上方可有一行小字（日期）。
+ *  collapse：页头在滚动区里时开（页头 C）——大标题滑走后顶上留一条细标题栏；训练中的首页（有「结束」和进度）不开。 */
+export function PageHeader({ title, eyebrow, trailing, children, collapse, collapsed }: { title: string; eyebrow?: ReactNode; trailing?: ReactNode; children?: ReactNode; collapse?: boolean; /** 强制显示细栏（静态展示用） */ collapsed?: boolean }) {
   return (
-    <header className={s.header}>
-      {eyebrow && <div className={`milo-text-caption ${s.secondary}`}>{eyebrow}</div>}
-      <div className={s.row}><h1 className="milo-text-title-l">{title}</h1><span className={s.sp} />{trailing}</div>
-      {children}
-    </header>
+    <>
+      {collapse && <SlimBar title={title} shown={collapsed} />}
+      <header className={s.header}>
+        {eyebrow && <div className={`milo-text-caption ${s.secondary}`}>{eyebrow}</div>}
+        <div className={s.row}><h1 className="milo-text-title-l" data-title-collapse={collapse ? '' : undefined}>{title}</h1><span className={s.sp} />{trailing}</div>
+        {children}
+      </header>
+    </>
   );
 }
 

@@ -17,7 +17,7 @@
   - Token 校验
   - Figma 插件 62 项
   - 构建
-  - `shots:playground`（73 个组件、534 个变体）
+  - `shots:playground`（76 个组件、568 个变体）
   - `shots:6a`（演示全流程，360 与 412 两种宽，每一步查命中区 ≥ 48、被压扁的块、横向溢出、页面错误；不依赖日期）
 - **生产环境已验证**：<https://gymlog-taupe.vercel.app/demo> 等路由 200、部署的是合并后的代码；同一份 `main` 的生产构建跑 `shots:6a` 全部通过（沙盒里的 Chromium 不信任代理证书，不关证书校验，所以用本地生产构建代替直连线上跑浏览器门禁）。
 
@@ -48,6 +48,7 @@
 - 键盘常驻挡屏 → 键盘只在改数时从底部拉出；
 - 页面结构和已有设计冲突（独立训练页让导航环白做）→ 改结构前先对照 `ia.md` §1.12 / §3；
 - 交付前没在真机尺寸、真实状态（首次动作、休息中）下自测 → `shots:6a` 覆盖这些状态，412 × 915 也跑。
+- 滚动驱动动画绑错滚动容器（2026-10-06，页头 C 与钢板日历原型都踩过）：`animation-timeline: scroll()` / `view-timeline` 绑的是**最近的滚动容器**，而 `overflow: hidden` 的元素本身就是滚动容器——页头或灯箱层的祖先写了 `hidden`，时间线就绑到它身上、进度永远是 0，动画不动。要裁切一律写 `overflow: clip`；调试办法：`el.getAnimations()[0].currentTime` 看进度有没有变。
 
 ## 2. 硬约束（不要破）
 
@@ -174,7 +175,7 @@ python3 scripts/shoot_growth.py     # 奖励弹窗 GIF → screenshots/growth/
 | 初见引导 P12 | 8 幕 Stories 式动画：两千五百年前 → 每天扛小牛（kg 刻度尺）→ 渐进超负荷（第 1 → 1460 天，30 → 450 kg，走完后屏幕中下方长出品牌 Logo「慢牛 Milo」）→ 超量恢复曲线 → **黄金窗互动**（光点进荧光段时点底部拇指区的「开始训练」——和首页同一个按钮，外加脉冲；早 / 晚 / 对三种结果）→ 阶梯走进奥林匹亚拱门 → Milo 替你算（身体页自动演示：手指滑过胶囊列、胶囊逐个展开；加处方卡，两张先后弹入）→ 你的小牛出生。三层视差，按住暂停，可跳过，减少动态效果时降级 | `pages/StoryScreens.*` |
 | 建档 | 3 步，草稿实时保存；最后可选「载入演示数据」（进阶用户 30 周） | `pages/OnboardingPage.*` |
 | 首页 P01 | 处方主角卡 + 增量尺；「为什么是这些」面板（每个动作练到哪些肌头、时相、近 7 天组数、重量理由）；**今天已练完**：睡着的小牛 + 摘要 + 恢复进度，「再练一次」才展开处方；**减量建议**点「看看」开底部面板（依据：连降的动作与三次预估 1RM；「采纳减量」进 6 天减量周、「这次不减」6 天内不再提醒，按钮固定在面板底部，`pages/DeloadSheet.tsx`；状态行 `pages/DeloadBanner.tsx` 将与增量页共用；演示场景里只改本页内存、不写存储，`data/useSource.ts`） | `pages/HomePage.*` |
-| 增量 P09（Stitch 取舍见 `design/hifi/gains/decision.md`） | 页头首屏（配重片环 = 近 4 周练过的动作按涨 / 持平 / 退 / 刚开始记分段，每个数带「个动作」；下面 N 次破纪录）→ 减量状态行（与首页共用 `DeloadBanner` / `DeloadSheet`）→ 部位筛选（滑到顶后贴住，页头首屏跟着滑走）→ 色带组头「该加重 / 保持，次数 +1 / 该减重」三组（减量周合成「本周目标 · 减量」一组）；每行：名称（近 4 周 PR 打标）、下次目标、迷你曲线、最近预估值 + 涨跌。**「下次」与首页处方同一个 `suggest`**（`src/data/gains.test.ts` 逐项核对）；整页唯一荧光是「该加重」色带；点一行进曲线页 P10。自重动作用「次数」比，只练过 1 次标「基线」，没练过是空状态 | `pages/GainsPage.*`、`components/gains.*`、`data/gains.ts` |
+| 增量 P09（Stitch 取舍见 `design/hifi/gains/decision.md`） | 页头首屏（配重片环 = 近 4 周练过的动作按涨 / 持平 / 退 / 刚开始记分段，每个数带「个动作」；下面 N 次破纪录）→ 减量状态行（与首页共用 `DeloadBanner` / `DeloadSheet`）→ 部位筛选（滑到顶后贴在细标题栏下面，页头首屏跟着滑走；页头 C）→ 色带组头「该加重 / 保持，次数 +1 / 该减重」三组（减量周合成「本周目标 · 减量」一组）；每行：名称（近 4 周 PR 打标）、下次目标、迷你曲线、最近预估值 + 涨跌。**「下次」与首页处方同一个 `suggest`**（`src/data/gains.test.ts` 逐项核对）；整页唯一荧光是「该加重」色带；点一行进曲线页 P10。自重动作用「次数」比，只练过 1 次标「基线」，没练过是空状态 | `pages/GainsPage.*`、`components/gains.*`、`data/gains.ts` |
 | 首页训练中（原 P03） | 开始训练 → 主角卡原地展开成组行（M03）；拇指区唯一主操作「打卡 · 第 N 组」（首次动作变「填重量」，直接拉出键盘）；点组行拉出改数面板（`Sheet` + `SetEditor`，M05 + M04 码表）；休息：导航选中胶囊 + 主按钮左边的休息胶囊（M02，点别处缩回）；换动作：列表行长成主角卡（M03 `.swap`）；列表每行一排组点；导航外圈今日进度，切到身体页也在 | `pages/TrainingView.tsx`、`components/training.tsx`（SetLine、SetEditor、NumPad）、`data/useTrainingNav.ts` |
 | 休息计时（最后一项，2026-10-06） | 同一时刻屏上只有一个计时器：首页训练中是主按钮左边一颗页面配色的胶囊（凹底 + 细线、图标在上时间在下，里面一道骨白实线按剩余比例收短），首页导航不显示休息；切到别的 Tab，**胶囊自己往下滑着淡出，只有进度条**（`REST_RING_VT`，`.ring`）借 View Transitions 飞进被点的导航滑块，到位后才换成滑块上的深色，切回首页反过来（`Nav.tsx` 的 `REST_VT` / `REST_RING_VT` / `navHandoff`，`AppShell.tsx` 的 `onTab` 等路由提交后再拍新快照并设 `html[data-rest-fly]`，`interactive.css` 里 `.rest:only-child` 与 `.ring`）；别的 Tab 之间互切不走转场；胶囊 ↔ 休息面板仍是同一个共享元素 | `components/motion.tsx`（`RestDock ring`）、`components/Nav.tsx`、`shell/AppShell.tsx` |
 | 结算 P05 | 新纪录整块荧光卡（进场弹起 + 扫光 + 按住微倾 M01）；增幅按「之前最好」算（与奖励弹窗一致）；总负荷码表；逐个动作（与上次比）；牛龄成长；力竭度两排五格（每格 ≥ 48）；奖励弹窗（每条记录只弹一次） | `pages/SummaryPage.*` |

@@ -64,7 +64,7 @@ export const CN: Record<string, string> = {
   recovering: '恢复中', golden: '黄金窗', decayed: '已回落', near: '邻近', focus: '焦点', front: '正面', back: '背面', male: '男', female: '女',
   track: '已开始 · 0 组', partial: '进行中', full: '满环', home: '首页', body: '身体', gains: '增量', log: '记录', me: '我的', success: '成功', undo: '可撤销',
   suggest: '建议减量', week: '减量周', quiet: '一行小字', 'pool-empty': '动作池不足', resume: '继续上次训练', info: '信息', page: '子页', session: '训练中',
-  eyebrow: '带日期与附件', pill: '小胶囊', open: '展开', loadingState: '加载中',
+  eyebrow: '带日期与附件', pill: '小胶囊', open: '展开', loadingState: '加载中', top: '在顶部', scrolled: '已滚过大标题',
   newborn: '牛犊', young: '小牛', sturdy: '壮牛', bull: '公牛', milo: 'Milo', 'm-idle': '平常', 'm-focused': '专注', 'm-happy': '开心', 'm-rest': '恢复日', 'm-pr': '破纪录', 'm-deload': '减量周', idle: '平常', training: '训练中',
   'r-stage': '升段', 'r-milo': '升段 · Milo', 'r-pr': '破纪录', 'r-streak': '连胜里程碑', 'r-level': '升小级', 'r-cycle': '周期完成', free: '免费', pro: 'Pro 会员',
   'b-compact': '紧凑（「我的」顶部）', 'b-full': '完整（牛龄页头）', 'g-normal': '进行中', 'g-near': '快升级', 'g-stage': '下一级是升段', 'g-max': 'Milo 满级',
@@ -238,9 +238,12 @@ export const CATALOG: Entry[] = [
     render: () => <SectionLabel trailing={<span className="milo-text-caption">3 个</span>}>接下来</SectionLabel>,
   },
   {
-    name: 'PageHeader', group: '列表与页头', desc: 'Tab 根页的页头：Title/L，上边距 space/l；日期等小字放标题上方，分段控件等放右侧。',
-    axes: { kind: ['plain', 'eyebrow'] }, size: 'screen',
-    render: (p) => p.kind === 'plain' ? <PageHeader title="记录" /> : <PageHeader title="今日处方" eyebrow="10月3日 周六" trailing={<Segmented label="视图" items={[['f', '正面'], ['b', '背面']]} value="f" />} />,
+    name: 'PageHeader', group: '列表与页头', desc: 'Tab 根页的页头：Title/L，上边距 space/l；日期等小字放标题上方，分段控件等放右侧。页头 C：页头在滚动区里时（collapse），大标题滑出屏幕顶后顶上留一条 44 高的细标题栏（SlimBar：半透明 + 虚化 + 发丝线，只有标题）；矩阵里不会滚，「已滚过」态强制显示细栏，真滚动见下面的交互演示。',
+    axes: { kind: ['plain', 'eyebrow'], scroll: ['top', 'scrolled'] }, size: 'screen', covers: ['SlimBar'],
+    render: (p) => {
+      const scrolled = p.scroll === 'scrolled';
+      return p.kind === 'plain' ? <PageHeader collapse={scrolled} collapsed={scrolled} title="记录" /> : <PageHeader collapse={scrolled} collapsed={scrolled} title="今日处方" eyebrow="10月3日 周六" trailing={<Segmented label="视图" items={[['f', '正面'], ['b', '背面']]} value="f" />} />;
+    },
   },
   {
     name: 'TopBar', group: '列表与页头', desc: '没有 Tab 的子页：返回 + 标题（Heading）+ 右侧操作。训练中右侧是计时与「结束」。',

@@ -86,10 +86,17 @@ def run(b, w, h, shots):
     click(pg, pg.get_by_role('button', name='下一步')); step('setup-2')
     click(pg, pg.get_by_role('button', name='下一步')); step('setup-3')
     click(pg, pg.get_by_role('button', name='载入演示数据 · 练了 30 周的进阶用户')); step('today', '/today', 2000)
+    # 页头 C：首页（非训练态）页头在滚动区里；滑走大标题时细栏出现（内容不够长就滚不到，所以只核对「大标题走了 ⇔ 细栏在」的一致性）
+    ok(pg.evaluate(SLIM) is not None and pg.evaluate(SLIM)['op'] == 0, f'{tag} 页头 C·首页：在顶部时细栏不可见')
+    pg.mouse.move(w / 2, h / 2); pg.mouse.wheel(0, 500); pg.wait_for_timeout(600)
+    hb, sl = pg.evaluate("document.querySelector('h1').getBoundingClientRect().bottom"), pg.evaluate(SLIM)
+    ok(sl is not None and ((sl['op'] > 0.95 and sl['txt'] in ('今日处方', '今天')) if hb <= 0 else sl['op'] < 1), f'{tag} 页头 C·首页：大标题滑走（下沿 {hb:.0f}）⇔ 细栏出现 {sl}')
+    pg.mouse.wheel(0, -1000); pg.wait_for_timeout(500)
     click(pg, pg.get_by_role('button', name='为什么是这些')); step('why', None, 1200)
     pg.keyboard.press('Escape'); pg.wait_for_timeout(500)
     click(pg, pg.get_by_role('button', name='开始训练')); step('train', '/today', 1200)
     ok(pg.get_by_role('button', name='打卡 · 第 1 组').count() == 1, f'{tag} 开始后留在首页，主按钮是「打卡 · 第 1 组」')
+    ok(pg.locator('[class*=_slim_]').count() == 0, f'{tag} 页头 C：训练中不收缩（有「结束」和进度，页头钉在顶上）')
     click(pg, pg.get_by_role('button', name='打卡 · 第 1 组')); step('train-rest', None, 900)
     navlabel = lambda: pg.get_by_role('navigation', name='主导航').locator('[aria-current=page]').get_attribute('aria-label') or ''
     ok('休息剩余' not in navlabel() and pg.locator('[style*="x-rest-timer"]').count() == 1, f'{tag} 首页休息中只有一个计时器（主按钮旁的胶囊，导航不重复）')
@@ -193,6 +200,10 @@ def deload_checks(b, w, h):
     ok(pg.get_by_text('你选了这次不减').count() > 0, f'{tag} 减量：「这次不减」后只剩一行小字')
     pg.close()
 
+SLIM = """() => { const e = document.querySelector('[class*=_slim_]'); if (!e) return null; const r = e.getBoundingClientRect();
+  return { op: +(+getComputedStyle(e).opacity).toFixed(2), top: Math.round(r.top), h: Math.round(r.height), txt: e.textContent }; }"""
+
+
 def gains_checks(b, w, h):
     """增量页（P09）：演示数据三组都有、荧光只一处、下次目标与首页同一个数、减量周合成一组、没练过是空状态"""
     tag = f'{w}×{h}'
@@ -213,11 +224,15 @@ def gains_checks(b, w, h):
     sparks = pg.evaluate('''() => [...document.querySelectorAll('svg[class*=spark]')].filter((e) => { const r = e.getBoundingClientRect(); return r.top > 0 && r.bottom < innerHeight; }).map((e) => Math.round(e.getBoundingClientRect().left))''')
     ok(len(sparks) >= 3 and max(sparks) - min(sparks) <= 1, f'{tag} 增量：每行的小曲线从同一条竖线开始 {sparks}')
     top0 = pg.locator('h1').first.bounding_box()['y']
+    slim0 = pg.evaluate(SLIM)
+    ok(slim0 is not None and slim0['op'] == 0, f'{tag} 页头 C·增量：在顶部时细栏不可见 {slim0}')
     pg.mouse.move(w / 2, h / 2); pg.mouse.wheel(0, 700); pg.wait_for_timeout(600)
     top1 = pg.locator('h1').first.bounding_box()['y']
     ok(top0 > 0 and top1 < 0, f'{tag} 增量：下滑后页头跟着滑走，不钉在顶上（{top0:.0f} → {top1:.0f}）')
+    slim1 = pg.evaluate(SLIM)
+    ok(slim1 is not None and slim1['op'] > 0.95 and slim1['h'] == 44 and slim1['top'] == 0 and slim1['txt'] == '增量', f'{tag} 页头 C·增量：大标题滑走后顶上出现 44 高的细标题栏 {slim1}')
     chip_y = pg.get_by_role('button', name='全部').first.bounding_box()['y']
-    ok(0 <= chip_y < 120, f'{tag} 增量：部位筛选滑到顶后贴住（y={chip_y:.0f}）')
+    ok(0 <= chip_y < 120 and chip_y >= 44, f'{tag} 增量：部位筛选滑到顶后贴在细栏下面（y={chip_y:.0f}）')
     pg.mouse.wheel(0, -3000); pg.wait_for_timeout(600)
     chips = pg.get_by_role('button', name='胸')
     ok(chips.count() == 1, f'{tag} 增量：有部位筛选')
@@ -225,6 +240,15 @@ def gains_checks(b, w, h):
     ok(chips.first.get_attribute('aria-pressed') == 'true', f'{tag} 增量：选中「胸」')
     ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} 增量·筛选后：无横向溢出')
     if not args.no_shots: pg.screenshot(path=os.path.join(OUT, 'gains-chest.png'))
+    # 页头 C：身体页同样（页头在滚动区里，大标题滑走后细栏出现）。屏高 915 时身体页几乎不用滚，所以这一段用矮屏（640）保证有得滚
+    pg.set_viewport_size({'width': w, 'height': 640})
+    pg.goto(f'{args.base}/body?scenario=done-today'); pg.wait_for_selector('h1'); pg.wait_for_timeout(900)
+    b0 = pg.evaluate(SLIM)
+    ok(b0 is not None and b0['op'] == 0, f'{tag} 页头 C·身体：在顶部时细栏不可见 {b0}')
+    pg.mouse.move(w / 2, 320); pg.mouse.wheel(0, 400); pg.wait_for_timeout(600)
+    b1 = pg.evaluate(SLIM)
+    ok(b1 is not None and b1['op'] > 0.95 and b1['h'] == 44 and b1['txt'] == '身体', f'{tag} 页头 C·身体：大标题滑走后出现细栏 {b1}')
+    pg.set_viewport_size({'width': w, 'height': h})
     # 曲线页（P10）：点一行进去，大数字和增量页那一行是同一个数；点明细的一行换成那天；返回后筛选和滚动位置还在
     pg.goto(f'{args.base}/gains?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(700)
     rows_all = pg.get_by_role('button', name=re.compile(r'^查看.+的进步曲线$'))

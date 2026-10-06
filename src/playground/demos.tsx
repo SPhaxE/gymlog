@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import {
-  Banner, Button, Cascade, Dialog, ExerciseRow, RestDock, SharedDetail, sharedTransition, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
+  Banner, Button, Cascade, Dialog, ExerciseRow, PageHeader, RestDock, SharedDetail, sharedTransition, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
   LandmarkRuler, PhaseSegments, Num, Screen, SetRow, clock, useCountdown, useToast, type Tab,
   Mascot, MASCOT_MOODS, MASCOT_STAGES, MOOD_NAME, STAGE_NAME, RewardModal, REWARD_NAME, AgeBadge, GrowthBar, Paywall, type MascotMood, type MascotStage, type Reward,
 } from '../components';
@@ -173,6 +173,25 @@ export function MagnifierDemo({ f }: { f: Fixtures }) {
         <Note>胶囊列上竖向短滑 = 滚动页面；按住 150 ms 不动进入放大镜，上下滑逐个放大，焦点胶囊左边写组数、恢复度与时相，名称在右（手指底下）。松手只退出；轻点胶囊或人体上的肌肉打开详情。正面 / 背面、男 / 女切换是抽卡。</Note></div>
       <div className={s.demoCol}><Stage tall label="首页"><HomePage scenario="plain-prescription" now={f.now} /></Stage>
         <Note>首页第一屏：今天练什么、第一个动作的建议重量、开始训练（这一屏唯一的荧光）。</Note></div>
+    </div>
+  );
+}
+
+/** 页头 C：往下滑，大标题滑出屏幕顶的同时，顶上出现细标题栏；滑回去又收起 */
+function HeaderDemo({ f }: { f: Fixtures }) {
+  return (
+    <div className={s.demoCol}>
+      <Stage tall label="页头收缩演示">
+        <Screen label="页头收缩">
+          <div className={s.headerDemoScroll}>
+            <PageHeader collapse title="今日处方" eyebrow="10月3日 周六" />
+            <div className={s.headerDemoBody}>
+              {f.items.concat(f.items).map((x, i) => <ExerciseRow key={i} name={x.name} detail={`${x.sets} × ${x.repRange.join('–')}`} weight={x.suggestion.weightKg} />)}
+            </div>
+          </div>
+        </Screen>
+      </Stage>
+      <Note>往下滑：大标题滑出屏幕顶的同时，顶上出现 44 高的细标题栏（半透明 + 虚化 + 发丝线，只有标题）；滑回去收起。不写死滚动距离，跟着大标题走。</Note>
     </div>
   );
 }
@@ -381,6 +400,7 @@ export const DEMOS: Record<string, (f: Fixtures) => ReactNode> = {
   SetRow: (f) => <SessionDemo f={f} />,
   Nav: () => <NavDemo />,
   CapsuleRail: (f) => <MagnifierDemo f={f} />,
+  PageHeader: (f) => <HeaderDemo f={f} />,
   TrendChart: (f) => <ChartDemo f={f} />,
   WeekStrip: (f) => <WeekDemo f={f} />,
 };

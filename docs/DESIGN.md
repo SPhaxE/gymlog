@@ -206,7 +206,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 
 ## 9. 组件与交互态（`src/components` → `/playground`）
 
-`/playground` 是这一节的实物：43 个组件、311 个变体，每个变体是 `catalog.tsx` 里各轴取值的组合。下面的表只写用法；尺寸都在 Token 里，状态在 Playground 里看。
+`/playground` 是这一节的实物：76 个组件、568 个变体，每个变体是 `catalog.tsx` 里各轴取值的组合。下面的表只写用法；尺寸都在 Token 里，状态在 Playground 里看。
 
 ### 9.1 交互态（所有可点的件共用 `interactive.css`）
 
@@ -261,7 +261,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 | | `Skeleton`、`StateView` | 5 种形状；加载 / 空 / 错误 | §9.2 |
 | 列表与页头 | `ListRow`（+ `List`） | 只读 / 可进入 / 开关 / 危险 × 4 种交互态 | 开关行整行是 label |
 | | `Card` | 普通 / 主角 × 默认 / 按下 / 聚焦 | 主角卡每屏一张 |
-| | `SectionLabel`、`PageHeader`、`TopBar` | —；普通 / 带日期与附件；子页 / 训练中 | Tab 根页用 `PageHeader`，没有 Tab 的子页用 `TopBar` |
+| | `SectionLabel`、`PageHeader`（+ `SlimBar`）、`TopBar` | —；普通 / 带日期与附件 × 在顶部 / 已滚过大标题；子页 / 训练中 | Tab 根页用 `PageHeader`，没有 Tab 的子页用 `TopBar`。**页头 C**：页头放进滚动区并开 `collapse`，大标题滑出屏幕顶的同时，顶上淡入一条 44 高（`size/header-slim`）的细标题栏（半透明 + 虚化 + 发丝线，只有标题，不拦截点击）；时间线跟着大标题走（`Screen` 的 `timeline-scope` + h1 的 `view-timeline`），不写死像素；训练中的首页（有「结束」和进度）不收缩 |
 | 训练与记录 | `PrescriptionHero` | 加重 / 保持 / 减重 / 首次 / 减量周 | 首页第一个动作 |
 | | `ExerciseRow` | 待做 / 首次 / 进行中 / 已完成 / 未做 × 3 种交互态 | 处方、训练中 |
 | | `GainSummary`、`GainRow`、`GainGroupHead` | 摘要 有涨有退 / 全在涨 / 都是基线 / 近 4 周没练；行 涨跌 × PR × 按下 / 聚焦 / 加载中；色带 该加重 / 保持 / 该减重 / 本周目标 · 减量 | 增量页。摘要是配重片环，每个数带单位；行的曲线 / 数值是固定宽度的列；没有 onClick 是静态行；「该加重」色带是整页唯一荧光 |
@@ -302,7 +302,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 不进矩阵的导出：`Screen`（页面框，见 `/preview` §4）、`OptionGroup`、`ToastViewport`、`Dialog`（都在交互演示里）、`StatusStrip`（`Banner` 的旧名，已弃用）。
 
 **页面骨架**：
-- Tab 根页：`Screen` → `PageHeader` → 内容（左右 gutter、可滚动）→（固定主按钮）→ `Nav`。
+- Tab 根页：`Screen` → 一个滚动区（`PageHeader collapse` → 内容，左右 gutter）→（固定主按钮）→ `Nav`；大标题滑走后顶上留细栏，吸顶的部位筛选条贴在细栏下面（`top: size/header-slim`）。**坑**：页头所在的祖先上不能写 `overflow: hidden`（它本身是滚动容器，会把大标题的 view-timeline 绑走，细栏不出现），要裁切用 `overflow: clip`。
 - 训练、结算等任务流页面：`Screen` → `TopBar` → 内容，没有 `Nav`；组间休息条悬浮在底部。
 - 底部面板与对话框盖在最上层。
 

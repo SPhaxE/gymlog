@@ -4,5 +4,5 @@
   display: flex; flex-direction: column; overflow: hidden; background: var(--milo-color-bg-base);
   --nav-clear: calc(var(--milo-size-nav-bar-h) + var(--milo-size-nav-bottom) + var(--milo-space-s));
 }
-.screen { isolation: isolate; }
+.screen { isolation: isolate; timeline-scope: --title; /* 页头 C：滚动区里的大标题（view-timeline: --title）驱动同一屏里的细栏，见 ui.module.css */ }
 .atm { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }

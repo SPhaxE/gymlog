@@ -1,6 +1,6 @@
-/* 增量页：整页一个滚动区；页头首屏跟着滑走，只有部位筛选一行贴顶 */
+/* 增量页：整页一个滚动区；页头首屏跟着滑走（页头 C：大标题滑走后顶上留细标题栏），部位筛选一行贴在细栏下面 */
 .scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
-.hero { position: relative; isolation: isolate; display: grid; gap: var(--milo-space-s); padding: var(--milo-space-l) var(--milo-size-gutter) var(--milo-space-m); overflow: hidden; }
+.hero { position: relative; isolation: isolate; display: grid; gap: var(--milo-space-s); padding: var(--milo-space-l) var(--milo-size-gutter) var(--milo-space-m); overflow: clip; /* 不能写 hidden：hidden 本身是个滚动容器，里面的 h1（页头 C 的 view-timeline）会绑到它身上，细栏就不出现 */ }
 .hero h1 { margin: 0; }
 .eyebrow { margin: 0; color: var(--milo-color-text-secondary); }
 /* 配重片同心纹：很淡的一圈圈车削纹，圆心落在右上角、被屏幕边切掉，向下渐隐；每页只此一处 */
@@ -12,7 +12,7 @@
 
 /* 部位筛选：贴顶（半透明 + 虚化，下面滚过的列表隐约可见）；左右出血到屏幕边，里面横向滚动，右侧渐隐提示还有；
    上下留白让 Chip 外扩的命中区不被滚动容器裁掉 */
-.chipBar { min-width: 0; position: sticky; top: 0; z-index: 5; margin: 0 calc(var(--milo-size-gutter) * -1); padding: var(--milo-space-xs) 0;
+.chipBar { min-width: 0; position: sticky; top: var(--milo-size-header-slim); z-index: 5; margin: 0 calc(var(--milo-size-gutter) * -1); padding: var(--milo-space-xs) 0;
   background: color-mix(in srgb, var(--milo-color-bg-base) 80%, transparent); -webkit-backdrop-filter: blur(var(--milo-space-m)); backdrop-filter: blur(var(--milo-space-m));
   box-shadow: 0 var(--milo-stroke-hairline) 0 var(--milo-color-line-default); }
 .chips { display: flex; gap: var(--milo-space-s); min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;

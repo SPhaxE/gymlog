@@ -23,6 +23,7 @@ export const T = {
   'size/hit-min': 48,
   'size/button-h': 52,
   'size/button-h-s': 44,
+  'size/header-slim': 44,
   'size/nav-w': 220,
   'size/nav-h': 56,
   'size/nav-bottom': 18,

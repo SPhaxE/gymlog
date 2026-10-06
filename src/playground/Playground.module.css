@@ -105,3 +105,7 @@
 .curveAdv { stroke: var(--milo-prim-gray-600); }
 .curveTarget { fill: var(--milo-color-bg-raised); stroke: var(--milo-color-accent-default); stroke-width: 0.8; }
 .kMid { fill: var(--milo-color-accent-default); } .kNov { fill: var(--milo-prim-bone-100); } .kAdv { fill: var(--milo-prim-gray-600); }
+
+/* 页头 C 演示：整屏一个滚动区（页头 + 内容一起滚），底部留够能滚过大标题 */
+.headerDemoScroll { flex: 1; min-height: 0; overflow: auto; }
+.headerDemoBody { display: grid; padding: var(--milo-space-m) var(--milo-size-gutter) var(--milo-space-5xl); }
