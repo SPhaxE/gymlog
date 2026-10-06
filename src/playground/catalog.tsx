@@ -5,10 +5,10 @@
 import { useRef, type ReactNode } from 'react';
 import {
   Banner, BodyFigure, DotCalendar, SteelPlate, GainGroupHead, GainRow, GainSummary, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
-  ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProgressSteps, RestBar, SectionLabel, Segmented,
+  ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProfileTile, ProgressSteps, RestBar, SectionLabel, Segmented,
   SessionRow, SetEditor, SetLine, SetRow, NumPad, Sheet, Tilt, SheetBlock, Skeleton, Sparkline, StateView, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
-  AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, PropGlyph, type PropKind, RewardCard, AgeBadge, Coupon, FreezeCard, GrowthBar, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, ProductCard, StreakBar,
-  type LogoState, type MascotMood, type MascotStage, type StreakStatus,
+  AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, PropGlyph, type PropKind, RewardCard, AgeBadge, Coupon, FreezeCard, GrowthBar, GrowthCard, StageHero, StreakWeeks, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, ProductCard, StreakBar,
+  type LogoState, type MascotMood, type MascotStage, type StreakStatus, type StreakWeekStatus,
   type Forced, type IconName, type NumSize, type SkeletonShape, type Tab, type TagTone,
 } from '../components';
 import type { DeltaDir } from '../components';
@@ -65,6 +65,8 @@ export const CN: Record<string, string> = {
   track: '已开始 · 0 组', partial: '进行中', full: '满环', home: '首页', body: '身体', gains: '增量', log: '记录', me: '我的', success: '成功', undo: '可撤销',
   suggest: '建议减量', week: '减量周', quiet: '一行小字', 'pool-empty': '动作池不足', resume: '继续上次训练', info: '信息', page: '子页', session: '训练中',
   eyebrow: '带日期与附件', pill: '小胶囊', open: '展开', loadingState: '加载中', top: '在顶部', scrolled: '已滚过大标题', 'today-done': '今天练过',
+  experience: '训练经验', minutes: '单次时长', equipment: '可用器械', 'w-steady': '稳定守约', 'w-mixed': '有减量也有冻结', 'w-cold': '刚起步',
+  'g-cycles': '涨幅太大 · 只写周期', 'g-bare': '牛龄页（不重复段名）',
   newborn: '牛犊', young: '小牛', sturdy: '壮牛', bull: '公牛', milo: 'Milo', 'm-idle': '平常', 'm-focused': '专注', 'm-happy': '开心', 'm-rest': '恢复日', 'm-pr': '破纪录', 'm-deload': '减量周', idle: '平常', training: '训练中',
   'r-stage': '升段', 'r-milo': '升段 · Milo', 'r-pr': '破纪录', 'r-streak': '连胜里程碑', 'r-level': '升小级', 'r-cycle': '周期完成', free: '免费', pro: 'Pro 会员',
   'b-compact': '紧凑（「我的」顶部）', 'b-full': '完整（牛龄页头）', 'g-normal': '进行中', 'g-near': '快升级', 'g-stage': '下一级是升段', 'g-max': 'Milo 满级',
@@ -232,6 +234,15 @@ export const CATALOG: Entry[] = [
     name: 'Card', group: '列表与页头', desc: 'bg/raised + 细描边 + radius/l；hero 带一点径向渐变深度，只给每屏的主角卡。可点时整卡是一个按钮。',
     axes: { kind: ['plain_card', 'hero'], state: ['default', 'pressed', 'focused'] }, rows: ['kind'], cols: 'state', size: 'card',
     render: (p) => <Card hero={p.kind === 'hero'} onClick={noop} label="示例卡片" state={st(p.state)}><span className="milo-text-caption">近 7 天</span><Num size="l" value="13,854" unit="kg" /></Card>,
+  },
+  {
+    name: 'ProfileTile', group: '列表与页头',
+    desc: '档案格（「我的」的 2×2）：小字名称在上、大字当前值在下（压缩粗体，单位小字），整格是按钮，点开对应的编辑面板；命中区远大于 hit-min。体型那一格填了体重会写「男 · 72 kg」。',
+    axes: { tile: ['experience', 'minutes', 'equipment', 'body'], state: ['default', 'pressed', 'focused'] }, rows: ['tile'], cols: 'state', size: 'card',
+    render: (p) => {
+      const v = { experience: ['训练经验', '进阶', undefined], minutes: ['单次时长', '60', '分钟'], equipment: ['可用器械', '6', '类'], body: ['体型示意', '男 · 72', 'kg'] }[p.tile] as [string, string, string | undefined];
+      return <ProfileTile label={v[0]} value={v[1]} unit={v[2]} onClick={noop} state={st(p.state)} />;
+    },
   },
   {
     name: 'SectionLabel', group: '列表与页头', desc: '区块标题（Label，text/secondary），可带右侧附件。', axes: {}, size: 'card',
@@ -505,12 +516,12 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'GrowthBar', group: '增长',
-    desc: '成长条：离下一级还差多少，用能照着做的说法（主项预估 1RM 再涨几 kg，或再完成几个周期），由引擎反推；快升级时发光扫光；下一级是升段时标出；Milo 3 级满级。',
-    axes: { state: ['g-normal', 'g-near', 'g-stage', 'g-max'] }, size: 'card',
+    desc: '成长条：离下一级还差多少，用能照着做的说法（主项预估 1RM 再涨几 kg，或再完成几个周期），由引擎反推；快升级时发光扫光；下一级是升段时标出；Milo 3 级满级。主项涨幅太大就不写 kg、只写「再完成 N 个训练周期」；牛龄页（页头已写段名小级）用 bare：只写「离下一级」。',
+    axes: { state: ['g-normal', 'g-near', 'g-stage', 'g-max', 'g-cycles', 'g-bare'] }, size: 'card',
     render: (p) => {
       const g = growthSample(), n = g.next!;
-      const v = { 'g-normal': [g.stage, 2, n.progress], 'g-near': [g.stage, 2, 0.92], 'g-stage': [g.stage, 3, 0.4], 'g-max': ['milo', 3, 1] }[p.state] as [MascotStage, 1 | 2 | 3, number];
-      return <GrowthBar stage={v[0]} sub={v[1]} progress={v[2]} lift={n.lift} cycles={n.cycles} />;
+      const v = { 'g-normal': [g.stage, 2, n.progress], 'g-near': [g.stage, 2, 0.92], 'g-stage': [g.stage, 3, 0.4], 'g-max': ['milo', 3, 1], 'g-cycles': ['bull', 2, 0.1], 'g-bare': [g.stage, 2, n.progress] }[p.state] as [MascotStage, 1 | 2 | 3, number];
+      return <GrowthBar stage={v[0]} sub={v[1]} progress={v[2]} lift={p.state === 'g-cycles' ? null : n.lift} cycles={p.state === 'g-cycles' ? 4 : n.cycles} bare={p.state === 'g-bare'} />;
     },
   },
   {
@@ -520,6 +531,29 @@ export const CATALOG: Entry[] = [
     render: (p) => {
       const v = { 's-zero': [0, 0, 4], 's-open': [7, 2, 4], 's-kept': [8, 4, 4], 's-risk': [7, 1, 4], 's-frozen': [7, 1, 4], 's-deload': [9, 3, 3], 's-milestone': [12, 4, 4] }[p.status] as [number, number, number];
       return <StreakBar weeks={v[0]} done={v[1]} target={v[2]} status={p.status.slice(2) as StreakStatus} freeze={p.status === 's-zero' ? 0 : 1} />;
+    },
+  },
+  {
+    name: 'GrowthCard', group: '增长',
+    desc: '「我的」第一屏的成长卡（主角）：小牛头像 + 牛龄 + 离下一级的进度条与一句能照着做的话，下面三个数（连胜 / 本周 / 牛劲）；整张卡是按钮，点进牛龄页。右上角淡淡的配重片同心槽纹，进度条是这一屏唯一的荧光。',
+    axes: { stage: ['newborn', 'young', 'sturdy', 'bull', 'milo'], state: ['default', 'pressed', 'focused'] }, rows: ['stage'], cols: 'state', size: 'card',
+    render: (p) => <GrowthCard stage={p.stage as MascotStage} sub={p.stage === 'milo' ? 3 : 2} progress={p.stage === 'milo' ? 1 : 0.62} streak={growthSample().streak.weeks} done={2} target={4} niujin={fmt(growthSample().niujin.balance)}
+      hint={p.stage === 'milo' ? 'Milo 满级。接下来比的只有昨天的自己。' : <>再涨 <b>3 kg</b> 杠铃卧推的预估 1RM，升 1 小级</>} onClick={noop} state={st(p.state)} />,
+  },
+  {
+    name: 'StageHero', group: '增长',
+    desc: '牛龄页头：顶上一行 5 段名字（当前这一段加下划线，一眼看到「现在在哪、还有几段」），小牛站在一圈圈配重片同心环里，下面是大号「段名 · 小级」。',
+    axes: { stage: ['newborn', 'young', 'sturdy', 'bull', 'milo'] }, size: 'card',
+    render: (p) => <StageHero stage={p.stage as MascotStage} sub={p.stage === 'milo' ? 3 : 2} />,
+  },
+  {
+    name: 'StreakWeeks', group: '增长',
+    desc: '最近 12 周守约点阵（牛龄页）：实心骨白 = 守约，暗 = 减量周（按计划减量也算守约），斜纹 = 冻结卡抵掉，虚线 = 没守约，粗框 = 本周；下面一行图例。每种状态形状 / 纹理都不同，不只靠颜色。',
+    axes: { pattern: ['w-steady', 'w-mixed', 'w-cold'] }, size: 'card',
+    render: (p) => {
+      const K: StreakWeekStatus = 'kept', D: StreakWeekStatus = 'deload', F: StreakWeekStatus = 'frozen', M: StreakWeekStatus = 'missed', O: StreakWeekStatus = 'open';
+      const w = { 'w-steady': [K, K, K, D, K, K, K, K, D, K, K, O], 'w-mixed': [K, K, D, K, K, K, M, F, K, K, K, O], 'w-cold': [M, M, M, M, M, M, M, M, K, K, K, O] }[p.pattern] as StreakWeekStatus[];
+      return <StreakWeeks weeks={w} />;
     },
   },
   {

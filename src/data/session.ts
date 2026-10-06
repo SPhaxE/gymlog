@@ -4,6 +4,7 @@
  *  - 结束：只有存在已完成的工作组才保存；没做的动作标「未做」；写进历史后清掉进行中的训练和休息。 */
 import type { Prescription } from '../engine';
 import type { Session, SetRecord } from '../engine/types';
+import { noteForDelete } from './me';
 import { store, type ActiveSession, type DraftEntry, type DraftSet } from './store';
 
 export const MAX_SETS = 10;
@@ -81,9 +82,12 @@ export function finishSession(now = Date.now(), exertion: number | null = 8): Se
 }
 /** 删除一次训练（记录页详情的「删除这次训练」，ia §1.8）：从历史里拿掉。容量 / 恢复度 / 趋势 / PR / 处方 / 增量全是从历史现算的（各页 useMemo 依赖 history），
  *  删完自动重算，不用逐项失效；减量状态原样保留。进行中的训练、草稿不受影响。返回有没有删到（id 不存在返回 false） */
-export function deleteSession(id: string): boolean {
-  if (!store.get().history.some((s) => s.id === id)) return false;
-  store.update((x) => ({ ...x, history: x.history.filter((s) => s.id !== id) }));
+export function deleteSession(id: string, now = Date.now()): boolean {
+  const st = store.get();
+  if (!st.history.some((s) => s.id === id)) return false;
+  // 牛龄 / 连胜也是从历史现算的：删一次训练可能让它们回退，回退发生在删的这一刻，记一条写进成长记录（不弹窗，ia §1.14）
+  const note = noteForDelete(st.history, id, st.profile, st.deloads, now);
+  store.update((x) => ({ ...x, history: x.history.filter((s) => s.id !== id), notes: note ? [...x.notes, note] : x.notes }));
   return true;
 }
 export const discardSession = () => store.update((x) => ({ ...x, active: null, rest: null }));

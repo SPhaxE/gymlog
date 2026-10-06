@@ -1,0 +1,138 @@
+/** 我的（P11，ia §1.11 / §1.14 / §1.15）：档案、成长、导航设置、数据、关于。
+ *  五层：
+ *  - 战略：用户在这里回答三件事——我现在长到哪儿了（牛龄 · 连胜 · 牛劲）、我的档案对不对（改一项，处方跟着变）、我的数据我做主（导出 / 载入示例 / 清除）。
+ *  - 范围：成长卡 + 档案四格（经验 · 时长 · 器械 · 体型，含可选体重）+ 消息 + 导航三项设置（进度环 · 休息描边 · 结束提示）+ 数据（载入示例 · 导出 CSV · 清除）+ 关于。
+ *    「钱包 · 商城」「会员」两行等 6f / 6g 的页面有了再出现（不放点了没去处的行）。
+ *  - 结构：Tab 根页（导航「我的」选中）；整页一个滚动区；子页：牛龄 /me/level、消息 /me/messages；改档案走底部面板（点哪格改哪项）。
+ *  - 框架：页头 C（大标题滑走后顶上留细栏）→ 成长卡（第一屏主角）→ 档案四格 → 消息 → 导航 → 数据 → 关于。没有主操作按钮（设置页）；面板里的「保存」在拇指区。
+ *  - 表现：荧光只有成长卡的进度条一处；危险操作（清除）用危险色，载入 / 清除都先二次确认；设置的开关立即生效、不需要保存。
+ *  设计过程见 design/hifi/me/（线框 me2 W2 成长卡做主角；Stitch 第 1 轮 m6）。 */
+import { useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router';
+import { Dialog, GrowthCard, List, ListRow, OptionCard, OptionGroup, PageHeader, ProfileTile, Screen, SectionLabel, Sheet, Switch, Tag, useToast } from '../components';
+import { env } from '../data/demo';
+import { csvFileName, csvSetCount, historyCsv } from '../data/exportCsv';
+import { saveTextFile } from '../data/exportFile';
+import { growthOf, messagesOf, unreadOf } from '../data/me';
+import { mergeProfile, profileError, profileFacts, updateProfile } from '../data/profile';
+import { setSettings } from '../data/settings';
+import { DEFAULT_PROFILE, demoState, store, useStore } from '../data/store';
+import { useSource } from '../data/useSource';
+import { weeklyTarget } from '../engine';
+import type { Profile } from '../engine/types';
+import { GoalHint } from './GoalHint';
+import { ProfileSheet, type ProfileField } from './ProfileSheet';
+import { TabNav } from './TabNav';
+import type { Tab } from '../components';
+import s from './MePage.module.css';
+
+const REST_END = [['vibrate', '描边 + 振动', '休息结束时，选中项变成对勾，手机振一下'], ['outline', '仅描边', '只有结束态（描边 / 对勾），不振动']] as const;
+
+export function MePage({ scenario, now, onTab }: { scenario?: string; now: number; onTab?: (tab: Tab, path: string) => void }) {
+  const nav = useNavigate(), loc = useLocation(), toast = useToast();
+  const st = useStore();
+  const { src } = useSource(scenario, now);
+  // 演示场景（?scenario=）不读也不写本机存储：改档案只改本页内存，刷新复位——点了不会没反应
+  const [local, setLocal] = useState<Profile | null>(null);
+  const profile = local ?? src.profile ?? DEFAULT_PROFILE;
+  const g = useMemo(() => growthOf({ ...src, profile }, now), [src, profile, now]);
+  const unread = useMemo(() => unreadOf(messagesOf(g), st.messagesSeenAt), [g, st.messagesSeenAt]);
+  const facts = profileFacts(profile);
+  const [edit, setEdit] = useState<ProfileField | null>(null);
+  const [restSheet, setRestSheet] = useState(false);
+  const [confirm, setConfirm] = useState<'load' | 'clear' | null>(null);
+  const cur = g.streak.current, empty = src.history.length === 0, sets = csvSetCount(src.history);
+
+  const save = (patch: Partial<Profile>): string | null => {
+    if (scenario) { const next = mergeProfile(profile, patch), e = profileError(next); if (!e) setLocal(next); return e; }
+    const e = updateProfile(patch);
+    if (!e) toast.show('已保存，今日处方按新档案重算');
+    return e;
+  };
+  const exportCsv = async () => {
+    try {
+      const r = await saveTextFile(csvFileName(now), historyCsv(src.history, (id) => env.ex.get(id)?.name ?? id));
+      if (r !== 'cancelled') toast.show(`已导出 ${sets} 组训练记录`);
+    } catch (e) {
+      toast.show(`导出失败：${e instanceof Error ? e.message : '请重试'}`);
+    }
+  };
+  const load = () => {
+    setConfirm(null);
+    store.update((x) => ({ ...x, ...demoState(Date.now(), x.profile ?? undefined), draft: null }));
+    toast.show('已载入示例数据：练了 30 周的进阶用户');
+  };
+  const clear = () => { setConfirm(null); store.clear(); nav('/onboarding', { replace: true }); };
+
+  return (
+    <Screen label="我的">
+      <div className={s.scroll}>
+        <PageHeader collapse title="我的" />
+        <div className={s.body}>
+          <GrowthCard stage={g.stage} sub={g.sub} progress={g.next?.progress ?? 1} hint={<GoalHint g={g} empty={empty} />} streak={g.streak.weeks}
+            done={cur?.done ?? 0} target={cur?.target ?? weeklyTarget(profile)} niujin={g.niujin.balance.toLocaleString('en-US')} onClick={() => nav(`/me/level${loc.search}`)} />
+
+          <section className={s.group} aria-label="档案">
+            <SectionLabel>档案</SectionLabel>
+            <div className={s.tiles}>
+              <ProfileTile label="训练经验" value={facts.experience} onClick={() => setEdit('experience')} />
+              <ProfileTile label="单次时长" value={facts.minutes} unit="分钟" onClick={() => setEdit('minutes')} />
+              <ProfileTile label="可用器械" value={facts.equipment} unit="类" onClick={() => setEdit('equipment')} />
+              <ProfileTile label="体型示意" value={facts.body} onClick={() => setEdit('body')} />
+            </div>
+          </section>
+
+          <div className={s.card}><List label="消息">
+            <ListRow kind="nav" title="消息" detail="同时达成的其余奖励、冻结卡自动使用" onClick={() => nav(`/me/messages${loc.search}`)}
+              trailing={unread > 0 ? <Tag tone="strong">{unread} 条新</Tag> : undefined} />
+          </List></div>
+
+          <section className={s.group} aria-label="导航">
+            <SectionLabel>导航</SectionLabel>
+            <div className={s.card}><List>
+              <ListRow kind="toggle" title="显示今日进度环" detail="导航外圈：今天练了多少" trailing={<Switch checked={st.settings.ring} label="显示今日进度环" onChange={(v) => setSettings({ ring: v })} />} />
+              <ListRow kind="toggle" title="显示休息倒计时描边" detail="选中项里的描边，随休息时间走" trailing={<Switch checked={st.settings.restOutline} label="显示休息倒计时描边" onChange={(v) => setSettings({ restOutline: v })} />} />
+              <ListRow kind="nav" title="休息结束提示" onClick={() => setRestSheet(true)} trailing={<span className="milo-text-caption">{REST_END.find(([k]) => k === st.settings.restEnd)![1]}</span>} />
+            </List></div>
+          </section>
+
+          <section className={s.group} aria-label="数据">
+            <SectionLabel>数据</SectionLabel>
+            <div className={s.card}><List>
+              <ListRow kind="nav" title="载入示例数据" detail="练了 30 周的进阶用户，各页都有内容" onClick={() => setConfirm('load')} />
+              <ListRow kind="nav" title="导出 CSV" detail={empty ? '还没有训练记录' : `${src.history.length} 次训练 · ${sets} 组，用表格软件打开`} disabled={empty} onClick={exportCsv} />
+              <ListRow kind="danger" title="清除全部数据" onClick={() => setConfirm('clear')} />
+            </List></div>
+          </section>
+
+          <section className={s.group} aria-label="关于">
+            <SectionLabel>关于</SectionLabel>
+            <div className={s.card}><List>
+              <ListRow title="人体图与动作示范" trailing={<span className="milo-text-caption">MuscleWiki</span>} />
+              <ListRow title="版本" trailing={<span className="milo-text-caption">0.1.0 · {__BUILD_COMMIT__}</span>} />
+            </List></div>
+          </section>
+          <p className={`milo-text-caption ${s.motto}`}>慢慢变牛。</p>
+        </div>
+      </div>
+
+      {edit && <ProfileSheet field={edit} profile={profile} training={!!st.active} onSave={save} onClose={() => setEdit(null)} />}
+      {restSheet && (
+        <Sheet title="休息结束提示" meta="组间休息倒计时走完时" onClose={() => setRestSheet(false)}>
+          <div className={s.sheetBody}>
+            <OptionGroup label="休息结束提示">
+              {REST_END.map(([k, t, d]) => <OptionCard key={k} title={t} detail={d} selected={st.settings.restEnd === k} onClick={() => { setSettings({ restEnd: k }); setRestSheet(false); }} />)}
+            </OptionGroup>
+          </div>
+        </Sheet>
+      )}
+      <Dialog open={confirm === 'load'} onClose={() => setConfirm(null)} icon="refresh" title="载入示例数据？" confirm="载入" onConfirm={load}>
+        <p className={s.dlgNote}>会覆盖现有的训练记录，换成练了 30 周的进阶用户；档案不变，进行中的训练也不受影响。</p>
+      </Dialog>
+      <Dialog open={confirm === 'clear'} onClose={() => setConfirm(null)} tone="danger" icon="trash" title="清除全部数据？" confirm="清除" onConfirm={clear}>
+        <p className={s.dlgNote}>档案、训练记录和进行中的训练都会删除，回到首次建档，不能撤销。</p>
+      </Dialog>
+      <TabNav selected="me" scenario={scenario} now={now} onTab={onTab} />
+    </Screen>
+  );
+}

@@ -9,7 +9,7 @@
 提速（2026-10-06）：
   - 默认两个宽度各开一个进程同时跑（--serial 关掉），总时间约减半；
   - --no-shots 不再等故事 8 幕自己播完（只为截图）；
-  - --only 只跑某几类：flow（主流程）、story、deload、gains、log、demo，逗号分隔——改哪页只跑哪页，提交前再跑一遍完整的；
+  - --only 只跑某几类：flow（主流程）、story、deload、gains、log、me、demo，逗号分隔——改哪页只跑哪页，提交前再跑一遍完整的；
   - --width 360|412 只跑一种宽度（并行时内部用）。"""
 import argparse, io, os, re, subprocess, sys
 from playwright.sync_api import sync_playwright
@@ -18,12 +18,12 @@ ap = argparse.ArgumentParser()
 ap.add_argument('--base', default='http://127.0.0.1:5199')
 ap.add_argument('--chromium', default=os.environ.get('CHROMIUM', '/opt/pw-browsers/chromium'))
 ap.add_argument('--no-shots', action='store_true')
-ap.add_argument('--only', default='', help='flow,story,deload,gains,log,demo 逗号分隔；默认全部')
+ap.add_argument('--only', default='', help='flow,story,deload,gains,log,me,demo 逗号分隔；默认全部')
 ap.add_argument('--width', type=int, choices=[360, 412], help='只跑一种宽度（并行时内部用）')
 ap.add_argument('--serial', action='store_true', help='两个宽度不并行')
 args = ap.parse_args()
 SIZES = {360: (360, 800), 412: (412, 915)}
-ALL = ['flow', 'story', 'deload', 'gains', 'log', 'demo']
+ALL = ['flow', 'story', 'deload', 'gains', 'log', 'me', 'demo']
 only = [x for x in args.only.split(',') if x] or ALL
 if any(x not in ALL for x in only): sys.exit(f'--only 只能是 {",".join(ALL)}')
 
@@ -463,6 +463,124 @@ def log_checks(b, w, h):
     ok('/today' in pg.url, f'{tag} 记录：空态的出口回到今日处方（{pg.url.split("5199")[-1]}）')
     pg.close()
 
+
+def me_checks(b, w, h):
+    """我的（P11）+ 牛龄（P13）+ 消息：成长卡 / 档案四格 / 面板保存 / 导航设置 / 数据确认 / 导出 CSV / 子页往返；真存储（演示数据）里连胜不是 0、未读数、降级说明。"""
+    tag = f'{w}×{h}'
+    pg = b.new_page(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True, accept_downloads=True)
+    pg.on('pageerror', lambda e: errors.append(f'{tag} me pageerror: {e}'))
+    def page_ok(name):
+        ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} {name}：无横向溢出')
+        small = pg.evaluate(AUDIT); ok(not small, f'{tag} {name}：命中区都 ≥ 48 {small[:3]}')
+        ok(not pg.evaluate(CRUSH), f'{tag} {name}：滚动区里没有被压扁的块')
+    def open_me(path='/me?scenario=plain-prescription'):
+        pg.goto(args.base + path); pg.wait_for_selector('h1, [class*=_scroll_]'); pg.wait_for_timeout(900)
+    def sheet_of(title):
+        return pg.get_by_role('dialog', name=title)
+    def tap(loc):
+        """页面下半的行会被悬浮导航盖住：先滚到屏幕中间再点"""
+        loc.first.evaluate('e => e.scrollIntoView({ block: "center" })'); pg.wait_for_timeout(250); click(pg, loc)
+    # ---- 我的（演示场景）
+    pg.goto(args.base + '/me?scenario=plain-prescription'); pg.evaluate('localStorage.clear()'); open_me()
+    page_ok('我的')
+    ok(pg.get_by_role('heading', level=1, name='我的').count() == 1, f'{tag} 我的：页头是「我的」')
+    ok(pg.get_by_role('navigation', name='主导航').count() == 1, f'{tag} 我的：是 Tab 根页，导航在')
+    for t in ('训练经验', '单次时长', '可用器械', '体型示意'):
+        ok(pg.get_by_role('button', name=re.compile(f'^{t}：')).count() == 1, f'{tag} 我的：档案格「{t}」是一个按钮')
+    ok(pg.get_by_role('button', name=re.compile(r'^牛龄 .+，连胜 \d+ 周，本周已练')).count() == 1, f'{tag} 我的：第一屏是成长卡（整张卡是按钮）')
+    ok(pg.get_by_role('listitem').filter(has_text='钱包').count() == 0 and pg.get_by_text('会员', exact=True).count() == 0, f'{tag} 我的：钱包 · 商城 / 会员两行还没有页面，不放死路按钮')
+    # 页头 C：大标题滑走后顶上留细栏
+    pg.locator('[class*=_scroll_]').first.evaluate('e => e.scrollTo(0, 600)'); pg.wait_for_timeout(500)
+    ok(pg.evaluate('document.querySelector("h1").getBoundingClientRect().bottom < 0'), f'{tag} 我的：大标题滑出了屏幕')
+    pg.locator('[class*=_scroll_]').first.evaluate('e => e.scrollTo(0, 0)'); pg.wait_for_timeout(300)
+    if not args.no_shots and w == 360: pg.screenshot(path=os.path.join(OUT, 'me-plain.png'))
+    # 档案面板：时长 +15 → 保存 → 格子上写 75
+    click(pg, pg.get_by_role('button', name=re.compile('^单次时长：'))); pg.wait_for_timeout(500)
+    ok(sheet_of('单次训练时长').count() == 1, f'{tag} 面板：点档案格弹出对应的底部面板')
+    click(pg, pg.get_by_role('button', name='加 15分钟')); click(pg, sheet_of('单次训练时长').get_by_role('button', name='保存')); pg.wait_for_timeout(500)
+    ok(sheet_of('单次训练时长').count() == 0 and pg.get_by_role('button', name=re.compile('^单次时长：75')).count() == 1, f'{tag} 面板：保存后面板收起，格子上是 75 分钟')
+    # 器械全取消：保存不了 + 行内提示
+    click(pg, pg.get_by_role('button', name=re.compile('^可用器械：'))); pg.wait_for_timeout(500)
+    for k in range(6): pg.locator('[role=dialog] [role=checkbox][aria-checked=true]').first.click()
+    ok(pg.get_by_text('器械至少选一类').count() >= 1 and not sheet_of('可用器械').get_by_role('button', name='保存').is_enabled(), f'{tag} 面板：器械全取消 = 行内提示 + 保存不可用')
+    pg.keyboard.press('Escape'); pg.wait_for_timeout(400)
+    ok(sheet_of('可用器械').count() == 0, f'{tag} 面板：Esc 关闭，什么都没改')
+    # 体型 + 体重：写错拒绝，填对保存
+    click(pg, pg.get_by_role('button', name=re.compile('^体型示意：'))); pg.wait_for_timeout(500)
+    wt = pg.get_by_label('体重（可选）'); wt.fill('7a'); pg.wait_for_timeout(200)
+    ok(pg.get_by_text('写成数字，最多一位小数').count() >= 1 and not sheet_of('体型示意').get_by_role('button', name='保存').is_enabled(), f'{tag} 面板：体重写错 = 行内提示 + 保存不可用')
+    wt.fill('72'); click(pg, sheet_of('体型示意').get_by_role('button', name='保存')); pg.wait_for_timeout(500)
+    ok(pg.get_by_role('button', name=re.compile('^体型示意：男 · 72')).count() == 1, f'{tag} 面板：体重填了，体型格写「男 · 72 kg」')
+    # 导航设置立即生效（写进存储）
+    sw = pg.get_by_role('switch', name='显示今日进度环')
+    ok(sw.get_attribute('aria-checked') == 'true', f'{tag} 设置：今日进度环默认开')
+    sw.click(); pg.wait_for_timeout(300)
+    ok(sw.get_attribute('aria-checked') == 'false' and pg.evaluate('JSON.parse(localStorage.getItem("milo:v1")).settings.ring') is False, f'{tag} 设置：关掉立即生效并写进存储')
+    sw.click(); pg.wait_for_timeout(200)
+    tap(pg.get_by_role('button', name=re.compile('^休息结束提示'))); pg.wait_for_timeout(500)
+    click(pg, sheet_of('休息结束提示').get_by_role('radio', name=re.compile('^仅描边'))); pg.wait_for_timeout(500)
+    ok(sheet_of('休息结束提示').count() == 0 and pg.get_by_role('button', name=re.compile('^休息结束提示')).inner_text().find('仅描边') >= 0, f'{tag} 设置：休息结束提示选「仅描边」→ 面板收起、行上写「仅描边」')
+    # 数据：载入 / 清除都先确认，取消什么都不变；导出 CSV 真下载
+    tap(pg.get_by_role('button', name=re.compile('^载入示例数据'))); pg.wait_for_timeout(400)
+    ok(pg.get_by_role('alertdialog', name='载入示例数据？').count() == 1 and pg.get_by_text('会覆盖现有的训练记录').count() == 1, f'{tag} 数据：载入先二次确认，写明会覆盖')
+    click(pg, pg.get_by_role('button', name='取消')); pg.wait_for_timeout(300)
+    tap(pg.get_by_role('button', name=re.compile('^清除全部数据'))); pg.wait_for_timeout(400)
+    ok(pg.get_by_role('alertdialog', name='清除全部数据？').count() == 1 and pg.get_by_text('不能撤销').count() == 1, f'{tag} 数据：清除先二次确认，写明不能撤销')
+    small = pg.evaluate(AUDIT); ok(not small, f'{tag} 数据：确认对话框里命中区都 ≥ 48 {small[:3]}')
+    click(pg, pg.get_by_role('button', name='取消')); pg.wait_for_timeout(300)
+    ok('/me' in pg.url, f'{tag} 数据：取消 = 留在「我的」')
+    with pg.expect_download() as dl:
+        tap(pg.get_by_role('button', name=re.compile('^导出 CSV')))
+    d = dl.value; path = d.path(); head = open(path, 'rb').read(200)
+    ok(d.suggested_filename.startswith('milo-训练记录-') and d.suggested_filename.endswith('.csv'), f'{tag} 导出：下载的文件名 {d.suggested_filename}')
+    ok(head.startswith(b'\xef\xbb\xbf') and '日期,开始时间,动作,第几组'.encode() in head, f'{tag} 导出：UTF-8 带 BOM，第一行是表头')
+    pg.wait_for_timeout(400); ok(pg.get_by_text(re.compile(r'已导出 \d+ 组训练记录')).count() == 1, f'{tag} 导出：有「已导出 N 组」提示')
+    # 子页：成长卡 → 牛龄 → 返回；消息 → 返回（场景里不出未读小点）
+    tap(pg.get_by_role('button', name=re.compile('^牛龄 '))); pg.wait_for_url('**/me/level**'); pg.wait_for_timeout(1200)
+    ok('scenario=plain-prescription' in pg.url, f'{tag} 牛龄：场景参数带过去了')
+    page_ok('牛龄')
+    ok(pg.get_by_role('navigation', name='主导航').count() == 0, f'{tag} 牛龄：子页没有 Tab 导航')
+    ok(pg.get_by_role('list', name='牛龄五段').locator('li').count() == 5 and pg.locator('[aria-current=step]').count() == 1, f'{tag} 牛龄：5 段名字，当前一段有标记')
+    ok(pg.get_by_role('img', name=re.compile(r'^最近 \d+ 周：守约')).count() == 1, f'{tag} 牛龄：最近 N 周点阵是一张图，读屏读汇总')
+    for t in ('离下一级', '连胜', '本周', '冻结卡', '成长记录'): ok(pg.get_by_text(t, exact=True).count() >= 1, f'{tag} 牛龄：有「{t}」')
+    ok(pg.get_by_text('降级不弹窗，只在这里写明').count() == 1, f'{tag} 牛龄：写明删训练后可能降级')
+    if not args.no_shots and w == 360: pg.screenshot(path=os.path.join(OUT, 'me-level-plain.png'))
+    click(pg, pg.get_by_role('button', name='返回')); pg.wait_for_url('**/me?**'); pg.wait_for_timeout(600)
+    tap(pg.get_by_role('button', name=re.compile('^消息'))); pg.wait_for_url('**/me/messages**'); pg.wait_for_timeout(800)
+    page_ok('消息')
+    ok(pg.get_by_role('navigation', name='主导航').count() == 0 and pg.locator('[aria-label=未读]').count() == 0, f'{tag} 消息：子页没有 Tab 导航；场景里不画未读小点')
+    click(pg, pg.get_by_role('button', name='返回')); pg.wait_for_url('**/me?**'); pg.wait_for_timeout(500)
+    # ---- 真存储（载入演示数据）：连胜不是 0、有未读、打开消息后清零、降级说明写进成长记录
+    pg.evaluate('localStorage.clear()'); pg.goto(args.base + '/onboarding'); pg.wait_for_selector('button:has-text("跳过")'); pg.wait_for_timeout(600)
+    click(pg, pg.get_by_role('button', name='跳过')); click(pg, pg.get_by_role('button', name='下一步')); click(pg, pg.get_by_role('button', name='下一步'))
+    click(pg, pg.get_by_role('button', name='载入演示数据 · 练了 30 周的进阶用户')); pg.wait_for_url('**/today**'); pg.wait_for_timeout(900)
+    click(pg, pg.get_by_role('link', name='我的')); pg.wait_for_url('**/me'); pg.wait_for_timeout(1000)
+    page_ok('我的·真存储')
+    card = pg.get_by_role('button', name=re.compile('^牛龄 ')).get_attribute('aria-label')
+    weeks = int(re.search(r'连胜 (\d+) 周', card).group(1))
+    ok(weeks >= 15 and '公牛' in card, f'{tag} 我的·真存储：演示用户不是「连胜 0」：{card.split("，查看")[0]}')
+    badge = pg.get_by_role('button', name=re.compile('^消息')).inner_text()
+    ok(re.search(r'\d+ 条新', badge) is not None, f'{tag} 我的·真存储：消息行有未读数（{badge.split(chr(10))[-1]}）')
+    if not args.no_shots and w == 360: pg.screenshot(path=os.path.join(OUT, 'me-live.png'))
+    tap(pg.get_by_role('button', name=re.compile('^消息'))); pg.wait_for_url('**/me/messages'); pg.wait_for_timeout(800)
+    ok(pg.locator('[aria-label=未读]').count() >= 1, f'{tag} 消息·真存储：这次进来的未读小点照常显示')
+    click(pg, pg.get_by_role('button', name='返回')); pg.wait_for_url('**/me'); pg.wait_for_timeout(600)
+    ok(re.search(r'\d+ 条新', pg.get_by_role('button', name=re.compile('^消息')).inner_text()) is None, f'{tag} 我的·真存储：看过消息后，未读数没了')
+    # 降级说明：存一条，成长记录里有
+    pg.evaluate('(() => { const s = JSON.parse(localStorage.getItem("milo:v1")); s.notes = [{ atMs: Date.now(), kind: "demote", text: "连胜 21 周 → 0 周" }]; localStorage.setItem("milo:v1", JSON.stringify(s)); })()')
+    pg.goto(args.base + '/me/level'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)
+    ok(pg.get_by_text('删除训练后重新计算').count() == 1 and pg.get_by_text('连胜 21 周 → 0 周').count() == 1, f'{tag} 牛龄·真存储：降级说明写在成长记录里')
+    more = pg.get_by_role('button', name=re.compile('^更早的记录'))
+    n0 = pg.locator('[class*=_ledger_]').count()
+    if more.count(): tap(more); pg.wait_for_timeout(300); ok(pg.locator('[class*=_ledger_]').count() > n0, f'{tag} 牛龄·真存储：点「更早的记录」再展开一批（{n0} → {pg.locator("[class*=_ledger_]").count()}）')
+    # 没有历史：牛犊 1 级、「完成第一次训练开始长大」
+    pg.goto(args.base + '/me/level?scenario=cold-start'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)
+    ok(pg.get_by_text('完成第一次训练开始长大').count() == 1 and pg.get_by_text('牛犊 · 1 级').count() == 1, f'{tag} 牛龄·没有历史：牛犊 1 级 + 「完成第一次训练开始长大」')
+    ok(pg.get_by_text('练完第一次训练，这里会开始记录').count() == 1, f'{tag} 牛龄·没有历史：成长记录是空态')
+    pg.goto(args.base + '/me?scenario=cold-start'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)
+    ok(pg.get_by_role('button', name=re.compile('^导出 CSV')).is_disabled(), f'{tag} 我的·没有历史：导出 CSV 不可用，写明「还没有训练记录」')
+    pg.close()
+
 widths = [args.width] if args.width else list(SIZES)
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path=args.chromium if os.path.exists(args.chromium) else None)
@@ -473,6 +591,7 @@ with sync_playwright() as p:
         if 'deload' in only: deload_checks(b, W, H)
         if 'gains' in only: gains_checks(b, W, H)
         if 'log' in only: log_checks(b, W, H)
+        if 'me' in only: me_checks(b, W, H)
     # /demo 电脑版（只和 360 宽的那一份一起跑，不分宽度）
     if 'demo' in only and 360 in widths:
         d = b.new_page(viewport={'width': 1440, 'height': 900})

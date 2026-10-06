@@ -20,6 +20,20 @@ export interface DraftSet { type: 'work' | 'warmup' | 'drop'; weight: string; re
 export interface DraftEntry { exerciseId: string; name: string; sets: number; repRange: [number, number]; restSec: number; unilateral: boolean; suggestKg: number | null; skipped: boolean; rows: DraftSet[] }
 export interface ActiveSession { id: string; startMs: number; entries: DraftEntry[]; cur: number }
 
+/** 「我的」里的导航设置（ia §1.11）：改动立即生效，不需要重启 */
+export interface Settings {
+  /** 导航外圈的今日进度环 */
+  ring: boolean;
+  /** 选中项小胶囊里的休息倒计时描边 */
+  restOutline: boolean;
+  /** 休息结束提示：vibrate = 结束态 + 振动；outline = 只有结束态（描边 / 对勾） */
+  restEnd: 'vibrate' | 'outline';
+}
+export const DEFAULT_SETTINGS: Settings = { ring: true, restOutline: true, restEnd: 'vibrate' };
+
+/** 成长记录里存的说明（目前只有删训练后的降级）：牛龄 / 连胜是从历史现算的，降级发生在删的那一刻，事后算不出来，所以记一条（ia §1.14） */
+export interface GrowthNote { atMs: number; kind: 'demote'; text: string }
+
 export interface AppState {
   v: 1;
   profile: Profile | null;
@@ -33,19 +47,24 @@ export interface AppState {
   /** 组间休息：按结束时间戳算（ia §1.6），App 切后台回来剩余时间仍然对 */
   rest: { endAt: number; totalMs: number } | null;
   demo: boolean;
+  settings: Settings;
+  notes: GrowthNote[];
+  /** 看过消息的时刻（毫秒）：比它新的消息算未读 */
+  messagesSeenAt: number;
   /** 最后一次写入失败的原因（只在内存里） */
   saveError?: string;
 }
 
 export const DEFAULT_PROFILE: Profile = { experience: 'intermediate', equipment: ['barbell', 'dumbbell', 'machine', 'cable', 'smith', 'bodyweight'], minutes: 60, gender: 'male' };
-const EMPTY: AppState = { v: 1, profile: null, draft: null, history: [], deload: { status: 'none', atMs: 0 }, deloads: [], active: null, rest: null, demo: false };
+const EMPTY: AppState = { v: 1, profile: null, draft: null, history: [], deload: { status: 'none', atMs: 0 }, deloads: [], active: null, rest: null, demo: false, settings: DEFAULT_SETTINGS, notes: [], messagesSeenAt: 0 };
 
 function read(): AppState {
   try {
     const raw = localStorage.getItem(STORE_KEY);
     if (!raw) return { ...EMPTY };
     const s = JSON.parse(raw) as AppState;
-    return s && s.v === 1 ? { ...EMPTY, ...s, saveError: undefined } : { ...EMPTY };
+    // settings 逐项补默认：旧存档没有这个字段，以后新加的设置项也不用迁移
+    return s && s.v === 1 ? { ...EMPTY, ...s, settings: { ...DEFAULT_SETTINGS, ...s.settings }, saveError: undefined } : { ...EMPTY };
   } catch {
     return { ...EMPTY };
   }
@@ -94,7 +113,7 @@ const ACCESSORY: [string, number, number, number][][] = [
 ];
 
 /** 演示数据：进阶用户、每周 4 练，练到昨天为止的 30 周（成长引擎同一套模拟，数字全部实算），每次训练再加辅助动作 */
-export function demoState(now: number, profile?: Profile, phase = DEMO_PHASE): Pick<AppState, 'profile' | 'history' | 'deload' | 'deloads' | 'demo'> {
+export function demoState(now: number, profile?: Profile, phase = DEMO_PHASE): Pick<AppState, 'profile' | 'history' | 'deload' | 'deloads' | 'demo' | 'messagesSeenAt'> {
   // 模拟里每 5 周一个减量周（w % 5 === 4）。多模拟 phase 周、再截掉开头，让展示的最后一周落在减量之后的正常周：
   // 否则演示用户正好停在减量周，增量页「与上一次比」几乎全是 ▼，像是全面退步（2026-10-06）
   const total = DEMO_WEEKS + phase;
@@ -112,7 +131,8 @@ export function demoState(now: number, profile?: Profile, phase = DEMO_PHASE): P
   });
   shapeNextSteps(history);
   backfill(history, profile ?? u.profile, now);
-  return { profile: profile ?? u.profile, history, deload: { status: 'none', atMs: 0 }, deloads: u.deloads.filter((ms) => ms >= from && ms < startOfDay(now)), demo: true };
+  return { profile: profile ?? u.profile, history, deload: { status: 'none', atMs: 0 }, deloads: u.deloads.filter((ms) => ms >= from && ms < startOfDay(now)), demo: true,
+    messagesSeenAt: startOfDay(now) - 5 * DAY };
 }
 
 /** 让演示用户的「下一步」有升有保有降（增量页分三组、首页处方都靠它），不动预估 1RM 的走向：

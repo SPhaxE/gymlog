@@ -3,23 +3,22 @@
  *  - 建档 3 步：训练经验 → 可用器械 → 单次时长。每一步的选择实时写进本地存储，杀进程回到上次那一步；全部有默认值，一路「下一步」就能完成。
  *  - 最后一步两个出口：「生成第一份处方」（从零开始）/「载入演示数据」（练了 30 周的进阶用户，各页都有内容）。
  *  - 写入失败由外壳显示可见提示（store.saveError），这里不静默回退。 */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Banner, Button, OptionCard, OptionGroup, ProgressSteps, Screen, Stepper, TopBar, useBackHandler } from '../components';
+import { Banner, Button, NumberField, OptionCard, OptionGroup, ProgressSteps, Screen, Stepper, TopBar, useBackHandler } from '../components';
 import { DEFAULT_PROFILE, demoState, store, useStore } from '../data/store';
-import type { EquipmentType, Experience, Profile } from '../engine/types';
+import { EQUIPMENT as EQUIP, EQUIPMENT_EXT as EQUIP_EXT, EXPERIENCES as EXP, MINUTES, WEIGHT, parseWeight } from '../data/profile';
+import type { EquipmentType, Profile } from '../engine/types';
 import { StoryScreens } from './StoryScreens';
 import s from './OnboardingPage.module.css';
 
-const EXP: [Experience, string, string][] = [['novice', '新手', '练了不到 1 年'], ['intermediate', '进阶', '规律训练 1–3 年'], ['advanced', '高阶', '3 年以上，熟悉周期']];
-const EQUIP: [EquipmentType, string][] = [['barbell', '杠铃'], ['dumbbell', '哑铃'], ['machine', '固定器械'], ['cable', '绳索'], ['smith', '史密斯机'], ['bodyweight', '自重 / 负重']];
-const EQUIP_EXT: [EquipmentType, string][] = [['kettlebell', '壶铃'], ['band', '弹力带'], ['plate', '杠铃片']];
 const TITLE = { 1: '你练了多久？', 2: '能用到哪些器械？', 3: '一次练多久？' } as const;
 const SUB = { 1: '决定起步重量和加重的快慢。', 2: '处方只排你能做的动作，至少选一类。', 3: '决定每天排几个动作、几组。' } as const;
 
 export function OnboardingPage({ now }: { now: number }) {
   const st = useStore(), nav = useNavigate();
   const draft = st.draft;
+  const [weightBad, setWeightBad] = useState(false);   // 体重写错了：行内提示在输入框下，同时挡住「生成第一份处方」（要放在提前 return 之前）
   // Android 返回键：建档里回上一步，第 1 步回到故事
   useBackHandler(!!draft, () => store.update((x) => (x.draft ? { ...x, draft: x.draft.step === 1 ? null : { ...x.draft, step: (x.draft.step - 1) as 1 | 2 } } : x)));
   if (!draft) return <StoryScreens onDone={() => store.update((x) => ({ ...x, draft: { step: 1, profile: { ...DEFAULT_PROFILE } } }))} />;
@@ -57,20 +56,32 @@ export function OnboardingPage({ now }: { now: number }) {
         )}
         {step === 3 && (
           <div className={s.minutes}>
-            <Stepper label="单次训练时长" value={profile.minutes} step={15} min={30} max={150} unit="分钟" onChange={(v) => set({ minutes: v })} />
+            <Stepper label="单次训练时长" value={profile.minutes} step={MINUTES.step} min={MINUTES.min} max={MINUTES.max} unit="分钟" onChange={(v) => set({ minutes: v })} />
             <p className="milo-text-caption">60 分钟大约排 6 个动作、14 组；之后在「我的」里随时能改。</p>
+            <WeightField kg={profile.weightKg} onChange={(kg) => set({ weightKg: kg })} onBad={setWeightBad} />
           </div>
         )}
       </div>
       <div className={s.cta}>
         {step < 3 ? <Button disabled={step === 2 && noEquip} onClick={() => set({}, (step + 1) as 2 | 3)}>下一步</Button> : (
           <>
-            <Button glow onClick={() => finish(false)}>生成第一份处方</Button>
-            <Button kind="ghost" onClick={() => finish(true)}>载入演示数据 · 练了 30 周的进阶用户</Button>
+            <Button glow disabled={weightBad} onClick={() => finish(false)}>生成第一份处方</Button>
+            <Button kind="ghost" disabled={weightBad} onClick={() => finish(true)}>载入演示数据 · 练了 30 周的进阶用户</Button>
           </>
         )}
       </div>
     </Screen>
+  );
+}
+
+/** 体重（可选）：自己留着输入的文字，合法才写进草稿；空 = 不填。写错了行内提示，不替用户改数 */
+function WeightField({ kg, onChange, onBad }: { kg?: number; onChange: (kg: number | undefined) => void; onBad: (bad: boolean) => void }) {
+  const [text, setText] = useState(kg != null ? String(kg) : '');
+  useEffect(() => () => onBad(false), []); // eslint-disable-line react-hooks/exhaustive-deps
+  const err = parseWeight(text).error;
+  return (
+    <NumberField label="体重（可选）" value={text} unit="kg" placeholder="不填也行" error={err} helper={`填了，腰带知识卡和增量页的体重比才有依据；不影响处方。范围 ${WEIGHT.min}–${WEIGHT.max} kg。`}
+      onChange={(v) => { setText(v); const r = parseWeight(v); onBad(!!r.error); if (!r.error) onChange(r.kg); }} />
   );
 }
 

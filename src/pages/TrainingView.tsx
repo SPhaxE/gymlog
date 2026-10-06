@@ -29,6 +29,11 @@ export function TrainingView({ a, now }: { a: ActiveSession; now: number }) {
   const [swap, setSwap] = useState<string[]>([]);  // 正在换位的两个动作（只给它们起共享名，见 motion.tsx 的遮挡说明）
   const hero = useRef<HTMLDivElement>(null);
   const left = useCountdown(st.rest?.endAt ?? null);
+  // 休息结束提示（「我的」→ 导航 → 休息结束提示）：刚结束时振一下；切后台回来才发现已经结束的不补振
+  useEffect(() => {
+    if (!st.rest || left > 0 || st.settings.restEnd !== 'vibrate' || Date.now() - st.rest.endAt > T['motion/toast-hold']) return;
+    navigator.vibrate?.([T['motion/fast'] / 2, T['motion/fast'] / 3, T['motion/fast'] / 2]);
+  }, [st.rest?.endAt, left > 0]); // eslint-disable-line react-hooks/exhaustive-deps
   const [tick, setTick] = useState(now);
   useEffect(() => { const id = window.setInterval(() => setTick(Date.now()), 15e3); return () => clearInterval(id); }, []);
   const mins = Math.max(0, Math.floor((tick - a.startMs) / 60e3));

@@ -45,7 +45,7 @@
   background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); align-items: center;
   transition: box-shadow var(--milo-motion-fast) var(--milo-motion-ease-standard); }
 .fieldBox:focus-within, .fieldFocus { box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-control-selected); }
-.input { flex: 1; min-width: 0; width: 100%; border: 0; background: none; outline: none; padding: 0; color: var(--milo-color-text-primary);
+.input { flex: 1; align-self: stretch; min-width: 0; width: 100%; border: 0; background: none; outline: none; padding: 0; color: var(--milo-color-text-primary);
   font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-l); font-variant-numeric: tabular-nums; }
 .input::placeholder { color: var(--milo-color-text-disabled); }
 .fieldUnit { font-style: normal; font-size: var(--milo-font-size-caption); }

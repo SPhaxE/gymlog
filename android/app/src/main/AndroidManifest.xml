@@ -38,4 +38,6 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 振动：休息结束提示、奖励弹窗的触感用 navigator.vibrate，WebView 里要声明这个权限才有反应（普通权限，装上即授予） -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 </manifest>

@@ -62,6 +62,8 @@ export interface Profile {
   /** 单次训练时长（分钟） */
   minutes: number;
   gender: 'male' | 'female';
+  /** 体重（kg），可选：不填也能用；填了，腰带知识卡和增量页的体重比才有依据（ia §1.1，2026-10-06）。不影响处方 */
+  weightKg?: number;
 }
 export interface DeloadState {
   status: 'none' | 'adopted' | 'dismissed';
