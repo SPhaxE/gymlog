@@ -51,3 +51,22 @@
 .grain { opacity: var(--milo-opacity-grain); mix-blend-mode: overlay; }
 /* 可点：只有肌头接触摸（父层 pointer-events: none 时也生效），扫描线、颗粒、轮廓不接；按下给一点反馈 */
 .pickable g[data-head] { pointer-events: visiblePainted; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
+/* ---------- 扫描线逐层动效（ScanLines，/lab 里比较的四个方案）：只动 opacity ---------- */
+.fx { position: absolute; inset: 0; display: block; pointer-events: none; overflow: visible; }
+.fxScreen { mix-blend-mode: screen; }
+.fxMul { mix-blend-mode: multiply; }
+.fxLine { fill: var(--milo-prim-lime-300); }
+/* 逐行显影：暗栅（近黑）一行行打开露出热力，停住，再一行行合上；整轮约 18 个 slow */
+.rasterLine { fill: var(--milo-color-bg-base); opacity: 0.92; animation: rasterOpen calc(var(--milo-motion-slow) * 18) linear infinite both; }
+@keyframes rasterOpen { 0% { opacity: 0.92; } 3% { opacity: 0.22; } 62% { opacity: 0.22; } 70%, 100% { opacity: 0.92; } }
+/* 切片扫描：亮线一行行跳上去，留一段余辉 */
+.sliceLine { fill: var(--milo-prim-lime-300); opacity: 0; animation: sliceHit calc(var(--milo-motion-slow) * 14) linear infinite both; }
+@keyframes sliceHit { 0% { opacity: 0; } 0.6% { opacity: 0.95; } 6% { opacity: 0.3; } 22% { opacity: 0.06; } 40%, 100% { opacity: 0; } }
+/* 呼吸波：常亮很淡，一道亮度波逐行往上传 */
+.waveLine { fill: var(--milo-prim-lime-300); opacity: 0.06; animation: waveUp calc(var(--milo-motion-slow) * 7) var(--milo-motion-ease-standard) infinite both; }
+@keyframes waveUp { 0%, 100% { opacity: 0.05; } 50% { opacity: 0.42; } }
+/* 等温分层：最热的肌肉先亮，一层层亮到最凉的，再一起暗下去 */
+.isoLayer { opacity: 0; animation: isoOn calc(var(--milo-motion-slow) * 16) var(--milo-motion-ease-standard) infinite both; }
+@keyframes isoOn { 0% { opacity: 0; } 6% { opacity: 0.9; } 45% { opacity: 0.55; } 60%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .rasterLine, .sliceLine, .waveLine, .isoLayer { animation: none; } .sliceLine, .isoLayer { opacity: 0; } }

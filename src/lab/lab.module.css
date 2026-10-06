@@ -33,3 +33,6 @@
 .btnRow button { height: var(--milo-size-button-h-s); padding: 0 var(--milo-space-l); border: 0; border-radius: var(--milo-radius-pill); font: inherit;
   font-size: var(--milo-font-size-caption); background: var(--milo-color-bg-raised-2); color: var(--milo-color-text-primary); }
 .btnRow button:disabled { opacity: var(--milo-opacity-disabled); }
+
+.scanGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--milo-space-5xl) * 7), 1fr)); gap: var(--milo-space-l); }
+.scanCell { display: grid; gap: var(--milo-space-s); }

@@ -4,7 +4,7 @@
  *  热成像上面再叠一层「光」（ThermalLight，混合模式 screen）：浅荧光轮廓从下往上描出、一道细光沿轮廓游走、扫描光带周期性从下往上扫过人体——
  *  动的东西都在这一层，下面带滤镜的热像层静止不重画。
  *  量完锚点后通过 onAnchors 交给胶囊列画引线（坐标相对 relativeTo）。 */
-import { useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { HeadStat } from '../engine';
 import { T } from '../styles/tokens.gen';
 import { BodyRender, heatOf, tables } from './thermal';
@@ -20,6 +20,14 @@ const load = (g: string) => {
   return cache.get(g)!;
 };
 export type Anchors = Record<string, [number, number]>;
+
+/** 热力图扫描线的「逐层扫描」动效方案（2026-10-06 用户要几个方案看；/lab 里四个并排比较，选定后定为默认）：
+ *  raster 逐行显影：扫描线先是一排暗栅，从脚到头一行行打开、露出底下的热力，停一会儿再从下往上一行行合上；
+ *  slice  切片扫描：一条亮线一行一行往上跳（不是平滑滑动），走过的行留一段渐暗的余辉，像 CT 一层层切过去；
+ *  wave   呼吸波：所有扫描线常亮很淡，一道亮度波逐行往上传，连续不断；
+ *  iso    等温分层：按每块肌肉的热度分层——最热的肌肉里的扫描线先亮，接着次热的，一层层亮到最凉的，再一起暗下去。 */
+export type ScanFxKind = 'raster' | 'slice' | 'wave' | 'iso';
+export const ScanFx = createContext<ScanFxKind | null>(null);
 
 export function BodyFigure({ gender, view, stats, focus, height, onAnchors, relativeTo, onPick }: {
   gender: 'male' | 'female'; view: 'front' | 'back'; stats: Map<string, HeadStat>; focus: string | null; height: number;
@@ -98,6 +106,7 @@ function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pi
   const gray = (t: number) => `color-mix(in srgb, white ${Math.round(t * 100)}%, black)`;
   const heads = Object.keys(v).filter((k) => !NEUTRAL.includes(k) && k !== 'body');
   const fn = iso ? 'discrete' : 'table';
+  const fx = useContext(ScanFx);
   const w = (height * box[2]) / box[3];
   return (
     <span className={s.stack} style={{ width: w, height }}>
@@ -138,7 +147,8 @@ function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pi
       {/* 轮廓画在上面的光层里；这里留一份不上色的，只为量包围盒（头部只有轮廓，没有肌肉路径，不量它头会被裁掉） */}
       <g className={s.measureOnly}>{(v.body?.paths ?? []).map((p, i) => <path key={i} d={p.d} />)}</g>
     </svg>
-    {vb && <ThermalLight box={box} height={height} width={w} v={v} fid={fid} />}
+    {vb && <ThermalLight box={box} height={height} width={w} v={v} fid={fid} noBeam={!!fx} />}
+    {vb && fx && <ScanLines kind={fx} box={box} height={height} width={w} v={v} fid={fid} heat={(k) => heatOf(stats.get(k))} />}
     </span>
   );
 }
@@ -148,7 +158,7 @@ function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pi
  *  - 游光：同一组轮廓的更亮一份，被一条横向光带遮着，光带每隔一阵从下往上扫过一次（像光沿着轮廓爬上去）；
  *  - 扫描光带：裁在人体剪影里的一条荧光带（带细扫描线），周期性从下往上扫过热力图；
  *  整层 mix-blend-mode: screen（只提亮、不盖住热像）、不接触摸；减少动态效果时只留静止的轮廓。 */
-function ThermalLight({ box, height, width, v, fid }: { box: number[]; height: number; width: number; v: Record<string, Part>; fid: string }) {
+function ThermalLight({ box, height, width, v, fid, noBeam }: { box: number[]; height: number; width: number; v: Record<string, Part>; fid: string; noBeam?: boolean }) {
   const [x, y, bw, bh] = box, unit = bh / 100;
   const silhouette = Object.keys(v).filter((k) => k !== 'body').flatMap((k) => (v[k].paths ?? []).map((p, i) => <path key={k + i} d={p.d} />));
   const contour = (v.body?.paths ?? []).map((p, i) => <path key={i} d={p.d} />);
@@ -172,8 +182,45 @@ function ThermalLight({ box, height, width, v, fid }: { box: number[]; height: n
         <g className={s.contourLime}>{contour}</g>
         <g className={s.glint} mask={`url(#m${fid})`}>{contour}</g>
       </g>
-      <g clipPath={`url(#c${fid})`} className={s.beamWrap}>
+      {!noBeam && <g clipPath={`url(#c${fid})`} className={s.beamWrap}>
         <g className={s.beam}><rect x={x} y={y} width={bw} height={bh * 0.14} fill={`url(#sb${fid})`} /><rect x={x} y={y} width={bw} height={bh * 0.14} fill={`url(#sl${fid})`} mask={`url(#bm${fid})`} /></g>
+      </g>}
+    </svg>
+  );
+}
+
+/** 扫描线逐层动效（方案见上面 ScanFxKind）：扫描线一行一个矩形（约 110 行，间距 0.9% 人体高），裁在人体剪影里；
+ *  每行的动画一样、只差起始时间（从脚往头按行错开），所以看起来是一层层推上去的；只动 opacity。
+ *  raster 用 multiply（暗栅盖在热力上，打开才露出来），其余用 screen（只提亮）；iso 不按行、按肌肉热度排先后。 */
+function ScanLines({ kind, box, height, width, v, fid, heat }: { kind: ScanFxKind; box: number[]; height: number; width: number; v: Record<string, Part>; fid: string; heat: (k: string) => number }) {
+  const [x, y, bw, bh] = box, unit = bh / 100, pitch = unit * 0.9, n = Math.floor(bh / pitch);
+  const heads = Object.keys(v).filter((k) => !NEUTRAL.includes(k) && k !== 'body');
+  const silhouette = Object.keys(v).filter((k) => k !== 'body').flatMap((k) => (v[k].paths ?? []).map((p, i) => <path key={k + i} d={p.d} />));
+  const sweep = T['motion/slow'] * (kind === 'wave' ? 7 : 5);   // 从脚扫到头用多久
+  if (kind === 'iso') {
+    // 按热度从高到低排名，名次决定先后；没练过（热度 0）的不亮
+    const rank = heads.map((k) => [k, heat(k)] as const).filter(([, h]) => h > 0.05).sort((a, b) => b[1] - a[1]);
+    return (
+      <svg className={`${s.fx} ${s.fxScreen} ${s.lightHalf}`} viewBox={box.join(' ')} width={width} height={height} preserveAspectRatio="xMinYMin meet" aria-hidden="true">
+        <defs><pattern id={`ip${fid}`} width={unit} height={pitch} patternUnits="userSpaceOnUse"><rect width={unit} height={unit * 0.3} className={s.fxLine} /></pattern></defs>
+        {rank.map(([k], i) => (
+          <g key={k} className={s.isoLayer} style={{ animationDelay: `${Math.round((i / Math.max(1, rank.length - 1)) * sweep)}ms` }}>
+            {(v[k].paths ?? []).map((p, j) => <path key={j} d={p.d} fill={`url(#ip${fid})`} />)}
+          </g>
+        ))}
+      </svg>
+    );
+  }
+  const cls = { raster: s.rasterLine, slice: s.sliceLine, wave: s.waveLine }[kind];
+  return (
+    <svg className={`${s.fx} ${kind === 'raster' ? s.fxMul : s.fxScreen} ${s.lightHalf}`} viewBox={box.join(' ')} width={width} height={height} preserveAspectRatio="xMinYMin meet" aria-hidden="true">
+      <defs><clipPath id={`sc${fid}`}>{silhouette}</clipPath></defs>
+      <g clipPath={`url(#sc${fid})`}>
+        {Array.from({ length: n }, (_, i) => {
+          const j = n - 1 - i;   // 从下往上数第几行
+          const delay = kind === 'wave' ? (j % 24) * (sweep / 24) : (j / n) * sweep;
+          return <rect key={i} className={cls} x={x} y={y + i * pitch} width={bw} height={kind === 'raster' ? pitch * 0.62 : unit * 0.3} style={{ animationDelay: `${Math.round(delay)}ms` }} />;
+        })}
       </g>
     </svg>
   );
