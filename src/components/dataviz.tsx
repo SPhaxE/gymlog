@@ -8,20 +8,24 @@ import s from './dataviz.module.css';
 
 /* ---------- E1 点阵日历 ---------- */
 export type DotState = 'trained' | 'rest' | 'today' | 'future' | 'out';
-export interface DotMonth { label: string; weeks: { t: number; state: DotState }[][] }
+/** done：这一天练过（今天也能练过——state 里「今天」优先，所以单独带一个标记） */
+export interface DotCell { t: number; state: DotState; done: boolean }
+export interface DotMonth { label: string; weeks: DotCell[][] }
 
-/** 近 count 个自然月，每月按「周一开始」排成列；trained 是练过的日子（startOfDay 毫秒） */
+/** 近 count 个自然月，每月按「周一开始」排成列；trained 是练过的日子（startOfDay 毫秒）。
+ *  状态优先级：不在本月 > 今天 > 未来 > 练过 > 休息；跨月的那一周在两个月里各出现一次（另一个月的日子是 out） */
 export function dotMonths(trained: Set<number>, now: number, count = 3): DotMonth[] {
   const today = startOfDay(now), d = new Date(now), out: DotMonth[] = [];
   for (let m = count - 1; m >= 0; m--) {
     const first = new Date(d.getFullYear(), d.getMonth() - m, 1), last = new Date(d.getFullYear(), d.getMonth() - m + 1, 0);
     let t = startOfDay(first.getTime() - ((first.getDay() + 6) % 7) * DAY);
-    const weeks: { t: number; state: DotState }[][] = [];
+    const weeks: DotCell[][] = [];
     while (t <= last.getTime()) {
-      const col: { t: number; state: DotState }[] = [];
+      const col: DotCell[] = [];
       for (let i = 0; i < 7; i++, t = startOfDay(t + DAY * 1.5)) {
         const inMonth = new Date(t).getMonth() === first.getMonth();
-        col.push({ t, state: !inMonth ? 'out' : t === today ? 'today' : t > today ? 'future' : trained.has(t) ? 'trained' : 'rest' });
+        const state: DotState = !inMonth ? 'out' : t === today ? 'today' : t > today ? 'future' : trained.has(t) ? 'trained' : 'rest';
+        col.push({ t, state, done: inMonth && t <= today && trained.has(t) });
       }
       weeks.push(col);
     }
@@ -30,8 +34,11 @@ export function dotMonths(trained: Set<number>, now: number, count = 3): DotMont
   return out;
 }
 
+/** 近几个月练了几天（含今天练过的） */
+export const dotDays = (months: DotMonth[]) => months.reduce((k, m) => k + m.weeks.flat().filter((x) => x.done).length, 0);
+
 export function DotCalendar({ months, label = '近 3 个月训练' }: { months: DotMonth[]; label?: string }) {
-  const n = months.reduce((k, m) => k + m.weeks.flat().filter((x) => x.state === 'trained').length, 0);
+  const n = dotDays(months);
   return (
     <div className={s.dots} role="img" aria-label={`${label}：练了 ${n} 天`}>
       {months.map((m) => (

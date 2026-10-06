@@ -213,18 +213,23 @@ export function RestBar({ remaining, total, onAdjust, onSkip, onDismiss }: {
 }
 
 /* ---------- 训练记录行（P07） ---------- */
-export function SessionRow({ date, weekday, title, meta, prs, deload, onClick, state }: {
-  date: number; weekday: string; title: string; meta: string; prs?: number; deload?: boolean; onClick?: () => void; state?: Forced;
+/** 票根行（6c，Stitch l6 C 的取舍）：左边大号日期（10/6）+ 周几，虚线（撕口），中间主要部位和动作 / 组 / 分钟，右边骨白 PR 标；
+ *  没有 onClick 是静态行（不画箭头、没有按下反馈）；有 onClick 整行可点（≥ 48）。date 传数字（只有「日」）或「10/6」；year 只有不在今年时才传 */
+export function SessionRow({ date, weekday, year, title, meta, prs, deload, onClick, state }: {
+  date: number | string; weekday: string; year?: number; title: string; meta: string; prs?: number; deload?: boolean; onClick?: () => void; state?: Forced;
 }) {
-  return (
-    <button type="button" className={cx('milo-press milo-focus', s.session)} onClick={onClick} {...forced(state)}>
-      <span className={s.date}><b className="milo-text-number-m">{date}</b><span className="milo-text-caption">周{weekday}</span></span>
+  const body = (
+    <>
+      <span className={s.date}><b className="milo-text-number-m">{date}</b><span className="milo-text-caption">{year ? `${year} · ` : ''}周{weekday}</span></span>
       <span className={s.exText}><b className="milo-text-body-strong">{title}</b><span className="milo-text-caption">{meta}</span></span>
       {deload && <Tag>减量</Tag>}
       {prs ? <Tag tone="strong" icon="star">PR {prs}</Tag> : null}
-      <Icon name="chevron" small />
-    </button>
+      {onClick && <Icon name="chevron" small />}
+    </>
   );
+  return onClick
+    ? <button type="button" className={cx('milo-press milo-focus', s.session)} onClick={onClick} {...forced(state)}>{body}</button>
+    : <div className={cx(s.session, s.sessionStatic)}>{body}</div>;
 }
 
 /* ---------- 周历（P07 顶部） ---------- */

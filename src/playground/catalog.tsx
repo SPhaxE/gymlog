@@ -4,7 +4,7 @@
  *  按下 / 聚焦在代码里是 :active / :focus-visible，这里经 state 强制显示（state.ts）。 */
 import { useRef, type ReactNode } from 'react';
 import {
-  Banner, BodyFigure, DotCalendar, GainGroupHead, GainRow, GainSummary, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
+  Banner, BodyFigure, DotCalendar, SteelPlate, GainGroupHead, GainRow, GainSummary, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
   ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProgressSteps, RestBar, SectionLabel, Segmented,
   SessionRow, SetEditor, SetLine, SetRow, NumPad, Sheet, Tilt, SheetBlock, Skeleton, Sparkline, StateView, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
   AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, PropGlyph, type PropKind, RewardCard, AgeBadge, Coupon, FreezeCard, GrowthBar, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, ProductCard, StreakBar,
@@ -64,7 +64,7 @@ export const CN: Record<string, string> = {
   recovering: '恢复中', golden: '黄金窗', decayed: '已回落', near: '邻近', focus: '焦点', front: '正面', back: '背面', male: '男', female: '女',
   track: '已开始 · 0 组', partial: '进行中', full: '满环', home: '首页', body: '身体', gains: '增量', log: '记录', me: '我的', success: '成功', undo: '可撤销',
   suggest: '建议减量', week: '减量周', quiet: '一行小字', 'pool-empty': '动作池不足', resume: '继续上次训练', info: '信息', page: '子页', session: '训练中',
-  eyebrow: '带日期与附件', pill: '小胶囊', open: '展开', loadingState: '加载中', top: '在顶部', scrolled: '已滚过大标题',
+  eyebrow: '带日期与附件', pill: '小胶囊', open: '展开', loadingState: '加载中', top: '在顶部', scrolled: '已滚过大标题', 'today-done': '今天练过',
   newborn: '牛犊', young: '小牛', sturdy: '壮牛', bull: '公牛', milo: 'Milo', 'm-idle': '平常', 'm-focused': '专注', 'm-happy': '开心', 'm-rest': '恢复日', 'm-pr': '破纪录', 'm-deload': '减量周', idle: '平常', training: '训练中',
   'r-stage': '升段', 'r-milo': '升段 · Milo', 'r-pr': '破纪录', 'r-streak': '连胜里程碑', 'r-level': '升小级', 'r-cycle': '周期完成', free: '免费', pro: 'Pro 会员',
   'b-compact': '紧凑（「我的」顶部）', 'b-full': '完整（牛龄页头）', 'g-normal': '进行中', 'g-near': '快升级', 'g-stage': '下一级是升段', 'g-max': 'Milo 满级',
@@ -348,10 +348,11 @@ export const CATALOG: Entry[] = [
     render: (p) => <RestBar total={180} remaining={p.state === 'running' ? 95 : p.state === 'ending' ? 7 : 0} />,
   },
   {
-    name: 'SessionRow', group: '训练与记录', desc: '训练记录列表：日期块 + 主要部位 + 动作 / 组数 / 时长，有 PR 打强调标签。',
-    axes: { kind: ['normal', 'pr', 'deload'], state: ['default', 'pressed', 'focused'] }, rows: ['kind'], cols: 'state', size: 'card',
-    render: (p, f) => { const x = f.sessions[0] ?? { date: 3, weekday: '六', title: '胸 · 肩', meta: '6 个动作 · 14 组', prs: 0 };
-      return <SessionRow {...x} prs={p.kind === 'pr' ? Math.max(1, x.prs) : 0} deload={p.kind === 'deload'} state={st(p.state)} />; },
+    name: 'SessionRow', group: '训练与记录', desc: '训练记录票根行（P07，Stitch l6 C）：左边大号日期 + 周几，虚线撕口，中间主要部位和动作 / 组数 / 时长，右边骨白 PR 标；不在今年的带年份；没有 onClick（static）是静态行，不画箭头也没有按下反馈。',
+    axes: { kind: ['normal', 'pr', 'deload', 'static'], state: ['default', 'pressed', 'focused'] }, rows: ['kind'], cols: 'state', size: 'card',
+    skip: (p) => p.kind === 'static' && p.state !== 'default',
+    render: (p, f) => { const x = f.sessions[0] ?? { date: '10/3', weekday: '六', title: '胸 · 肩', meta: '6 个动作 · 14 组', prs: 0 };
+      return <SessionRow {...x} prs={p.kind === 'pr' ? Math.max(1, x.prs) : 0} deload={p.kind === 'deload'} state={st(p.state)} onClick={p.kind === 'static' ? undefined : noop} />; },
   },
   {
     name: 'DayCell', group: '训练与记录', desc: '周历的一天：已练 = 量尺底色 + 圆点；有 PR 换星形；今天 = 骨白描边环；选中 = 骨白实心；未来不可点。',
@@ -392,6 +393,15 @@ export const CATALOG: Entry[] = [
     name: 'DotCalendar', group: '训练与记录', desc: 'E1 点阵日历（ref1）：近 3 个月每天一个点，练过的点亮骨白，今天一圈荧光描边；记录页顶部，也是 P1 出勤热力图。',
     axes: {}, size: 'card',
     render: (_, f) => <DotCalendar months={dotMonths(f.trainedDays, f.now)} />,
+  },
+  {
+    name: 'SteelPlate', group: '训练与记录', desc: '记录页顶部的钢板打孔日历（6c，设计见 design/hifi/log/plate-plan.md）：深色冲压钢板，练过的日子是冲出来的孔、板后透出荧光，没练的只有淡淡的样冲点，今天刻一圈细环；光影随页面滑动变化（一大团软光从右移到左、两侧漏光换边、钢面一道淡反光，纯 CSS 滚动驱动，真滚动见下面的交互演示）。没练过任何一天时是一块没有孔的板，板后不点灯。一页只放一块。',
+    axes: { kind: ['trained', 'today-done', 'empty'] }, size: 'card',
+    render: (p, f) => {
+      const days = new Set(f.trainedDays);
+      if (p.kind === 'today-done') days.add(new Date(f.now).setHours(0, 0, 0, 0));
+      return <SteelPlate months={dotMonths(p.kind === 'empty' ? new Set() : days, f.now)} />;
+    },
   },
   {
     name: 'WeekBars', group: '数据图形', desc: 'E3 竖向胶囊量表（ref3）：近 8 周每周完成组数，本周骨白；和身体页胶囊同一语言（胶囊即量尺）。short（compact）= 增量页摘要卡里的 4 周破纪录柱，柱高一档 hit-min。',

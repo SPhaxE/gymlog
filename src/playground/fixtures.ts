@@ -22,7 +22,7 @@ export function fixtures(now: number) {
   const sessions = [...history].sort((a, b) => b.startMs - a.startMs).slice(0, 4).map((s) => {
     const st = sessionStats(s), d = new Date(s.startMs);
     return {
-      date: d.getDate(), weekday: WD[d.getDay()], title: mainRegions(env, s).map((r) => REGION_NAME[r]).join(' · '),
+      date: `${d.getMonth() + 1}/${d.getDate()}`, weekday: WD[d.getDay()], title: mainRegions(env, s).map((r) => REGION_NAME[r]).join(' · '),
       meta: `${s.exercises.filter((e) => !e.skipped).length} 个动作 · ${st.sets} 组${s.durationMin ? ` · ${s.durationMin} 分钟` : ''}`, prs: prs.get(s.id)?.size ?? 0,
     };
   });

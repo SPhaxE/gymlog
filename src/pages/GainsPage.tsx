@@ -12,15 +12,15 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { flushSync } from 'react-dom';
-import { Cascade, Chip, GainGroupHead, GainRow, GainSummary, Nav, Screen, SlimBar, StateView, drillTransition, useToast, type Tab } from '../components';
+import { Cascade, Chip, GainGroupHead, GainRow, GainSummary, Screen, SlimBar, StateView, drillTransition, useToast, type Tab } from '../components';
 import { env, fmt, REGION_NAME } from '../data/demo';
 import { gainsData, groupGains, type GainRow as Row } from '../data/gains';
 import { useSource } from '../data/useSource';
-import { useTrainingNav } from '../data/useTrainingNav';
 import type { Region } from '../engine';
 import { T } from '../styles/tokens.gen';
 import { DeloadBanner } from './DeloadBanner';
 import { DeloadSheet } from './DeloadSheet';
+import { TabNav } from './TabNav';
 import s from './GainsPage.module.css';
 
 /** 点进曲线页前记下部位筛选和滚动位置，返回时还原（按场景分开记；刷新页面就忘了，不写存储） */
@@ -33,12 +33,6 @@ const deltaText = (r: Row) => {
 };
 /** 目标后的小字：减量周写系数；很久没练写「N 周前」 */
 const noteOf = (r: Row) => (r.deloaded ? `减量 ×${env.cfg.deload.intensity}` : r.daysAgo >= 56 ? `${Math.floor(r.daysAgo / 7)} 周前` : undefined);
-
-/** 导航单独一个组件：休息倒计时每 200 毫秒刷新一次，只重画导航，不连累整页的 19 行曲线（CI 上整页重画会把页面拖到卡死） */
-function GainsNav({ scenario, now, onTab }: { scenario?: string; now: number; onTab?: (tab: Tab, path: string) => void }) {
-  const navState = useTrainingNav(scenario, 0, now);
-  return <Nav selected="gains" {...navState} onSelect={onTab} />;
-}
 
 export function GainsPage({ scenario, now, onTab }: { scenario?: string; now: number; onTab?: (tab: Tab, path: string) => void }) {
   const nav = useNavigate(), loc = useLocation(), toast = useToast();
@@ -107,7 +101,7 @@ export function GainsPage({ scenario, now, onTab }: { scenario?: string; now: nu
           )}
         </div>
       </div>
-      <GainsNav scenario={scenario} now={now} onTab={onTab} />
+      <TabNav selected="gains" scenario={scenario} now={now} onTab={onTab} />
       {deloadOpen && <DeloadSheet hits={d.sig.hits} onClose={() => setDeloadOpen(false)}
         onAdopt={() => { adopt(); setDeloadOpen(false); toast.show(`已进入减量周 · ${env.cfg.deload.days} 天`); }}
         onSkip={() => { skip(); setDeloadOpen(false); toast.show(`这次不减，${env.cfg.deload.days} 天内不再提醒`); }} />}

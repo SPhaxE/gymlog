@@ -1,0 +1,15 @@
+/* 记录页：整页一个滚动区（页头 C：页头和内容一起滚，大标题滑走后顶上留细栏）。钢板的光随这个滚动区的滚动位置变化，所以滚动区本身不能再被别的 overflow 包着。 */
+.scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.lead { margin: 0; color: var(--milo-color-text-secondary); }
+.lead b { font-family: var(--milo-font-number); font-weight: 700; font-size: 1.25em; color: var(--milo-color-text-primary); }
+.body { display: grid; align-content: start; grid-auto-rows: max-content; gap: var(--milo-space-m); padding: var(--milo-space-m) var(--milo-size-gutter) calc(var(--nav-clear) + var(--milo-space-2xl)); }
+
+/* 周头：左边（本周 · 日期范围）、右边三个带单位的合计；下面一道点线 */
+.week { display: grid; gap: var(--milo-space-s); }
+.weekHead { display: flex; align-items: baseline; justify-content: space-between; gap: var(--milo-space-s); padding: var(--milo-space-s) var(--milo-space-2xs) var(--milo-space-s);
+  border-bottom: var(--milo-stroke-hairline) dotted var(--milo-color-line-strong); }
+.weekTitle { display: flex; align-items: baseline; flex-wrap: wrap; column-gap: var(--milo-space-s); margin: 0; min-width: 0; color: var(--milo-color-text-primary); }
+.weekTitle span { color: var(--milo-color-text-secondary); }
+.totals { display: inline-flex; align-items: baseline; gap: var(--milo-space-m); flex: none; }
+.rows { display: grid; gap: var(--milo-space-s); }
+.more { display: grid; justify-items: center; padding-top: var(--milo-space-s); }
