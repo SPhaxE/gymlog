@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import tokens from '../design/tokens/tokens.json';
 import { App } from './App';
@@ -124,3 +124,50 @@ describe('动作进步曲线页（/gains/:exerciseId）', () => {
     await waitFor(() => expect(window.location.pathname).toBe('/gains'));
   });
 });
+
+describe('记录页 → 训练详情 → 删除（2026-10-06）', () => {
+  it('点一行进详情，⋮ → 删除这次训练 → 二次确认；取消什么都不变，确认后回记录页、这次训练从历史和列表里消失', async () => {
+    store.clear();
+    store.update((x) => ({ ...x, ...demoState(Date.now()), draft: null }));
+    const n0 = store.get().history.length;
+    window.history.pushState({}, '', '/log');
+    render(<App />);
+    const rows = await screen.findAllByRole('button', { name: /个动作/ });
+    const label = rows[0].textContent ?? '';
+    rows[0].click();
+    await screen.findByRole('group', { name: '本次汇总' });
+    const id = window.location.pathname.split('/').pop()!;
+    expect(store.get().history.some((s) => s.id === id)).toBe(true);
+    // 子页没有 Tab 导航
+    expect(screen.queryByRole('navigation', { name: '主导航' })).toBeNull();
+    // 取消：什么都不变
+    screen.getByRole('button', { name: '更多' }).click();
+    (await screen.findByRole('button', { name: '删除这次训练' })).click();
+    const dlg = await screen.findByRole('alertdialog', { name: '删除这次训练？' });
+    expect(within(dlg).getByText(/不能撤销/)).toBeInTheDocument();
+    within(dlg).getByRole('button', { name: '取消' }).click();
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    expect(store.get().history).toHaveLength(n0);
+    // 确认：回记录页，历史少一次
+    screen.getByRole('button', { name: '更多' }).click();
+    (await screen.findByRole('button', { name: '删除这次训练' })).click();
+    within(await screen.findByRole('alertdialog')).getByRole('button', { name: '删除' }).click();
+    await screen.findByRole('navigation', { name: '主导航' });
+    expect(window.location.pathname).toBe('/log');
+    expect(store.get().history).toHaveLength(n0 - 1);
+    expect(store.get().history.some((s) => s.id === id)).toBe(false);
+    expect(label.length).toBeGreaterThan(0);
+  });
+
+  it('打开已被删除的训练：有「回到记录」的出口', async () => {
+    store.clear();
+    store.update((x) => ({ ...x, ...demoState(Date.now()), draft: null }));
+    window.history.pushState({}, '', '/log/not-a-session');
+    render(<App />);
+    expect(await screen.findByText('这次训练已经不在了')).toBeInTheDocument();
+    screen.getByRole('button', { name: '回到记录' }).click();
+    await screen.findByRole('navigation', { name: '主导航' });
+    expect(window.location.pathname).toBe('/log');
+  });
+});
+

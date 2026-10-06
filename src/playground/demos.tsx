@@ -74,9 +74,10 @@ function FeedbackInner() {
         <Button kind="danger" size="s" onClick={() => setDlg(true)}>删除训练</Button>
         <Button kind="neutral" size="s" onClick={() => setSheet(true)}>打开面板</Button>
       </div>
+      {/* 和记录页详情里的真流程一致：二次确认、不可撤销（ia §1.8）；「可撤销」那一条只是 Toast 组件自己的能力演示 */}
       <Dialog open={dlg} onClose={() => setDlg(false)} tone="danger" icon="trash" title="删除这次训练？" confirm="删除"
-        onConfirm={() => { setDlg(false); toast.show('已删除这次训练', { action: { label: '撤销', run: () => toast.show('已恢复') } }); }}>
-        近 7 天容量、恢复度、趋势和 PR 会重新计算。
+        onConfirm={() => { setDlg(false); toast.show('已删除 10月3日 周六 的训练'); }}>
+        <p>删除后，近 7 天容量、恢复度、趋势和新纪录都会重新计算，不能撤销。</p>
       </Dialog>
       {sheet && <Sheet title="中下胸" meta="大肌群" onClose={() => setSheet(false)}>
         <PhaseSegments phase="recovering" />

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { DAY, mainRegions, prMap, sessionStats, startOfDay, summarize, weekStart } from '../engine';
+import { DAY, e1rm, mainRegions, prMap, sessionStats, startOfDay, summarize, weekStart } from '../engine';
 import type { Session } from '../engine';
-import { env, sourceOf, type Source } from './demo';
+import { env, homeData, sourceOf, type Source } from './demo';
+import { gainsData } from './gains';
 import { logData, logDetail, weekRange, weekTotals } from './log';
 import { demoState } from './store';
 
@@ -128,4 +129,19 @@ describe('记录页的数据（P07，ia §1.8）', () => {
     expect(logDetail(src([uni]), 'u', NOW)!.exercises[0].sets[0]).toMatchObject({ weight: '12 kg', reps: '左 8 · 右 7' });
     expect(logDetail(src([uni]), 'nope', NOW)).toBeNull();
   });
+
+  it('删掉最后一次：首页「上次重量」、增量页最新预估值、记录页的行与 PR 标一起回退（全是现算的，没有要手动失效的缓存）', () => {
+    const h = [sess('a', at(2026, 9, 22), [[60, 8], [60, 8]]), sess('b', at(2026, 9, 25), [[62.5, 8], [62.5, 8]]), sess('c', at(2026, 10, 1), [[65, 8], [65, 8]])];
+    const full = src(h), cut = src(h.filter((s) => s.id !== 'c'));
+    expect(homeData(full, NOW).lastWeight(BENCH)).toBe(65);
+    expect(homeData(cut, NOW).lastWeight(BENCH)).toBe(62.5);
+    const row = (s: Source) => gainsData(s, NOW).rows.find((r) => r.exerciseId === BENCH)!;
+    expect(row(full).latest!).toBeGreaterThan(row(cut).latest!);
+    expect(row(cut).latest!).toBeCloseTo(e1rm(62.5, 8)!, 1);
+    const rows = (s: Source) => logData(s, NOW).weeks.flatMap((w) => w.rows);
+    expect(rows(full).find((r) => r.id === 'c')!.prs).toBe(1);
+    expect(rows(cut).map((r) => r.id)).toEqual(['b', 'a']);
+    expect(logData(cut, NOW).trained.has(startOfDay(at(2026, 10, 1)))).toBe(false);
+  });
 });
+
