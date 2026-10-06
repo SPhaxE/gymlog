@@ -2,6 +2,7 @@
 
 > 给接手的人或客户端（Claude Code 本地版、Cursor、Codex……）。先读这一页，再按需看 `docs/`。
 > 用户写中文、要结论先行；所有对外文字（App 文案、文档、提交信息）用中文。
+> 本地路径（用户的 Mac）：`/Users/sphax/MILO`。第一次接手照 §9「本地上手」做一遍，再跑一次门禁确认环境没问题。
 
 ## 0. 一句话现状
 
@@ -16,7 +17,7 @@
   - Token 校验
   - Figma 插件 62 项
   - 构建
-  - `shots:playground`（73 个组件、532 个变体）
+  - `shots:playground`（73 个组件、534 个变体）
   - `shots:6a`（演示全流程，360 与 412 两种宽，每一步查命中区 ≥ 48、被压扁的块、横向溢出、页面错误；不依赖日期）
 - **生产环境已验证**：<https://gymlog-taupe.vercel.app/demo> 等路由 200、部署的是合并后的代码；同一份 `main` 的生产构建跑 `shots:6a` 全部通过（沙盒里的 Chromium 不信任代理证书，不关证书校验，所以用本地生产构建代替直连线上跑浏览器门禁）。
 
@@ -40,7 +41,7 @@
 2. Stitch 多方案（`design/hifi/`），用户选或混搭；
 3. 用代码定稿，截图对比后交用户验收。
 
-有线框的页面可以直接写代码（6a 起用户同意）；具体页面设计用户已授权由 Claude 自己选（2026-10-06），但**交互五层分析要写在页面文件头注释里**（例：`src/pages/TrainingView.tsx`），并且必须过 `DESIGN.md` §9.6 的十条交互硬规则。
+有线框的页面可以直接写代码（6a 起用户同意）；具体页面设计用户已授权由 Claude 自己选（2026-10-06），但**交互五层分析要写在页面文件头注释里**（例：`src/pages/TrainingView.tsx`），并且必须过 `DESIGN.md` §9.6 的 11 条交互硬规则。
 
 **用户最在意、踩过的坑**（2026-10-06 真机）：
 - 组件之间不守规范、错位（提示把输入框顶歪）→ 现在有「提示不位移」规则和「被压扁的块」门禁；
@@ -172,6 +173,7 @@ python3 scripts/shoot_growth.py     # 奖励弹窗 GIF → screenshots/growth/
 | 建档 | 3 步，草稿实时保存；最后可选「载入演示数据」（进阶用户 30 周） | `pages/OnboardingPage.*` |
 | 首页 P01 | 处方主角卡 + 增量尺；「为什么是这些」面板（每个动作练到哪些肌头、时相、近 7 天组数、重量理由）；**今天已练完**：睡着的小牛 + 摘要 + 恢复进度，「再练一次」才展开处方 | `pages/HomePage.*` |
 | 首页训练中（原 P03） | 开始训练 → 主角卡原地展开成组行（M03）；拇指区唯一主操作「打卡 · 第 N 组」（首次动作变「填重量」，直接拉出键盘）；点组行拉出改数面板（`Sheet` + `SetEditor`，M05 + M04 码表）；休息：导航选中胶囊 + 主按钮左边的休息胶囊（M02，点别处缩回）；换动作：列表行长成主角卡（M03 `.swap`）；列表每行一排组点；导航外圈今日进度，切到身体页也在 | `pages/TrainingView.tsx`、`components/training.tsx`（SetLine、SetEditor、NumPad）、`data/useTrainingNav.ts` |
+| 休息计时（最后一项，2026-10-06） | 同一时刻屏上只有一个计时器：首页训练中是主按钮左边一颗和导航选中滑块同形的胶囊（骨白、图标在上时间在下、里面一道实线按剩余比例收短），首页导航不显示休息；切到别的 Tab，胶囊借 View Transitions 飞进导航滑块（`Nav.tsx` 的 `REST_VT` / `navHandoff`，`AppShell.tsx` 的 `onTab` 等路由提交后再拍新快照），切回再飞回；胶囊 ↔ 休息面板也是同一个共享元素 | `components/motion.tsx`（`RestDock ring`）、`components/Nav.tsx`、`shell/AppShell.tsx` |
 | 结算 P05 | 新纪录整块荧光卡（进场弹起 + 扫光 + 按住微倾 M01）；增幅按「之前最好」算（与奖励弹窗一致）；总负荷码表；逐个动作（与上次比）；牛龄成长；力竭度两排五格（每格 ≥ 48）；奖励弹窗（每条记录只弹一次） | `pages/SummaryPage.*` |
 | 实机演示 | 电脑上：讲解 + 演示路线，跟随手机当前步骤，每步可直接跳转；右侧手机壳里是 App 本体（同源 iframe）。手机上：清空后全屏进故事 | `pages/DemoPage.*` |
 
@@ -201,7 +203,27 @@ python3 scripts/shoot_growth.py     # 奖励弹窗 GIF → screenshots/growth/
   - 商城与会员：P15–P21，只做演示链路。
 - **打磨**：开屏动画、真机性能、APK 上架素材（`brief.md` 增长层的「打磨」条目）。
 
-## 9. 目录速查
+## 9. 本地上手（Mac，`/Users/sphax/MILO`）
+
+```bash
+git clone https://github.com/SPhaxE/gymlog.git /Users/sphax/MILO && cd /Users/sphax/MILO
+# Node 22（CI 同版本）；Python 3.11+
+npm ci
+npm run check                       # 类型检查 + 215 个测试 + 写死值 + 构建，全绿再动手
+# 截图门禁要用的 Python 依赖（一次）
+python3 -m pip install playwright numpy opencv-python-headless Pillow
+python3 -m playwright install chromium   # 本地没有 /opt/pw-browsers，脚本会自动用 Playwright 自带的 Chromium
+npx vite --port 5199 --host 127.0.0.1 &  # 截图门禁默认连这个端口
+python3 scripts/shoot_6a.py         # 演示全流程门禁（约 3 分钟），应输出「全部通过」
+python3 scripts/shoot_playground.py # 组件矩阵门禁
+```
+
+- **Stitch**（可选）：`export STITCH_API_KEY=…`，或在本地 Claude Code 里配置名为 stitch 的 MCP；密钥不进仓库。
+- **APK**：本地有 Android SDK（JDK 21）时 `npm run android:apk`；没有就用 CI 产物或 `apk/milo-debug.apk`。
+- **给 AI 客户端**：根目录 `CLAUDE.md`（Claude Code 自动读）和 `AGENTS.md`（Codex / Cursor 等读）都指向本文件，并列了不许破的规则。
+- **提交与合并**：在功能分支上开发 → 开 PR → CI 绿 → merge 方式合并 → 等 Vercel 生产部署。`main` 上的 APK 由 CI 自动提交，本地 `git pull` 会拿到。
+
+## 10. 目录速查
 
 ```
 HANDOFF.md        本文件

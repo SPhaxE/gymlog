@@ -56,3 +56,10 @@
 ::view-transition-old(*.swap) { animation: vtOut var(--milo-motion-fast) var(--milo-motion-ease-standard) both; }
 ::view-transition-new(*.swap) { animation: vtIn var(--milo-motion-base) var(--milo-motion-ease-standard) var(--milo-motion-press) both; }
 @keyframes vtOut { to { opacity: 0; } }
+/* 休息计时（.rest，2026-10-06）：首页主按钮旁的计时胶囊 ↔ 导航选中滑块（切 Tab）、胶囊 ↔ 休息面板（点开 / 收起）。
+   同样是「窗口」：快照按原尺寸居中、不拉伸（文字不变形），框按软弹簧变形，旧的先淡出、新的随后淡入 */
+::view-transition-group(*.rest) { animation-duration: var(--milo-motion-spring-soft-ms); animation-timing-function: var(--milo-motion-ease-spring-soft); }
+::view-transition-image-pair(*.rest) { overflow: clip; border-radius: var(--milo-radius-l); }
+::view-transition-old(*.rest), ::view-transition-new(*.rest) { inset: 0; width: 100%; height: 100%; object-fit: none; object-position: center; }
+::view-transition-old(*.rest) { animation: vtOut var(--milo-motion-fast) var(--milo-motion-ease-standard) both; }
+::view-transition-new(*.rest) { animation: vtIn var(--milo-motion-base) var(--milo-motion-ease-standard) var(--milo-motion-press) both; }

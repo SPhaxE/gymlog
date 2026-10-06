@@ -344,9 +344,10 @@ export const CATALOG: Entry[] = [
   },
   /* ---------------- 数据图形 ---------------- */
   {
-    name: 'RestDock', group: '训练与记录', desc: 'M02 流体胶囊形变：组间休息平时是底部一颗小胶囊（底边一道骨白细线 = 剩余比例），点开原地长成休息面板（±15、跳过），尺寸与圆角按软弹簧一起过渡。',
-    axes: { state: ['pill', 'open', 'done'] }, size: 'card',
-    render: (p) => <RestDock remaining={p.state === 'done' ? 0 : 95} total={180} open={p.state === 'open'} onToggle={noop} />,
+    name: 'RestDock', group: '训练与记录', desc: 'M02 流体胶囊形变：组间休息平时是一颗小胶囊（底边一道骨白细线 = 剩余比例），点开原地长成休息面板（±15、跳过），尺寸与圆角按软弹簧一起过渡。ring（首页训练中，2026-10-06）：胶囊和导航选中滑块一模一样（骨白、图标在上时间在下、内描边按剩余比例收短），首页导航不再重复显示休息；切 Tab 时这颗胶囊借共享元素飞进导航滑块（navHandoff 让目标页滑块先停好），胶囊 ↔ 面板也是共享元素。',
+    axes: { state: ['pill', 'open', 'done', 'ring', 'ring-done'] }, size: 'card', covers: ['navHandoff'],
+    render: (p) => <RestDock remaining={p.state === 'done' || p.state === 'ring-done' ? 0 : 95} total={180} open={p.state === 'open'} onToggle={noop}
+      ring={p.state.startsWith('ring') ? { width: 64, endAt: Date.now() + 95e3 } : undefined} />,
   },
   {
     name: 'SharedDetail', group: '训练与记录', desc: 'M03 共享元素展开（View Transitions）：列表行（ExerciseRow sharedId）的卡片底、名称、重量与详情同名，点开时原地变形成整屏详情——卡片长满屏、名称与数字飞到新位置并放大，正文随后淡入；返回时变回去。真实动画见下方交互演示。',

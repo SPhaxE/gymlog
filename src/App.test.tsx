@@ -37,7 +37,7 @@ describe('首次打开（阶段 6a）', () => {
 });
 
 describe('首页即打卡（2026-10-06：取消独立训练页）', () => {
-  it('开始训练留在首页；主按钮打卡一组 → 休息开始、导航写剩余时间；结束 → 结算页', async () => {
+  it('开始训练留在首页；打卡一组 → 休息开始：首页计时在主按钮旁（导航不重复），切到别的 Tab 计时在导航滑块；结束 → 结算页', async () => {
     store.clear();
     store.update((x) => ({ ...x, ...demoState(Date.now()), draft: null }));
     window.history.pushState({}, '', '/today');
@@ -49,7 +49,15 @@ describe('首页即打卡（2026-10-06：取消独立训练页）', () => {
     await screen.findByRole('button', { name: /^打卡 · 第 2 组/ });
     expect(store.get().active?.entries[0].rows[0].done).toBe(true);
     expect(store.get().rest).not.toBeNull();
-    expect(screen.getByRole('navigation', { name: '主导航' }).querySelector('[aria-current="page"]')?.getAttribute('aria-label')).toMatch(/休息剩余/);
+    // 首页只有一个计时器：主按钮旁的胶囊；导航上不重复显示
+    expect(screen.getByRole('button', { name: /组间休息剩余/ })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: '主导航' }).querySelector('[aria-current="page"]')?.getAttribute('aria-label') ?? '').not.toMatch(/休息剩余/);
+    // 切到增量页：计时到了导航滑块上
+    screen.getByRole('link', { name: /增量/ }).click();
+    // 换 Tab 要重新渲染整页（CI 机器上可能超过默认 1 秒），放宽等待
+    await screen.findByRole('link', { name: /增量，休息剩余/ }, { timeout: 5000 });
+    screen.getByRole('link', { name: /首页/ }).click();
+    await screen.findByRole('button', { name: /组间休息剩余/ }, { timeout: 5000 });
     screen.getByRole('button', { name: '结束' }).click();
     (await screen.findByRole('button', { name: '结束并结算' })).click();
     await screen.findByText('练完了');

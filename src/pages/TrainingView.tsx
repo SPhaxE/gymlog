@@ -6,7 +6,8 @@
  *  - 框架：当前动作做主角卡（组行就地展开）；其余动作是列表，每行一排组点；唯一主操作在拇指区（打卡第 N 组）；
  *    键盘平时不出现，点组行或「填重量」才从底部拉出改数面板（M05）。
  *  - 表现：主角卡与列表行之间换动作用共享元素（M03）；休息胶囊点开流体形变成面板（M02）；组数滚动码表（M04）；列表交错弹入（M07）；按压微缩（M08）。 */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { T } from '../styles/tokens.gen';
 import { flushSync } from 'react-dom';
 import { useNavigate } from 'react-router';
 import { Button, Card, Cascade, Dialog, ExerciseRow, Odometer, PageHeader, RestDock, SectionLabel, SetEditor, SetLine, Sheet, sharedName, sharedTransition, useCountdown, useToast } from '../components';
@@ -32,13 +33,19 @@ export function TrainingView({ a, now }: { a: ActiveSession; now: number }) {
   useEffect(() => { const id = window.setInterval(() => setTick(Date.now()), 15e3); return () => clearInterval(id); }, []);
   const mins = Math.max(0, Math.floor((tick - a.startMs) / 60e3));
   useEffect(() => { if (st.rest) setDock(false); }, [st.rest?.endAt]); // eslint-disable-line react-hooks/exhaustive-deps
-  // 休息面板是临时的：点面板以外的任何地方就缩回小胶囊（M02 反向），不挡列表
+  // 休息面板是临时的：点面板以外的任何地方就缩回小胶囊（共享元素反向），不挡列表；听 click 而不是 pointerdown：先让这一下点到的东西生效，再开始收起转场（转场中途抬手会丢掉这次点击）
   const dockRef = useRef<HTMLDivElement>(null);
+  // 休息胶囊和导航选中滑块一样宽（量导航当前项），切 Tab 时才能「原地」飞进滑块
+  const [pillW, setPillW] = useState(0);
+  useLayoutEffect(() => {
+    const m = () => setPillW(document.querySelector('nav[aria-label="主导航"] [aria-current="page"]')?.getBoundingClientRect().width ?? 0);
+    m(); window.addEventListener('resize', m); return () => window.removeEventListener('resize', m);
+  }, []);
   useEffect(() => {
     if (!dock) return;
-    const away = (e: PointerEvent) => { if (!dockRef.current?.contains(e.target as Node)) setDock(false); };
-    document.addEventListener('pointerdown', away, true);
-    return () => document.removeEventListener('pointerdown', away, true);
+    const away = (e: MouseEvent) => { if (!dockRef.current?.contains(e.target as Node)) sharedTransition(() => setDock(false)); };
+    document.addEventListener('click', away, true);
+    return () => document.removeEventListener('click', away, true);
   }, [dock]);
 
   const en = a.entries[a.cur];
@@ -144,8 +151,10 @@ export function TrainingView({ a, now }: { a: ActiveSession; now: number }) {
       </div>
 
       <div className={s.scrim} aria-hidden="true" />
-      {st.rest && <div ref={dockRef} className={`${s.restDock} ${dock ? s.restDockOpen : ''}`}><RestDock remaining={left} total={st.rest.totalMs / 1000} open={dock} onToggle={setDock} onAdjust={adjustRest} onSkip={skipRest} /></div>}
-      <div className={`${s.cta} ${st.rest && !dock ? s.ctaBeside : ''}`}><Button onClick={primary.run}>{primary.label}</Button></div>
+      {/* 首页训练中唯一的计时器：和导航选中滑块同形（导航上不再显示），切 Tab 时飞进导航滑块（Nav.tsx 的 REST_VT） */}
+      {st.rest && <div ref={dockRef} className={`${s.restDock} ${dock ? s.restDockOpen : ''}`}><RestDock remaining={left} total={st.rest.totalMs / 1000} open={dock} onToggle={setDock} onAdjust={adjustRest} onSkip={skipRest}
+        ring={pillW ? { width: pillW, endAt: st.rest.endAt } : undefined} /></div>}
+      <div className={s.cta} style={st.rest && !dock && pillW ? { left: T['size/gutter'] + pillW + T['space/s'] } : undefined}><Button onClick={primary.run}>{primary.label}</Button></div>
 
       {edit && er && (
         <Sheet title={`${en.name} · 第 ${edit.row + 1} 组`} meta={er.done ? '已打卡 · 改完点「好了」' : undefined} onClose={() => setEdit(null)}>

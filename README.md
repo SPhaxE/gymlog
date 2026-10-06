@@ -3,7 +3,7 @@
 给进阶健身者的增量引擎：**渐进超负荷 × 超量恢复**。React + TypeScript + Vite 网页 App，用 Capacitor 打包成 Android APK，网页版部署在 Vercel。
 
 - **实机演示**：<https://gymlog-taupe.vercel.app/demo>（电脑上是带讲解的手机壳，手机上全屏进入）
-- **接手先读**：[`HANDOFF.md`](HANDOFF.md)（现状、架构、命令、管线、约束、下一步）
+- **接手先读**：[`HANDOFF.md`](HANDOFF.md)（现状、架构、命令、管线、约束、下一步、本地上手）；AI 客户端另有 `CLAUDE.md` / `AGENTS.md`
 - **产品与规范**：`docs/brief.md`（产品简报与决定记录）→ `docs/ia.md`（信息架构与功能规格）→ `docs/DESIGN.md`（视觉与组件规范）
 
 ## 目录

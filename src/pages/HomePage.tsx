@@ -31,7 +31,8 @@ export function HomePage({ scenario, now, onTab }: { scenario?: string; now: num
   if (active) return (
     <Screen label="首页 · 训练中">
       <TrainingView a={active} now={now} />
-      <Nav selected="home" {...navState} onSelect={onTab} />
+      {/* 首页训练中计时器在主按钮旁（同一颗胶囊），导航上不重复显示休息；切到别的 Tab 时它飞进导航滑块 */}
+      <Nav selected="home" progress={navState.progress} started={navState.started} onSelect={onTab} />
     </Screen>
   );
   return (

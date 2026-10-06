@@ -6,7 +6,7 @@
  *  休息：选中项的名称换成剩余时间；骨白小胶囊里面一道实线内描边按剩余比例收短（没有虚线、没有端点）。
  *   描边画在小胶囊自己里面，跟小胶囊一起滑；给 restEndAt + restTotalMs 时按帧平滑走，只给 restRatio 时是静态（Playground）。
  *  选中切换时：图标自己的笔画由暗到亮画出来（iconmotionref1），见 Icon 的 active。 */
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { T } from '../styles/tokens.gen';
 import { Icon } from './Icon';
 import { cx, forced, type Forced } from './state';
@@ -21,13 +21,19 @@ export function pillPath(x: number, y: number, w: number, h: number) {
   return `M${cx},${y} H${x + w - r} A${r},${r} 0 0 1 ${x + w},${y + r} V${y + h - r} A${r},${r} 0 0 1 ${x + w - r},${y + h} H${x + r} A${r},${r} 0 0 1 ${x},${y + h - r} V${y + r} A${r},${r} 0 0 1 ${x + r},${y} Z`;
 }
 
+/** 休息计时的共享元素名（2026-10-06）：首页训练中，休息计时是主按钮旁一颗和这里选中滑块一模一样的胶囊（导航上不再重复显示）；
+ *  切到别的 Tab 时，那颗胶囊借 View Transitions 原地飞进这里的滑块，切回首页再飞回去——同一时刻屏上只有一个计时器。 */
+export const REST_VT = { viewTransitionName: 'x-rest-timer', viewTransitionClass: 'rest' } as CSSProperties;
+/** 计时胶囊飞进来时，这一页的滑块直接停在目标位置（不再从上一个 Tab 滑过来），否则转场结束后会跳一下 */
+export const navHandoff = { skipSlide: false };
+
 /** 跨页面记住上一个 Nav 的选中项和滑块位置（模块级，App 里同一时刻只有一个 Nav 在屏上） */
 const memo: { tab: Tab | null; pill: [number, number, number, number] | null; ring: boolean; progress: number } = { tab: null, pill: null, ring: false, progress: 0 };
 
 const reduced = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 /** 休息剩余比例：有结束时间戳时按帧算（减少动态效果时按秒），否则用静态比例 */
-function useRestRatio(endAt?: number, totalMs?: number, ratio?: number) {
+export function useRestRatio(endAt?: number, totalMs?: number, ratio?: number) {
   const [r, setR] = useState(() => (endAt && totalMs ? Math.max(0, (endAt - Date.now()) / totalMs) : ratio ?? 0));
   useEffect(() => {
     if (!endAt || !totalMs) { setR(ratio ?? 0); return; }
@@ -51,7 +57,10 @@ export function Nav({ selected, progress, started, rest, restRatio, restEndAt, r
   const nav = useRef<HTMLElement>(null), on = useRef<HTMLAnchorElement>(null);
   const [geo, setGeo] = useState<{ w: number; h: number; pill: [number, number, number, number] | null }>({ w: 0, h: 0, pill: null });
   // App 里每个 Tab 页各有一个 Nav，切 Tab 时 Nav 是新挂载的：从上一个 Nav 留下的选中项与滑块位置接着动，滑块才会滑、图标才会放加载态
-  const [cameFrom] = useState(() => (memo.tab && memo.tab !== selected && memo.pill ? { tab: memo.tab, pill: memo.pill } : null));
+  const [cameFrom] = useState(() => {
+    if (navHandoff.skipSlide) { navHandoff.skipSlide = false; return null; }
+    return memo.tab && memo.tab !== selected && memo.pill ? { tab: memo.tab, pill: memo.pill } : null;
+  });
   const slid = useRef(false);
   useLayoutEffect(() => {
     const el = nav.current!;
@@ -104,7 +113,7 @@ export function Nav({ selected, progress, started, rest, restRatio, restEndAt, r
         {showRing && <path className={s.progress} d={ring} pathLength={1} style={{ strokeDasharray: `${shown} 1` }} />}
       </svg>
       {p && (
-        <span className={s.pill} aria-hidden="true" style={{ transform: `translate(${p[0]}px, ${p[1]}px)`, width: p[2], height: p[3] }}>
+        <span className={s.pill} aria-hidden="true" style={{ transform: `translate(${p[0]}px, ${p[1]}px)`, width: p[2], height: p[3], ...(rest ? REST_VT : {}) }}>
           {/* 休息内描边：画在小胶囊里面，滑动时和小胶囊同步；实线、无端点，按剩余比例收短 */}
           {restRing && <svg className={s.restLayer}><path className={s.rest} d={restRing} pathLength={1} style={{ strokeDasharray: `${rr} 1` }} /></svg>}
         </span>

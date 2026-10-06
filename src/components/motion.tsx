@@ -5,7 +5,8 @@
  *    首页「开始训练」时主角卡原地展开成组行、训练中点列表行换动作，也是它。
  *  Tilt — M01 3D 倾斜光影（2026-10-06 加）：按住核心卡片移动时随触点微倾、高光跟手，松手弹簧回正。只给「这一刻的主角」（结算页新纪录卡）。
  *  都有「减少动态效果」降级：直接到位。 */
-import { Children, useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
+import { Children, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { pillPath, REST_VT, useRestRatio } from './Nav';
 import { flushSync } from 'react-dom';
 import { T } from '../styles/tokens.gen';
 import { IconButton } from './Button';
@@ -20,16 +21,22 @@ export function Cascade({ children, replayKey }: { children: ReactNode; replayKe
   return <div key={replayKey} className={s.cascade}>{items.map((c, i) => <div key={i} className={s.cascadeItem} style={{ animationDelay: `${Math.round(i * step)}ms` }}>{c}</div>)}</div>;
 }
 
-export function RestDock({ remaining, total, open, onToggle, onAdjust, onSkip }: {
+export function RestDock({ remaining, total, open, onToggle, onAdjust, onSkip, ring }: {
   remaining: number; total: number; open: boolean; onToggle: (open: boolean) => void; onAdjust?: (d: number) => void; onSkip?: () => void;
+  /** 「导航滑块」形态（2026-10-06，首页训练中）：和导航选中滑块一模一样——骨白胶囊、图标在上时间在下、里面一道按剩余比例收短的实线；
+   *  width = 导航一项的宽度，endAt 让描边按帧走；收起时带共享名 REST_VT，切 Tab 时飞进导航滑块 */
+  ring?: { width: number; endAt: number };
 }) {
   const ratio = Math.max(0, Math.min(1, remaining / total));
+  // 导航滑块形态：胶囊 ↔ 面板也走共享元素（同名 REST_VT），胶囊原地长成面板、面板缩回胶囊
+  const toggle = ring ? (v: boolean) => sharedTransition(() => onToggle(v)) : onToggle;
+  if (ring && !open) return <RingPill remaining={remaining} total={total} width={ring.width} endAt={ring.endAt} onOpen={() => toggle(true)} />;
   return (
-    <div className={cx(s.dock, open && s.dockOpen)} style={{ ['--rest' as string]: `${ratio * 100}%` }}>
+    <div className={cx(s.dock, open && s.dockOpen)} style={{ ['--rest' as string]: `${ratio * 100}%`, ...(ring ? REST_VT : {}) }}>
       {open ? (
         <div className={s.dockBody}>
-          <RestBar remaining={remaining} total={total} onAdjust={onAdjust} onSkip={onSkip} onDismiss={() => onToggle(false)} />
-          {remaining > 0 && <button type="button" className={cx('milo-focus', s.collapse)} onClick={() => onToggle(false)}>收起</button>}
+          <RestBar remaining={remaining} total={total} onAdjust={onAdjust} onSkip={onSkip} onDismiss={() => toggle(false)} />
+          {remaining > 0 && <button type="button" className={cx('milo-focus', s.collapse)} onClick={() => toggle(false)}>收起</button>}
         </div>
       ) : (
         <button type="button" className={cx('milo-press milo-focus', s.pill)} onClick={() => onToggle(true)} aria-label={remaining > 0 ? `组间休息剩余 ${clock(remaining)}，展开` : '休息结束，展开'}>
@@ -39,6 +46,26 @@ export function RestDock({ remaining, total, open, onToggle, onAdjust, onSkip }:
         </button>
       )}
     </div>
+  );
+}
+
+/** 休息胶囊的「导航滑块」形态：尺寸、颜色、内描边都和导航选中滑块同一套（Nav.module.css 的 .pill / .rest），转场时看不出接缝 */
+function RingPill({ remaining, total, width, endAt, onOpen }: { remaining: number; total: number; width: number; endAt: number; onOpen: () => void }) {
+  const ref = useRef<HTMLButtonElement>(null);
+  const [box, setBox] = useState<[number, number] | null>(null);
+  useLayoutEffect(() => {
+    const el = ref.current!; const m = () => setBox([el.offsetWidth, el.offsetHeight]);
+    m(); const ro = new ResizeObserver(m); ro.observe(el); return () => ro.disconnect();
+  }, []);
+  const rr = useRestRatio(endAt, total * 1000);
+  const inset = T['stroke/ring-rest'] / 2 + T['space/2xs'];
+  return (
+    <button ref={ref} type="button" className={cx('milo-press milo-focus', s.ringPill, remaining <= 0 && s.ringDone)} style={{ width, ...REST_VT }} onClick={onOpen}
+      aria-label={remaining > 0 ? `组间休息剩余 ${clock(remaining)}，展开` : '休息结束，展开'}>
+      {box && remaining > 0 && <svg className={s.ringLayer} aria-hidden="true"><path className={s.ringRest} d={pillPath(inset, inset, box[0] - inset * 2, box[1] - inset * 2)} pathLength={1} style={{ strokeDasharray: `${rr} 1` }} /></svg>}
+      <Icon name={remaining > 0 ? 'timer' : 'check'} small />
+      <b>{remaining > 0 ? clock(remaining) : '好了'}</b>
+    </button>
   );
 }
 
