@@ -54,9 +54,10 @@ describe('首页即打卡（2026-10-06：取消独立训练页）', () => {
     expect(screen.getByRole('navigation', { name: '主导航' }).querySelector('[aria-current="page"]')?.getAttribute('aria-label') ?? '').not.toMatch(/休息剩余/);
     // 切到增量页：计时到了导航滑块上
     screen.getByRole('link', { name: /增量/ }).click();
-    await screen.findByRole('link', { name: /增量，休息剩余/ });
+    // 换 Tab 要重新渲染整页（CI 机器上可能超过默认 1 秒），放宽等待
+    await screen.findByRole('link', { name: /增量，休息剩余/ }, { timeout: 5000 });
     screen.getByRole('link', { name: /首页/ }).click();
-    await screen.findByRole('button', { name: /组间休息剩余/ });
+    await screen.findByRole('button', { name: /组间休息剩余/ }, { timeout: 5000 });
     screen.getByRole('button', { name: '结束' }).click();
     (await screen.findByRole('button', { name: '结束并结算' })).click();
     await screen.findByText('练完了');
