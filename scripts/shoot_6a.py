@@ -5,15 +5,38 @@
 每一步检查：地址；360 宽无横向溢出；滚动区里没有被压扁的块；命中区（scripts/lib/hit_audit.js，看得见、能点的都 ≥ 48 × 48）；无页面错误。
 两种尺寸：360 × 800（设计基准，出截图）和 412 × 915（常见安卓真机，只查不截）。
 截图：screenshots/stage6a/<序号>-<步骤>.png（360 × 800 @2x）、story-<幕>.png、demo-desk.png。
-用法：先 npx vite --port 5199 --host 127.0.0.1，再 python3 scripts/shoot_6a.py"""
-import argparse, os, sys
+用法：先 npx vite --port 5199 --host 127.0.0.1，再 python3 scripts/shoot_6a.py
+提速（2026-10-06）：
+  - 默认两个宽度各开一个进程同时跑（--serial 关掉），总时间约减半；
+  - --no-shots 不再等故事 8 幕自己播完（只为截图）；
+  - --only 只跑某几类：flow（主流程）、story、deload、gains、demo，逗号分隔——改哪页只跑哪页，提交前再跑一遍完整的；
+  - --width 360|412 只跑一种宽度（并行时内部用）。"""
+import argparse, os, subprocess, sys
 from playwright.sync_api import sync_playwright
 
 ap = argparse.ArgumentParser()
 ap.add_argument('--base', default='http://127.0.0.1:5199')
 ap.add_argument('--chromium', default=os.environ.get('CHROMIUM', '/opt/pw-browsers/chromium'))
 ap.add_argument('--no-shots', action='store_true')
+ap.add_argument('--only', default='', help='flow,story,deload,gains,demo 逗号分隔；默认全部')
+ap.add_argument('--width', type=int, choices=[360, 412], help='只跑一种宽度（并行时内部用）')
+ap.add_argument('--serial', action='store_true', help='两个宽度不并行')
 args = ap.parse_args()
+SIZES = {360: (360, 800), 412: (412, 915)}
+ALL = ['flow', 'story', 'deload', 'gains', 'demo']
+only = [x for x in args.only.split(',') if x] or ALL
+if any(x not in ALL for x in only): sys.exit(f'--only 只能是 {",".join(ALL)}')
+
+# 并行：每个宽度一个进程，结果按宽度顺序打印；任一失败则退出码非 0
+if args.width is None and not args.serial:
+    base = [sys.executable, os.path.abspath(__file__), '--base', args.base, '--chromium', args.chromium, '--only', ','.join(only)] + (['--no-shots'] if args.no_shots else [])
+    procs = [(w, subprocess.Popen(base + ['--width', str(w)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)) for w in SIZES]
+    code = 0
+    for w, pr in procs:
+        out, _ = pr.communicate(); print(f'===== {w} 宽 ====='); print(out.rstrip()); code = code or pr.returncode
+    print('\n全部通过' if code == 0 else '\n有失败项（见上）')
+    sys.exit(code)
+
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 OUT = os.path.join(ROOT, 'screenshots', 'stage6a')
 AUDIT = open(os.path.join(ROOT, 'scripts', 'lib', 'hit_audit.js')).read()
@@ -50,8 +73,8 @@ def run(b, w, h, shots):
         if shots and not args.no_shots: pg.screenshot(path=os.path.join(OUT, f'{n[0]:02d}-{name}.png'))
         n[0] += 1
 
-    if shots:
-        # 故事 8 幕：每幕到点自动进下一幕（Stories 式），在快结束前截；互动幕（4b、7）不自动走
+    if shots and not args.no_shots:
+        # 故事 8 幕（只为截图，--no-shots 时不等）：每幕到点自动进下一幕（Stories 式），在快结束前截；互动幕（4b、7）不自动走
         MS = [6500, 6000, 9500, 8000, 0, 9000, 9000, 0]
         for k in range(8):
             pg.goto(f'{args.base}/onboarding?scene={k + 1}'); pg.evaluate('localStorage.clear()'); pg.goto(f'{args.base}/onboarding?scene={k + 1}')
@@ -71,8 +94,15 @@ def run(b, w, h, shots):
     navlabel = lambda: pg.get_by_role('navigation', name='主导航').locator('[aria-current=page]').get_attribute('aria-label') or ''
     ok('休息剩余' not in navlabel() and pg.locator('[style*="x-rest-timer"]').count() == 1, f'{tag} 首页休息中只有一个计时器（主按钮旁的胶囊，导航不重复）')
     click(pg, pg.get_by_role('button', name='组间休息剩余')); step('train-rest-open', None, 900)
+    # 失败时要看得出发生了什么：记下点击、面板出现 / 消失的时间线
+    pg.evaluate('''() => { window.__trace = []; const t0 = performance.now(), log = (m) => window.__trace.push(Math.round(performance.now() - t0) + 'ms ' + m);
+      document.addEventListener('click', (e) => { const who = e.target.closest('[aria-label]')?.getAttribute('aria-label') || e.target.className || e.target.tagName;
+        log('click ' + who + ' 转场中=' + document.documentElement.matches(':active-view-transition') + ' 坐标处=' + document.elementFromPoint(e.clientX, e.clientY)?.tagName); }, true);
+      new MutationObserver((ms) => ms.forEach((m) => { m.addedNodes.forEach((n) => n.nodeType === 1 && n.matches?.('[role=dialog],[class*=scrim]') && log('出现 ' + n.className)); m.removedNodes.forEach((n) => n.nodeType === 1 && n.matches?.('[role=dialog],[class*=scrim]') && log('消失 ' + n.className)); })).observe(document.body, { childList: true, subtree: true }); }''')
     click(pg, pg.get_by_role('button', name='第 2 组')); step('editor', None, 1000)
-    kg0 = float(pg.locator('[aria-pressed=true]').get_attribute('aria-label').split()[1])
+    try: kg0 = float(pg.locator('[aria-pressed=true]').get_attribute('aria-label', timeout=5000).split()[1])
+    except Exception:
+        pg.screenshot(path=f'/tmp/fail-editor-{w}.png'); print('  时间线：', pg.evaluate('window.__trace')); raise
     click(pg, pg.get_by_role('button', name='加 2.5 kg')); pg.wait_for_timeout(500)
     kg1 = float(pg.locator('[aria-pressed=true]').get_attribute('aria-label').split()[1])
     ok(abs(kg1 - kg0 - 2.5) < 1e-6, f'{tag} 改数面板 +2.5 生效（{kg0} → {kg1}）')
@@ -98,7 +128,7 @@ def run(b, w, h, shots):
     ok('休息剩余' in navlabel() or pg.get_by_role('button', name='组间休息剩余').count() == 0, f'{tag} 身体页：休息计时在导航滑块上')
     pg.goto(args.base + '/today'); pg.wait_for_timeout(1200)
     click(pg, pg.get_by_role('button', name='结束', exact=True)); step('end-confirm')
-    click(pg, pg.get_by_role('button', name='结束并结算')); step('summary', '/summary/', 4500)
+    click(pg, pg.get_by_role('button', name='结束并结算')); pg.wait_for_selector('text=练完了'); step('summary', '/summary/', 2000)
     pg.keyboard.press('Escape'); pg.mouse.move(w / 2, h / 2); pg.mouse.wheel(0, 900); step('summary-bottom')
     click(pg, pg.get_by_role('button', name='完成', exact=True)); step('done-today', '/today', 2500)
     ok(pg.get_by_text('今天已练完').count() > 0, f'{tag} 首页显示「今天已练完」')
@@ -147,7 +177,7 @@ def deload_checks(b, w, h):
     pg = b.new_page(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True)
     pg.on('pageerror', lambda e: errors.append(f'{tag} deload pageerror: {e}'))
     def open_home():
-        pg.goto(f'{args.base}/today?scenario=deload-suggested'); pg.wait_for_timeout(2200)
+        pg.goto(f'{args.base}/today?scenario=deload-suggested'); pg.wait_for_selector('h1'); pg.wait_for_timeout(900)
     open_home()
     ok(pg.get_by_role('button', name='看看').count() == 1, f'{tag} 减量：首页「建议本周减量」有可点的「看看」')
     click(pg, pg.get_by_role('button', name='看看')); pg.wait_for_timeout(900)
@@ -169,7 +199,7 @@ def gains_checks(b, w, h):
     pg = b.new_page(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True)
     pg.on('pageerror', lambda e: errors.append(f'{tag} gains pageerror: {e}'))
     def at(sc, shot=None):
-        pg.goto(f'{args.base}/gains?scenario={sc}'); pg.wait_for_timeout(2000)
+        pg.goto(f'{args.base}/gains?scenario={sc}'); pg.wait_for_selector('h1'); pg.wait_for_timeout(900)
         ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} 增量·{sc}：无横向溢出')
         small = pg.evaluate(AUDIT)
         ok(not small, f'{tag} 增量·{sc}：命中区都 ≥ 48 {small[:3]}')
@@ -207,19 +237,22 @@ def gains_checks(b, w, h):
     ok(pg.get_by_role('button', name='去今日处方').count() == 1, f'{tag} 增量：没练过 = 空状态，有回首页的出口')
     pg.close()
 
+widths = [args.width] if args.width else list(SIZES)
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path=args.chromium if os.path.exists(args.chromium) else None)
-    run(b, 360, 800, True)
-    run(b, 412, 915, False)
-    story_checks(b, 360, 800); story_checks(b, 412, 915)
-    deload_checks(b, 360, 800); deload_checks(b, 412, 915)
-    gains_checks(b, 360, 800); gains_checks(b, 412, 915)
-    # /demo 电脑版
-    d = b.new_page(viewport={'width': 1440, 'height': 900})
-    d.on('pageerror', lambda e: errors.append(f'demo pageerror: {e}'))
-    d.goto(args.base + '/demo'); d.wait_for_timeout(5000)
-    ok(d.locator('iframe').count() == 1, '/demo 电脑版：手机里是 App')
-    if not args.no_shots: d.screenshot(path=os.path.join(OUT, 'demo-desk.png'))
+    for w in widths:
+        W, H = SIZES[w]
+        if 'flow' in only: run(b, W, H, w == 360)
+        if 'story' in only: story_checks(b, W, H)
+        if 'deload' in only: deload_checks(b, W, H)
+        if 'gains' in only: gains_checks(b, W, H)
+    # /demo 电脑版（只和 360 宽的那一份一起跑，不分宽度）
+    if 'demo' in only and 360 in widths:
+        d = b.new_page(viewport={'width': 1440, 'height': 900})
+        d.on('pageerror', lambda e: errors.append(f'demo pageerror: {e}'))
+        d.goto(args.base + '/demo'); d.wait_for_selector('iframe'); d.wait_for_timeout(1500)
+        ok(d.locator('iframe').count() == 1, '/demo 电脑版：手机里是 App')
+        if not args.no_shots: d.screenshot(path=os.path.join(OUT, 'demo-desk.png'))
     b.close()
 
 print(f'\n{"失败 " + str(len(errors)) + " 项" if errors else "全部通过"}')

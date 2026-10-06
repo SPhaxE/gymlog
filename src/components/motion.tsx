@@ -83,6 +83,36 @@ export function sharedTransition(update: () => void) {
   doc.startViewTransition(() => flushSync(update));
 }
 
+/** 转场中点按不丢（2026-10-06 查出）：View Transitions 进行时，页面上的元素点不到——点击的目标是 <html>、elementFromPoint 也只给 <html>，
+ *  `::view-transition { pointer-events: none }` 在 Chrome 里并不能让点按穿过去。用户在休息面板展开（约半秒）期间点组行，这一下会被吞掉；
+ *  整套检查里「点组行改数」偶发失败就是这个（机器慢、转场更久时必现）。
+ *  做法：装一次，包住 startViewTransition 记下正在跑的那次；按下（pointerdown）时如果目标是 <html> 且转场在跑，就 skipTransition（DOM 早已是终态，
+ *  动画被用户的点按打断），并记下按下的坐标；随后到来的那个落在 <html> 上的 click 被拦下，改成点坐标处的真元素。 */
+export function guardTransitionTaps() {
+  const doc = document as Document & { startViewTransition?: (cb?: () => unknown) => { finished: Promise<unknown>; skipTransition: () => void } };
+  const w = window as unknown as { __tapGuard?: boolean };
+  if (!doc.startViewTransition || w.__tapGuard) return;
+  w.__tapGuard = true;
+  const start = doc.startViewTransition.bind(doc);
+  let active: { skipTransition: () => void } | null = null;
+  doc.startViewTransition = (cb) => {
+    const vt = start(cb);
+    active = vt;
+    void vt.finished.catch(() => undefined).finally(() => { if (active === vt) active = null; });
+    return vt;
+  };
+  let lost: { x: number; y: number } | null = null;
+  document.addEventListener('pointerdown', (e) => {
+    if (active && e.target === document.documentElement) { lost = { x: e.clientX, y: e.clientY }; active.skipTransition(); active = null; } else lost = null;
+  }, true);
+  document.addEventListener('click', (e) => {
+    if (!lost || e.target !== document.documentElement) return;
+    const { x, y } = lost; lost = null;
+    const el = document.elementFromPoint(x, y);
+    if (el && el !== document.documentElement) { e.stopImmediatePropagation(); e.preventDefault(); (el as HTMLElement).click(); }
+  }, true);
+}
+
 /** 详情整屏：卡片底、标题、主数字与列表行同名（sharedName），转场时列表行原地长成这一屏；其余内容随后淡入。返回键 / 按钮关闭 */
 export function SharedDetail({ id, title, sub, hero, onBack, children }: { id: string; title: string; sub?: ReactNode; hero?: ReactNode; onBack: () => void; children?: ReactNode }) {
   useBackHandler(true, onBack);

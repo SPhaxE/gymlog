@@ -17,8 +17,10 @@
 
 ```bash
 npm ci && npm run check                 # 改之前、改之后都要全绿
-npx vite --port 5199 --host 127.0.0.1 & python3 scripts/shoot_6a.py   # 演示全流程门禁
+npx vite --port 5199 --host 127.0.0.1 & python3 scripts/shoot_6a.py   # 演示全流程门禁（两个宽度并行，约 1 分钟；加 --no-shots 不截图更快）
 ```
+
+日常迭代别每次跑全套：`npm run test:changed`（只跑改到的测试）、`python3 scripts/shoot_6a.py --no-shots --only gains`（只跑某类：flow / story / deload / gains / demo）；提交前再跑一遍完整的 `npm run check` 和 `npm run gate`。
 
 合并流程：功能分支 → PR → CI 绿 → merge 方式合并 → 等 Vercel 生产部署（https://gymlog-taupe.vercel.app/demo）。
 
