@@ -47,6 +47,8 @@ export interface GainRow {
 export interface GainsSummary {
   /** 近 4 周的 PR 次数 */
   pr: number;
+  /** 每周的 PR 次数，4 项，最早一周在前、本周在后（加起来 = pr） */
+  prWeeks: number[];
   /** 近 4 周练过的动作里：预估上升 / 持平 / 下降 / 只有基线（四项加起来 = trained） */
   up: number; flat: number; down: number; baseline: number;
   trained: number;
@@ -119,13 +121,16 @@ export function gainsData(scenario: string | Source, now: number): GainsData {
 
   // 近 4 周摘要：只看最近一次记录落在窗口内的动作，涨跌用的就是行里的 delta，所以摘要和列表是同一个数
   const inWin = rows.filter((r) => r.lastMs > now - WINDOW);
-  const summary: GainsSummary = { pr: 0, up: 0, flat: 0, down: 0, baseline: 0, trained: inWin.length };
+  const summary: GainsSummary = { pr: 0, prWeeks: [0, 0, 0, 0], up: 0, flat: 0, down: 0, baseline: 0, trained: inWin.length };
   for (const r of inWin) {
     if (r.delta.dir === 'up') summary.up++; else if (r.delta.dir === 'flat') summary.flat++; else if (r.delta.dir === 'down') summary.down++; else summary.baseline++;
   }
   for (const id of ids) {
     if (!env.ex.has(id)) continue;
-    summary.pr += exerciseRecords(env, history, id).filter((r) => r.isPR && r.session.startMs > now - WINDOW && r.session.startMs <= now).length;
+    for (const r of exerciseRecords(env, history, id)) {
+      if (!r.isPR || r.session.startMs <= now - WINDOW || r.session.startMs > now) continue;
+      summary.pr++; summary.prWeeks[3 - Math.min(3, Math.floor((now - r.session.startMs) / (7 * DAY)))]++;
+    }
   }
 
   const have = new Set(rows.map((r) => r.region));

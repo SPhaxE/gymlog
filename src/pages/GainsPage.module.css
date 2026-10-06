@@ -10,7 +10,8 @@
 
 /* 摘要卡：左边破纪录大数字，右边四个涨跌计数 */
 .sum { display: grid; gap: var(--milo-space-m); }
-.pr { display: flex; align-items: baseline; justify-content: space-between; gap: var(--milo-space-m); color: var(--milo-color-text-secondary); }
+.top { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--milo-space-m); }
+.pr { display: grid; gap: var(--milo-space-xs); color: var(--milo-color-text-secondary); }
 .prNum { display: inline-flex; align-items: baseline; gap: var(--milo-space-xs); color: var(--milo-color-text-primary); }
 .stats { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--milo-space-s); }
 .stats li { display: grid; gap: var(--milo-space-2xs); justify-items: start; min-width: 0; }

@@ -7,7 +7,7 @@
  *  - 表现：摘要里破纪录次数用码表滚动（M04）；切部位时列表交错弹入（M07）；涨跌一律 ▲▼= 形状 + 文字；页头右上角一组同心杠铃片是装饰，不可点。 */
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Card, Cascade, Chip, Delta, GainGroupHead, GainRow, Nav, Num, Odometer, PageHeader, Screen, StateView, useToast, type Tab } from '../components';
+import { Card, Cascade, Chip, Delta, GainGroupHead, GainRow, Nav, Num, Odometer, PageHeader, Screen, StateView, WeekBars, useToast, type Tab } from '../components';
 import { env, fmt, REGION_NAME } from '../data/demo';
 import { gainsData, groupGains, type GainRow as Row } from '../data/gains';
 import { useSource } from '../data/useSource';
@@ -47,9 +47,12 @@ export function GainsPage({ scenario, now, onTab }: { scenario?: string; now: nu
           <>
             <Card label="近 4 周摘要">
               <div className={s.sum}>
-                <div className={s.pr}>
-                  <span className="milo-text-caption">近 4 周破纪录</span>
-                  <span className={s.prNum}><Odometer value={String(sm.pr)} size="xl" /><span className="milo-text-body">次</span></span>
+                <div className={s.top}>
+                  <div className={s.pr}>
+                    <span className="milo-text-caption">近 4 周破纪录</span>
+                    <span className={s.prNum}><Odometer value={String(sm.pr)} size="xl" /><span className="milo-text-body">次</span></span>
+                  </div>
+                  <WeekBars compact unit="次" weeks={sm.prWeeks.map((value, i) => ({ label: ['3 周前', '2 周前', '1 周前', '近 7 天'][i], value, current: i === 3 }))} />
                 </div>
                 {sm.trained === 0 ? (
                   <p className={`milo-text-caption ${s.idle}`}>近 4 周还没练，下面是之前的记录。</p>

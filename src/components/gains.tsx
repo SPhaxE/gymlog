@@ -56,7 +56,7 @@ export function GainGroupHead({ kind, count }: { kind: GroupKind; count: number 
     <h2 className={cx(s.head, kind === 'add' && s.headLit)}>
       <i className={s.headIcon} aria-hidden="true"><Icon name={h.icon} small /></i>
       <span className={s.headText}><b className="milo-text-title-m">{h.title}</b><span className="milo-text-caption">{h.hint}</span></span>
-      <span className={s.count}><Num size="m" value={count} unit="个" /></span>
+      <span className={s.count}><Num size="s" value={count} unit="个" /></span>
     </h2>
   );
 }
