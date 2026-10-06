@@ -306,6 +306,115 @@
     },
   };
 
+  // ---------- 我的 v1.4：并入成长层（P11）+ 牛龄页（P13），阶段 6d ----------
+  // 数字取自成长引擎的演示用户形状（壮牛 2 级、连胜 9 周……）；线框只比布局。
+  // 离下一级用「再涨 X kg」这种可行动的说法，不写抽象经验值（ia §1.14）。
+  const GROW = {
+    stage: '壮牛', sub: 2, pct: 62, lift: '再涨 3 kg 杠铃卧推的预估 1RM', cycle: '或再完成 1 个训练周期',
+    streak: 9, done: 2, target: 4, freeze: 1, niujin: '6,060',
+    weeks: ['kept', 'kept', 'deload', 'kept', 'kept', 'kept', 'missed', 'frozen', 'kept', 'kept', 'kept', 'open'],
+    log: [['10/2', '升级：壮牛 2 级', '+100'], ['9/28', '连胜 8 周', '+100'], ['9/22', 'PR：杠铃深蹲 142 → 145 kg', '+30'], ['9/14', '完成第 5 个训练周期', '+200'], ['9/8', '守约周（减量周）', '+50']],
+  };
+  const cow = (w, h, o = {}) => `<div class="slot" style="width:${w}px;height:${h}px;flex:none;padding:0;${o.round === false ? '' : 'border-radius:50%;'}${o.dark ? 'color:#BDBDB9;border-color:#777;' : ''}">小牛</div>`;
+  const wk = (st) => {
+    const css = {
+      kept: 'background:#2b2b29', deload: 'background:#8E8E8A',
+      frozen: 'background-color:#D3D3CF;background-image:repeating-linear-gradient(135deg,#8E8E8A 0 2px,transparent 2px 6px)',
+      missed: 'border:1.5px dashed #A9A9A5', open: 'border:2px solid #2b2b29;background:#EFEFEC',
+    }[st];
+    return `<i style="width:20px;height:20px;border-radius:5px;display:inline-block;flex:none;${css}"></i>`;
+  };
+  const wkStrip = () => `<div class="row" style="gap:6px">${GROW.weeks.map(wk).join('')}</div>
+    <div class="t-s" style="margin-top:6px">实心 = 守约 · 灰 = 减量周 · 斜纹 = 冻结卡抵掉 · 虚线 = 没守约 · 粗框 = 本周</div>`;
+  const me2Groups = (noBalance) => [
+    { title: '钱包与会员', rows: [['钱包 · 商城', noBalance ? '' : `${GROW.niujin} 牛劲`], ['会员', '未开通'], ['消息', '3 条新']] },
+    { title: '导航', rows: [['显示今日进度环', '开'], ['显示休息倒计时描边', '开'], ['休息结束提示', '描边 + 振动']] },
+    { title: '数据', rows: [['载入示例数据', ''], ['导出 CSV', ''], ['演示：会员状态', '非会员'], ['清除全部数据', '']] },
+    { title: '关于', rows: [['人体图与动作示范', 'MuscleWiki'], ['版本', '0.1.0']] },
+  ];
+  const tile = (a, b, h) => `<div class="box" style="padding:10px 12px;height:${h}px"><div class="t-s">${a}</div><div class="t-l" style="font-size:20px;margin-top:6px">${b}</div></div>`;
+  const tiles = (h) => `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">${[['训练经验', '进阶'], ['单次时长', '60 分钟'], ['可用器械', '6 类'], ['体型示意', '男 · 72 kg']].map(([a, b]) => tile(a, b, h)).join('')}</div>`;
+  const ME2 = {
+    W1: {
+      title: '牛龄行置顶 + 档案四格',
+      note: '<em>牛龄行置顶（最稳）</em>：在你选的「档案四格」上面加一条牛龄行——小牛头像 + 壮牛 2 级 + 进度条 + 连胜 9 周，点进牛龄页；下面是原来的四格和分组列表（钱包与会员 / 导航 / 数据 / 关于）。改动最小，你选过的结构不变。代价：成长只占一行，存在感弱。',
+      html: () => `${status}<div class="pad" style="padding-top:10px"><div class="t-title">我的</div>
+        <div class="box row" style="margin-top:10px;padding:10px 12px;gap:12px" data-a="1">${cow(48, 48)}<div style="flex:1;min-width:0"><div class="row"><span class="t-h">${GROW.stage} · ${GROW.sub} 级</span><div class="sp"></div><span class="t-b t-num">连胜 ${GROW.streak} 周</span></div><div class="bar" style="margin-top:8px"><i style="width:${GROW.pct}%"></i></div><div class="t-s" style="margin-top:4px">${GROW.lift}，升 1 小级</div></div><span class="t-s">›</span></div>
+        <div data-a="2" style="margin-top:10px">${tiles(68)}</div>
+        ${meRows(me2Groups(false))}</div>${nav('me')}`,
+    },
+    W2: {
+      title: '成长卡做主角',
+      note: '<em>成长最显眼</em>：顶部一张深色大卡——小牛、牛龄、进度条、「再涨 3 kg…」，下面三个数（连胜 · 本周 · 牛劲），点整张进牛龄页；档案四格缩矮放在下面。小牛是产品的情感点，这版把它放到最大。代价：档案被挤到第一屏下半，改档案要多滑一下。',
+      html: () => `${status}<div class="pad" style="padding-top:10px"><div class="t-title">我的</div>
+        <div class="dark" style="margin-top:10px;padding:14px" data-a="1"><div class="row" style="gap:12px">${cow(56, 56, { dark: true })}<div style="flex:1"><div class="t-h" style="color:#FAFAF8;font-size:17px">${GROW.stage} · ${GROW.sub} 级</div><div class="bar" style="margin-top:8px;background:#555"><i style="width:${GROW.pct}%;background:#FAFAF8"></i></div></div></div>
+          <div class="t-s" style="margin-top:8px;color:#D3D3CF">${GROW.lift}，升 1 小级</div>
+          <div style="height:1px;background:#4a4a47;margin:12px 0"></div>
+          <div class="row" style="justify-content:space-between">${[[GROW.streak, ' 周', '连胜'], [`${GROW.done} / ${GROW.target}`, ' 次', '本周'], [GROW.niujin, '', '牛劲']].map(([n, u, l]) => `<div><div class="t-l" style="font-size:22px;color:#FAFAF8">${n}<span class="t-b">${u}</span></div><div class="t-s" style="color:#BDBDB9;margin-top:2px">${l}</div></div>`).join('')}<span class="t-s" style="color:#BDBDB9">›</span></div></div>
+        <div class="t-s" style="margin:14px 0 6px;font-weight:700">档案</div><div data-a="2">${tiles(64)}</div>
+        ${meRows(me2Groups(true))}</div>${nav('me')}`,
+    },
+    W3: {
+      title: '档案四格在上 + 成长横带',
+      note: '<em>档案仍是第一入口</em>：你选定的「档案四格」原样放最上，下面夹一条成长横带（小牛头像 · 壮牛 2 级 | 连胜 9 周 | 牛劲 6,060），整条可点进牛龄页；列表往上提。成长比 W1 更有分量，又不抢档案。代价：成长在第一屏中部，不如 W2 抢眼。',
+      html: () => `${status}<div class="pad" style="padding-top:10px"><div class="t-title">我的</div>
+        <div data-a="1" style="margin-top:10px">${tiles(76)}</div>
+        <div class="box row" style="margin-top:10px;padding:8px 12px;gap:10px;height:56px" data-a="2">${cow(36, 36)}<div><div class="t-h">${GROW.stage} · ${GROW.sub} 级</div><div class="t-s">连胜 ${GROW.streak} 周</div></div><div class="sp"></div><div style="text-align:right"><div class="t-h t-num">${GROW.niujin}</div><div class="t-s">牛劲</div></div><span class="t-s">›</span></div>
+        ${meRows(me2Groups(true))}</div>${nav('me')}`,
+    },
+  };
+
+  const subTop = (t) => `<div class="row pad" style="height:44px;gap:10px"><span class="t-l" style="font-size:22px">‹</span><span class="t-h">${t}</span></div>`;
+  const statRow = (items) => `<div class="row" style="justify-content:space-around;text-align:center">${items.map(([n, u, l]) => `<div><div class="t-l" style="font-size:24px">${n}<span class="t-b">${u}</span></div><div class="t-s" style="margin-top:2px">${l}</div></div>`).join('')}</div>`;
+  const logRows = (n) => GROW.log.slice(0, n).map(([d, t, v], i) => `<div class="row" style="height:40px;${i ? 'border-top:1px solid #EEE' : ''}"><span class="t-s" style="width:34px">${d}</span><span class="t-b">${t}</span><div class="sp"></div><span class="t-s t-num">${v}</span></div>`).join('');
+  const delNote = '<div class="t-s" style="margin-top:10px;line-height:1.5">删除训练后，成长值和连胜会重新计算，可能降级；降级不弹窗，只在这里写明。</div>';
+  const STEPS = [[GROW.streak, ' 周', '连胜'], [`${GROW.done} / ${GROW.target}`, ' 次', '本周'], [GROW.freeze, ' 张', '冻结卡']];
+  const LEVEL = {
+    W1: {
+      title: '小牛为主角（纵向叙事）',
+      note: '<em>像读一页「小牛成长日记」</em>：上面一块大舞台——小牛、壮牛 2 级、进度条、「再涨 3 kg 杠铃卧推的预估 1RM」；下面依次是连胜三格、最近 12 周点阵、成长记录。代价：长期成长和短期连胜是上下关系，连胜被压在第二屏。',
+      html: () => `${status}${subTop('牛龄')}<div class="pad">
+        <div class="fill" style="padding:14px 16px 16px;text-align:center" data-a="1"><div class="slot" style="width:160px;height:120px;margin:0 auto">小牛 PNG（${GROW.stage}）</div>
+          <div class="t-title" style="margin-top:10px">${GROW.stage} · ${GROW.sub} 级</div><div class="bar" style="margin-top:10px;height:6px"><i style="width:${GROW.pct}%"></i></div>
+          <div class="t-b" style="margin-top:10px">${GROW.lift}，升 1 小级</div><div class="t-s" style="margin-top:2px">${GROW.cycle}</div></div>
+        <div class="box" style="margin-top:12px;padding:12px">${statRow(STEPS)}</div>
+        <div class="t-s" style="margin:14px 0 6px;font-weight:700">最近 12 周</div>${wkStrip()}
+        <div class="t-s" style="margin:14px 0 2px;font-weight:700">成长记录</div>${logRows(4)}${delNote}</div>`,
+    },
+    W2: {
+      title: '双轨并列',
+      note: '<em>牛龄（长期）和连胜（短期）左右等权</em>：一眼看到两条线；下面一条「下一级」目标，再往下是成长记录（可按 全部 / 守约周 / 升级 筛）。对应产品里「牛龄 = 等级、连胜 = 粘性」的双轨设计。代价：小牛变小了，情感冲击弱。',
+      html: () => `${status}${subTop('牛龄')}<div class="pad">
+        <div class="row" style="gap:8px;align-items:stretch" data-a="1">
+          <div class="box" style="flex:1;padding:12px;text-align:center;display:flex;flex-direction:column;align-items:center">${cow(64, 64)}<div class="t-h" style="margin-top:8px">${GROW.stage} · ${GROW.sub} 级</div><div class="bar" style="margin-top:8px;width:100%"><i style="width:${GROW.pct}%"></i></div><div class="t-s" style="margin-top:6px">牛龄 · 长期</div></div>
+          <div class="box" style="flex:1;padding:12px;text-align:center"><div class="t-xl" style="margin-top:6px">${GROW.streak}<span class="t-b"> 周</span></div><div class="t-s" style="margin-top:8px">连胜 · 本周 ${GROW.done} / ${GROW.target} 次</div>
+            <div class="row" style="justify-content:center;gap:4px;margin-top:10px">${[1, 1, 0, 0].map((f) => `<i style="width:14px;height:14px;border-radius:50%;display:inline-block;${f ? 'background:#2b2b29' : 'border:1.5px solid #A9A9A5'}"></i>`).join('')}</div><div class="t-s" style="margin-top:8px">冻结卡 ${GROW.freeze} 张</div></div></div>
+        <div class="fill" style="margin-top:10px;padding:10px 12px"><div class="t-b"><b>下一级</b>：${GROW.lift}</div><div class="t-s" style="margin-top:2px">${GROW.cycle}</div></div>
+        <div class="row" style="margin:14px 0 6px"><span class="t-s" style="font-weight:700">成长记录</span><div class="sp"></div><div class="seg"><span class="on">全部</span><span>守约周</span><span>升级</span></div></div>
+        ${logRows(5)}${delNote}</div>`,
+    },
+    W3: {
+      title: '阶梯路线图',
+      note: '<em>强调「还能长到哪儿」</em>：把 5 段 × 3 小级画成一座竖梯，你站在「壮牛 2 级」上，上面是还没到的公牛 / Milo（灰），下面是已走过的（✓）；连胜压成顶部一条。代价：梯子占地方，周点阵和记录被压到下半屏；5 段名字要一眼认得出。',
+      html: () => {
+        const names = ['Milo', '公牛', '壮牛', '小牛', '牛犊'], cur = 2;
+        const pip = (on, now) => `<i style="width:14px;height:14px;border-radius:4px;display:inline-block;${now ? 'background:#2b2b29;box-shadow:0 0 0 3px #C9C9C5' : on ? 'background:#2b2b29' : 'border:1.5px solid #A9A9A5'}"></i>`;
+        const ladder = names.map((n, k) => {
+          const lv = 4 - k, done = lv < cur, isCur = lv === cur;
+          const pips = [1, 2, 3].map((s) => pip(done || (isCur && s <= GROW.sub), isCur && s === GROW.sub)).join('');
+          return `<div class="row" style="height:${isCur ? 84 : 52}px;padding:0 12px;gap:12px;${k ? 'border-top:1px solid #EEE;' : ''}${isCur ? 'background:#EFEFEC;' : ''}${!done && !isCur ? 'color:#8a8a86;' : ''}">
+            ${isCur ? cow(48, 48) : `<span class="t-h" style="width:48px;text-align:center">${done ? '✓' : ''}</span>`}
+            <div style="flex:1"><div class="t-h">${n}</div>${isCur ? `<div class="t-s">${GROW.lift}，升 1 小级</div>` : ''}</div><div class="row" style="gap:4px">${pips}</div></div>`;
+        }).join('');
+        return `${status}${subTop('牛龄')}<div class="pad">
+          <div class="box" style="padding:10px 12px">${statRow(STEPS)}</div>
+          <div class="box" style="margin-top:10px;overflow:hidden" data-a="1">${ladder}</div>
+          <div class="t-s" style="margin:14px 0 6px;font-weight:700">最近 12 周</div>${wkStrip()}
+          <div class="t-s" style="margin:14px 0 2px;font-weight:700">成长记录</div>${logRows(2)}${delNote}</div>`;
+      },
+    },
+  };
+
   // ---------- 训练进行中（无导航） ----------
   const S = () => D.session;
   const restBar = (top) => `<div class="dark abs row" style="left:16px;right:16px;${top}height:52px;padding:0 14px;border-radius:26px" data-a="1x"><span class="t-s" style="color:#ccc">休息</span><span class="t-l" style="color:#FAFAF8">${S().rest}</span><div class="sp"></div><span class="chip" style="background:none;color:#eee;border-color:#666">−15 秒</span><span class="chip" style="background:none;color:#eee;border-color:#666">+15 秒</span><span class="chip" style="background:none;color:#eee;border-color:#666">跳过</span></div>`;
@@ -459,6 +568,8 @@
     gains: { title: '增量 · 增量总览（P09）', sub: '渐进超负荷的全局视图', v: GAINS },
     log: { title: '记录 · 训练记录（P07）', sub: '时间倒序', v: LOG },
     me: { title: '我的（P11）', sub: '档案与设置', v: ME },
+    me2: { title: '我的（P11 · 并入成长层，阶段 6d）', sub: '在已选的 W2「档案四格」上加牛龄行 / 钱包 · 商城 / 会员 / 消息 / 导出 CSV · 数字取自演示用户的形状', v: ME2 },
+    level: { title: '牛龄（P13）', sub: '「我的」顶部牛龄行进入 · 子页，无导航 · 壮牛 2 级 / 连胜 9 周为示意', v: LEVEL },
     session: { title: '训练进行中（P03）', sub: '第 1 个动作做完 1 组，正在休息 · 无导航（2026-10-06 作废：打卡并入首页，见 checkin）', v: SESSION },
     checkin: { title: '首页即打卡（P01 + 原 P03）', sub: '已开始：第 1 个动作做完 2 组、正在休息 · 导航外圈 2/13 · 选中胶囊「首页 1:35」', v: CHECKIN },
     sheet: { title: '肌头详情面板（身体页）', sub: '松手后打开「中下胸」', v: SHEET },
