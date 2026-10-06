@@ -4,7 +4,8 @@
  *  - 演示数据：建档最后一步可选「载入演示数据」——成长引擎的进阶用户练了 30 周（与奖励、牛龄同一套模拟），「我的」里可清除或重新载入。
  *  - 页面带 ?scenario=… 时不读这里，走 mock 场景（截图、回归测试、Playground 用）。 */
 import { useSyncExternalStore } from 'react';
-import { DAY, simulateUser, startOfDay } from '../engine';
+import { DAY, prescribe, simulateUser, startOfDay } from '../engine';
+import { demoEnv } from '../engine/demo';
 import type { DeloadState, Profile, Session } from '../engine/types';
 
 export const STORE_KEY = 'milo:v1';
@@ -99,5 +100,26 @@ export function demoState(now: number, profile?: Profile): Pick<AppState, 'profi
     }));
     return { ...s, exercises: [...s.exercises, ...extra] };
   });
+  backfill(history, profile ?? u.profile, now);
   return { profile: profile ?? u.profile, history, deload: { status: 'none', atMs: 0 }, demo: true };
+}
+
+/** 演示的第一眼：今天的处方里不要出现「首次」（处方会轮换动作，演示数据没练过的就成了首次）。
+ *  把今天处方里没有记录的动作补进 2–4 周前的几次训练（不影响近 7 天的容量与恢复），起始重量按器械给一个保守值；
+ *  补完会改变处方，最多补 4 轮。真实用户的数据不走这里。 */
+const START_KG: Record<string, number> = { barbell: 40, dumbbell: 12.5, machine: 35, cable: 25, smith: 40, bodyweight: 10 };
+let ENV: ReturnType<typeof demoEnv> | null = null;
+function backfill(history: Session[], profile: Profile, now: number) {
+  const env = (ENV ??= demoEnv());
+  const old = history.filter((s) => s.startMs < now - 14 * DAY && s.startMs >= now - 28 * DAY).slice(-6);
+  for (let round = 0; round < 4 && old.length; round++) {
+    const rx = prescribe(env, history, profile, { now });
+    const missing = rx.kind === 'plan' ? rx.items.filter((it) => it.suggestion.weightKg == null) : [];
+    if (!missing.length) return;
+    for (const it of missing) {
+      const kg = START_KG[env.ex.get(it.exerciseId)?.equipmentType ?? 'machine'] ?? 30;
+      old.forEach((s, k) => s.exercises.push({ exerciseId: it.exerciseId, skipped: false,
+        sets: Array.from({ length: it.sets }, () => ({ type: 'work' as const, weightKg: kg + Math.floor(k / 2) * 2.5, reps: it.repRange[1], rpe: 8 })) }));
+    }
+  }
 }
