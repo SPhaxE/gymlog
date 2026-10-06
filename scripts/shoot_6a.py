@@ -68,7 +68,8 @@ def run(b, w, h, shots):
     click(pg, pg.get_by_role('button', name='开始训练')); step('train', '/today', 1200)
     ok(pg.get_by_role('button', name='打卡 · 第 1 组').count() == 1, f'{tag} 开始后留在首页，主按钮是「打卡 · 第 1 组」')
     click(pg, pg.get_by_role('button', name='打卡 · 第 1 组')); step('train-rest', None, 900)
-    ok('休息剩余' in (pg.get_by_role('navigation', name='主导航').locator('[aria-current=page]').get_attribute('aria-label') or ''), f'{tag} 休息时导航选中项写剩余时间')
+    navlabel = lambda: pg.get_by_role('navigation', name='主导航').locator('[aria-current=page]').get_attribute('aria-label') or ''
+    ok('休息剩余' not in navlabel() and pg.locator('[style*="x-rest-timer"]').count() == 1, f'{tag} 首页休息中只有一个计时器（主按钮旁的胶囊，导航不重复）')
     click(pg, pg.get_by_role('button', name='组间休息剩余')); step('train-rest-open', None, 900)
     click(pg, pg.get_by_role('button', name='第 2 组')); step('editor', None, 1000)
     kg0 = float(pg.locator('[aria-pressed=true]').get_attribute('aria-label').split()[1])
@@ -85,7 +86,9 @@ def run(b, w, h, shots):
     click(pg, pg.get_by_role('button', name='填重量 · 第 1 组')); step('fill', None, 1000)
     for k in ['4', '0']: click(pg, pg.get_by_role('button', name=k, exact=True)); pg.wait_for_timeout(150)
     click(pg, pg.get_by_role('button', name='打卡', exact=True)); step('filled', None, 900)
-    pg.goto(args.base + '/body'); step('body-training', '/body', 2500)
+    # 切到身体页：计时胶囊借共享元素飞进导航滑块（点导航，不是直接改地址）
+    click(pg, pg.get_by_role('link', name='身体')); step('body-training', '/body', 2500)
+    ok('休息剩余' in navlabel() or pg.get_by_role('button', name='组间休息剩余').count() == 0, f'{tag} 身体页：休息计时在导航滑块上')
     pg.goto(args.base + '/today'); pg.wait_for_timeout(1200)
     click(pg, pg.get_by_role('button', name='结束', exact=True)); step('end-confirm')
     click(pg, pg.get_by_role('button', name='结束并结算')); step('summary', '/summary/', 4500)

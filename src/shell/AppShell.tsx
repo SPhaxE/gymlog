@@ -5,7 +5,8 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';
 import { App as CapApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
-import { Banner, Button, FluidBackdrop, OverlayHost, ScreenAtmosphere, ToastProvider, ToastViewport, handleBack, type Tab } from '../components';
+import { Banner, Button, FluidBackdrop, OverlayHost, ScreenAtmosphere, ToastProvider, ToastViewport, handleBack, navHandoff, type Tab } from '../components';
+import { T } from '../styles/tokens.gen';
 import { BodyPage } from '../pages/BodyPage';
 import { DemoPage } from '../pages/DemoPage';
 import { HomePage } from '../pages/HomePage';
@@ -44,7 +45,21 @@ function Routed() {
   useBackButton();
   const q = new URLSearchParams(loc.search);
   const now = Number(q.get('now')) || Date.now();
-  const onTab = (_: Tab, path: string) => nav(path + loc.search);
+  // 切 Tab：休息计时在走时，计时胶囊（首页主按钮旁 ↔ 别的 Tab 的导航滑块）借 View Transitions 同元素飞过去（Nav.tsx 的 REST_VT）
+  const onTab = (_: Tab, path: string) => {
+    const go = () => nav(path + loc.search);
+    if (!document.querySelector('[style*="x-rest-timer"]')) { go(); return; }
+    const doc = document as Document & { startViewTransition?: (cb: () => Promise<void>) => unknown };
+    if (!doc.startViewTransition || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) { go(); return; }
+    if (path !== '/today') navHandoff.skipSlide = true;  // 目标页的滑块直接停好，胶囊飞进去
+    // 路由更新不是同步提交的：等目标页的导航选中项出现了再拍「新」快照（最多等 motion/slow）；转场回调期间页面暂停渲染、rAF 不跑，所以用 setTimeout 轮询
+    doc.startViewTransition(() => new Promise<void>((done) => {
+      go();
+      const t0 = performance.now();
+      const ready = () => (document.querySelector(`nav [aria-current="page"][href="${path}"]`) || performance.now() - t0 > T['motion/slow'] ? done() : window.setTimeout(ready, 16));
+      ready();
+    }));
+  };
   const focus = q.get('focus');
   // 数据源：?scenario= 走演示场景（截图、回归）；否则读本机存储，没建档先去故事引导 + 建档（ia §4 P12）
   const st = useStore();
