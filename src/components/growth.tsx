@@ -330,13 +330,17 @@ export function Paywall({ plan, member, success, onPlan, onBuy }: { plan: 'month
 /* ---------------- 消息 ---------------- */
 
 /** 「我的」→ 消息里的一行：合并的奖励 / 冻结卡已自动使用 / 降级说明（删除训练后重算）；奖励的图标只有未读时是荧光，读过的变回中性（一屏很多条时不会满屏荧光） */
-export function MessageRow({ kind, title, detail, date, unread }: { kind: 'reward' | 'freeze' | 'demote'; title: string; detail: string; date: string; unread?: boolean }) {
+/** amount：这一条入账多少牛劲——单独一列右对齐的大数字（2026-10-06 审美调整：别埋在小字里，一眼扫得到） */
+export function MessageRow({ kind, title, detail, date, unread, amount }: { kind: 'reward' | 'freeze' | 'demote'; title: string; detail: string; date: string; unread?: boolean; amount?: number }) {
   const mark: ReactNode = kind === 'reward' ? <Icon name="star" small /> : kind === 'freeze' ? <PropGlyph kind="freeze" className={s.iceS} /> : <Icon name="down" small />;
   return (
     <div className={cx(s.msg, s[`msg_${kind}`], unread && s.msgUnread)}>
       <span className={s.msgMark} aria-hidden="true">{mark}</span>
       <span className={s.msgText}><b className="milo-text-body-strong">{title}</b><span className={cx('milo-text-caption', s.muted)}>{detail}</span></span>
-      <span className={s.msgSide}><span className={cx('milo-text-micro', s.muted)}>{date}</span>{unread && <i className={s.unread} aria-label="未读" />}</span>
+      <span className={s.msgSide}>
+        {amount != null && amount > 0 && <span className={s.msgAmt}><b className="milo-text-number-m">+{amount.toLocaleString('en-US')}</b><i>牛劲</i></span>}
+        <span className={cx('milo-text-micro', s.muted)}>{date}{unread && <i className={s.unread} aria-label="未读" />}</span>
+      </span>
     </div>
   );
 }

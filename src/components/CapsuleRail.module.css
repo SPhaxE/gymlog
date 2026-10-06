@@ -20,7 +20,8 @@
   /* 几何不走 CSS 过渡：放大程度在 JS 里逐帧补间，胶囊和引线同一帧到位 */
 }
 .none { background: repeating-linear-gradient(135deg, var(--milo-color-bg-raised-2) 0 var(--milo-stroke-focus), var(--milo-color-bg-raised) var(--milo-stroke-focus) calc(var(--milo-space-xs) + var(--milo-stroke-hairline))); }
-.none .name, .none .val, .none .val b { color: var(--milo-color-text-disabled); }
+/* 0 组的胶囊：靠斜纹和没有量尺区分，字用次要色（禁用色在斜纹上只有 3.9:1，不够 4.5，2026-10-06 对比度审查） */
+.none .name, .none .val, .none .val b { color: var(--milo-color-text-secondary); }
 .gauge { position: absolute; left: 0; top: 0; bottom: 0; background: var(--milo-color-data-gauge); }
 .l1 { position: relative; display: flex; align-items: baseline; gap: var(--milo-space-s); white-space: nowrap; }
 .name { overflow: hidden; text-overflow: ellipsis; font-weight: 500; color: var(--milo-color-text-primary);

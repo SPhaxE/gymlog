@@ -277,6 +277,11 @@ def gains_checks(b, w, h):
     click(pg, pg.get_by_role('button', name='关闭')); pg.wait_for_timeout(1200)
     ok(pg.locator('[role=dialog]').count() == 0 and pg.locator('[style*="view-transition-name"]').count() == 0, f'{tag} 容量·M03：关闭后缩回胶囊，转场放完不留共享名')
     if not args.no_shots: pg.screenshot(path=os.path.join(OUT, 'volume.png'))
+    # 对比度审查（2026-10-06 用户）：各页可见文字对它实际的底色，正文 ≥ 4.5、大字 ≥ 3（WCAG AA；画在 SVG / 画布里的字另有截图核对）
+    for path in ('/today', '/body', '/gains', '/gains/barbell-bench-press-4', '/log', '/me', '/me/level', '/me/messages'):
+        pg.goto(f'{args.base}{path}?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(900)
+        low = pg.evaluate(CONTRAST)
+        ok(not low, f'{tag} 对比度·{path}：文字都达标 {low[:3]}')
     # 回到顶端：短的时候没有；滚过一屏出现，点了滚回顶、按钮收起
     pg.goto(f'{args.base}/log?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(700)
     btt = pg.get_by_role('button', name='回到顶端')
@@ -370,6 +375,29 @@ def hole_lums(pg):
         px = [im.getpixel((int(x * sx) + dx, int(y * sy) + dy))[1] for dx in (-1, 0, 1) for dy in (-1, 0, 1)]
         out.append(((x - box['x']) / box['w'], sum(px) / len(px)))
     return out
+
+CONTRAST = r"""() => {
+  const parse = (c) => { const m = c.match(/rgba?\(([^)]+)\)/); if (!m) return null; const p = m[1].split(/[ ,\/]+/).filter(Boolean).map(Number); return [p[0], p[1], p[2], p.length > 3 ? p[3] : 1]; };
+  const lum = ([r, g, b]) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+  const blend = (top, bot) => { const a = top[3]; return [top[0] * a + bot[0] * (1 - a), top[1] * a + bot[1] * (1 - a), top[2] * a + bot[2] * (1 - a), 1]; };
+  const bgOf = (el) => { const layers = []; for (let e = el; e; e = e.parentElement) { const c = parse(getComputedStyle(e).backgroundColor); if (c && c[3] > 0) { layers.push(c); if (c[3] >= 0.99) break; } } let bg = [10, 10, 11, 1]; for (let i = layers.length - 1; i >= 0; i--) bg = blend(layers[i], bg); return bg; };
+  const out = [];
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  const seen = new Set();
+  while (walker.nextNode()) {
+    const t = walker.currentNode; if (!t.textContent.trim()) continue; const el = t.parentElement; if (!el || seen.has(el)) continue; seen.add(el);
+    if (el.closest('svg') || el.closest('[aria-hidden=true]') || el.closest('nav')) continue;  // 导航选中项的字在骨白滑块上（滑块是兄弟元素，不是祖先），这里算不准，另有截图核对
+    const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || +cs.opacity === 0) continue;
+    const r = el.getBoundingClientRect(); if (r.width === 0 || r.bottom < 0 || r.top > innerHeight) continue;
+    let fg = parse(cs.color); if (!fg) continue; let op = 1; for (let e = el; e; e = e.parentElement) op *= +getComputedStyle(e).opacity;
+    const bg = bgOf(el); fg = blend([fg[0], fg[1], fg[2], fg[3] * op], bg);
+    const L1 = lum(fg), L2 = lum(bg), ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+    const size = parseFloat(cs.fontSize), bold = +cs.fontWeight >= 600, large = size >= 24 || (size >= 18.66 && bold);
+    const need = large ? 3 : 4.5;
+    if (ratio < need) out.push([+ratio.toFixed(2), need, size, t.textContent.trim().slice(0, 24), el.className.toString().slice(0, 40)]);
+  }
+  return out;
+}"""
 
 def log_checks(b, w, h):
     """记录页（P07）：钢板上的孔数 = 练过的天数、板的节点数、固定光源下的亮暗与光束、拖动吸附与读数、减少动态效果下静止、周合计自洽、更早的训练、空态；"""

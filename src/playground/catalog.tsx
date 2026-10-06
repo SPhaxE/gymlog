@@ -622,11 +622,11 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'MessageRow', group: '增长',
-    desc: '「我的」→ 消息：同时达成多项时没弹出来的奖励、冻结卡已自动使用、删除训练后的降级说明（不弹窗，只写在这里）。',
+    desc: '「我的」→ 消息：同时达成多项时没弹出来的奖励、冻结卡已自动使用、删除训练后的降级说明（不弹窗，只写在这里）。入账的牛劲单独一列右对齐（amount），日期在它下面；消息页按月分段。',
     axes: { kind: ['reward', 'freeze', 'demote'], unread: ['true', 'false'] }, rows: ['kind'], cols: 'unread', size: 'card',
     render: (p) => {
-      const v = { reward: ['破纪录 · 杠铃卧推', '预估 1RM 82.5 → 85 kg，+30 牛劲'], freeze: ['冻结卡已自动使用', '上周练了 1 / 4 次，连胜 7 周保住了'], demote: ['牛龄回到 壮牛 1 级', '你删除了 9 月 12 日的训练，成长值已重算'] }[p.kind] as [string, string];
-      return <MessageRow kind={p.kind as 'reward' | 'freeze' | 'demote'} title={v[0]} detail={v[1]} date="今天" unread={p.unread === 'true'} />;
+      const v = { reward: ['同时达成 2 项', '升级：壮牛 2 级 · PR 杠铃卧推'], freeze: ['冻结卡已自动使用', '上周练了 1 / 4 次，连胜 7 周保住了'], demote: ['牛龄回到 壮牛 1 级', '你删除了 9 月 12 日的训练，成长值已重算'] }[p.kind] as [string, string];
+      return <MessageRow kind={p.kind as 'reward' | 'freeze' | 'demote'} title={v[0]} detail={v[1]} amount={p.kind === 'reward' ? 130 : undefined} date="今天" unread={p.unread === 'true'} />;
     },
   },
   {
