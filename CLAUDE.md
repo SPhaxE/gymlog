@@ -19,3 +19,5 @@ npx vite --port 5199 --host 127.0.0.1 & python3 scripts/shoot_6a.py   # 演示�
 ```
 
 合并流程：功能分支 → PR → CI 绿 → merge 方式合并 → 等 Vercel 生产部署（https://gymlog-taupe.vercel.app/demo）。
+
+**改完默认走完这条流程，不用再问用户**（用户 2026-10-06 定的标准操作）：开 PR、等 CI 绿、merge 合并、核对线上 /demo 已是新代码，最后一并汇报。只有改动范围不清楚、或 CI 红且不是这次改动造成时才停下来问。
