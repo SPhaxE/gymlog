@@ -6,6 +6,7 @@ export { BodyFigure, type Anchors } from './BodyFigure';
 export { Button, IconButton, type ButtonKind } from './Button';
 export { Capsule, CapsuleRail } from './CapsuleRail';
 export { Sparkline, TrendChart, type Point } from './charts';
+export { GainGroupHead, GainRow, type GroupKind as GainGroupKind } from './gains';
 export { DotCalendar, GiantNumber, Odometer, StepRing, WeekBars, dotMonths, type DotMonth } from './dataviz';
 export { Cascade, RestDock, SharedDetail, Tilt, sharedName, sharedTransition } from './motion';
 export { Chip, NumberField, OptionCard, OptionGroup, ProgressSteps, Stepper, Switch } from './controls';

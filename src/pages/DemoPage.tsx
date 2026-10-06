@@ -18,6 +18,7 @@ function stepOf(path: string): string {
   if (path.startsWith('/onboarding')) return st.draft ? 'setup' : 'story';
   if (path.startsWith('/summary')) return 'summary';
   if (path.startsWith('/body')) return 'body';
+  if (path.startsWith('/gains')) return 'gains';
   if (path.startsWith('/today')) return st.active ? 'session' : 'today';
   return '';
 }
@@ -59,6 +60,7 @@ export function DemoPage() {
     { id: 'session', t: '就在首页打卡', d: '点「开始训练」，主角卡原地展开成组行；拇指区一个「打卡」，休息在导航里走；点组行才拉出键盘改数。' },
     { id: 'summary', t: '结算 → 今天已练完', d: '破纪录卡、力竭度、牛龄成长；回到首页是「今天已练完」和恢复进度。' },
     { id: 'body', t: '身体', d: '半身肌肉图 + 容量胶囊，长按胶囊放大，看哪块进了黄金窗。', go: { label: '打开身体页', run: withDemo('/body') } },
+    { id: 'gains', t: '增量', d: '近 4 周破了几次纪录、哪些动作在涨；按「该加重 / 保持 / 该减重」分组，每行的「下次」就是首页处方里的重量。', go: { label: '打开增量页', run: withDemo('/gains') } },
   ];
 
   if (!desk) return null;

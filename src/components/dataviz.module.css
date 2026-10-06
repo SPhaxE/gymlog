@@ -25,6 +25,7 @@
 .barCol { display: grid; justify-items: center; gap: var(--milo-space-xs); color: var(--milo-color-text-secondary); }
 .barVal { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-caption); color: var(--milo-color-text-primary); }
 .barTrack { position: relative; width: var(--milo-space-m); height: calc(var(--milo-size-chart-h) * 0.7); border-radius: var(--milo-radius-pill); background: var(--milo-color-data-track); overflow: hidden; }
+.barsCompact .barTrack { height: var(--milo-size-hit-min); }
 .barFill, .barNow { position: absolute; left: 0; right: 0; bottom: 0; border-radius: var(--milo-radius-pill); background: var(--milo-color-data-gauge);
   transition: height var(--milo-motion-spring-ms) var(--milo-motion-ease-spring); }
 .barNow { background: var(--milo-color-control-selected); }

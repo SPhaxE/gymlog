@@ -4,12 +4,14 @@
  *  - 演示数据：建档最后一步可选「载入演示数据」——成长引擎的进阶用户练了 30 周（与奖励、牛龄同一套模拟），「我的」里可清除或重新载入。
  *  - 页面带 ?scenario=… 时不读这里，走 mock 场景（截图、回归测试、Playground 用）。 */
 import { useSyncExternalStore } from 'react';
-import { DAY, prescribe, simulateUser, startOfDay } from '../engine';
+import { DAY, planFor, prescribe, simulateUser, startOfDay } from '../engine';
 import { demoEnv } from '../engine/demo';
 import type { DeloadState, Profile, Session } from '../engine/types';
 
 export const STORE_KEY = 'milo:v1';
 export const DEMO_WEEKS = 30;
+/** 演示数据多模拟的周数（相位）：0 = 最后一周正好是减量周；3 = 最后一周是减量后第 3 周，有升有平有降；见 demoState */
+export const DEMO_PHASE = 3;
 
 /** 进行中训练的一组：输入框里的原始文字（保留用户正在输入的状态），完成后才计入 */
 export interface DraftSet { type: 'work' | 'warmup' | 'drop'; weight: string; reps: string; done: boolean }
@@ -88,10 +90,12 @@ const ACCESSORY: [string, number, number, number][][] = [
 ];
 
 /** 演示数据：进阶用户、每周 4 练，练到昨天为止的 30 周（成长引擎同一套模拟，数字全部实算），每次训练再加辅助动作 */
-export function demoState(now: number, profile?: Profile): Pick<AppState, 'profile' | 'history' | 'deload' | 'demo'> {
-  const start = startOfDay(now) - DEMO_WEEKS * 7 * DAY;
-  const u = simulateUser('intermediate', DEMO_WEEKS, start);
-  const history = u.history.filter((s) => s.startMs < startOfDay(now)).map((s) => {
+export function demoState(now: number, profile?: Profile, phase = DEMO_PHASE): Pick<AppState, 'profile' | 'history' | 'deload' | 'demo'> {
+  // 模拟里每 5 周一个减量周（w % 5 === 4）。多模拟 phase 周、再截掉开头，让展示的最后一周落在减量之后的正常周：
+  // 否则演示用户正好停在减量周，增量页「与上一次比」几乎全是 ▼，像是全面退步（2026-10-06）
+  const total = DEMO_WEEKS + phase;
+  const u = simulateUser('intermediate', total, startOfDay(now) - total * 7 * DAY);
+  const history = u.history.filter((s) => s.startMs >= startOfDay(now) - DEMO_WEEKS * 7 * DAY && s.startMs < startOfDay(now)).map((s) => {
     const [, , w, i] = s.id.split('-').map(Number);
     const deload = (s.exertion ?? 8) < 8, grow = 1 + 0.2 * (w / DEMO_WEEKS);
     const extra = ACCESSORY[i % ACCESSORY.length].map(([exerciseId, kg, reps, sets]) => ({
@@ -100,8 +104,36 @@ export function demoState(now: number, profile?: Profile): Pick<AppState, 'profi
     }));
     return { ...s, exercises: [...s.exercises, ...extra] };
   });
+  shapeNextSteps(history);
   backfill(history, profile ?? u.profile, now);
   return { profile: profile ?? u.profile, history, deload: { status: 'none', atMs: 0 }, demo: true };
+}
+
+/** 让演示用户的「下一步」有升有保有降（增量页分三组、首页处方都靠它），不动预估 1RM 的走向：
+ *  - 主项（深蹲、卧推、硬拉）模拟里按 5 次编，而引擎对复合动作的次数区间是 6–8，「掉到下限以下」会让它们永远被判「该减重」→ 全部抬到 6 次；
+ *  - 其余动作按名字散列分三种：多数维持原样（做到次数上限 → 该加重）、约 1/5 最近一次少做一次（保持，次数 +1）、
+ *    约 1/9 最近一次状态差（重量降一档、最后一组掉到下限以下 → 该减重，预估 1RM 也跟着低一点），都只改每个动作的最近一次。 */
+function shapeNextSteps(history: Session[]) {
+  const env = (ENV ??= demoEnv());
+  for (const s of history) for (const e of s.exercises) {
+    const ex = env.ex.get(e.exerciseId);
+    if (!ex) continue;
+    const lower = planFor(env, ex, false).repRange[0];
+    for (const r of e.sets) if (r.reps != null && r.reps < lower) r.reps = lower;
+  }
+  const last = new Map<string, Session['exercises'][number]>();
+  for (const s of history) for (const e of s.exercises) last.set(e.exerciseId, e);
+  const main = new Set(['barbell-squat-8', 'barbell-bench-press-4', 'barbell-deadlift-39']);
+  for (const [id, e] of last) {
+    const ex = env.ex.get(id);
+    if (!ex || main.has(id) || e.sets.length < 2) continue;
+    const h = [...id].reduce((a, c) => a + c.charCodeAt(0), 0) % 9, lower = planFor(env, ex, false).repRange[0];
+    if (h < 2) { const r = e.sets[0]; if (r.reps != null) r.reps = Math.max(lower, r.reps - 1); }
+    else if (h === 2) {
+      for (const r of e.sets) if (r.weightKg) r.weightKg = Math.max(2.5, Math.round((r.weightKg * 0.95) / 2.5) * 2.5);
+      const r = e.sets[e.sets.length - 1]; r.reps = lower - 1;
+    }
+  }
 }
 
 /** 演示的第一眼：今天的处方里不要出现「首次」（处方会轮换动作，演示数据没练过的就成了首次）。
