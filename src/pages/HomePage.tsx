@@ -8,16 +8,21 @@ import { useMemo, useState, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router';
 import { startSession } from '../data/session';
 import { useStore } from '../data/store';
+import { useSource } from '../data/useSource';
 import { useTrainingNav } from '../data/useTrainingNav';
-import { Banner, Button, Card, Cascade, ExerciseRow, Icon, Mascot, Nav, Num, PageHeader, PrescriptionHero, Screen, SectionLabel, Sheet, SheetBlock, Tag, sharedName, sharedTransition, type Tab } from '../components';
+import { Banner, Button, Card, Cascade, ExerciseRow, Icon, Mascot, Nav, Num, PageHeader, PrescriptionHero, Screen, SectionLabel, Sheet, SheetBlock, Tag, sharedName, sharedTransition, useToast, type Tab } from '../components';
 import { dateLabel, env, fmt, homeData, PHASE_NAME, REGION_NAME, type DoneToday } from '../data/demo';
 import type { Prescription } from '../engine';
+import { DeloadBanner } from './DeloadBanner';
+import { DeloadSheet } from './DeloadSheet';
 import { TrainingView } from './TrainingView';
 import s from './HomePage.module.css';
 
 export function HomePage({ scenario, now, onTab }: { scenario?: string; now: number; onTab?: (tab: Tab, path: string) => void }) {
-  const st = useStore(), nav = useNavigate();
-  const d = useMemo(() => homeData(scenario ?? st, now), [scenario, st.history, st.profile, st.deload, now]); // eslint-disable-line react-hooks/exhaustive-deps
+  const st = useStore(), nav = useNavigate(), toast = useToast();
+  const { src, adopt, skip } = useSource(scenario, now);
+  const d = useMemo(() => homeData(src, now), [src, now]);
+  const [deloadOpen, setDeloadOpen] = useState(false);
   const live = !scenario, active = live ? st.active : null;
   const { rx, dv } = d;
   // 开始训练：主角卡原地展开成组行（M03 共享元素，卡片同名）；处方抄成进行中的训练，留在首页
@@ -46,9 +51,7 @@ export function HomePage({ scenario, now, onTab }: { scenario?: string; now: num
       </PageHeader>
 
       <div className={s.body}>
-        {dv.kind === 'suggest' && <Banner title="建议本周减量" detail={`${d.hits} 个动作的预估 1RM 连降两次`} actions={<Button kind="ghost" size="s">看看</Button>} />}
-        {dv.kind === 'week' && <Banner title={`减量周 · 还剩 ${dv.daysLeft} 天`} detail="组数减半、强度 ×0.9" />}
-        {dv.kind === 'note' && <Banner quiet detail={`减量信号仍在 · 你选了这次不减（${dv.daysLeft} 天内不再提示）`} />}
+        <DeloadBanner dv={dv} hits={d.hits} onOpen={() => setDeloadOpen(true)} />
         {rx.kind === 'pool-empty' && <Banner title="当前器械下没有可排的动作" detail="去「我的」里加器械" actions={<Button kind="ghost" size="s">去设置</Button>} />}
         {done && <Done d={done} onSummary={live ? () => nav(`/summary/${done.session.id}`) : undefined} />}
         {!done && rx.kind === 'rest' && <RestDay blocked={rx.blocked.slice(0, 6).map((h) => [h.name, Math.round(h.hoursLeft)] as [string, number])} />}
@@ -74,6 +77,9 @@ export function HomePage({ scenario, now, onTab }: { scenario?: string; now: num
         : rx.kind === 'plan' && <><div className={s.scrimLow} aria-hidden="true" /><div className={s.cta}><Button glow onClick={start}>开始训练</Button></div></>}
       <Nav selected="home" {...navState} onSelect={onTab} />
       {why && rx.kind === 'plan' && <WhySheet rx={rx} onClose={() => setWhy(false)} />}
+      {deloadOpen && <DeloadSheet hits={d.sig.hits} onClose={() => setDeloadOpen(false)}
+        onAdopt={() => { adopt(); setDeloadOpen(false); toast.show(`已进入减量周 · ${env.cfg.deload.days} 天`); }}
+        onSkip={() => { skip(); setDeloadOpen(false); toast.show(`这次不减，${env.cfg.deload.days} 天内不再提醒`); }} />}
     </Screen>
   );
 }

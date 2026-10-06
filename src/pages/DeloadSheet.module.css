@@ -1,0 +1,10 @@
+/* 减量面板：每个动作一块（名称 / 三次数 / 累计降幅 + 小曲线），说明一行，两个整宽按钮在面板底部 */
+.wrap { display: grid; gap: var(--milo-space-l); padding-bottom: var(--milo-space-l); }
+.row { display: flex; align-items: center; justify-content: space-between; gap: var(--milo-space-m); }
+.text { display: grid; gap: var(--milo-space-2xs); min-width: 0; color: var(--milo-color-text-primary); }
+.delta { color: var(--milo-color-text-secondary); }
+.note { margin: 0; color: var(--milo-color-text-secondary); text-wrap: pretty; }
+/* 固定在面板底部：往上滚时内容从渐隐底下过去；抵消面板自带的底部留白，按钮贴着留白上沿 */
+.actions { position: sticky; bottom: calc(var(--milo-space-3xl) * -1); display: grid; grid-template-columns: 1fr 1fr; gap: var(--milo-space-s);
+  margin: 0 calc(var(--milo-size-gutter) * -1) calc(var(--milo-space-3xl) * -1); padding: var(--milo-space-l) var(--milo-size-gutter) var(--milo-space-3xl);
+  background: linear-gradient(to bottom, transparent, var(--milo-color-bg-sheet) var(--milo-space-l)); }
