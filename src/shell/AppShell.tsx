@@ -12,6 +12,7 @@ import { DemoPage } from '../pages/DemoPage';
 import { GainsPage } from '../pages/GainsPage';
 import { TrendPage } from '../pages/TrendPage';
 import { HomePage } from '../pages/HomePage';
+import { LogDetailPage } from '../pages/LogDetailPage';
 import { LogPage } from '../pages/LogPage';
 import { OnboardingPage } from '../pages/OnboardingPage';
 import { SummaryPage } from '../pages/SummaryPage';
@@ -94,6 +95,7 @@ function Routed() {
       <Route path="/gains" element={needProfile ?? tab(<GainsPage key={scenario} scenario={scenario} now={now} onTab={onTab} />)} />
       <Route path="/gains/:exerciseId" element={needProfile ?? <TrendPage key={loc.pathname} scenario={scenario} now={now} />} />
       <Route path="/log" element={needProfile ?? tab(<LogPage key={scenario} scenario={scenario} now={now} onTab={onTab} />)} />
+      <Route path="/log/:id" element={needProfile ?? <LogDetailPage key={loc.pathname} scenario={scenario} now={now} />} />
       <Route path="/me" element={tab(<TabStub tab="me" onTab={onTab} />)} />
       <Route path="/patterns/:kind" element={tab(<PatternRoute onTab={onTab} />)} />
       <Route path="/playground" element={<Playground now={now} />} />

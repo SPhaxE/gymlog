@@ -23,8 +23,9 @@ export function TrendPage({ scenario, now }: { scenario?: string; now: number })
   const d = useMemo(() => exerciseTrend(src, exerciseId, now), [src, exerciseId, now]);
   const [sel, setSel] = useState<number | null>(null);   // 选中的是曲线上第几次；null = 最新一次
   // 从增量页来的就退回增量页（回到原来的筛选和滚动位置）；直接打开的链接替换成增量页
+  // 目标页可能是增量页，也可能是训练详情（从详情点动作进来的）：等「不是曲线页的那个」挂好
   const back = () => drillTransition(
-    () => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav('/gains' + loc.search, { replace: true })), '[data-drill-ready=gains]', 'out');
+    () => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav('/gains' + loc.search, { replace: true })), '[data-drill-ready]:not([data-drill-ready=trend])', 'out');
 
   if (!exerciseId) return <Navigate to={'/gains' + loc.search} replace />;
   if (!d) return (

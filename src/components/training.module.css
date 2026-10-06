@@ -73,6 +73,13 @@
   border: 0; border-radius: var(--milo-radius-m); font: inherit; text-align: left; background-color: var(--milo-color-bg-raised); color: var(--milo-color-text-secondary);
   box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
 .session .exText b { color: var(--milo-color-text-primary); }
+/* 标题一行：部位在左，PR / 减量标在右（和标题同一行，下面的「动作 · 组 · 分钟」才有整行宽度，不用换行） */
+.titleRow { display: flex; align-items: center; gap: var(--milo-space-s); min-width: 0; }
+.titleRow b { flex: 1; min-width: 0; }
+/* 「5 个动作 · 13 组 · 54 分钟」真放不下时只在「·」处换行，「54 分钟」不被拆开；分隔点跟在前一段的末尾，换行后新的一行不以点开头 */
+.meta { display: flex; flex-wrap: wrap; column-gap: var(--milo-space-xs); }
+.meta > span { white-space: nowrap; }
+.meta > span:not(:last-child)::after { content: '·'; margin-left: var(--milo-space-xs); }
 .session:active, .session[data-pressed] { transform: none; }
 .date { position: relative; display: grid; align-content: center; justify-items: center; gap: var(--milo-space-2xs); align-self: stretch; flex: none; min-width: calc(var(--milo-space-5xl) + var(--milo-space-s)); padding-right: var(--milo-space-m);
   color: var(--milo-color-text-secondary); white-space: nowrap; }

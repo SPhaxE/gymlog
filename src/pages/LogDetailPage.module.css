@@ -1,0 +1,38 @@
+/* 训练详情：子页，整页一个滚动区；没有导航，底部只留一点呼吸 */
+.scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.body { display: grid; align-content: start; grid-auto-rows: max-content; gap: var(--milo-space-m); padding: var(--milo-space-m) var(--milo-size-gutter) var(--milo-space-4xl); }
+.empty { flex: 1; display: grid; align-content: center; padding: 0 var(--milo-size-gutter); }
+.subName { display: inline-block; /* 共享元素名要落在有盒子的元素上，行内元素不行 */ }
+
+/* 汇总三格：动作 · 组数 · 总负荷 */
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--milo-space-s); }
+.stats > div { display: grid; gap: var(--milo-space-2xs); padding: var(--milo-space-s) var(--milo-space-m); border-radius: var(--milo-radius-m); background: var(--milo-color-bg-raised);
+  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
+.stats span:first-child { color: var(--milo-color-text-secondary); }
+
+/* 新纪录一行：骨白标 + 动作名 + 预估 1RM + 涨幅 */
+.pr { display: flex; align-items: center; flex-wrap: wrap; gap: var(--milo-space-s) var(--milo-space-m); padding: var(--milo-space-s) var(--milo-space-m); border-radius: var(--milo-radius-m);
+  background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); color: var(--milo-color-text-secondary); }
+.prText { flex: 1; min-width: 0; font-size: var(--milo-font-size-caption); }
+.prText b { color: var(--milo-color-text-primary); font-family: var(--milo-font-number); font-weight: 700; }
+
+/* 动作卡：卡头（名称 + PR + 箭头，整行可点，进曲线页）+ 每一组 */
+.card { display: grid; border-radius: var(--milo-radius-m); background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); overflow: clip; }
+.head { display: flex; align-items: center; gap: var(--milo-space-s); width: 100%; min-height: var(--milo-size-hit-min); padding: var(--milo-space-s) var(--milo-space-m); border: 0; font: inherit; text-align: left;
+  background-color: transparent; color: var(--milo-color-text-primary); box-shadow: 0 var(--milo-stroke-hairline) 0 var(--milo-color-line-default); }
+.head b { min-width: 0; }
+.grow { flex: 1; }
+.sets { list-style: none; margin: 0; padding: 0 var(--milo-space-m); display: grid; }
+.sets li { display: grid; grid-template-columns: 1fr auto auto; align-items: center; column-gap: var(--milo-space-m); min-height: var(--milo-size-hit-min); border-bottom: var(--milo-stroke-hairline) solid var(--milo-color-line-default); }
+.sets li:last-child { border-bottom: 0; }
+.setName { display: inline-flex; align-items: center; gap: var(--milo-space-s); color: var(--milo-color-text-secondary); }
+/* RPE 单独一列、重量和次数各自右对齐的定宽列：一列看下去，数不会因为有没有 RPE、几位数而左右错开 */
+.rpe { min-width: calc(var(--milo-space-5xl) + var(--milo-space-xs)); text-align: right; font-family: var(--milo-font-number); font-weight: 600; font-size: var(--milo-font-size-caption); color: var(--milo-color-text-secondary); }
+.setVal { display: inline-flex; align-items: baseline; justify-content: flex-end; gap: var(--milo-space-xs); color: var(--milo-color-text-primary); font-variant-numeric: tabular-nums; }
+.setVal i { font-style: normal; font-size: var(--milo-font-size-caption); color: var(--milo-color-text-secondary); }
+.wNum { min-width: calc(var(--milo-space-3xl) + var(--milo-space-xs)); text-align: right; }
+.unit { min-width: var(--milo-space-xl); }
+.rNum { min-width: var(--milo-space-xl); text-align: right; }
+/* 热身组：灰字，不抢工作组 */
+.warm .setVal b { color: var(--milo-color-text-secondary); font-weight: 600; }
+.skipped { margin: 0; padding: var(--milo-space-s) var(--milo-space-m) var(--milo-space-m); color: var(--milo-color-text-secondary); }
