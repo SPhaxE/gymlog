@@ -16,9 +16,9 @@ import { cx } from './state';
 import { RestBar, clock } from './training';
 import s from './motion.module.css';
 
-export function Cascade({ children, replayKey }: { children: ReactNode; replayKey?: string | number }) {
+export function Cascade({ children, replayKey, still }: { children: ReactNode; replayKey?: string | number; /** 不播入场（从曲线页返回、共享元素转场要拍到完整的列表行时） */ still?: boolean }) {
   const items = Children.toArray(children), step = Math.min(T['motion/stagger'], T['motion/list-max'] / Math.max(1, items.length - 1));
-  return <div key={replayKey} className={s.cascade}>{items.map((c, i) => <div key={i} className={s.cascadeItem} style={{ animationDelay: `${Math.round(i * step)}ms` }}>{c}</div>)}</div>;
+  return <div key={replayKey} className={cx(s.cascade, still && s.cascadeStill)}>{items.map((c, i) => <div key={i} className={s.cascadeItem} style={{ animationDelay: `${Math.round(i * step)}ms` }}>{c}</div>)}</div>;
 }
 
 export function RestDock({ remaining, total, open, onToggle, onAdjust, onSkip, ring }: {
@@ -74,6 +74,28 @@ function RingPill({ remaining, total, width, endAt, onOpen }: { remaining: numbe
  *  view-transition-class = 部位（card / title / num），CSS 按部位定转场方式。
  *  同一时刻只给「正在展开 / 收起的那一项」起名：转场层里的分组按文档顺序叠放，列表其他行要是也有名字，会画在展开的卡片上面（用户 2026-10-05 逐帧看到的遮挡错） */
 export const sharedName = (part: 'card' | 'title' | 'num' | 'swap', id: string) => ({ viewTransitionName: `x-${part}-${id.replace(/[^a-zA-Z0-9-]/g, '-')}`, viewTransitionClass: part }) as CSSProperties;
+
+/** M09 钻入转场（2026-10-06，增量页的一行 ↔ 动作曲线页）：列表行里的名称、最新值、小曲线，分别飞成详情页的标题、大数字、整张曲线；
+ *  整页只做很快的淡出 / 淡入（见 interactive.css 的 data-vt='drill'）。名字按动作 id 起，列表里只有「被点的那一行」带名字（同名不能出现两次）。
+ *  part：name 名称 → 标题；num 最新值 → 大数字；line 小曲线 → 整张曲线。 */
+export const drillName = (part: 'name' | 'num' | 'line', id: string) => ({ viewTransitionName: `x-drill-${part}-${id.replace(/[^a-zA-Z0-9-]/g, '-')}`, viewTransitionClass: `d${part}` }) as CSSProperties;
+
+/** 钻入 / 退出转场：before 里（flushSync）让起点页的共享名就位；go 里跳转；等 ready 选择器出现（目标页挂好、共享名就位）才拍新快照。
+ *  dir：in = 进详情，out = 回列表（只影响整页淡入时要不要上浮）。不支持或减少动态效果时直接跳转。 */
+export function drillTransition(go: () => void, ready: string, dir: 'in' | 'out', before?: () => void, after?: () => void) {
+  const doc = document as Document & { startViewTransition?: (cb: () => Promise<void>) => { finished: Promise<unknown> } };
+  if (!doc.startViewTransition || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) { go(); return; }
+  before?.();
+  const html = document.documentElement;
+  html.dataset.vt = 'drill'; html.dataset.vtDir = dir;
+  const vt = doc.startViewTransition(() => new Promise<void>((done) => {
+    go();
+    const t0 = performance.now();
+    const check = () => (document.querySelector(ready) || performance.now() - t0 > T['motion/slow'] ? done() : window.setTimeout(check, 16));
+    check();
+  }));
+  void vt.finished.catch(() => undefined).finally(() => { delete html.dataset.vt; delete html.dataset.vtDir; after?.(); });
+}
 
 /** 用 View Transitions 包住一次状态切换（flushSync 让新 DOM 在回调里就位）；不支持或减少动态效果时直接切换 */
 export function sharedTransition(update: () => void) {

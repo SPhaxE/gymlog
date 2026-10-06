@@ -184,6 +184,7 @@ python3 scripts/shoot_growth.py     # 奖励弹窗 GIF → screenshots/growth/
 
 **这一轮回改的规范（组件层，别的页面也受益）**：小按钮命中区上下外扩到 48；分段控件每项 ≥ 48 宽、命中区算上内边距；`Sheet` 标题和说明上下叠、滚动行高修复；`RestDock` 胶囊 48 高、「收起」48 高；`SetRow` 提示不再挤动第一行对齐；`Odometer` 按位配对滚动（97.5 → 100 不错位）；`NumPad` 步进键有读屏名；新组件 `SetLine`、`SetEditor`、`Tilt`（都在 `/playground`）。
 
+- **M09 钻入转场**（增量页的一行 ↔ 曲线页）：`drillTransition` / `drillName`（motion.tsx）+ interactive.css 的 M09 一段；编排与取舍见 `design/hifi/gains/decision.md` 末尾。切 Tab 带休息进度条飞行时整页也套同一套淡出 / 淡入节奏。
 - **转场进行中点按会落在 <html> 上**（2026-10-06 查出）：View Transitions 进行时页面元素点不到，`::view-transition{pointer-events:none}` 在 Chrome 里不起作用；`guardTransitionTaps`（motion.tsx，AppShell 启动时装一次）在按下时打断转场并把点击改投给真元素。新增转场照常用 `sharedTransition` / `document.startViewTransition`，不用再管；整套检查里「点组行改数」偶发失败就是这个（`scripts/shoot_6a.py` 失败时会打印点击与转场的时间线）。
 
 ## 7. 已知问题与待验证

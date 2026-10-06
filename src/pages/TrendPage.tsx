@@ -8,7 +8,7 @@
  *  （Stitch g9 三种结构的取舍见 design/hifi/gains/decision.md） */
 import { useMemo, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router';
-import { Delta, Odometer, Screen, SectionLabel, StateView, Tag, TopBar, TrendChart, Banner } from '../components';
+import { Banner, Delta, Odometer, Screen, SectionLabel, StateView, Tag, TopBar, TrendChart, drillName, drillTransition } from '../components';
 import { env, fmt, REGION_NAME } from '../data/demo';
 import { exerciseTrend } from '../data/gains';
 import { useSource } from '../data/useSource';
@@ -23,7 +23,8 @@ export function TrendPage({ scenario, now }: { scenario?: string; now: number })
   const d = useMemo(() => exerciseTrend(src, exerciseId, now), [src, exerciseId, now]);
   const [sel, setSel] = useState<number | null>(null);   // 选中的是曲线上第几次；null = 最新一次
   // 从增量页来的就退回增量页（回到原来的筛选和滚动位置）；直接打开的链接替换成增量页
-  const back = () => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav('/gains' + loc.search, { replace: true }));
+  const back = () => drillTransition(
+    () => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav('/gains' + loc.search, { replace: true })), '[data-drill-ready=gains]', 'out');
 
   if (!exerciseId) return <Navigate to={'/gains' + loc.search} replace />;
   if (!d) return (
@@ -44,12 +45,12 @@ export function TrendPage({ scenario, now }: { scenario?: string; now: number })
 
   return (
     <Screen label={`${row.name} 进步曲线`}>
-      <TopBar title={row.name} sub={sub} onBack={back} />
-      <div className={s.scroll}>
+      <TopBar title={row.name} sub={sub} onBack={back} titleStyle={drillName('name', exerciseId)} />
+      <div className={s.scroll} data-drill-ready="trend">
         <header className={s.hero}>
           <span className={s.plate} aria-hidden="true" />
           <span className={`milo-text-caption ${s.label}`}>{reps ? '每次最好一组的次数' : '预估 1RM'} · {dayText(cur.t)}{cur.pr ? ' · 新纪录' : ''}</span>
-          <div className={s.big}>
+          <div className={s.big} style={drillName('num', exerciseId)}>
             <Odometer value={fmt(cur.v)} size="hero" /><span className="milo-text-heading">{row.unit}</span>
           </div>
           <div className={s.deltaRow}>
@@ -60,7 +61,7 @@ export function TrendPage({ scenario, now }: { scenario?: string; now: number })
 
         <div className={s.body}>
           {sessions.length < 2 && <Banner quiet detail="只有 1 次记录，再练一次就能看到趋势。" />}
-          <TrendChart points={sessions.map((x) => ({ t: x.t, v: x.v, pr: x.pr, label: x.label }))} selected={i} onSelect={setSel} unit={row.unit} readout={false} />
+          <div style={drillName('line', exerciseId)}><TrendChart draw points={sessions.map((x) => ({ t: x.t, v: x.v, pr: x.pr, label: x.label }))} selected={i} onSelect={setSel} unit={row.unit} readout={false} /></div>
 
           <section className={s.day} aria-label={`${dayText(cur.t)}的每一组`}>
             <SectionLabel>{dayText(cur.t)} · {cur.sets.length} 组</SectionLabel>

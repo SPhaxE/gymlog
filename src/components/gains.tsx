@@ -9,6 +9,7 @@ import { Icon, type IconName } from './Icon';
 import { Skeleton } from './feedback';
 import { Sparkline, type Point } from './charts';
 import { Odometer } from './dataviz';
+import { drillName } from './motion';
 import { cx, forced, type Forced } from './state';
 import { Delta, Num, Tag, type DeltaDir } from './ui';
 import s from './gains.module.css';
@@ -48,7 +49,7 @@ export function GainSummary({ trained, up, flat, down, baseline, pr }: GainCount
   );
 }
 
-export function GainRow({ name, latest, unit = 'kg', delta, pr, points, target, note, onClick, state }: {
+export function GainRow({ name, latest, unit = 'kg', delta, pr, points, target, note, onClick, state, drillId }: {
   name: string; latest: number | null; unit?: string;
   delta: { dir: DeltaDir; value?: string };
   /** 近 4 周有 PR */
@@ -58,13 +59,15 @@ export function GainRow({ name, latest, unit = 'kg', delta, pr, points, target, 
   /** 目标后面的小字：「减量 ×0.9」「6 周前」 */
   note?: string;
   onClick?: () => void; state?: Forced | 'loading';
+  /** 钻入转场里被点的 / 返回时落回的那一行：名称、最新值、小曲线带共享名（M09），同名只能有一份，所以列表里只有这一行给 */
+  drillId?: string;
 }) {
   if (state === 'loading') return <div className={cx(s.row, s.loading)} aria-busy="true"><Skeleton shape="row" /></div>;
   const body = (
     <>
-      <span className={s.name}><b className="milo-text-body-strong">{name}</b>{pr && <Tag tone="strong">PR</Tag>}</span>
-      <span className={s.spark}><Sparkline area points={points} label={`${name} 预估 1RM`} /></span>
-      <span className={s.value}>{latest != null ? <Num size="s" value={fmt(latest)} unit={unit} /> : <span className="milo-text-caption">—</span>}</span>
+      <span className={s.name}><b className="milo-text-body-strong" style={drillId ? drillName('name', drillId) : undefined}>{name}</b>{pr && <Tag tone="strong">PR</Tag>}</span>
+      <span className={s.spark} style={drillId ? drillName('line', drillId) : undefined}><Sparkline area points={points} label={`${name} 预估 1RM`} /></span>
+      <span className={s.value} style={drillId ? drillName('num', drillId) : undefined}>{latest != null ? <Num size="s" value={fmt(latest)} unit={unit} /> : <span className="milo-text-caption">—</span>}</span>
       <span className={s.target}>
         {target ? <><i>下次</i> <b className="milo-text-number-m">{target}</b></> : <span className="milo-text-caption">先做出一组工作组</span>}
         {note && <span className={cx('milo-text-caption', s.note)}>{note}</span>}

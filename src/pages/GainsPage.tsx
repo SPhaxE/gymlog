@@ -11,18 +11,20 @@
  *  （2026-10-06 返工：用户验收「页头没有设计感、摘要数字看不懂、页头贴顶、曲线对不齐」；Stitch g8 的取舍见 design/hifi/gains/decision.md） */
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { Cascade, Chip, GainGroupHead, GainRow, GainSummary, Nav, Screen, StateView, useToast, type Tab } from '../components';
+import { flushSync } from 'react-dom';
+import { Cascade, Chip, GainGroupHead, GainRow, GainSummary, Nav, Screen, StateView, drillTransition, useToast, type Tab } from '../components';
 import { env, fmt, REGION_NAME } from '../data/demo';
 import { gainsData, groupGains, type GainRow as Row } from '../data/gains';
 import { useSource } from '../data/useSource';
 import { useTrainingNav } from '../data/useTrainingNav';
 import type { Region } from '../engine';
+import { T } from '../styles/tokens.gen';
 import { DeloadBanner } from './DeloadBanner';
 import { DeloadSheet } from './DeloadSheet';
 import s from './GainsPage.module.css';
 
 /** 点进曲线页前记下部位筛选和滚动位置，返回时还原（按场景分开记；刷新页面就忘了，不写存储） */
-const memo = new Map<string, { region: Region | 'all'; top: number }>();
+const memo = new Map<string, { region: Region | 'all'; top: number; from?: string }>();
 
 /** 涨跌文字：重量动作 ±kg，自重动作 ±次 */
 const deltaText = (r: Row) => {
@@ -45,7 +47,19 @@ export function GainsPage({ scenario, now, onTab }: { scenario?: string; now: nu
   const d = useMemo(() => gainsData(src, now), [src, now]);
   const [region, setRegion] = useState<Region | 'all'>(() => memo.get(key)?.region ?? 'all');
   useLayoutEffect(() => { const m = memo.get(key); if (m && scroll.current) scroll.current.scrollTop = m.top; }, [key]);
-  const open = (id: string) => { memo.set(key, { region, top: scroll.current?.scrollTop ?? 0 }); nav(`/gains/${id}${loc.search}`); };
+  // 钻入转场：被点的那一行带共享名；从曲线页返回时，落回的那一行（memo.from）也带名，且这一次不播入场（转场要拍到完整的列表行）
+  const [drill, setDrill] = useState<string | null>(() => memo.get(key)?.from ?? null);
+  const [landed] = useState(() => !!memo.get(key)?.from);
+  useLayoutEffect(() => {
+    if (!landed) return;
+    const m = memo.get(key); if (m) memo.set(key, { ...m, from: undefined });
+    const id = window.setTimeout(() => setDrill(null), T['motion/spring-ms'] * 3);  // 转场放完后撤掉共享名
+    return () => window.clearTimeout(id);
+  }, [key, landed]);
+  const open = (id: string) => {
+    memo.set(key, { region, top: scroll.current?.scrollTop ?? 0, from: id });
+    drillTransition(() => nav(`/gains/${id}${loc.search}`), '[data-drill-ready=trend]', 'in', () => flushSync(() => setDrill(id)));
+  };
   const [deloadOpen, setDeloadOpen] = useState(false);
   const week = d.dv.kind === 'week';
   const shown = region === 'all' || !d.regions.includes(region) ? d.rows : d.rows.filter((r) => r.region === region);
@@ -54,7 +68,7 @@ export function GainsPage({ scenario, now, onTab }: { scenario?: string; now: nu
 
   return (
     <Screen label="增量">
-      <div ref={scroll} className={s.scroll}>
+      <div ref={scroll} className={s.scroll} data-drill-ready="gains">
         <header className={s.hero}>
           <span className={s.plate} aria-hidden="true" />
           <p className={`milo-text-caption ${s.eyebrow}`}>力量有没有在涨</p>
@@ -77,13 +91,13 @@ export function GainsPage({ scenario, now, onTab }: { scenario?: string; now: nu
                 </div>
               )}
 
-              <Cascade replayKey={region}>
+              <Cascade replayKey={region} still={landed}>
                 {groups.map((g) => (
                   <section key={g.kind} className={s.group}>
                     <GainGroupHead kind={g.kind} count={g.rows.length} />
                     {g.rows.map((r) => (
                       <GainRow key={r.exerciseId} name={r.name} latest={r.latest} unit={r.unit} delta={{ dir: r.delta.dir, value: deltaText(r) }} pr={r.pr4w}
-                        points={r.points} target={r.target?.text ?? null} note={noteOf(r)} onClick={() => open(r.exerciseId)} />
+                        points={r.points} target={r.target?.text ?? null} note={noteOf(r)} onClick={() => open(r.exerciseId)} drillId={drill === r.exerciseId ? r.exerciseId : undefined} />
                     ))}
                   </section>
                 ))}
