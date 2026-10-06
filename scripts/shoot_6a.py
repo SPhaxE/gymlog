@@ -108,7 +108,7 @@ def run(b, w, h, shots):
     click(pg, pg.get_by_role('button', name='再练一次')); step('again')
     # 增量页（真实数据：这一次刚练完的记录也在里面）
     click(pg, pg.get_by_role('link', name='增量')); step('gains', '/gains', 1500)
-    ok(pg.get_by_text('近 4 周破纪录').count() == 1, f'{tag} 增量：有近 4 周摘要')
+    ok(pg.get_by_text('次破纪录').count() == 1, f'{tag} 增量：有近 4 周摘要')
     pg.close()
 
 def story_checks(b, w, h):
@@ -179,6 +179,16 @@ def gains_checks(b, w, h):
     ok(pg.get_by_role('heading', name='该减重').count() == 1, f'{tag} 增量：有「该减重」组')
     ok(pg.get_by_role('heading', name='保持，次数 +1').count() == 1, f'{tag} 增量：有「保持」组')
     ok(pg.locator('[class*=headLit]').count() == 1, f'{tag} 增量：荧光只有「该加重」一处')
+    ok(pg.get_by_text('近 4 周练了').count() == 1 and pg.get_by_text('个在涨').count() == 1 and pg.get_by_text('次破纪录').count() == 1, f'{tag} 增量：摘要每个数都带单位（个动作 / 个在涨 / 次破纪录）')
+    sparks = pg.evaluate('''() => [...document.querySelectorAll('svg[class*=spark]')].filter((e) => { const r = e.getBoundingClientRect(); return r.top > 0 && r.bottom < innerHeight; }).map((e) => Math.round(e.getBoundingClientRect().left))''')
+    ok(len(sparks) >= 3 and max(sparks) - min(sparks) <= 1, f'{tag} 增量：每行的小曲线从同一条竖线开始 {sparks}')
+    top0 = pg.locator('h1').first.bounding_box()['y']
+    pg.mouse.move(w / 2, h / 2); pg.mouse.wheel(0, 700); pg.wait_for_timeout(600)
+    top1 = pg.locator('h1').first.bounding_box()['y']
+    ok(top0 > 0 and top1 < 0, f'{tag} 增量：下滑后页头跟着滑走，不钉在顶上（{top0:.0f} → {top1:.0f}）')
+    chip_y = pg.get_by_role('button', name='全部').first.bounding_box()['y']
+    ok(0 <= chip_y < 120, f'{tag} 增量：部位筛选滑到顶后贴住（y={chip_y:.0f}）')
+    pg.mouse.wheel(0, -3000); pg.wait_for_timeout(600)
     chips = pg.get_by_role('button', name='胸')
     ok(chips.count() == 1, f'{tag} 增量：有部位筛选')
     click(pg, chips); pg.wait_for_timeout(700)

@@ -4,7 +4,7 @@
  *  按下 / 聚焦在代码里是 :active / :focus-visible，这里经 state 强制显示（state.ts）。 */
 import { useRef, type ReactNode } from 'react';
 import {
-  Banner, BodyFigure, DotCalendar, GainGroupHead, GainRow, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
+  Banner, BodyFigure, DotCalendar, GainGroupHead, GainRow, GainSummary, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
   ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProgressSteps, RestBar, SectionLabel, Segmented,
   SessionRow, SetEditor, SetLine, SetRow, NumPad, Sheet, Tilt, SheetBlock, Skeleton, Sparkline, StateView, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
   AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, PropGlyph, type PropKind, RewardCard, AgeBadge, Coupon, FreezeCard, GrowthBar, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, ProductCard, StreakBar,
@@ -56,7 +56,7 @@ const noop = () => {};
 export const CN: Record<string, string> = {
   default: '默认', pressed: '按下', focused: '聚焦', disabled: '禁用', loading: '加载中', primary: '主操作', primary_glow: '主操作 · 光晕', neutral: '中性', ghost: '描边', danger: '危险',
   l: '大', s: '小', raised: '实底', plain: '无底', true: '是', false: '否', single: '单选', multi: '多选', empty: '空', filled: '已填', error: '错误', 'error-reps': '次数错误', 'np-ready': '可完成', 'np-blocked': '缺值 / 超范围', 'pk-freeze': '冻结卡', 'pk-niujin': '牛劲', 'pk-trial': 'Pro 体验', 'pk-shipping': '免邮券', 'pk-merchant': '商家券', 'ps-normal': '可用', 'ps-used': '刚用掉', 'ps-dim': '已用 / 过期',
-  tall: '高柱（8 周）', short: '矮柱（4 周）', min: '到下限', max: '到上限', strong: '强调', outline: '虚线', up: '上升', down: '下降', flat: '持平', baseline: '基线', static: '只读', nav: '可进入',
+  mixed: '有涨有退', all_up: '全在涨', only_baseline: '都是基线', idle_4w: '近 4 周没练', min: '到下限', max: '到上限', strong: '强调', outline: '虚线', up: '上升', down: '下降', flat: '持平', baseline: '基线', static: '只读', nav: '可进入',
   toggle: '开关', plain_card: '普通', hero: '主角', todo: '待做', first: '首次', current: '进行中', done: '已完成', skipped: '未做', missing: '缺值',
   editing: '修改中', warmup: '热身组', drop: '递减组', running: '计时中', ending: '即将结束', normal: '普通', pr: '有 PR', deload: '减量周', trained: '已练',
   'trained-pr': '已练 · PR', rest: '休息', today: '今天', future: '未来', selected: '选中', ready: '已加载', many: '多次', 'many-selected': '多次 · 选中一次',
@@ -265,7 +265,7 @@ export const CATALOG: Entry[] = [
     },
   },
   {
-    name: 'GainRow', group: '训练与记录', desc: '增量页的一行（P09）：名称（近 4 周 PR 打标）+ 下次目标、迷你曲线、最近预估值 + 涨跌（▲▼ 形状 + 文字）。没有点击回调时是静态行，不假装能点；首次没有工作组时不给目标。',
+    name: 'GainRow', group: '训练与记录', desc: '增量页的一行（P09）：名称（近 4 周 PR 打标）+ 下次目标（本行最大的数字）、迷你曲线、最近预估值 + 涨跌（▲▼ 形状 + 文字）。曲线和数值是固定宽度的列，所有行的曲线从同一条竖线开始，每条下一道淡基线；曲线每条自己缩放，只表达形状、不同动作之间不比大小。没有点击回调时是静态行，不假装能点；首次没有工作组时不给目标。',
     axes: { dir: ['up', 'flat', 'down', 'baseline'], pr: ['false', 'true'], state: ['default', 'pressed', 'focused', 'loading'] }, rows: ['dir', 'pr'], cols: 'state', size: 'card',
     skip: (p) => p.pr === 'true' && p.dir !== 'up',
     render: (p, f) => (
@@ -276,7 +276,15 @@ export const CATALOG: Entry[] = [
     ),
   },
   {
-    name: 'GainGroupHead', group: '训练与记录', desc: '增量页的结论组头：该加重（整页唯一荧光，图标底）/ 保持，次数 +1 / 该减重 / 本周目标 · 减量；每组一句话说明为什么这样分。',
+    name: 'GainSummary', group: '训练与记录', desc: '增量页页头首屏的摘要（2026-10-06 返工）：一个配重片环，按「在涨 / 持平 / 在退 / 刚开始记」分四段（形状 + 文字写在右边图例里，每个数后面带「个动作」），环心是近 4 周练过的动作数；下面是近 4 周破纪录次数（码表大数字）和刻度线。近 4 周没练过时环空着，写「还没练」。',
+    axes: { mix: ['mixed', 'all_up', 'only_baseline', 'idle_4w'] }, size: 'card',
+    render: (p) => {
+      const c = { mixed: { up: 4, flat: 8, down: 2, baseline: 1, pr: 26 }, all_up: { up: 6, flat: 0, down: 0, baseline: 0, pr: 9 }, only_baseline: { up: 0, flat: 0, down: 0, baseline: 3, pr: 0 }, idle_4w: { up: 0, flat: 0, down: 0, baseline: 0, pr: 0 } }[p.mix]!;
+      return <GainSummary trained={c.up + c.flat + c.down + c.baseline} {...c} />;
+    },
+  },
+  {
+    name: 'GainGroupHead', group: '训练与记录', desc: '增量页的结论色带：该加重（整行荧光，整页唯一）/ 保持，次数 +1 / 该减重 / 本周目标 · 减量（灰带）；带下面一句话说明引擎为什么这样分。',
     axes: { kind: ['add', 'hold', 'cut', 'week'] }, size: 'card',
     render: (p) => <GainGroupHead kind={p.kind as 'add'} count={p.kind === 'week' ? 6 : 3} />,
   },
@@ -384,10 +392,8 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'WeekBars', group: '数据图形', desc: 'E3 竖向胶囊量表（ref3）：近 8 周每周完成组数，本周骨白；和身体页胶囊同一语言（胶囊即量尺）。short（compact）= 增量页摘要卡里的 4 周破纪录柱，柱高一档 hit-min。',
-    axes: { bars: ['tall', 'short'] }, size: 'card',
-    render: (p, f) => p.bars === 'short'
-      ? <WeekBars compact unit="次" weeks={['3 周前', '2 周前', '1 周前', '近 7 天'].map((label, i) => ({ label, value: [7, 7, 8, 4][i], current: i === 3 }))} />
-      : <WeekBars weeks={f.weekBars} />,
+    axes: {}, size: 'card',
+    render: (_, f) => <WeekBars weeks={f.weekBars} />,
   },
   {
     name: 'GiantNumber', group: '数据图形', desc: 'E4 超大渐变数字（ref5「60%」）：结算页唯一一次「大声」，数字从骨白渐隐 + 颗粒。',

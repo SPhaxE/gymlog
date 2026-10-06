@@ -61,10 +61,10 @@ export function StepRing({ n, ratio, title, sub, done }: { n: number; ratio: num
 }
 
 /* ---------- E3 竖向胶囊量表 ---------- */
-export function WeekBars({ weeks, unit = '组', compact }: { weeks: { label: string; value: number; current?: boolean }[]; unit?: string; compact?: boolean }) {
+export function WeekBars({ weeks, unit = '组' }: { weeks: { label: string; value: number; current?: boolean }[]; unit?: string }) {
   const max = Math.max(1, ...weeks.map((w) => w.value));
   return (
-    <div className={cx(s.bars, compact && s.barsCompact)} style={{ gridTemplateColumns: `repeat(${weeks.length}, 1fr)` }} role="img" aria-label={weeks.map((w) => `${w.label} ${w.value} ${unit}`).join('，')}>
+    <div className={s.bars} style={{ gridTemplateColumns: `repeat(${weeks.length}, 1fr)` }} role="img" aria-label={weeks.map((w) => `${w.label} ${w.value} ${unit}`).join('，')}>
       {weeks.map((w) => (
         <div key={w.label} className={s.barCol}>
           <span className={s.barVal}>{w.value}</span>
@@ -89,7 +89,7 @@ export function GiantNumber({ value, unit, caption }: { value: string; unit?: st
 
 /* ---------- 滚动码表 ---------- */
 /** 每一位数字是一条 0–9 的竖带，按弹簧滚到目标位；非数字字符原样显示。按「从右数第几位」配对，97.5 → 100 时个位、十位各自滚，不会整体错位 */
-export function Odometer({ value, size = 'xl' }: { value: string; size?: 'xl' | 'l' | 'm' }) {
+export function Odometer({ value, size = 'xl' }: { value: string; size?: 'hero' | 'xl' | 'l' | 'm' }) {
   return (
     <span className={cx(s.odo, `milo-text-number-${size}`)} aria-label={value}>
       {[...value].map((ch, i) => /\d/.test(ch)
