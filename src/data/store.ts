@@ -20,6 +20,17 @@ export interface DraftSet { type: 'work' | 'warmup' | 'drop'; weight: string; re
 export interface DraftEntry { exerciseId: string; name: string; sets: number; repRange: [number, number]; restSec: number; unilateral: boolean; suggestKg: number | null; skipped: boolean; rows: DraftSet[] }
 export interface ActiveSession { id: string; startMs: number; entries: DraftEntry[]; cur: number }
 
+/** 「我的」里的导航设置（ia §1.11）：改动立即生效，不需要重启 */
+export interface Settings {
+  /** 导航外圈的今日进度环 */
+  ring: boolean;
+  /** 选中项小胶囊里的休息倒计时描边 */
+  restOutline: boolean;
+  /** 休息结束提示：vibrate = 结束态 + 振动；outline = 只有结束态（描边 / 对勾） */
+  restEnd: 'vibrate' | 'outline';
+}
+export const DEFAULT_SETTINGS: Settings = { ring: true, restOutline: true, restEnd: 'vibrate' };
+
 export interface AppState {
   v: 1;
   profile: Profile | null;
@@ -33,19 +44,21 @@ export interface AppState {
   /** 组间休息：按结束时间戳算（ia §1.6），App 切后台回来剩余时间仍然对 */
   rest: { endAt: number; totalMs: number } | null;
   demo: boolean;
+  settings: Settings;
   /** 最后一次写入失败的原因（只在内存里） */
   saveError?: string;
 }
 
 export const DEFAULT_PROFILE: Profile = { experience: 'intermediate', equipment: ['barbell', 'dumbbell', 'machine', 'cable', 'smith', 'bodyweight'], minutes: 60, gender: 'male' };
-const EMPTY: AppState = { v: 1, profile: null, draft: null, history: [], deload: { status: 'none', atMs: 0 }, deloads: [], active: null, rest: null, demo: false };
+const EMPTY: AppState = { v: 1, profile: null, draft: null, history: [], deload: { status: 'none', atMs: 0 }, deloads: [], active: null, rest: null, demo: false, settings: DEFAULT_SETTINGS };
 
 function read(): AppState {
   try {
     const raw = localStorage.getItem(STORE_KEY);
     if (!raw) return { ...EMPTY };
     const s = JSON.parse(raw) as AppState;
-    return s && s.v === 1 ? { ...EMPTY, ...s, saveError: undefined } : { ...EMPTY };
+    // settings 逐项补默认：旧存档没有这个字段，以后新加的设置项也不用迁移
+    return s && s.v === 1 ? { ...EMPTY, ...s, settings: { ...DEFAULT_SETTINGS, ...s.settings }, saveError: undefined } : { ...EMPTY };
   } catch {
     return { ...EMPTY };
   }

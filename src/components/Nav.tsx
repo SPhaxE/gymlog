@@ -52,7 +52,7 @@ export function useRestRatio(endAt?: number, totalMs?: number, ratio?: number) {
 
 export function Nav({ selected, progress, started, rest, restRatio, restEndAt, restTotalMs, onSelect, itemState }: {
   selected: Tab; progress: number | null; started?: boolean;
-  /** 选中项上显示的剩余时间文字（1:35）；有它才画休息描边 */
+  /** 选中项上显示的剩余时间文字（1:35）；有它、且给了 restEndAt 或 restRatio 才画休息描边（「我的」里关掉描边时只写时间） */
   rest?: string; restRatio?: number; restEndAt?: number; restTotalMs?: number;
   onSelect?: (tab: Tab, path: string) => void; itemState?: Forced;
 }) {
@@ -93,7 +93,7 @@ export function Nav({ selected, progress, started, rest, restRatio, restEndAt, r
   const ring = geo.w ? pillPath(half, half, geo.w - sw, geo.h - sw) : '';
   const p = geo.pill;
   // 休息描边的坐标相对小胶囊自己（画在小胶囊里面，跟着一起滑）
-  const restRing = p && rest ? pillPath(inset, inset, p[2] - inset * 2, p[3] - inset * 2) : '';
+  const restRing = p && rest && (restEndAt != null || restRatio != null) ? pillPath(inset, inset, p[2] - inset * 2, p[3] - inset * 2) : '';
   const showRing = progress != null && (started || progress > 0) && !!ring;
   const target = showRing ? Math.min(1, progress!) : 0;
   // 暗色轨道只在「本次会话第一次出现」或「同一个 Nav 里从无到有（刚点开始训练）」时画一圈
