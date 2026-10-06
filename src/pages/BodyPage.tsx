@@ -1,10 +1,10 @@
-/** 容量页（P06，原「身体」，2026-10-06 用户改名）：整个人体（MuscleWiki 真实路径，热成像）在左，右侧胶囊列叠在上面。
+/** 容量页（P06，原「身体」，2026-10-06 用户改名）：MuscleWiki 半身（热成像，版式不变）在左，右侧胶囊列叠在上面。
  *  五层：
  *  - 战略：一眼看到每块肌肉近 7 天练了多少、哪块还在恢复；人体是读图的底，胶囊是读数的尺。
  *  - 范围：近 7 天合计 + 热力人体（正面 / 背面、男 / 女）+ 容量胶囊（长按放大、轻点看肌头详情）。
  *  - 结构：Tab 根页；肌头详情是底部面板（M05），由被点的胶囊原地长出来（M03）。
  *  - 框架：页头（切换器在右）→ 合计与图例 → 舞台（人体 + 引线 + 胶囊列）；没有主按钮。
- *  - 表现：人体整个显示（不裁半身），最宽 ratio/figure-max-w；常态胶囊缩小 1/3（少挡人体）；浅荧光轮廓从下往上描出、扫描光带周期扫过（BodyFigure）。
+ *  - 表现：半身人体（版式不变：从左裁掉 ratio/figure-crop、左缘渐隐，高度撑满舞台）；常态胶囊缩小 1/3（少挡人体）；浅荧光轮廓从下往上描出、扫描光带周期扫过（BodyFigure）。
  *  切换人体是「换卡」（2026-10-06 用户：所有更换都从左往右）：新卡从左边滑进来盖在上面，旧卡往右退、淡出；
  *  新卡量完锚点才滑进来，引线先收、到位后从人体往胶囊（左 → 右）重新描出。全程都在人体自己那一层里（figureClip 隔离层叠），
  *  引线和胶囊永远在两张卡之上。轻点人体上的肌肉 = 轻点那颗胶囊；人体与胶囊列的命中区左右分开，不重叠。
@@ -25,8 +25,6 @@ type Gender = 'male' | 'female';
 /** 一张人体卡：still 静止；wait 刚换上、量锚点中（透明、不变形）；in 从后面浮上来；out 被抽走 */
 type Card = { key: number; view: View; gender: Gender; st: 'still' | 'wait' | 'in' | 'out' };
 const noop = () => {};
-/** 整个人体（含热晕留白）的高宽比：MuscleWiki 正 / 背、男 / 女量下来在 1.9–2.1 之间，取大的，宁可上下多一点 */
-const FIG_ASPECT = 2.1;
 const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: string; now: number; initialFocus: string | null; onTab?: (tab: Tab, path: string) => void }) {
@@ -63,8 +61,6 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
   const g = T['size/gutter'], contentW = box.w - 2 * g;
   // 胶囊列的最小高度：每颗都按静止上限排开（再矮就挤得看不清），屏幕放不下时页面滚动
   const railMin = ids.length ? ids.length * T['size/capsule-rest-max-h'] + (ids.length - 1) * T['size/capsule-gap'] : 0;
-  // 舞台高 = 胶囊列最小高与整个人体（按最宽 figure-max-w 算，人体包围盒高宽比约 FIG_ASPECT）里大的那个——不再撑满屏幕，人体上下不留大片空
-  const figH = contentW * T['ratio/figure-max-w'] * FIG_ASPECT;
   const openSheet = useCallback((id: string) => {
     if (!data.stats.has(id)) return;
     setMag(null);
@@ -106,14 +102,14 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
         <TierLegend />
       </PageHeader>
 
-      <div ref={stage} className={s.stage} style={{ height: Math.max(railMin, figH) }}>
+      <div ref={stage} className={s.stage} style={{ minHeight: railMin }}>
         {/* 人体只在内容区里（左缘 = 页面边距），不越过组件最外层 */}
         <div className={s.figureClip}>
           {cards.map((c) => {
             const live = c === cur;
             return (
               <div key={c.key} className={cardCls[c.st]} onAnimationEnd={settle(c.key)}>
-                <BodyFigure whole maxWidth={contentW * T['ratio/figure-max-w']} gender={c.gender} view={c.view} stats={data.stats} focus={live ? (mag != null ? ids[Math.round(mag)] ?? null : sheet) : null}
+                <BodyFigure gender={c.gender} view={c.view} stats={data.stats} focus={live ? (mag != null ? ids[Math.round(mag)] ?? null : sheet) : null}
                   height={box.h} onAnchors={live ? onAnchors : noop} relativeTo={stage} onPick={live && c.st === 'still' ? openSheet : undefined} />
               </div>
             );

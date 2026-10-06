@@ -65,7 +65,7 @@ export const CN: Record<string, string> = {
   recovering: '恢复中', golden: '黄金窗', decayed: '已回落', near: '邻近', focus: '焦点', front: '正面', back: '背面', male: '男', female: '女',
   track: '已开始 · 0 组', partial: '进行中', full: '满环', home: '首页', body: '容量', gains: '增量', log: '记录', me: '我的', success: '成功', undo: '可撤销',
   suggest: '建议减量', week: '减量周', quiet: '一行小字', 'pool-empty': '动作池不足', resume: '继续上次训练', info: '信息', page: '子页', session: '训练中',
-  sub: '标题下带日期与附件', whole: '整个人体（容量页）', half: '半身（故事动画）', crop: '裁切', fold: '收起', closed: '已收起', pill: '小胶囊', open: '展开', loadingState: '加载中', shown: '已出现', lifted: '抬到主按钮上面', 'today-done': '今天练过',
+  sub: '标题下带日期与附件', fold: '收起', closed: '已收起', pill: '小胶囊', open: '展开', loadingState: '加载中', shown: '已出现', lifted: '抬到主按钮上面', 'today-done': '今天练过',
   experience: '训练经验', minutes: '单次时长', equipment: '可用器械', 'w-steady': '稳定守约', 'w-mixed': '有减量也有冻结', 'w-cold': '刚起步',
   'g-cycles': '涨幅太大 · 只写周期', 'g-bare': '牛龄页（不重复段名）',
   newborn: '牛犊', young: '小牛', sturdy: '壮牛', bull: '公牛', milo: 'Milo', 'm-idle': '平常', 'm-focused': '专注', 'm-happy': '开心', 'm-rest': '恢复日', 'm-pr': '破纪录', 'm-deload': '减量周', idle: '平常', training: '训练中',
@@ -483,9 +483,9 @@ export const CATALOG: Entry[] = [
     },
   },
   {
-    name: 'BodyFigure', group: '容量', desc: 'MuscleWiki 真实路径的人体，热成像（逐肌径向渐变 + 扩散 + 渐变映射 + 扫描线与颗粒）。whole = 容量页：整个人体不裁，四周留出热晕，最宽 ratio/figure-max-w；half = 故事动画等：从左裁掉 ratio/figure-crop、左缘渐隐。上面叠一层「光」（screen 混合，只有它在动）：浅荧光轮廓从下往上描出、一道细光沿轮廓游走、扫描光带周期性从脚扫到头；减少动态效果时只留静止轮廓。',
-    axes: { crop: ['whole', 'half'], view: ['front', 'back'], sex: ['male', 'female'] }, rows: ['crop', 'sex'], cols: 'view', size: 'm',
-    render: (p, f) => <FigureCell view={p.view as 'front'} sex={p.sex as 'male'} whole={p.crop === 'whole'} f={f} />,
+    name: 'BodyFigure', group: '容量', desc: 'MuscleWiki 真实路径的人体，热成像（逐肌径向渐变 + 扩散 + 渐变映射 + 扫描线与颗粒）。半身：从左裁掉 ratio/figure-crop、左缘渐隐（容量页与故事动画同一个版式）。上面叠一层「光」（screen 混合，只有它在动）：浅荧光轮廓从下往上描出、一道细光沿轮廓游走、扫描光带周期性从脚扫到头；减少动态效果时只留静止轮廓。',
+    axes: { view: ['front', 'back'], sex: ['male', 'female'] }, rows: ['sex'], cols: 'view', size: 'm',
+    render: (p, f) => <FigureCell view={p.view as 'front'} sex={p.sex as 'male'} f={f} />,
   },
   /* ---------------- 导航 ---------------- */
   {
@@ -653,12 +653,12 @@ function BackToTopCell({ lift }: { lift: boolean }) {
   return <div ref={ref} className={s.backTopCell}><BackToTop target={ref} lift={lift} forceShown /></div>;
 }
 
-function FigureCell({ view, sex, f, whole }: { view: 'front' | 'back'; sex: 'male' | 'female'; f: Fixtures; whole?: boolean }) {
-  return <div className={s.figureBox}><FigureInner view={view} sex={sex} f={f} whole={whole} /></div>;
+function FigureCell({ view, sex, f }: { view: 'front' | 'back'; sex: 'male' | 'female'; f: Fixtures }) {
+  return <div className={s.figureBox}><FigureInner view={view} sex={sex} f={f} /></div>;
 }
-function FigureInner({ view, sex, f, whole }: { view: 'front' | 'back'; sex: 'male' | 'female'; f: Fixtures; whole?: boolean }) {
+function FigureInner({ view, sex, f }: { view: 'front' | 'back'; sex: 'male' | 'female'; f: Fixtures }) {
   const ref = useRef<HTMLDivElement>(null);
-  return <div ref={ref} className={s.figureInner}><BodyFigure whole={whole} gender={sex} view={view} stats={f.body.stats} focus={null} height={T['size/hero-max-h'] * 2} onAnchors={noop} relativeTo={ref} /></div>;
+  return <div ref={ref} className={s.figureInner}><BodyFigure gender={sex} view={view} stats={f.body.stats} focus={null} height={T['size/hero-max-h'] * 2} onAnchors={noop} relativeTo={ref} /></div>;
 }
 
 /* ---------- 变体展开 ---------- */

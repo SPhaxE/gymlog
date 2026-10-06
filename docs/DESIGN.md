@@ -206,7 +206,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 
 ## 9. 组件与交互态（`src/components` → `/playground`）
 
-`/playground` 是这一节的实物：82 个组件、628 个变体，每个变体是 `catalog.tsx` 里各轴取值的组合。下面的表只写用法；尺寸都在 Token 里，状态在 Playground 里看。
+`/playground` 是这一节的实物：82 个组件、624 个变体，每个变体是 `catalog.tsx` 里各轴取值的组合。下面的表只写用法；尺寸都在 Token 里，状态在 Playground 里看。
 
 ### 9.1 交互态（所有可点的件共用 `interactive.css`）
 
@@ -279,7 +279,7 @@ tokens.json ─ build_tokens.py ─┬─> design/tokens/tokens.css   → CSS �
 | | `IncrementRuler`、`LandmarkRuler`、`PhaseSegments`、`Ticks`、`TierLegend` | 加重 / 保持 / 减重；未练 / 不足 / 达标 / 超量；四个时相 | §5 |
 | 容量 | `Capsule` | 未练 / 不足 / 达标 / 超量 × 静止 / 邻近 / 焦点 | 胶囊即量尺；超量加斜纹。常态缩小 1/3（2026-10-06：高 `capsule-rest-max-h` 20、列从内容区 `ratio/rail-start` 62% 起），少挡人体；焦点向左伸 `capsule-focus-grow` 106，总宽不变 |
 | | `CapsuleRail` | 静止 / 焦点；交互演示里是整张容量页 | 几何在 `capsuleLayout.ts`（有单测）。轻点：那颗胶囊原地长成肌头详情面板（M03，`Sheet sharedId`，名称飞成标题，关闭缩回）；换人体卡时引线先收、到位后从人体往胶囊描出（`drawKey`） |
-| | `BodyFigure` | 整个人体 / 半身 × 正 / 背 × 男 / 女 | 容量页用 `whole`：不裁半身、四周留热晕、最宽 `ratio/figure-max-w`（72%）。热像层静止；上面一层「光」（screen 混合）：浅荧光轮廓（替换原来的黑色勾线）挂载时从下往上描出、细光沿轮廓周期游走、扫描光带周期从脚扫到头（裁在剪影里）；减少动态效果只留静止轮廓。正 / 背、男 / 女切换一律从左往右：新卡从左滑进盖在上面，旧卡往右退、淡出 |
+| | `BodyFigure` | 正 / 背 × 男 / 女 | 半身版式不变（从左裁 `ratio/figure-crop`、左缘渐隐、高度撑满舞台；用户 2026-10-06：不要改原来的布局）。热像层静止；上面一层「光」（screen 混合）：浅荧光轮廓（替换原来的黑色勾线；头部轮廓也参与量包围盒，头不被裁）挂载时从下往上描出、细光沿轮廓周期游走、扫描光带周期从脚扫到头（裁在剪影里）；减少动态效果只留静止轮廓。正 / 背、男 / 女切换一律从左往右：新卡从左滑进盖在上面，旧卡往右退、淡出 |
 | | `BodyFigure` | 正面 / 背面 × 男 / 女 | §4 半身 |
 | 导航 | `Nav` | 选中 5 项 × 外圈（不画环 / 已开始 · 0 组 / 进行中 / 满环 / 休息）+ 未选中项的按下 / 聚焦 | §6；选中滑块按弹簧滑动，切换时图标笔画由暗到亮画出 |
 | 品牌 | `Mascot` | 5 种牛龄（牛犊 · 小牛 · 壮牛 · 公牛 · Milo）× 6 状态（平常 · 专注 · 开心 · 恢复日 · 破纪录 · 减量周），PNG，会动 | §8.5；只在品牌位置出现 |

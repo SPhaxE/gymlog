@@ -19,9 +19,6 @@
   -webkit-mask: linear-gradient(90deg, transparent 0, black calc(var(--milo-ratio-figure-fade) * 100%));
   mask: linear-gradient(90deg, transparent 0, black calc(var(--milo-ratio-figure-fade) * 100%)); }
 .thermal path { vector-effect: non-scaling-stroke; }
-/* 容量页的整个人体：不裁、不渐隐 */
-.thermalWhole { display: block; }
-.thermalWhole path { vector-effect: non-scaling-stroke; }
 .stack { position: relative; display: block; }
 .measureOnly path { fill: none; stroke: none; }
 
