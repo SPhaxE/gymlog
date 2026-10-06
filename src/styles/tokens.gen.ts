@@ -75,7 +75,6 @@ export const T = {
   'opacity/figure': 0.62,
   'ratio/figure-crop': 0.42,
   'ratio/figure-fade': 0.08,
-  'ratio/figure-max-w': 0.72,
   'ratio/rail-start': 0.62,
   'opacity/trace-min': 0.3,
   'opacity/press': 0.12,

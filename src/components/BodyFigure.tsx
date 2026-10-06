@@ -1,7 +1,6 @@
 /** 人体（MuscleWiki 真实路径，public/bodymap，V1 原样）。分层同 V1：中性部位 → 肌肉组 → 轮廓层；腹股沟不着色。
  *  版式规则（DESIGN §4，同 V1 BodyProgressMap）：人体放在内容区里（左缘 = 页面边距），不越过组件最外层；
- *  半身（默认，故事动画等）：按包围盒从左裁掉 ratio/figure-crop（露出约 58%），左缘再加 ratio/figure-fade 宽的渐隐；
- *  whole（容量页，2026-10-06 用户「保证能显示全部人体」）：不裁，四周留够热晕的空，最宽不超过 maxWidth（放不下按宽度缩小）。
+ *  半身：按包围盒从左裁掉 ratio/figure-crop（露出约 58%），左缘再加 ratio/figure-fade 宽的渐隐，裁切读起来是有意的暗角，不是一刀切。
  *  热成像上面再叠一层「光」（ThermalLight，混合模式 screen）：浅荧光轮廓从下往上描出、一道细光沿轮廓游走、扫描光带周期性从下往上扫过人体——
  *  动的东西都在这一层，下面带滤镜的热像层静止不重画。
  *  量完锚点后通过 onAnchors 交给胶囊列画引线（坐标相对 relativeTo）。 */
@@ -22,9 +21,8 @@ const load = (g: string) => {
 };
 export type Anchors = Record<string, [number, number]>;
 
-export function BodyFigure({ gender, view, stats, focus, height, onAnchors, relativeTo, onPick, whole, maxWidth }: {
+export function BodyFigure({ gender, view, stats, focus, height, onAnchors, relativeTo, onPick }: {
   gender: 'male' | 'female'; view: 'front' | 'back'; stats: Map<string, HeadStat>; focus: string | null; height: number;
-  /** 整个人体（不裁半身）；maxWidth：最宽多少，超了按宽度缩小高度 */ whole?: boolean; maxWidth?: number;
   onAnchors: (a: Anchors) => void; relativeTo: React.RefObject<HTMLElement | null>;
   /** 轻点某块肌肉（只有带 data-head 的肌头可点；其余部分不接触摸，页面照常滚动） */
   onPick?: (id: string) => void;
@@ -38,11 +36,9 @@ export function BodyFigure({ gender, view, stats, focus, height, onAnchors, rela
   // 第一次渲染整张图量包围盒，再按 ratio/figure-crop 从左裁
   useLayoutEffect(() => {
     if (!data || vb || !svg.current) return;
-    const bb = svg.current.getBBox();
-    if (whole) { const pad = bb.height * 0.045; setVb([bb.x - pad, bb.y - pad, bb.width + pad * 2, bb.height + pad * 2]); return; }  // 四周留出热晕（模糊半径约 2.6% 高）
-    const pad = bb.height * 0.004, x0 = bb.x + bb.width * T['ratio/figure-crop'];
+    const bb = svg.current.getBBox(), pad = bb.height * 0.004, x0 = bb.x + bb.width * T['ratio/figure-crop'];
     setVb([x0, bb.y - pad, bb.x + bb.width - x0 + pad, bb.height + pad * 2]);
-  }, [data, vb, whole]);
+  }, [data, vb]);
 
   // 锚点：每个肌头在可见部分里面积最大的一块的中心
   useLayoutEffect(() => {
@@ -64,7 +60,7 @@ export function BodyFigure({ gender, view, stats, focus, height, onAnchors, rela
       out[g.dataset.head!] = [pt.x - base.left, pt.y - base.top];
     }
     onAnchors(out);
-  }, [vb, height, maxWidth, stats, onAnchors, relativeTo]);
+  }, [vb, height, stats, onAnchors, relativeTo]);
 
   if (!data) return null;
   const v = data[view];
@@ -75,8 +71,7 @@ export function BodyFigure({ gender, view, stats, focus, height, onAnchors, rela
     if (!h || !(h.sets7d > 0)) return s.tNone;
     return h.level === 'over' ? s.tOver : h.level === 'ok' ? s.tOk : s.tLow;
   };
-  const h = vb && maxWidth ? Math.min(height, (maxWidth * vb[3]) / vb[2]) : height;
-  if (thermal) return <ThermalSvg {...{ svgRef: svg, vb, box, height: h, v, stats, focus, fid, thermal, pick, whole }} />;
+  if (thermal) return <ThermalSvg {...{ svgRef: svg, vb, box, height, v, stats, focus, fid, thermal, pick }} />;
   return (
     <svg ref={svg} className={`${vb ? s.figure : s.measuring} ${pick ? s.pickable : ''}`} onClick={pick} viewBox={box.join(' ')} height={height} width={(height * box[2]) / box[3]} preserveAspectRatio="xMinYMin meet" aria-hidden="true">
       <g className={s.neutral}>{NEUTRAL.flatMap((k) => (v[k]?.paths ?? []).map((p, i) => <path key={k + i} d={p.d} />))}</g>
@@ -95,9 +90,9 @@ export function BodyFigure({ gender, view, stats, focus, height, onAnchors, rela
 
 /** 热成像：每块肌肉先按热度画成灰阶，再整体做一次「扩散（模糊）+ 渐变映射」。
  *  bloom：清晰的肌肉叠在自己的辉光上；iso：更强的扩散后量化成等温带，裁回人体轮廓；scan：bloom + 横向扫描线与颗粒，像热像仪画面。 */
-function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pick, whole }: {
+function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pick }: {
   svgRef: React.RefObject<SVGSVGElement | null>; vb: number[] | null; box: number[]; height: number; v: Record<string, Part>; stats: Map<string, HeadStat>;
-  focus: string | null; fid: string; thermal: { palette: 'lime' | 'bone'; style: 'bloom' | 'iso' | 'scan' }; pick?: (e: React.MouseEvent) => void; whole?: boolean;
+  focus: string | null; fid: string; thermal: { palette: 'lime' | 'bone'; style: 'bloom' | 'iso' | 'scan' }; pick?: (e: React.MouseEvent) => void;
 }) {
   const [r, g, b] = tables(thermal.palette), iso = thermal.style === 'iso', unit = box[3] / 100;
   const gray = (t: number) => `color-mix(in srgb, white ${Math.round(t * 100)}%, black)`;
@@ -106,7 +101,7 @@ function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pi
   const w = (height * box[2]) / box[3];
   return (
     <span className={s.stack} style={{ width: w, height }}>
-    <svg ref={svgRef} className={`${vb ? (whole ? s.thermalWhole : s.thermal) : s.measuring} ${pick ? s.pickable : ''}`} onClick={pick} viewBox={box.join(' ')} height={height} width={w} preserveAspectRatio="xMinYMin meet" aria-hidden="true">
+    <svg ref={svgRef} className={`${vb ? s.thermal : s.measuring} ${pick ? s.pickable : ''}`} onClick={pick} viewBox={box.join(' ')} height={height} width={w} preserveAspectRatio="xMinYMin meet" aria-hidden="true">
       <defs>
         {/* 每块肌肉一个径向渐变：中心是它的热度，边缘降到 55%，看起来是一团热而不是一块颜色 */}
         {heads.map((k) => { const h = heatOf(stats.get(k)); return (
@@ -143,7 +138,7 @@ function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pi
       {/* 轮廓画在上面的光层里；这里留一份不上色的，只为量包围盒（头部只有轮廓，没有肌肉路径，不量它头会被裁掉） */}
       <g className={s.measureOnly}>{(v.body?.paths ?? []).map((p, i) => <path key={i} d={p.d} />)}</g>
     </svg>
-    {vb && <ThermalLight box={box} height={height} width={w} v={v} fid={fid} whole={whole} />}
+    {vb && <ThermalLight box={box} height={height} width={w} v={v} fid={fid} />}
     </span>
   );
 }
@@ -153,12 +148,12 @@ function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pi
  *  - 游光：同一组轮廓的更亮一份，被一条横向光带遮着，光带每隔一阵从下往上扫过一次（像光沿着轮廓爬上去）；
  *  - 扫描光带：裁在人体剪影里的一条荧光带（带细扫描线），周期性从下往上扫过热力图；
  *  整层 mix-blend-mode: screen（只提亮、不盖住热像）、不接触摸；减少动态效果时只留静止的轮廓。 */
-function ThermalLight({ box, height, width, v, fid, whole }: { box: number[]; height: number; width: number; v: Record<string, Part>; fid: string; whole?: boolean }) {
+function ThermalLight({ box, height, width, v, fid }: { box: number[]; height: number; width: number; v: Record<string, Part>; fid: string }) {
   const [x, y, bw, bh] = box, unit = bh / 100;
   const silhouette = Object.keys(v).filter((k) => k !== 'body').flatMap((k) => (v[k].paths ?? []).map((p, i) => <path key={k + i} d={p.d} />));
   const contour = (v.body?.paths ?? []).map((p, i) => <path key={i} d={p.d} />);
   return (
-    <svg className={`${s.light} ${whole ? '' : s.lightHalf}`} viewBox={box.join(' ')} width={width} height={height} preserveAspectRatio="xMinYMin meet" aria-hidden="true">
+    <svg className={`${s.light} ${s.lightHalf}`} viewBox={box.join(' ')} width={width} height={height} preserveAspectRatio="xMinYMin meet" aria-hidden="true">
       <defs>
         <clipPath id={`c${fid}`}>{silhouette}</clipPath>
         <mask id={`r${fid}`} maskUnits="userSpaceOnUse" x={x} y={y} width={bw} height={bh}><rect className={s.reveal} x={x} y={y} width={bw} height={bh} fill="white" /></mask>

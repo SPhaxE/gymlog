@@ -248,11 +248,11 @@ def gains_checks(b, w, h):
         pg.goto(f'{args.base}{path}?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(500)
         ys[path] = round(pg.locator('h1').first.bounding_box()['y'], 1)
     ok(max(ys.values()) - min(ys.values()) <= 1, f'{tag} 五个 Tab 的大标题 y 相同 {ys}')
-    # 容量页（2026-10-06 用户）：整个人体完整显示、常态胶囊缩 1/3、换卡一律从左往右、胶囊 → 详情是共享元素（M03）
+    # 容量页（2026-10-06 用户）：半身人体（版式不变）头到脚完整、常态胶囊缩 1/3、换卡一律从左往右、胶囊 → 详情是共享元素（M03）
     pg.goto(f'{args.base}/body?scenario=plain-prescription'); pg.wait_for_selector('[role=option]'); pg.wait_for_timeout(1500)
-    fig = pg.evaluate("""() => { const f = document.querySelector('svg[class*=_thermalWhole_]').getBoundingClientRect(), st = f && document.querySelector('[class*=_figureClip_]').getBoundingClientRect();
+    fig = pg.evaluate("""() => { const f = document.querySelector('svg[class*=_thermal_]').getBoundingClientRect(), st = f && document.querySelector('[class*=_figureClip_]').getBoundingClientRect();
       return { f: [f.left, f.top, f.right, f.bottom].map(Math.round), st: [st.left, st.top, st.right, st.bottom].map(Math.round) }; }""")
-    ok(fig['f'][0] >= fig['st'][0] - 1 and fig['f'][1] >= fig['st'][1] - 1 and fig['f'][3] <= fig['st'][3] + 1 and fig['f'][2] <= fig['st'][2] + 1, f'{tag} 容量：整个人体都在舞台里（头到脚、不裁半身）{fig}')
+    ok(fig['f'][1] >= fig['st'][1] - 1 and fig['f'][3] <= fig['st'][3] + 1 and abs(fig['f'][0] - fig['st'][0]) <= 1, f'{tag} 容量：半身人体从内容区左缘起、头到脚都在舞台里（版式同原来）{fig}')
     caps_h = pg.evaluate("[...document.querySelectorAll('[role=option]')].map((e) => e.getBoundingClientRect().height)")
     ok(max(caps_h) <= 20.5, f'{tag} 容量：常态胶囊高 ≤ 20（缩了 1/3）{max(caps_h):.1f}')
     ok(pg.get_by_role('heading', level=1, name='容量').count() == 1 and pg.get_by_role('link', name='容量').count() == 1, f'{tag} 容量：页标题和导航都叫「容量」')
