@@ -27,6 +27,15 @@ describe('减量：采纳 / 这次不减（ia §1.2 规则 8）', () => {
     expect(view(NOW + 3 * DAY)).toEqual({ kind: 'week', daysLeft: 3 });
     expect(view(NOW + 7 * DAY).kind).toBe('suggest');
   });
+  it('采纳 → 同时追加进 deloads（守约周要知道哪几周是按计划减量的）；这次不减不追加', () => {
+    expect(store.get().deloads).toEqual([]);
+    adoptDeload(NOW);
+    expect(store.get().deloads).toEqual([NOW]);
+    skipDeload(NOW + DAY);
+    expect(store.get().deloads).toEqual([NOW]);
+    adoptDeload(NOW + 40 * DAY);
+    expect(store.get().deloads).toEqual([NOW, NOW + 40 * DAY]);
+  });
   it('这次不减 → 6 天内只剩一行小字，之后重新建议', () => {
     skipDeload(NOW);
     expect(view()).toEqual({ kind: 'note', daysLeft: 6 });
