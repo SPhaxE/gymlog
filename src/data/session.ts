@@ -79,6 +79,13 @@ export function finishSession(now = Date.now(), exertion: number | null = 8): Se
   store.update((x) => ({ ...x, history: [...x.history, s], active: null, rest: null }));
   return s;
 }
+/** 删除一次训练（记录页详情的「删除这次训练」，ia §1.8）：从历史里拿掉。容量 / 恢复度 / 趋势 / PR / 处方 / 增量全是从历史现算的（各页 useMemo 依赖 history），
+ *  删完自动重算，不用逐项失效；减量状态原样保留。进行中的训练、草稿不受影响。返回有没有删到（id 不存在返回 false） */
+export function deleteSession(id: string): boolean {
+  if (!store.get().history.some((s) => s.id === id)) return false;
+  store.update((x) => ({ ...x, history: x.history.filter((s) => s.id !== id) }));
+  return true;
+}
 export const discardSession = () => store.update((x) => ({ ...x, active: null, rest: null }));
 /** 结算页改力竭度（写回刚保存的那次训练） */
 export const setExertion = (id: string, v: number | null) => store.update((x) => ({ ...x, history: x.history.map((s) => (s.id === id ? { ...s, exertion: v } : s)) }));

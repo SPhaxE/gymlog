@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { prescribe } from '../engine';
 import { env } from './demo';
-import { addSet, completeSet, finishSession, setError, setField, startSession, toggleSkip } from './session';
+import { addSet, completeSet, deleteSession, finishSession, setError, setField, startSession, toggleSkip } from './session';
 import { DEFAULT_PROFILE, demoState, store, STORE_KEY } from './store';
 
 const NOW = new Date(2026, 9, 6, 18, 0).getTime();
@@ -75,3 +75,22 @@ describe('进行中的训练（ia §1.5–§1.7）', () => {
     expect(DEFAULT_PROFILE.minutes).toBe(60);
   });
 });
+
+describe('删除训练（ia §1.8）', () => {
+  beforeEach(() => { store.clear(); store.update((s) => ({ ...s, ...demoState(NOW) })); });
+
+  it('从历史里拿掉那一次，写进本机存储；别的训练、进行中的训练、减量状态原样；不存在的 id 返回 false', () => {
+    const before = store.get(), victim = before.history.at(-1)!;
+    expect(deleteSession(victim.id)).toBe(true);
+    const after = store.get();
+    expect(after.history).toHaveLength(before.history.length - 1);
+    expect(after.history.some((x) => x.id === victim.id)).toBe(false);
+    expect(after.history).toEqual(before.history.filter((x) => x.id !== victim.id));
+    expect(after.deload).toEqual(before.deload);
+    expect(JSON.parse(localStorage.getItem(STORE_KEY)!).history).toHaveLength(before.history.length - 1);
+    expect(deleteSession(victim.id)).toBe(false);
+    expect(deleteSession('nope')).toBe(false);
+    expect(store.get().history).toHaveLength(before.history.length - 1);
+  });
+});
+

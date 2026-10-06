@@ -36,3 +36,9 @@
 /* 热身组：灰字，不抢工作组 */
 .warm .setVal b { color: var(--milo-color-text-secondary); font-weight: 600; }
 .skipped { margin: 0; padding: var(--milo-space-s) var(--milo-space-m) var(--milo-space-m); color: var(--milo-color-text-secondary); }
+
+/* 溢出菜单（底部面板里一个危险操作）与删除确认 */
+.menu { display: grid; padding: var(--milo-space-s) 0 var(--milo-space-l); }
+.delWho { margin: 0 0 var(--milo-space-s); padding: var(--milo-space-s) var(--milo-space-m); border-radius: var(--milo-radius-s); background: var(--milo-color-bg-base);
+  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); color: var(--milo-color-text-primary); }
+.delNote { margin: 0; color: var(--milo-color-text-secondary); }
