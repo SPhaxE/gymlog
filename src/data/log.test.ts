@@ -48,6 +48,14 @@ describe('记录页的数据（P07，ia §1.8）', () => {
     }
   });
 
+  it('钢板上选中一天的读数：每个练过的日子对上那天（最晚的）一次训练，日期、部位、组数、总负荷同口径', () => {
+    const h = [sess('a', at(2026, 10, 1, 9), [[60, 8], [60, 8]]), sess('b', at(2026, 10, 1, 19), [[62.5, 8]]), sess('c', at(2026, 10, 3), [[60, 8], [60, 7]])];
+    const d = logData(src(h), NOW);
+    expect([...d.byDay.keys()].sort()).toEqual([...d.trained].sort());
+    const oct1 = d.byDay.get(startOfDay(at(2026, 10, 1)))!;
+    expect(oct1).toMatchObject({ id: 'b', date: '10月1日 周四', sets: 1, load: sessionStats(h[1]).load });
+    expect(d.byDay.get(startOfDay(at(2026, 10, 3)))).toMatchObject({ id: 'c', date: '10月3日 周六', sets: 2 });
+  });
   it('一个具体的周：10/1 周四胸推 3 组、10/3 周六胸推 2 组 → 本周合计 2 次 · 5 组，日期「10/3」周「六」', () => {
     const h = [sess('a', at(2026, 10, 1), [[60, 8], [60, 8], [60, 7]], { durationMin: 40 }), sess('b', at(2026, 10, 3, 12), [[62.5, 8], [62.5, 6]])];
     const d = logData(src(h), NOW), w = d.weeks[0];

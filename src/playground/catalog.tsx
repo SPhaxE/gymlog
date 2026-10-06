@@ -410,12 +410,15 @@ export const CATALOG: Entry[] = [
     render: (_, f) => <DotCalendar months={dotMonths(f.trainedDays, f.now)} />,
   },
   {
-    name: 'SteelPlate', group: '训练与记录', desc: '记录页顶部的钢板打孔日历（6c，设计见 design/hifi/log/plate-plan.md）：深色冲压钢板，练过的日子是冲出来的孔、板后透出荧光，没练的只有淡淡的样冲点，今天刻一圈细环；光影随页面滑动变化（一大团软光从右移到左、两侧漏光换边、钢面一道淡反光，纯 CSS 滚动驱动，真滚动见下面的交互演示）。没练过任何一天时是一块没有孔的板，板后不点灯。一页只放一块。',
-    axes: { kind: ['trained', 'today-done', 'empty'] }, size: 'card',
+    name: 'SteelPlate', group: '训练与记录', desc: '记录页顶部的钢板打孔日历（2026-10-06 第 7 轮重做）：中性冷灰的冲压钢板，练过的日子是冲出来的孔、没练的只有样冲点、今天刻一圈细环。光源固定在屏幕左上角（不跟板走）：板后灯箱离光越近越亮，每个孔向光源反方向射出一束体积光（丁达尔），光束里有浮尘慢慢飘；页面滚动时板相对光源移动，孔的亮暗和光束角度真实变化。交互（M04）：按住横向拖吸到最近的练过的日子，孔口一圈光晕呼吸、轻振，上方读数行按位滚到那天；「查看」/ 再点同一个孔 / 回车钻进那天的训练。没练过任何一天时板后不点灯。一页只放一块。',
+    axes: { kind: ['trained', 'selected', 'today-done', 'empty'] }, size: 'card',
     render: (p, f) => {
       const days = new Set(f.trainedDays);
       if (p.kind === 'today-done') days.add(new Date(f.now).setHours(0, 0, 0, 0));
-      return <SteelPlate months={dotMonths(p.kind === 'empty' ? new Set() : days, f.now)} />;
+      const months = dotMonths(p.kind === 'empty' ? new Set() : days, f.now), last = Math.max(...f.trainedDays);
+      return p.kind === 'selected'
+        ? <SteelPlate dense months={months} selected={last} onSelect={noop} onOpen={noop} day={{ t: last, title: '10月2日 周五', sub: '下肢 · 13 组', value: '6,209', unit: 'kg' }} />
+        : <SteelPlate dense months={months} />;
     },
   },
   {
