@@ -116,22 +116,33 @@ export function SteelPlate({ months, label = '近 3 个月训练', selected, onS
       b.fillStyle = tint(pal.deep, 1); b.fillRect(0, 0, W, H);
       // 渐变的半径按「光源到板最远角」算：近处的孔接近白热，远处的孔只剩暗绿底光
       const R = Math.hypot(W - lx, H - ly), gr = b.createRadialGradient(lx, ly, 0, lx, ly, R);
-      gr.addColorStop(0, tint(pal.dust, 1)); gr.addColorStop(0.32, tint(pal.hot, 1)); gr.addColorStop(0.55, tint(pal.lime, 0.7)); gr.addColorStop(0.8, tint(pal.lime, 0.28)); gr.addColorStop(1, tint(pal.lime, 0.1));
+      // 灯箱底光压暗一些（孔里不是一块实心的绿）；每个孔再垫一团中心亮、边缘暗的光——透过来的光像一团雾，不是一块色片（用户 2026-10-06：不要那么实，要有泛光）
+      gr.addColorStop(0, tint(pal.hot, 0.8)); gr.addColorStop(0.35, tint(pal.lime, 0.62)); gr.addColorStop(0.6, tint(pal.lime, 0.36)); gr.addColorStop(0.85, tint(pal.lime, 0.16)); gr.addColorStop(1, tint(pal.lime, 0.07));
       b.fillStyle = gr; b.fillRect(0, 0, W, H);
+      const dmaxB = Math.hypot(W - lx, H - ly) * 1.05;
+      for (const p of g.holes) {
+        const x = p.x * k, y = p.y * k, rr = r * k, near = Math.max(0, 1 - Math.hypot(x - lx, y - ly) / dmaxB), I = 0.4 + 0.6 * near ** 1.3;
+        // 孔里：中心偏向光源的一侧最亮，往孔边渐暗成深绿——像一团透过来的光，不是一块平涂的色片
+        const hg = b.createRadialGradient(x - rr * 0.2, y - rr * 0.2, 0, x, y, rr * 1.05);
+        hg.addColorStop(0, tint(pal.dust, 0.85 * I)); hg.addColorStop(0.4, tint(pal.hot, 0.75 * I)); hg.addColorStop(0.8, tint(pal.lime, 0.45)); hg.addColorStop(1, tint(pal.deep, 0.85));
+        b.fillStyle = hg; b.fillRect(x - rr * 1.1, y - rr * 1.1, rr * 2.2, rr * 2.2);
+      }
       // 板前光束：每个孔沿「离开光源」的方向射出一束锥形光，叠加发光（重叠处更亮）
       const c = beams.getContext('2d')!; c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, H * (1 + BEAM_SPILL));
-      c.globalCompositeOperation = 'lighter'; c.filter = `blur(${(r * k * 0.35).toFixed(2)}px)`;
+      c.globalCompositeOperation = 'lighter'; c.filter = `blur(${(r * k * 0.6).toFixed(2)}px)`;  // 糊一点：光束和泛光是雾，不是硬边的形
       const dmax = Math.hypot(W - lx, H - ly) * 1.05;
       for (const p of g.holes) {
         const x = p.x * k, y = p.y * k, rr = r * k, dx = x - lx, dy = y - ly, d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d, nx = -uy, ny = ux;
-        const near = Math.max(0, 1 - d / dmax), on = sel && sel.t === p.t ? 1.7 : 1, I = (0.12 + 0.88 * near ** 1.8) * on;
+        const near = Math.max(0, 1 - d / dmax), on = sel && sel.t === p.t ? 1.6 : 1, I = (0.3 + 0.7 * near ** 1.5) * on;
         const len = pitch * k * (3.2 + 3 * near) * (on > 1 ? 1.25 : 1), w0 = rr * 0.85, w1 = rr * (2.6 + 1.2 * near);
         const ex = x + ux * len, ey = y + uy * len, lg = c.createLinearGradient(x, y, ex, ey);
-        lg.addColorStop(0, tint(pal.hot, 0.46 * I)); lg.addColorStop(0.35, tint(pal.lime, 0.17 * I)); lg.addColorStop(1, tint(pal.lime, 0));
+        lg.addColorStop(0, tint(pal.hot, 0.36 * I)); lg.addColorStop(0.3, tint(pal.lime, 0.14 * I)); lg.addColorStop(1, tint(pal.lime, 0));
         c.fillStyle = lg; c.beginPath();
         c.moveTo(x + nx * w0, y + ny * w0); c.lineTo(ex + nx * w1, ey + ny * w1); c.lineTo(ex - nx * w1, ey - ny * w1); c.lineTo(x - nx * w0, y - ny * w0); c.closePath(); c.fill();
-        const bl = c.createRadialGradient(x, y, rr * 0.6, x, y, rr * 2.4); bl.addColorStop(0, tint(pal.hot, 0.3 * I)); bl.addColorStop(1, tint(pal.lime, 0));
-        c.fillStyle = bl; c.fillRect(x - rr * 2.4, y - rr * 2.4, rr * 4.8, rr * 4.8);
+        // 泛光：孔口往外漫出一大圈柔光，压在钢面上（离光越近越大越亮）
+        const R2 = rr * (3.2 + 1.8 * near), bl = c.createRadialGradient(x, y, rr * 0.5, x, y, R2);
+        bl.addColorStop(0, tint(pal.hot, 0.5 * I)); bl.addColorStop(0.3, tint(pal.lime, 0.2 * I)); bl.addColorStop(1, tint(pal.lime, 0));
+        c.fillStyle = bl; c.fillRect(x - R2, y - R2, R2 * 2, R2 * 2);
       }
       c.filter = 'none'; c.globalCompositeOperation = 'source-over';
     };
@@ -232,7 +243,7 @@ export function SteelPlate({ months, label = '近 3 个月训练', selected, onS
             <pattern id={u('grain')} width="37" height="29" patternUnits="userSpaceOnUse">{GRAIN.map((p, i) => <circle key={i} cx={p.cx} cy={p.cy} r={p.r} style={{ fill: p.fill }} />)}</pattern>
             {/* 孔：暗壁（露出的亮窗向右下偏一点，左上的壁厚、右下的薄，孔有厚度）+ 右下的碎亮边 + 凹痕 */}
             <g id={u('hole')}>
-              <path fillRule="evenodd" d={`${circ(0, 0, r)} ${circ(0.04 * r, 0.05 * r, 0.86 * r)}`} style={{ fill: lo(90) }} />
+              <path fillRule="evenodd" d={`${circ(0, 0, r)} ${circ(0.04 * r, 0.05 * r, 0.86 * r)}`} style={{ fill: lo(55) }} />
               <circle r={f2(r + 0.4)} fill="none" stroke={ref('rim')} strokeWidth={0.7} />
               <circle r={f2(r * 1.28)} fill={ref('dish')} />
             </g>

@@ -403,9 +403,10 @@ def log_checks(b, w, h):
     left = [bb for x, bb in s0 if x < 0.4]; right = [bb for x, bb in s0 if x > 0.6]
     ok(left and right and sum(left) / len(left) > sum(right) / len(right) + 4, f'{tag} 记录·钢板：离光源近的（左边）孔更亮（左 {sum(left) / max(1, len(left)):.0f} / 右 {sum(right) / max(1, len(right)):.0f}）')
     ok(min(bb for _, bb in s0) > 12, f'{tag} 记录·钢板：最远的孔也有底光，不是黑洞（{min(bb for _, bb in s0):.0f}）')
-    pg.evaluate('document.querySelector("[class*=_scroll_]").scrollTo(0, 260)'); pg.wait_for_timeout(500)
-    s1 = hole_lums(pg)
-    ok(max(abs(a[1] - c[1]) for a, c in zip(s0, s1)) > 6, f'{tag} 记录·钢板：光源固定、板滚上去后孔的亮暗跟着变（最大变化 {max(abs(a[1] - c[1]) for a, c in zip(s0, s1)):.0f}）')
+    cen = """() => { const c = document.querySelector('[data-plate] canvas[class*=_beams_]'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let lo = 0, s = 0;
+      for (let y = 0; y < c.height; y += 2) for (let x = 0; x < c.width; x += 2) { const a = d[(y * c.width + x) * 4 + 3]; s += a; if (y > c.height * 0.62) lo += a; } return [lo / s, 0]; }"""
+    c0 = pg.evaluate(cen); pg.evaluate('document.querySelector("[class*=_scroll_]").scrollTo(0, 400)'); pg.wait_for_timeout(600); c1 = pg.evaluate(cen)
+    ok(c0[0] - c1[0] > 0.004, f'{tag} 记录·钢板：光源固定、板滚上去后光束转平，落到板下面的光变少（{c0[0]:.3f} → {c1[0]:.3f}）')
     beam = pg.evaluate("""() => { const c = document.querySelector('[data-plate] canvas[class*=_beams_]'); if (!c) return null; const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 16) if (d[i] > 12) n++; return n / (d.length / 16); }""")
     ok(beam is not None and beam > 0.08, f'{tag} 记录·钢板：孔前有光束（光束画布 {0 if beam is None else beam * 100:.0f}% 有光）')
     snap = "() => { const c = document.querySelector('[data-plate] canvas[class*=_beams_]'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let h = 0; for (let i = 0; i < d.length; i += 97) h = (h * 31 + d[i]) | 0; return h; }"
