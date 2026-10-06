@@ -7,9 +7,9 @@
  *  - 框架：顶栏（返回 + 牛龄）→ 页头 → 离下一级 → 三格 → 最近 12 周 → 成长记录 → 一行小字（删训练会重算、可能降级）。没有主操作按钮（浏览页）。
  *  - 表现：荧光只有进度条一处；小牛是品牌位置，可以用 IP 小牛；功能位置（连胜、记录）不放小牛（语气分工）；守约点阵的每种状态形状 / 纹理都不同，不只靠颜色。
  *  设计过程见 design/hifi/me/（线框 level W1 小牛为主角；Stitch 第 1 轮 m6）。 */
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { Banner, Button, GrowthBar, LedgerRow, MessageRow, Num, Screen, SectionLabel, StageHero, StreakWeeks, TopBar, type StreakWeekStatus } from '../components';
+import { BackToTop, Banner, Button, GrowthBar, LedgerRow, MessageRow, Num, Screen, SectionLabel, StageHero, StreakWeeks, TopBar, type StreakWeekStatus } from '../components';
 import { dateOf } from '../data/growth';
 import { growthLog, growthOf, nextGoal } from '../data/me';
 import { useStore } from '../data/store';
@@ -24,6 +24,7 @@ const CHUNK = 6;
 export function LevelPage({ scenario, now }: { scenario?: string; now: number }) {
   const nav = useNavigate(), loc = useLocation();
   const st = useStore();
+  const topRef = useRef<HTMLDivElement>(null);
   const { src } = useSource(scenario, now);
   const g = useMemo(() => growthOf(src, now), [src, now]);
   const log = useMemo(() => growthLog(g, scenario ? [] : st.notes), [g, scenario, st.notes]);
@@ -35,7 +36,7 @@ export function LevelPage({ scenario, now }: { scenario?: string; now: number })
   return (
     <Screen label="牛龄">
       <TopBar title="牛龄" onBack={back} />
-      <div className={s.scroll}>
+      <div ref={topRef} className={s.scroll}>
         <div className={s.body}>
           <StageHero stage={g.stage} sub={g.sub} />
           <GrowthBar bare stage={g.stage} sub={g.sub} progress={g.next?.progress ?? 1} lift={goal?.lift} cycles={goal?.cycles} hint={<GoalHint g={g} empty={empty} />} />
@@ -64,6 +65,7 @@ export function LevelPage({ scenario, now }: { scenario?: string; now: number })
           <p className={`milo-text-caption ${s.note}`}>删除训练后，成长值和连胜会重新计算，可能降级；降级不弹窗，只在这里写明。</p>
         </div>
       </div>
+      <BackToTop target={topRef} />
     </Screen>
   );
 }

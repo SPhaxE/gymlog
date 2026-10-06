@@ -10,9 +10,9 @@
  *  - 删除训练（ia §1.8 / §5）：右上角溢出 ⋮ → 底部面板「删除这次训练」→ 二次确认对话框（日期 · 部位 · 组数 + 「删除后，近 7 天容量、恢复度、趋势和新纪录都会重新计算，不能撤销」）
  *    → 删除后回记录页 + 轻提示。训练是从历史现算出来的（容量 / 恢复度 / 趋势 / PR / 处方 / 增量），删完各页自动重算，不用逐项失效。
  *  （Stitch l6 D / E 的取舍见 design/hifi/log/decision.md。） */
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
-import { Button, Delta, Dialog, Icon, IconButton, Num, Screen, Sheet, StateView, Tag, TopBar, drillName, drillTransition, useToast } from '../components';
+import { BackToTop, Button, Delta, Dialog, Icon, IconButton, Num, Screen, Sheet, StateView, Tag, TopBar, drillName, drillTransition, useToast } from '../components';
 import { fmt } from '../data/demo';
 import { logDetail } from '../data/log';
 import { useSource } from '../data/useSource';
@@ -21,6 +21,7 @@ import s from './LogDetailPage.module.css';
 export function LogDetailPage({ scenario, now }: { scenario?: string; now: number }) {
   const { id = '' } = useParams();
   const nav = useNavigate(), loc = useLocation();
+  const topRef = useRef<HTMLDivElement>(null);
   const { src, remove } = useSource(scenario, now);
   const toast = useToast();
   const [menu, setMenu] = useState(false), [confirm, setConfirm] = useState(false);
@@ -49,7 +50,7 @@ export function LogDetailPage({ scenario, now }: { scenario?: string; now: numbe
     <Screen label={`${d.title} 训练详情`}>
       <TopBar title={d.title} sub={d.sub ? <span className={s.subName} style={drillName('num', id)}>{d.sub}</span> : undefined} onBack={back} titleStyle={drillName('name', id)}
         trailing={<IconButton kind="plain" icon="more" label="更多" onClick={() => setMenu(true)} />} />
-      <div className={s.scroll} data-drill-ready="logdetail">
+      <div ref={topRef} className={s.scroll} data-drill-ready="logdetail">
         <div className={s.body}>
           <div className={s.stats} role="group" aria-label="本次汇总">
             <div><span className="milo-text-caption">动作</span><Num size="m" value={d.stats.exercises} unit="个" /></div>
@@ -99,6 +100,7 @@ export function LogDetailPage({ scenario, now }: { scenario?: string; now: numbe
         <p className={s.delWho}>{[d.title, d.sub.split(' · ')[0], `${d.stats.sets} 组`].filter(Boolean).join(' · ')}</p>
         <p className={s.delNote}>删除后，近 7 天容量、恢复度、趋势和新纪录都会重新计算，不能撤销。</p>
       </Dialog>
+      <BackToTop target={topRef} />
     </Screen>
   );
 }

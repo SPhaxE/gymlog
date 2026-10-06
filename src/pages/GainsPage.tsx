@@ -4,7 +4,7 @@
  *  - 范围：近 4 周摘要、减量状态行（可点开面板）、按部位筛选、按引擎结论分组的动作列表；点一行进这个动作的曲线页（/gains/:exerciseId），返回时还原筛选和滚动位置。
  *  - 结构：Tab 根页（导航「增量」选中）；没练过任何动作时是空状态，唯一出路是回首页。
  *  - 框架：整页是一个滚动区——页头首屏（标题 + 配重片环摘要 + 破纪录）跟着内容一起滑走，不钉在顶上，列表区最大；
- *    页头 C：大标题滑出屏幕顶后，顶上留一条细标题栏（SlimBar），「部位筛选」一行滑到顶后贴在它下面（半透明虚化底），随时能换部位。首屏 → 减量状态 → 筛选 → 三组（该加重 / 保持 / 该减重；减量周合成一组）。
+ *    页头跟着滑走（不留细标题栏），「部位筛选」一行滑到顶后贴顶（半透明虚化底），随时能换部位；长了右下角有回到顶端。首屏 → 减量状态 → 筛选 → 三组（该加重 / 保持 / 该减重；减量周合成一组）。
  *    整页只有「该加重」色带是荧光。
  *  - 表现：页头背景是一圈很淡的配重片同心纹（每页一处）；环 = 近 4 周练过的动作按涨 / 持平 / 退 / 刚开始记分段，每个数后面写「个动作」；
  *    破纪录次数用码表滚动（M04）；切部位时列表交错弹入（M07）；涨跌一律 ▲▼= 形状 + 文字。
@@ -12,7 +12,7 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { flushSync } from 'react-dom';
-import { Cascade, Chip, GainGroupHead, GainRow, GainSummary, Screen, SlimBar, StateView, drillTransition, useToast, type Tab } from '../components';
+import { BackToTop, Cascade, Chip, GainGroupHead, GainRow, GainSummary, PageHeader, Screen, StateView, drillTransition, useToast, type Tab } from '../components';
 import { env, fmt, REGION_NAME } from '../data/demo';
 import { gainsData, groupGains, type GainRow as Row } from '../data/gains';
 import { useSource } from '../data/useSource';
@@ -63,13 +63,10 @@ export function GainsPage({ scenario, now, onTab }: { scenario?: string; now: nu
   return (
     <Screen label="增量">
       <div ref={scroll} className={s.scroll} data-drill-ready="gains">
-        <SlimBar title="增量" />
-        <header className={s.hero}>
+        <div className={s.hero}>
           <span className={s.plate} aria-hidden="true" />
-          <p className={`milo-text-caption ${s.eyebrow}`}>力量有没有在涨</p>
-          <h1 className="milo-text-title-l" data-title-collapse>增量</h1>
-          {!d.empty && <GainSummary {...sm} />}
-        </header>
+          <PageHeader title="增量">{!d.empty && <GainSummary {...sm} />}</PageHeader>
+        </div>
         <div className={s.body}>
           {d.empty ? (
             <StateView kind="empty" title="还没有训练记录" detail="练完第一次，这里就会告诉你每个动作有没有在涨、下次该加多少。" action="去今日处方" onAction={() => nav('/today' + (scenario ? `?scenario=${scenario}` : ''))} />
@@ -105,6 +102,7 @@ export function GainsPage({ scenario, now, onTab }: { scenario?: string; now: nu
       {deloadOpen && <DeloadSheet hits={d.sig.hits} onClose={() => setDeloadOpen(false)}
         onAdopt={() => { adopt(); setDeloadOpen(false); toast.show(`已进入减量周 · ${env.cfg.deload.days} 天`); }}
         onSkip={() => { skip(); setDeloadOpen(false); toast.show(`这次不减，${env.cfg.deload.days} 天内不再提醒`); }} />}
+      <BackToTop target={scroll} />
     </Screen>
   );
 }

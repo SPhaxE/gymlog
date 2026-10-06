@@ -6,9 +6,9 @@
  *  - 框架：整页一个滚动区，页头首屏（大数字）跟着内容滑走；曲线 → 选中那天 → 下次目标 → 最近 8 次。整页只有曲线的荧光渐隐面积是荧光。
  *  - 表现：大数字按位滚动（M04）；按住曲线横向拖，游标吸到最近一次训练（吸附轻振）；点明细的一行也能选中那天；PR 点是菱形，涨跌用 ▲▼= 形状 + 文字。
  *  （Stitch g9 三种结构的取舍见 design/hifi/gains/decision.md） */
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router';
-import { Banner, Delta, Odometer, Screen, SectionLabel, StateView, Tag, TopBar, TrendChart, drillName, drillTransition } from '../components';
+import { BackToTop, Banner, Delta, Odometer, Screen, SectionLabel, StateView, Tag, TopBar, TrendChart, drillName, drillTransition } from '../components';
 import { env, fmt, REGION_NAME } from '../data/demo';
 import { exerciseTrend } from '../data/gains';
 import { useSource } from '../data/useSource';
@@ -19,6 +19,7 @@ const dayText = (ms: number) => { const d = new Date(ms); return `${d.getMonth()
 export function TrendPage({ scenario, now }: { scenario?: string; now: number }) {
   const { exerciseId = '' } = useParams();
   const nav = useNavigate(), loc = useLocation();
+  const topRef = useRef<HTMLDivElement>(null);
   const { src } = useSource(scenario, now);
   const d = useMemo(() => exerciseTrend(src, exerciseId, now), [src, exerciseId, now]);
   const [sel, setSel] = useState<number | null>(null);   // 选中的是曲线上第几次；null = 最新一次
@@ -47,7 +48,7 @@ export function TrendPage({ scenario, now }: { scenario?: string; now: number })
   return (
     <Screen label={`${row.name} 进步曲线`}>
       <TopBar title={row.name} sub={sub} onBack={back} titleStyle={drillName('name', exerciseId)} />
-      <div className={s.scroll} data-drill-ready="trend">
+      <div ref={topRef} className={s.scroll} data-drill-ready="trend">
         <header className={s.hero}>
           <span className={s.plate} aria-hidden="true" />
           <span className={`milo-text-caption ${s.label}`}>{reps ? '每次最好一组的次数' : '预估 1RM'} · {dayText(cur.t)}{cur.pr ? ' · 新纪录' : ''}</span>
@@ -104,6 +105,7 @@ export function TrendPage({ scenario, now }: { scenario?: string; now: number })
           </section>
         </div>
       </div>
+      <BackToTop target={topRef} />
     </Screen>
   );
 }

@@ -1,0 +1,11 @@
+/* 回到顶端：盖在页面右下、导航上方（Screen 里绝对定位）；收起时不拦截点击 */
+.btn { position: absolute; z-index: 8; right: var(--milo-size-gutter); bottom: calc(var(--nav-clear) + var(--milo-space-s));
+  display: grid; place-items: center; width: var(--milo-size-hit-min); height: var(--milo-size-hit-min); padding: 0; border: 0; border-radius: var(--milo-radius-pill);
+  background: color-mix(in srgb, var(--milo-color-bg-raised-2) 88%, transparent); -webkit-backdrop-filter: blur(var(--milo-space-m)); backdrop-filter: blur(var(--milo-space-m));
+  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); color: var(--milo-color-text-primary);
+  opacity: 0; transform: translateY(var(--milo-space-m)) scale(0.8); pointer-events: none;
+  transition: opacity var(--milo-motion-fast) var(--milo-motion-ease-standard), transform var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring-soft); }
+.shown { opacity: 1; transform: none; pointer-events: auto; }
+/* 有固定主按钮（首页「开始训练」）：抬到主按钮上面 */
+.lift { bottom: calc(var(--nav-clear) + var(--milo-size-button-h) + var(--milo-space-m)); }
+@media (prefers-reduced-motion: reduce) { .btn { transition: opacity var(--milo-motion-fast) linear; transform: none; } }
