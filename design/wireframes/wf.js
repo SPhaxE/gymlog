@@ -875,6 +875,147 @@
   };
   LAYERS.finder = ['战略：同 find——按肌肉找到能练它、我有器械的动作；用户 2026-10-07 选 W2（点人体筛），并要求：只是检索器，可读性优先，不用容量页视效；人体放右边方便手指点', '范围：点人体选整块肌肉（同一块肌肉的几个头合并成一个目标，逐个肌头点时正背各有 9 块命中区 < 48），左栏小胶囊细分到肌头 · 器械菜单（只看我有的）· 列表三样（名字 / 器械 / 上次重量）· 结果进要领再「加到今天」；从首页进默认选本周还差最多的肌头，从容量页进带上那一块', '结构：底部面板（整高），入口 首页「＋ 加一个动作」/ 容量页肌头面板「找动作」/ 替换动作（锁定同肌头）；点一行进 P04，返回回到面板原状态', '框架：左栏 = 已选 + 数量 + 器械 + 结果（第一优先，眼睛看）；右栏 = 人体（主操作，拇指点，往下放）；正 / 背在人体正下方；关闭右上 + 下拉 + 点面板外', '表现：平涂高对比——没选的浅灰、选中的深色（高保真里是骨白或荧光其一）、白缝分块；不加发光、扫描、流动'];
 
+  // ---------- 6f 钱包与商城（2026-10-07）：P14 钱包 / P15 商城 / P16 知识卡 / P17 商品详情 / P18 下单确认 / P19 订单完成 ----------
+  // 数据：演示用户 6,060 牛劲；商品 5 款（src/data/growth.ts PRODUCTS），状态按 HANDOFF：蛋白粉热销、腰带折扣、肌酸新品、护膝缺货、助力带常规
+  const NJ = 6060;
+  const PROD = [
+    { id: 'belt', name: '杠铃腰带 10 毫米', m: '铁砧运动', spec: '牛皮 · 单齿扣 · M 码', p: 329, was: 399, mem: 296, tag: '折扣', k: '腰带' },
+    { id: 'whey', name: '乳清蛋白 2 磅', m: '慢火补给', spec: '原味 · 约 30 份', p: 259, mem: 233, tag: '热销', k: '恢复' },
+    { id: 'creatine', name: '一水肌酸 300 克', m: '慢火补给', spec: '无味 · 约 60 份', p: 119, mem: 107, tag: '新品', k: '肌酸' },
+    { id: 'knee', name: '7 毫米护膝', m: '山羊护具', spec: '氯丁橡胶 · 一对 · M 码', p: 199, mem: 179, tag: '缺货', k: '护膝' },
+    { id: 'straps', name: '8 字助力带', m: '铁砧运动', spec: '棉 + 硅胶防滑 · 一对', p: 69, mem: 62, tag: '', k: '助力带' },
+  ];
+  const off = (p) => Math.min(Math.floor(NJ / 100), Math.floor(p * 0.2));
+  const pic = (h, label = '商品图') => `<div class="fill" style="height:${h}px;display:flex;align-items:center;justify-content:center"><span class="t-s">${label}</span></div>`;
+  const badge = (tag) => tag ? `<span class="badge"${tag === '缺货' ? ' style="border-style:dashed;color:#8a8a86"' : ''}>${tag}</span>` : '';
+  const price = (x, big = 't-h') => `<span class="${big}">¥${x.p}</span>${x.was ? `<span class="t-s" style="text-decoration:line-through;margin-left:4px">¥${x.was}</span>` : ''}`;
+  const card2 = (x) => `<div class="box" data-hit style="padding:8px;${x.tag === '缺货' ? 'opacity:.6' : ''}">${pic(96)}<div class="row" style="margin-top:6px;gap:4px">${badge(x.tag)}</div><div class="t-b" style="font-weight:700;margin-top:4px">${x.name}</div><div class="row" style="margin-top:2px">${price(x)}</div><div class="t-s">会员 ¥${x.mem} · 牛劲抵 ¥${off(x.p)}</div></div>`;
+  const tipK = (t, why) => `<div class="fill" data-hit style="padding:12px 14px"><div class="row"><span class="badge">知识卡</span><span class="t-s" style="margin-left:6px">按你的训练数据</span></div><div class="t-h" style="margin-top:6px">${t}</div><div class="t-s" style="margin-top:2px">${why}</div></div>`;
+  const ledger = [['完成训练', '10月6日', '+10'], ['守约周 · 第 21 周', '10月5日', '+50'], ['PR：杠铃深蹲 145 kg', '10月3日', '+30'], ['兑换：连胜冻结卡', '9月20日', '−800'], ['升一小级：壮牛 2 级', '9月14日', '+100']];
+  const ledgerRows = (n = 5) => ledger.slice(0, n).map(([a, d, v]) => `<div class="row" style="height:48px;border-bottom:1px solid #EEE"><div style="flex:1"><div class="t-b">${a}</div><div class="t-s">${d}</div></div><span class="t-h"${v[0] === '−' ? ' style="color:#8a8a86"' : ''}>${v}</span></div>`).join('');
+  const coupon = (t, d, st) => `<div class="box row" data-hit style="height:64px;padding:0 12px;gap:10px${st === 'used' ? ';opacity:.5' : ''}"><div class="fill" style="width:40px;height:40px;border-radius:10px"></div><div style="flex:1"><div class="t-b" style="font-weight:700">${t}</div><div class="t-s">${d}</div></div><span class="t-s">${st === 'use' ? '去用 ›' : st === 'used' ? '已用' : st}</span></div>`;
+
+  const WALLET = {
+    W1: {
+      title: '余额在上，明细 / 卡券两个分段',
+      note: '<em>最常见</em>：顶部一个大数「6,060 牛劲」+ 一行「可抵 ¥60 · 100 牛劲 = 1 元」；下面分段 明细 / 卡券（默认明细，按时间倒序，支出变灰）。「兑换卡券」是次要按钮。代价：「用掉牛劲」的两条路（商城抵扣、兑换卡券）不显眼；页面像账本，缺少「接下来做什么」。',
+      html: () => `${status}${back('钱包')}<div class="pad" style="padding-top:6px"><div data-a="1"><div class="row" style="align-items:baseline;gap:6px"><span class="t-xl">6,060</span><span class="t-b">牛劲</span></div><div class="t-s" style="margin-top:4px">商城最多抵 20% · 100 牛劲 = 1 元 · 会员获得 ×1.5</div></div>
+        <div class="seg" data-hit style="margin-top:14px;width:100%;height:40px"><span class="on" style="flex:1;justify-content:center">明细</span><span style="flex:1;justify-content:center">卡券 2</span></div>
+        <div style="margin-top:6px">${ledgerRows()}</div></div>
+        <div class="abs" style="left:16px;right:16px;bottom:30px" data-a="2"><div class="btn ghost">兑换卡券</div></div>`,
+    },
+    W2: {
+      title: '「用掉它」两个出口做主角（在拇指区）',
+      note: '<em>告诉你牛劲能干什么</em>：底部拇指区并排两个大按钮——「去商城抵扣（最多抵 20%）」「兑换卡券（冻结卡 800 起）」，两个出口就是这一屏的操作；上面是余额、我的卡券（可用的在前）和最近明细 3 条 + 「全部明细 ›」。代价：两个并列的主操作分走注意力；明细被压到第二屏。',
+      html: () => `${status}${back('钱包')}<div class="pad" style="padding-top:6px"><div data-a="1"><div class="row" style="align-items:baseline;gap:6px"><span class="t-xl">6,060</span><span class="t-b">牛劲</span><div class="sp"></div><span class="t-s">≈ ¥60</span></div></div>
+        <div class="t-s" style="margin:14px 0 6px;font-weight:700">我的卡券 · 2 张可用</div>
+        <div style="display:grid;gap:8px">${coupon('连胜冻结卡', '断档时周一自动使用', '可用')}${coupon('免邮券', '商城任意订单 · 10月31日前', 'use')}</div>
+        <div class="row" style="margin:20px 0 2px;height:48px"><span class="t-s" style="font-weight:700">最近</span><div class="sp"></div><span class="t-s" data-hit style="padding:0 4px">全部明细 ›</span></div>${ledgerRows(3)}</div>
+        <div class="abs row" style="left:16px;right:16px;bottom:24px;gap:10px" data-a="2"><div class="btn" style="flex:1;height:64px;flex-direction:column;font-size:15px">去商城抵扣<span style="font-size:11px;font-weight:400;opacity:.8">每单最多抵 20%</span></div><div class="btn ghost" style="flex:1;height:64px;flex-direction:column;font-size:15px">兑换卡券<span style="font-size:11px;font-weight:400">冻结卡 800 起</span></div></div>`,
+    },
+    W3: {
+      title: '牛劲像配重片一样「攒」',
+      note: '<em>有品牌感</em>：余额画成一摞配重片（每 1,000 牛劲一片，6 片 + 一片的 6%），下面写「离下一张冻结卡 / 免邮券还差」——把余额变成目标。明细和卡券放分段。代价：视觉占了大半屏，信息密度低；配重片的隐喻要讲一次才懂。',
+      html: () => `${status}${back('钱包')}<div class="pad" style="padding-top:6px"><div class="fill" data-a="1" style="height:200px;display:flex;align-items:flex-end;justify-content:center;gap:4px;padding-bottom:16px">${[1, 1, 1, 1, 1, 1, 0.06].map((x) => `<i style="display:block;width:22px;height:${Math.max(8, 120 * Math.min(1, x))}px;border-radius:6px;background:#2b2b29;opacity:${x < 1 ? 0.35 : 1}"></i>`).join('')}</div>
+        <div class="row" style="align-items:baseline;gap:6px;margin-top:10px"><span class="t-l">6,060</span><span class="t-b">牛劲</span><div class="sp"></div><span class="t-s">≈ ¥60</span></div>
+        <div class="t-s">再攒 1,940 → 体验 Milo Pro 7 天 · 已够：冻结卡、免邮券</div>
+        <div class="seg" data-hit style="margin-top:12px;width:100%;height:40px"><span class="on" style="flex:1;justify-content:center">兑换</span><span style="flex:1;justify-content:center">卡券 2</span><span style="flex:1;justify-content:center">明细</span></div>
+        <div style="display:grid;gap:8px;margin-top:8px" data-a="2">${coupon('连胜冻结卡', '800 牛劲', '兑换')}${coupon('免邮券', '300 牛劲', '兑换')}</div></div>`,
+    },
+  };
+
+  const SHOP = {
+    W1: {
+      title: '为你推荐在顶（知识卡驱动）+ 两列商品',
+      note: '<em>先讲为什么，再卖</em>：顶部一张「为你推荐」大卡——知识卡的理由（「你的深蹲已到体重 1.5 倍」）+ 对应商品；下面品类分段 全部 / 护具 / 补给，两列商品卡（状态标：折扣 / 热销 / 新品 / 缺货，会员价、牛劲可抵）。右上角钱包余额。代价：两列卡在 360 宽下名字只能两行。',
+      html: () => `${status}${back('商城', '<span class="t-s" data-hit style="padding:0 12px">6,060 牛劲</span>')}<div class="pad" style="padding-top:6px"><div data-a="1">${tipK('腰带：什么时候该系', '你的深蹲预估 1RM 已到体重的 1.5 倍 → 杠铃腰带 10 毫米 ¥329')}</div>
+        <div class="seg" data-hit style="margin-top:12px;height:34px"><span class="on">全部</span><span>护具</span><span>补给</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px" data-a="2">${PROD.slice(0, 4).map(card2).join('')}</div></div>`,
+    },
+    W2: {
+      title: '一张知识卡一组商品（读起来像杂志）',
+      note: '<em>知识卡是主角</em>：页面是一串知识卡，每张写一句「为什么现在该看」+ 下面挂 1–2 个商品行；按触发了没有排序（被你的数据触发的在前、标「按你的数据」，其余是通用入门）。代价：没有被触发时整页像文章，逛起来慢；商品状态被挤成小字。',
+      html: () => `${status}${back('商城')}<div class="pad" style="padding-top:6px;display:grid;gap:12px">
+        <div data-a="1">${tipK('腰带：什么时候该系', '你的深蹲预估 1RM 已到体重的 1.5 倍')}<div class="row" data-hit style="height:56px;border-bottom:1px solid #EEE;gap:10px">${pic(40, '')}<div style="flex:1"><div class="t-b" style="font-weight:700">杠铃腰带 10 毫米 ${badge('折扣')}</div><div class="t-s">铁砧运动 · 会员 ¥296</div></div>${price(PROD[0])}</div></div>
+        ${tipK('肌酸：研究最充分的补剂', '你近 4 周训练量持续上升')}<div class="row" data-hit style="height:56px;gap:10px">${pic(40, '')}<div style="flex:1"><div class="t-b" style="font-weight:700">一水肌酸 300 克 ${badge('新品')}</div><div class="t-s">慢火补给 · 会员 ¥107</div></div>${price(PROD[2])}</div>
+        <div data-a="2" class="t-s" style="text-align:center">往下：恢复 · 护膝 · 助力带（通用）</div></div>`,
+    },
+    W3: {
+      title: '列表行（状态最清楚）',
+      note: '<em>逛得快</em>：推荐压成一行横幅（点开知识卡），下面品类分段 + 一行一个商品：左图右文，名字 / 商家 / 价格（划线价）/ 会员价 · 牛劲抵 / 状态标；缺货行右边是「到货提醒」，已下架不出现在列表。代价：图小，不够「好逛」。',
+      html: () => `${status}${back('商城', '<span class="t-s" data-hit style="padding:0 12px">6,060 牛劲</span>')}<div class="pad" style="padding-top:6px"><div class="fill row" data-hit data-a="1" style="height:52px;padding:0 12px;gap:8px"><span class="badge">知识卡</span><span class="t-b" style="flex:1">深蹲已到体重 1.5 倍：该了解腰带了</span><span class="t-s">›</span></div>
+        <div class="seg" data-hit style="margin-top:12px;height:34px"><span class="on">全部</span><span>护具</span><span>补给</span></div>
+        <div style="margin-top:12px" data-a="2">${PROD.map((x) => `<div class="row" data-hit style="height:88px;border-bottom:1px solid #EEE;gap:12px;${x.tag === '缺货' ? 'opacity:.75' : ''}">${pic(64, '')}<div style="flex:1"><div class="row" style="gap:6px"><span class="t-b" style="font-weight:700">${x.name}</span>${badge(x.tag)}</div><div class="t-s">${x.m}</div><div class="row" style="gap:6px;margin-top:2px">${price(x)}<span class="t-s">会员 ¥${x.mem}</span></div></div>${x.tag === '缺货' ? '<span class="chip" data-hit style="height:32px">到货提醒</span>' : '<span class="t-s">›</span>'}</div>`).join('')}</div></div>`,
+    },
+  };
+
+  const GUIDE = {
+    W1: {
+      title: '文章式：为什么 / 什么时候 / 怎么用',
+      note: '<em>像一页好读的说明</em>：标题 + 「按你的数据」的理由一行（带一个小数字图：深蹲 1.52 × 体重）；三段：为什么、什么时候用、怎么用（3 条）；末尾「不构成医疗建议」；底部 2 个相关商品横滑 + 「不再提示这一类」文字链。代价：商品在最后，要滑到底才看到。',
+      html: () => `${status}${back('知识卡')}<div class="pad" style="padding-top:6px"><div data-a="1"><div class="t-title" style="font-size:20px">腰带：什么时候该系</div><div class="fill row" style="margin-top:10px;padding:10px 12px;gap:10px"><span class="t-l">1.52</span><span class="t-s">× 体重 · 你的深蹲预估 1RM 142 kg / 体重 93 kg</span></div></div>
+        ${[['为什么', '腹压更稳，接近极限时脊柱更安全'], ['什么时候用', '大重量复合动作（深蹲、硬拉）的顶组'], ['怎么用', '只在接近极限的组里系 · 系在肚脐上下 · 不能代替核心力量']].map(([h, b]) => `<div style="margin-top:12px"><div class="t-h">${h}</div><div class="t-b" style="margin-top:4px;line-height:1.6">${b}</div></div>`).join('')}
+        <div class="t-s" style="margin-top:10px">不构成医疗建议</div>
+        <div class="row" style="gap:10px;margin-top:12px;overflow:hidden" data-a="2">${[PROD[0], PROD[4]].map((x) => `<div class="box" data-hit style="flex:0 0 200px;padding:8px">${pic(60)}<div class="t-b" style="font-weight:700;margin-top:4px">${x.name}</div>${price(x)}</div>`).join('')}</div>
+        <div class="t-s" data-hit style="margin-top:24px;text-decoration:underline;display:inline-block">不再提示这一类</div></div>`,
+    },
+    W2: {
+      title: '数据证据在顶 + 商品就在下面',
+      note: '<em>先给证据</em>：顶部一条小曲线「深蹲预估 1RM ÷ 体重」，越过 1.5 那天点亮——一眼看到为什么现在该看；下面要点三条（折叠的「为什么」可展开），紧接着相关商品 2 行（状态、会员价、牛劲抵）；底部主按钮「看杠铃腰带」。代价：曲线要额外算一份数据；「为什么」被折叠。',
+      html: () => `${status}${back('知识卡')}<div class="pad" style="padding-top:6px"><div class="t-title" style="font-size:20px">腰带：什么时候该系</div>
+        <div class="fill" data-a="1" style="margin-top:10px;height:120px;padding:10px 12px;position:relative"><span class="t-s">深蹲预估 1RM ÷ 体重</span><svg width="300" height="80" style="position:absolute;left:12px;bottom:8px"><line x1="0" x2="300" y1="30" y2="30" stroke="#8E8E8A" stroke-dasharray="4 4"/><polyline points="0,70 60,62 120,50 180,40 240,31 290,24" fill="none" stroke="#2b2b29" stroke-width="2"/><circle cx="290" cy="24" r="4" fill="#2b2b29"/><text x="4" y="26" font-size="9" fill="#6b6b67">1.5 ×</text></svg></div>
+        <div style="margin-top:12px">${['只在接近极限的组里系，热身不系', '系在肚脐上下，吸气顶住腰带', '不能代替核心力量'].map((x, i) => `<div class="row" style="gap:10px;margin-top:6px;align-items:flex-start"><span class="t-h">${i + 1}</span><span class="t-b">${x}</span></div>`).join('')}<div class="t-s" data-hit style="margin-top:8px;display:inline-block">为什么 ⌄</div><span class="t-s"> · 不构成医疗建议</span></div>
+        <div style="margin-top:22px">${[PROD[0], PROD[4]].map((x) => `<div class="row" data-hit style="height:64px;border-bottom:1px solid #EEE;gap:10px">${pic(48, '')}<div style="flex:1"><div class="t-b" style="font-weight:700">${x.name} ${badge(x.tag)}</div><div class="t-s">会员 ¥${x.mem} · 牛劲抵 ¥${off(x.p)}</div></div>${price(x)}</div>`).join('')}</div></div>
+        <div class="abs" style="left:16px;right:16px;bottom:30px" data-a="2"><div class="btn">看杠铃腰带</div></div>`,
+    },
+  };
+
+  const itemBody = (x, st) => `${status}${back('', '<span class="t-s" data-hit style="padding:0 12px">分享</span>')}${pic(300, '商品图 · 横滑多张')}<div class="pad" style="padding-top:10px"><div data-a="1"><div class="row" style="gap:6px">${badge(st === 'off' ? '已下架' : x.tag)}<span class="t-s">${x.m}</span></div><div class="t-title" style="font-size:20px;margin-top:4px">${x.name}</div>
+    <div class="row" style="align-items:baseline;gap:8px;margin-top:6px">${price(x, 't-l')}<span class="t-b">会员 ¥${x.mem}</span></div></div>
+    <div class="fill row" style="margin-top:10px;padding:10px 12px;gap:8px"><span class="t-b" style="flex:1">牛劲可抵 ¥${off(x.p)}</span><span class="t-s">余额 6,060 · 每单最多 20%</span></div>
+    <div class="t-s" style="margin-top:12px;font-weight:700">规格</div><div class="row" style="gap:8px;margin-top:6px">${['S', 'M', 'L'].map((z) => `<span class="chip${z === 'M' ? ' on' : ''}" data-hit style="height:32px;min-width:56px;justify-content:center">${z}</span>`).join('')}</div>
+    <div class="row" data-hit style="height:48px;margin-top:8px;border-top:1px solid #EEE"><span class="t-b" style="flex:1">相关知识卡：腰带什么时候该系</span><span class="t-s">›</span></div></div>`;
+  const ITEM = {
+    W1: {
+      title: '正常（折扣）· 底部购买',
+      note: '<em>标准电商详情</em>：大图横滑 → 状态标 + 商家 → 名字 → 价格（现价大、划线价、会员价）→ 牛劲可抵一行 → 规格胶囊 → 相关知识卡；底部固定一个主按钮「购买 · ¥329」（拇指区）。代价：首屏被大图占一半，价格信息要往下看。',
+      html: () => `${itemBody(PROD[0])}<div class="abs" style="left:16px;right:16px;bottom:30px" data-a="2"><div class="btn">购买 · ¥329</div></div>`,
+    },
+    W2: {
+      title: '缺货 · 到货提醒（状态示意）',
+      note: '<em>状态都有出口，不给死路</em>：缺货时主按钮变成「到货提醒」（点了写进提醒、按钮变「已设提醒 ✓」），上方一行「预计 10 月中到货」；已下架时整页置灰、按钮换成「回商城看看别的」（ia：下架提示并回 P15）；牛劲不足时抵扣行写「还差 N 牛劲」、开关不可用。代价：要为每种状态写文案。',
+      html: () => `${itemBody(PROD[3])}<div class="abs t-s" style="left:16px;right:16px;bottom:92px;text-align:center">缺货 · 预计 10 月中到货</div><div class="abs" style="left:16px;right:16px;bottom:30px" data-a="2"><div class="btn ghost">到货提醒</div></div>`,
+    },
+  };
+
+  const ORDER = {
+    W1: {
+      title: '下单确认（P18）',
+      note: '<em>一屏算清楚</em>：顶部「演示模式 · 不收集任何支付信息」横幅；商品行（图、名字、规格、单价）；卡券行（「满 200 减 30」已选 ›）；牛劲抵扣开关（「用 5,900 牛劲抵 ¥59」：按会员价的 20% 封顶；不足时写还差多少、开关禁用）；合计（原价、会员价、券、牛劲）；底部主按钮「提交订单 · ¥207」，提交中按钮禁用防重复点。',
+      html: () => `${status}${back('确认订单')}<div class="pad" style="padding-top:6px"><div class="fill" style="padding:8px 12px"><span class="t-s">演示模式 · 不收集任何支付信息，提交即成功</span></div>
+        <div class="row" style="height:80px;gap:10px;border-bottom:1px solid #EEE" data-a="1">${pic(56, '')}<div style="flex:1"><div class="t-b" style="font-weight:700">杠铃腰带 10 毫米</div><div class="t-s">M 码 · 铁砧运动</div></div><span class="t-h">¥296</span></div>
+        <div class="row" data-hit style="height:52px;border-bottom:1px solid #EEE"><span class="t-b" style="flex:1">卡券</span><span class="t-s">铁砧运动 满 200 减 30 ›</span></div>
+        <div class="row" style="height:56px;border-bottom:1px solid #EEE"><div style="flex:1"><div class="t-b">牛劲抵扣</div><div class="t-s">用 5,900 牛劲抵 ¥59（最多 20%）</div></div><span class="chip on" data-hit style="height:28px;width:48px;justify-content:flex-end;padding:0 4px"><i style="width:20px;height:20px;border-radius:50%;background:#FAFAF8"></i></span></div>
+        <div style="margin-top:10px">${[['商品', '¥329'], ['会员价', '−¥33'], ['卡券', '−¥30'], ['牛劲', '−¥59']].map(([a, b]) => `<div class="row" style="height:26px"><span class="t-s" style="flex:1">${a}</span><span class="t-b">${b}</span></div>`).join('')}<div class="row" style="height:36px;border-top:1px solid #DEDED9;margin-top:4px"><span class="t-h" style="flex:1">合计</span><span class="t-l">¥207</span></div></div></div>
+        <div class="abs" style="left:16px;right:16px;bottom:30px" data-a="2"><div class="btn">提交订单 · ¥207</div></div>`,
+    },
+    W2: {
+      title: '订单完成（P19）',
+      note: '<em>收得住</em>：小牛开心状态 + 「下单成功（演示订单）」；订单号、明细（商品、实付、用掉的牛劲与卡券）；「牛劲余额 6,060 → 160」一行。底部主按钮「回商城」（替换历史，返回不回到确认页）；次要「查看钱包」。代价：要处理「返回」不回下单页的路由。',
+      html: () => `${status}<div class="pad" style="padding-top:40px;text-align:center"><div class="slot" style="width:120px;height:110px;margin:0 auto">小牛 · 开心</div><div class="t-title" style="margin-top:14px" data-a="1">下单成功</div><div class="t-s" style="margin-top:4px">演示订单 MILO-20261007-0412 · 不会真的发货</div></div>
+        <div class="pad" style="margin-top:16px">${[['杠铃腰带 10 毫米 · M', '¥329'], ['实付', '¥207'], ['用掉', '5,900 牛劲 · 满 200 减 30 券'], ['牛劲余额', '6,060 → 160']].map(([a, b]) => `<div class="row" style="height:40px;border-bottom:1px solid #EEE"><span class="t-s" style="flex:1">${a}</span><span class="t-b">${b}</span></div>`).join('')}</div>
+        <div class="abs t-b" data-hit style="left:16px;right:16px;bottom:94px;height:48px;display:flex;align-items:center;justify-content:center;text-decoration:underline">查看钱包</div>
+        <div class="abs" style="left:16px;right:16px;bottom:30px" data-a="2"><div class="btn">回商城</div></div>`,
+    },
+  };
+  Object.assign(LAYERS, {
+    wallet: ['战略：知道自己攒了多少牛劲、能换什么，并且把它用掉（T15 / T17）；钱包是「增长闭环后半段」的落点', '范围：余额（≈ 元）、明细（获得 / 支出，会员 ×1.5）、卡券（可用 / 已用 / 过期）、兑换卡券（冻结卡 800 · 免邮 300 · 商家券 1,500 · Pro 体验 2,000）、去商城抵扣', '结构：P14 /me/wallet；入口 我的「钱包 · 商城」、奖励弹窗「去钱包」；兑换走底部面板（可撤销 → 面板），兑换成功轻提示', '框架：第一优先 = 余额；主操作因方案而异（W1 兑换卡券 / W2 两个出口 / W3 兑换列表）；返回左上', '表现：余额用窄体大数；支出灰；牛劲图标用 PropGlyph；不加荧光（荧光留给奖励时刻）'],
+    shop: ['战略：在训练数据说明「需要」的时候，弄懂补给 / 护具该不该用，并能直接买到（T16）；不做成一般电商', '范围：为你推荐（知识卡驱动，没有触发时是通用入门卡）· 品类 全部 / 护具 / 补给 · 5 款商品 × 状态（热销 / 折扣 / 新品 / 缺货 / 已下架）× 会员价 · 牛劲可抵 / 不足；商家与品牌虚构', '结构：P15 /shop；入口 我的「钱包 · 商城」、钱包；→ 知识卡 P16、商品 P17', '框架：第一优先 = 为你推荐的理由；主操作 = 点商品；钱包余额在右上（可点进钱包）', '表现：状态标用形状 + 文字（缺货虚线）；价格窄体；划线价灰；会员价骨白'],
+    guide: ['战略：先讲清楚为什么、什么时候用、怎么用，再给商品（知识卡是商城主要入口）', '范围：理由（按你的数据，带一个数）· 为什么 / 什么时候 / 怎么用 · 不构成医疗建议 · 2–3 个相关商品 · 不再提示这一类', '结构：P16 /shop/guide/:id；入口 容量页 / 增量页的知识卡提示（一屏最多一条）、商城推荐', '框架：第一优先 = 你的数据证据；主操作 = 看商品（W2 底部按钮 / W1 底部横滑）', '表现：证据小图复用 Sparkline / 刻度尺；补剂不做疗效承诺'],
+    item: ['战略：看清价格（会员价、牛劲能抵多少）和状态，决定买不买', '范围：图、商家、名字、规格、价格 / 划线价 / 会员价、牛劲可抵 / 不足、状态（缺货 → 到货提醒，下架 → 回商城）、相关知识卡', '结构：P17 /shop/item/:id；→ 下单确认 P18', '框架：第一优先 = 价格区；主操作 = 底部「购买 · ¥」（缺货时「到货提醒」，下架「回商城」），永远有出口', '表现：现价窄体大字、划线价灰；状态标形状 + 文字'],
+    order: ['战略：演示一笔完整下单，展示卡券和牛劲怎么抵，同时不误导（演示模式）', '范围：P18 商品 · 卡券 · 牛劲抵扣开关（最多 20%，不足写还差多少）· 合计 · 提交（提交中禁用）；P19 演示订单号 · 明细 · 牛劲 / 卡券扣减 · 回商城（替换历史）', '结构：P17 → P18 → P19 → P15（返回不回 P18）', '框架：P18 第一优先 = 商品 + 合计，主操作「提交订单 · ¥」；P19 第一优先 = 成功 + 余额变化，主操作「回商城」', '表现：P19 小牛开心状态（Mascot happy）；不放支付相关输入'],
+  });
+
   const PAGES = {
     body: { title: '身体 · 容量与恢复（P06）', sub: '放大镜按住「中下胸」· 数据 design/benchmark/p06.json', v: BODY },
     home: { title: '首页 · 今日处方（P01）', sub: '有处方、还没开始 · 演示场景 plain-prescription', v: HOME },
@@ -892,6 +1033,11 @@
     warm: { title: '6e · 热身组', sub: '开始训练后的主角卡 · 杠铃深蹲正式重量 85 kg', v: WARM, layers: LAYERS.warm },
     find: { title: '6e · 点选肌头检索动作', sub: '容量页点「中下胸」/ 首页「＋ 加一个动作」· 演示用户器械：杠铃 / 哑铃 / 固定器械 / 自重（没有绳索）', v: FIND, layers: LAYERS.find },
     finder: { title: '6e · 检索面板（选定 W2 后重排）', sub: '人体在右（拇指区），列表在左（眼睛看）· 数据：mock/exercises.json 实际动作 · 演示器械：杠铃 / 哑铃 / 固定器械 / 自重', v: FINDER, layers: LAYERS.finder },
+    wallet: { title: '6f · 钱包（P14）', sub: '「我的 → 钱包 · 商城」进入 · 演示用户 6,060 牛劲、2 张可用卡券', v: WALLET, layers: LAYERS.wallet },
+    shop: { title: '6f · 商城（P15）', sub: '5 款商品：腰带折扣 · 蛋白粉热销 · 肌酸新品 · 护膝缺货 · 助力带常规；被数据触发的知识卡：腰带', v: SHOP, layers: LAYERS.shop },
+    guide: { title: '6f · 知识卡（P16）', sub: '腰带：深蹲预估 1RM 142 kg ÷ 体重 93 kg = 1.52', v: GUIDE, layers: LAYERS.guide },
+    item: { title: '6f · 商品详情（P17）', sub: '杠铃腰带（折扣）· 7 毫米护膝（缺货）', v: ITEM, layers: LAYERS.item },
+    order: { title: '6f · 下单确认（P18）与订单完成（P19）', sub: '腰带 M 码 · 会员价 · 满 200 减 30 · 牛劲抵 ¥59', v: ORDER, layers: LAYERS.order },
     pause: { title: '6e · 暂停训练确认', sub: '训练中在首页按系统返回 · 已记 6 / 13 组', v: PAUSE, layers: LAYERS.pause },
   };
 
@@ -933,7 +1079,9 @@
     boxes.forEach((b, i) => {
       // 父子关系不算重叠（整行可点、里面还有一个按钮的情况，线框里不该出现；出现了照样标）
       const bad = boxes.some((o, j) => j !== i && !o.e.contains(b.e) && !b.e.contains(o.e) && overlap(b, o));
-      const primary = b.e.closest('[data-a="2"]') && zoneOf(b.x + b.w / 2, b.y + b.h / 2) === '难';
+      // 只查单个主按钮：② 区域里只有一个可点的东西时才算「主操作」；可滚动的列表（商品、结果行）滑一下就到拇指区，不查
+      const reg = b.e.closest('[data-a="2"]');
+      const primary = reg && reg.querySelectorAll('[data-hit], .btn').length <= 1 && zoneOf(b.x + b.w / 2, b.y + b.h / 2) === '难';
       const d = document.createElement('div');
       d.className = 'hitbox' + (bad || primary ? ' bad' : '') + (b.grown ? ' grown' : '');
       Object.assign(d.style, { left: b.x + 'px', top: b.y + 'px', width: b.w + 'px', height: b.h + 'px' });
