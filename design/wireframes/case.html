@@ -1,0 +1,101 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>6h · 作品集案例页 · 线框</title>
+<link rel="stylesheet" href="wf.css">
+<style>
+  /* 案例页是电脑优先的长页：每个方案画成一张「整页缩略」（1280 宽按 0.34 缩到 440），旁边写节奏与代价 */
+  .cw { width: 440px; display: flex; flex-direction: column; gap: 10px; }
+  .page { width: 440px; background: #FAFAF8; border-radius: 10px; box-shadow: 0 0 0 1px #C9C9C5; padding: 14px 16px 18px; display: grid; gap: 10px; }
+  .bar2 { height: 14px; display: flex; align-items: center; gap: 6px; font-size: 9px; color: #777; border-bottom: 1px solid #E4E4E0; padding-bottom: 8px; }
+  .bar2 i { width: 40px; height: 6px; background: #C9C9C5; border-radius: 3px; }
+  .bar2 span { margin-left: auto; }
+  .sec { display: grid; gap: 6px; padding-top: 8px; border-top: 1px dashed #DCDCD7; }
+  .sec:first-of-type { border-top: 0; }
+  .lab { font-size: 9px; color: #8a8a86; letter-spacing: .04em; }
+  .h { font-size: 15px; font-weight: 700; line-height: 1.25; }
+  .hero { font-size: 22px; font-weight: 800; line-height: 1.15; }
+  .p { font-size: 10px; color: #6b6b67; line-height: 1.5; }
+  .g { background: #E4E4E0; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #6b6b67; text-align: center; padding: 4px; }
+  .k { background: #2b2b29; color: #FAFAF8; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 9px; text-align: center; padding: 4px; }
+  .row2 { display: flex; gap: 8px; }
+  .cta { display: inline-flex; align-items: center; height: 22px; padding: 0 10px; border-radius: 11px; background: #2b2b29; color: #fff; font-size: 9px; font-weight: 700; }
+  .cta.o { background: none; color: #1d1d1b; box-shadow: inset 0 0 0 1px #2b2b29; }
+  .phone { width: 92px; border-radius: 12px; background: #2b2b29; padding: 4px; flex: none; }
+  .phone > div { background: #E4E4E0; border-radius: 9px; height: 180px; font-size: 8px; color: #6b6b67; display: flex; align-items: center; justify-content: center; text-align: center; padding: 4px; }
+  .split { display: grid; grid-template-columns: 1fr 100px; gap: 10px; align-items: start; }
+  .sticky { position: relative; }
+  .sticky::after { content: '跟着滚动 ↓ 停在右侧'; position: absolute; left: 0; right: 0; bottom: -16px; font-size: 8px; color: #8a8a86; text-align: center; }
+  .layers { max-width: 1400px; }
+</style>
+<body>
+<div class="board" id="board">
+  <h1>6h · 作品集案例页（/case）<small>给看作品集的人：3 分钟看懂做了什么、怎么做的、做得多完整 · 电脑优先，手机可读</small></h1>
+  <div class="layers" style="background:#fff;border-radius:10px;padding:14px 18px;font-size:13px;line-height:1.75">
+    <div><b>战略</b>　作品集的门面。看的人（面试官 / 招聘方）要在几分钟内确认三件事：①能定义问题——「进阶者下次该练多重」，并做出一个真的引擎；②方法能落地——五层模型 + 手指热区线框 + Stitch 多方案 + 方案台 + 用户审查，每一步都有证据；③做得完整、有辨识度——能用的 App、成体系的设计系统和动效。</div>
+    <div><b>范围</b>　一句话定位 · 问题 · 引擎（渐进超负荷 × 超量恢复，处方怎么算）· 关键界面（首页打卡、容量热成像、增量、记录钢板、增长层与会员）· 设计系统（Token、组件、8motions、IP 小牛 5 × 6、Logo 状态）· 过程证据（线框板、Stitch 对比板、方案台、决定记录）· 数字（测试、门禁检查数、页面数）· 入口（实机演示 /demo、组件库、方案台）。不放：代码细节、未做完的东西。</div>
+    <div><b>结构</b>　独立路由 /case（同 /demo，不在 App 壳里）；顶部目录锚点；每一节可直接跳到 App 里对应的那一页；/demo 首页加一条「看案例」入口。</div>
+    <div><b>框架</b>　第一屏 = 定位一句话 + 活的 App + 主按钮「打开实机演示」；往下一节一个论点，每节一张证据（真截图 / 录屏 / 活的组件），不放大段文字。</div>
+    <div><b>表现</b>　沿用 App 的暖黑 + 骨白 + 荧光（荧光只给第一屏主按钮）；大字排版；证据图用真素材不用示意；滚动入场 M07，减少动态效果时直接显示。</div>
+  </div>
+  <div class="board-row">
+
+    <div class="cw">
+      <h2 style="font-size:15px"><b>W1</b> 时间线：从 V1 到 Milo</h2>
+      <div class="page">
+        <div class="bar2"><i></i>慢牛 Milo · 案例<span>起点 · 定位 · 方法 · 定稿 · 引擎 · 系统</span></div>
+        <div class="sec"><div class="hero">从一个记录表，到一头会长大的牛</div><div class="p">一句话：给进阶者的增量引擎。</div><div class="row2"><span class="cta">打开实机演示</span><span class="cta o">往下看过程</span></div></div>
+        <div class="sec"><span class="lab">01 起点</span><div class="h">V1 长什么样</div><div class="row2"><div class="g" style="flex:1;height:70px">V1 截图（要你从本机提供）</div><div class="g" style="width:30px;height:70px">⇆</div><div class="g" style="flex:1;height:70px">Milo 截图</div></div></div>
+        <div class="sec"><span class="lab">02 定位</span><div class="h">进阶者的平台期</div><div class="g" style="height:40px">问题陈述 + 竞品一行</div></div>
+        <div class="sec"><span class="lab">03 方法 · 五层</span><div class="g" style="height:46px">战略 → 范围 → 结构 → 框架 → 表现（一行五格）</div></div>
+        <div class="sec"><span class="lab">04 线框 · 手指热区</span><div class="g" style="height:70px">热区线框板（真图）</div></div>
+        <div class="sec"><span class="lab">05 Stitch 多方案</span><div class="g" style="height:70px">对比板（真图）</div></div>
+        <div class="sec"><span class="lab">06 方案台</span><div class="g" style="height:56px">容量人体 15 个视效方案 → 选定</div></div>
+        <div class="sec"><span class="lab">07 定稿</span><div class="g" style="height:90px">App 截图墙</div></div>
+        <div class="sec"><span class="lab">08 引擎</span><div class="g" style="height:56px">超量恢复曲线 + 处方</div></div>
+        <div class="sec"><span class="lab">09 设计系统</span><div class="g" style="height:56px">Token · 组件 · 动效 · IP</div></div>
+        <div class="sec"><div class="row2"><span class="cta">打开实机演示</span></div></div>
+      </div>
+      <p class="note" style="font-size:12.5px;color:#444;line-height:1.6"><em style="font-style:normal;font-weight:700;color:#1d1d1b">最诚实地讲过程</em>：按时间走一遍，方法论的每一步都有真图。代价：产品「做了什么」要到第 7 节才看到，引擎在第 8 节——看的人可能在第 3 节就走了；过程图多，节奏偏慢；V1 的截图仓库里没有（brief：V1 归档在你本机），要你提供。</p>
+    </div>
+
+    <div class="cw">
+      <h2 style="font-size:15px"><b>W2</b> 问题 → 解法：先讲产品，过程做证据</h2>
+      <div class="page">
+        <div class="bar2"><i></i>慢牛 Milo · 案例<span>问题 · 引擎 · 界面 · 增长 · 系统 · 过程</span></div>
+        <div class="sec"><div class="split"><div style="display:grid;gap:6px"><div class="hero">下次该练多重？</div><div class="p">给进阶者的增量引擎：每次只多一点，在恢复的最高点再练。</div><div class="row2"><span class="cta">打开实机演示</span><span class="cta o">看过程</span></div></div><div class="phone"><div>首页处方录屏</div></div></div></div>
+        <div class="sec"><span class="lab">01 问题</span><div class="h">平台期靠感觉加重</div><div class="row2"><div class="g" style="flex:1;height:40px">三个痛点</div><div class="g" style="flex:1;height:40px">（竞品对比核实前不写）</div></div></div>
+        <div class="sec"><span class="lab">02 引擎</span><div class="h">渐进超负荷 × 超量恢复</div><div class="row2"><div class="g" style="flex:1.4;height:76px">超量恢复曲线（活的，可拖）</div><div class="g" style="flex:1;height:76px">处方怎么算：3 步</div></div></div>
+        <div class="sec"><span class="lab">03 关键界面</span><div class="row2"><div class="g" style="flex:1;height:84px">首页打卡<br>录屏</div><div class="g" style="flex:1;height:84px">容量热成像<br>录屏</div><div class="g" style="flex:1;height:84px">增量 / 记录<br>录屏</div></div></div>
+        <div class="sec"><span class="lab">04 增长层</span><div class="h">不奖励打开 App，只奖励变强和守约</div><div class="row2"><div class="g" style="flex:1;height:50px">牛龄 + 连胜</div><div class="g" style="flex:1;height:50px">知识卡 → 商城</div><div class="g" style="flex:1;height:50px">会员</div></div></div>
+        <div class="sec"><span class="lab">05 设计系统</span><div class="row2"><div class="g" style="flex:1;height:50px">Token</div><div class="g" style="flex:1;height:50px">8motions</div><div class="g" style="flex:1;height:50px">IP 5 × 6</div></div></div>
+        <div class="sec"><span class="lab">06 过程（证据）</span><div class="g" style="height:34px">五步一行：线框 → Stitch → 高保真 → 审查 → 定稿（点开看原图）</div><div class="g" style="height:30px">决定记录精选 6 条</div></div>
+        <div class="sec"><span class="lab">07 数字 · 入口</span><div class="row2"><div class="g" style="flex:1;height:30px">387 测试 · 824 门禁检查</div><span class="cta">实机演示</span><span class="cta o">组件库</span></div></div>
+      </div>
+      <p class="note" style="font-size:12.5px;color:#444;line-height:1.6"><em style="font-style:normal;font-weight:700;color:#1d1d1b">3 秒讲清做了什么</em>：先问题、再引擎、再界面，过程放后面当证据（每一步一张原图，点开看大图）。代价：过程被压成一节；界面靠录屏，看的人只能「看」不能「玩」。竞品对比按 brief 的约定，核实前不写进对外文案。</p>
+    </div>
+
+    <div class="cw">
+      <h2 style="font-size:15px"><b>W3</b> W2 + 跟着滚动的真手机（我倾向）</h2>
+      <div class="page">
+        <div class="bar2"><i></i>慢牛 Milo · 案例<span>问题 · 引擎 · 界面 · 增长 · 系统 · 过程</span></div>
+        <div class="split">
+          <div style="display:grid;gap:10px">
+            <div class="sec"><div class="hero">下次该练多重？</div><div class="p">给进阶者的增量引擎。右边就是 App 本体，点、滑、长按都是真的。</div><div class="row2"><span class="cta">全屏打开演示</span></div></div>
+            <div class="sec"><span class="lab">01 问题</span><div class="h">平台期靠感觉加重</div><div class="g" style="height:34px">三个痛点</div></div>
+            <div class="sec"><span class="lab">02 引擎 → 手机切到首页</span><div class="g" style="height:60px">超量恢复曲线（活的）+ 处方 3 步</div></div>
+            <div class="sec"><span class="lab">03 容量 → 手机切到容量页，手指自动滑过胶囊</span><div class="g" style="height:44px">热成像 + 放大镜说明</div></div>
+            <div class="sec"><span class="lab">04 增量 / 记录 → 手机切到对应页</span><div class="g" style="height:44px">三组结论 · 钢板日历</div></div>
+            <div class="sec"><span class="lab">05 增长层 → 手机切到牛龄 / 商城 / 会员</span><div class="g" style="height:44px">不奖励打开 App，只奖励变强和守约</div></div>
+            <div class="sec"><span class="lab">06 设计系统（手机让位，整宽）</span><div class="row2"><div class="g" style="flex:1;height:44px">Token</div><div class="g" style="flex:1;height:44px">8motions 活的</div><div class="g" style="flex:1;height:44px">IP</div></div></div>
+            <div class="sec"><span class="lab">07 过程（证据，整宽）</span><div class="g" style="height:34px">五步一行 · 点开看原图 · 决定记录精选</div></div>
+            <div class="sec"><span class="lab">08 数字 · 入口</span><div class="g" style="height:26px">387 测试 · 824 门禁检查 · 组件库 · 方案台</div></div>
+          </div>
+          <div class="sticky" style="display:grid;gap:8px;justify-items:end"><div class="phone"><div>真 App<br>（同 /demo 的 iframe）<br><br>每节一个演示场景</div></div><div class="k" style="width:92px;height:20px">自己点点看</div></div>
+        </div>
+      </div>
+      <p class="note" style="font-size:12.5px;color:#444;line-height:1.6"><em style="font-style:normal;font-weight:700;color:#1d1d1b">看的同时能玩</em>：W2 的叙事顺序，右边一台跟着滚动的真手机（就是 /demo 里那台），滚到哪节手机切到对应页面，并复用故事里已有的「自动演示」（手指滑过胶囊等）；看的人随时可以接手自己点。设计系统和过程两节手机让位、整宽放大图。手机宽度时不跟随，每节换成一段录屏 + 「打开这一页」。代价：工作量最大——每节要一个演示场景和切页时机；iframe 只加载一次，切页走它自己的路由，不重复加载。</p>
+    </div>
+  </div>
+</div>
+<script>document.body.dataset.ready = '1';</script>
+</body>
