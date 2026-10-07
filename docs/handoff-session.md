@@ -2,7 +2,7 @@
 
 > 新窗口请先完整读完本文件，再开始工作。遇到 Open Questions 里的问题先问我，不要自行决定。
 
-_Updated: 2026-10-07 08:30_
+_Updated: 2026-10-07 09:10_
 
 ## 1. Goal
 慢牛 Milo（作品集用的健身 App，React 19 + TS + Vite + CSS Modules，Token 驱动）按路线图做完 6f 钱包与商城 → 6g 会员 → 6h 收尾。
@@ -14,7 +14,7 @@ _Updated: 2026-10-07 08:30_
 - [x] 容量人体三层视效定为 O2 柔光 + F1 金属渐变 + S9 熔流（`/preview` 方案台保留全部方案，作品集要展示过程）
 - [x] 6f 第 ① 步：五层分析 + 热区线框（`design/wireframes/?board=wallet / shop / guide / item / order`，截图 `screenshots/wireframes/<页>/board.png`）
 - [x] 用户说「继续」= 按我的倾向：钱包 W2（两个出口在拇指区）、商城 W1（为你推荐 + 两列商品）、知识卡 W2（数据证据在顶）、商品详情 W1 正常 + W2 缺货、下单 W1 + 完成 W2
-- [ ] 6f 第 ② 步 Stitch：提示词 `design/hifi/build_stitch_f6.py`（11 张），本窗口末尾已跑（结果状态见 §11 第 1 条）
+- [x] 6f 第 ② 步 Stitch：11 张已出，对比板 `screenshots/hifi/f6/f6a-board.png`、`f6b-board.png`（点评与我的倾向在 `design/hifi/f6/f6a/f6b-notes.json`），**已推给用户，等用户选**
 - [ ] 6f 第 ③ 步：数据层（兑换卡券 / 订单 / 到货提醒 / 知识卡触发）→ 组件进 playground → 页面 → 我的页「钱包 · 商城」行 → demo / 文档 / 门禁
 - [ ] 6g 会员（P20 / P21）、6h 收尾（作品集案例页等）未开始
 
@@ -74,12 +74,12 @@ python3 scripts/shoot_wireframes.py --base http://localhost:8765/design/wirefram
 - Env vars / 依赖注意事项: Chromium 在 `/opt/pw-browsers/chromium`；Stitch 走 `design/hifi/tools/stitch.py`（读本机 MCP 配置）；ffmpeg 可用
 
 ## 10. Open Questions
-- 6f Stitch 11 张出来后，每页选哪个强度 / 怎么混搭（对比板见 §11 第 1 条）
+- 6f Stitch 怎么混搭。我的倾向：钱包 V1（借 V2 的刻度尺分隔）；商城 V2 的卡片排法 + V1 的缺货整卡变暗；知识卡 V1 + V2 的「已越过推荐门槛」结论句；详情 V1（去掉编出来的参数表）；缺货 V2（修文字压住参数表的 bug）；确认订单 V2（「最大比例」标改灰）；订单完成 V2（换真小牛、去掉 ×）。**Stitch 编的功效数字（腹压 +18% 等）一律不用**
 - 「到货提醒」点了以后只记在本机（演示），还是到货时在「我的 · 消息」里来一条？（我倾向：记在本机 + 消息里来一条「演示：已到货」）
 - 知识卡提示放在容量页、增量页的什么位置（ia：一屏最多一条，可关闭、可「不再提示这一类」）——线框还没画，要不要补一张
 
 ## 11. Specific Next Steps
-1. 看 `design/hifi/f6/.f6-results.json` 有几张（应为 11）；不全就 `python3 design/hifi/tools/run_round.py f6 f6` 续跑；然后 `python3 design/hifi/tools/render_stitch.py f6 f6`，写 `design/hifi/f6/f6a-notes.json`、`f6b-notes.json`（格式见 `design/hifi/e6/e6a-notes.json`），`python3 design/hifi/board.py f6 f6 f6a` / `f6b`，用 `SendUserFile` 推对比板，等用户选（若本窗口已推过，直接等用户回复）
+1. 等用户回复 Stitch 怎么选（对比板已推）；用户说「继续 / 按你的倾向」就按 §10 第 1 条的倾向做
 2. 数据层（`src/data/wallet.ts` 新建 + `store.ts`）：store 加 `wallet: WalletAction[]`、`orders`、`restock: string[]`；`growthOf()` 传 wallet；兑换卡券（扣牛劲、冻结卡 +1）、下单（扣牛劲 / 卡券、生成演示订单号）、到货提醒；演示场景走模块内存（同 `finder.ts` 的 `useExtras` 做法）；写单测
 3. 知识卡触发函数（腰带 e1RM ≥ 1.5 × 体重、恢复慢、近 4 周训练量上升、深蹲量高；助力带不触发）+ 单测
 4. 组件：扩 `ProductCard` 状态；新增钱包出口按钮 / 优惠券行等（先进 `src/playground/catalog.tsx`）
