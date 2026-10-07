@@ -8,10 +8,11 @@
  *  （Stitch g9 三种结构的取舍见 design/hifi/gains/decision.md） */
 import { useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router';
-import { BackToTop, Banner, Delta, Odometer, Screen, SectionLabel, StateView, Tag, TopBar, TrendChart, drillName, drillTransition } from '../components';
+import { Button, BackToTop, Banner, Delta, Odometer, Screen, SectionLabel, StateView, Tag, TopBar, TrendChart, drillName, drillTransition } from '../components';
 import { env, fmt, REGION_NAME } from '../data/demo';
 import { exerciseTrend } from '../data/gains';
 import { useSource } from '../data/useSource';
+import { guideQuery } from './FinderSheet';
 import s from './TrendPage.module.css';
 
 const dayText = (ms: number) => { const d = new Date(ms); return `${d.getMonth() + 1}月${d.getDate()}日`; };
@@ -49,7 +50,8 @@ export function TrendPage({ scenario, now }: { scenario?: string; now: number })
 
   return (
     <Screen label={`${row.name} 进步曲线`}>
-      <TopBar title={row.name} sub={sub} onBack={back} titleStyle={drillName('name', exerciseId)} />
+      <TopBar title={row.name} sub={sub} onBack={back} titleStyle={drillName('name', exerciseId)}
+        trailing={<Button kind="ghost" size="s" onClick={() => nav(`/exercise/${exerciseId}?${guideQuery(loc.search, 'trend')}`)}>要领</Button>} />
       <div ref={topRef} className={s.scroll} style={keep} data-drill-ready="trend">
         <header className={s.hero}>
           <span className={s.plate} aria-hidden="true" />

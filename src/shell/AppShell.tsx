@@ -11,6 +11,7 @@ import { BodyPage } from '../pages/BodyPage';
 import { DemoPage } from '../pages/DemoPage';
 import { GainsPage } from '../pages/GainsPage';
 import { TrendPage } from '../pages/TrendPage';
+import { ExerciseGuidePage } from '../pages/ExerciseGuidePage';
 import { HomePage } from '../pages/HomePage';
 import { LogDetailPage } from '../pages/LogDetailPage';
 import { LevelPage } from '../pages/LevelPage';
@@ -98,6 +99,7 @@ function Routed() {
         initialFocus={focus && focus !== "none" ? focus : null} />)} />
       <Route path="/gains" element={needProfile ?? tab(<GainsPage key={scenario} scenario={scenario} now={now} onTab={onTab} />)} />
       <Route path="/gains/:exerciseId" element={needProfile ?? <TrendPage key={loc.pathname} scenario={scenario} now={now} />} />
+      <Route path="/exercise/:id" element={needProfile ?? <ExerciseGuidePage key={loc.pathname} scenario={scenario} now={now} />} />
       <Route path="/log" element={needProfile ?? tab(<LogPage key={scenario} scenario={scenario} now={now} onTab={onTab} />)} />
       <Route path="/log/:id" element={needProfile ?? <LogDetailPage key={loc.pathname} scenario={scenario} now={now} />} />
       <Route path="/me" element={needProfile ?? tab(<MePage key={scenario} scenario={scenario} now={now} onTab={onTab} />)} />

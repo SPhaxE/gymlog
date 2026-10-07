@@ -11,7 +11,8 @@ import s from './Sheet.module.css';
 
 const LOW = 0.6, HIGH = 0.92, RUBBER = 0.3, FLING = 0.6; // 屏高比例、橡皮筋系数、甩动速度阈值（px/ms）
 
-export function Sheet({ title, meta, onClose, children, docked, sharedId }: { title: string; meta?: ReactNode; onClose: () => void; children: ReactNode; docked?: boolean;
+export function Sheet({ title, meta, onClose, children, docked, sharedId, tall }: { title: string; meta?: ReactNode; onClose: () => void; children: ReactNode; docked?: boolean;
+  /** 一打开就停在近全屏那一档（找动作检索面板，6e） */ tall?: boolean;
   /** M03 共享元素（2026-10-06，容量页胶囊 → 肌头详情）：面板与标题和那颗胶囊同名，胶囊原地长成面板；这时面板不再自己从下面滑上来 */ sharedId?: string }) {
   const ref = useRef<HTMLElement>(null), scrim = useRef<HTMLDivElement>(null);
   useBackHandler(!docked, onClose);
@@ -25,8 +26,8 @@ export function Sheet({ title, meta, onClose, children, docked, sharedId }: { ti
     if (docked || !ref.current || !scrim.current) return;
     const H = scrim.current.clientHeight, natural = ref.current.scrollHeight;
     const lo = Math.min(natural, H * LOW), hi = Math.max(lo, H * HIGH);
-    setAnchors([lo, hi]); setHgt(lo);
-  }, [docked]);
+    setAnchors([lo, hi]); setHgt(tall ? hi : lo);
+  }, [docked, tall]);
 
   const down = (e: React.PointerEvent) => {
     if (!anchors || hgt == null) return;

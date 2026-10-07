@@ -10,9 +10,11 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { T } from '../styles/tokens.gen';
 import { flushSync } from 'react-dom';
 import { useNavigate } from 'react-router';
-import { BackToTop, Button, Card, Cascade, Dialog, ExerciseRow, Odometer, PageHeader, RestDock, SectionLabel, SetEditor, SetLine, Sheet, sharedName, sharedTransition, useCountdown, useToast } from '../components';
+import { BackToTop, Button, Card, Cascade, Dialog, ExerciseRow, Icon, Odometer, PageHeader, RestDock, SectionLabel, SetEditor, SetLine, Sheet, SwapRow, WarmupStrip, sharedName, sharedTransition, useBackHandler, useCountdown, useToast } from '../components';
 import { dateLabel, env, REGION_NAME } from '../data/demo';
-import { addSet, adjustRest, completeSet, discardSession, finishSession, focusExercise, hasWork, setError, setField, skipRest, toggleSkip, MAX_SETS } from '../data/session';
+import { addSet, adjustRest, completeSet, discardSession, finishSession, focusExercise, hasWork, isWork, pauseSession, setError, setField, skipRest, toggleSkip, toggleWarmup, workDone, MAX_SETS } from '../data/session';
+import { EQUIP_NAME, swapCandidates, swapTo } from '../data/finder';
+import muscles from '../../mock/muscles.json';
 import type { ActiveSession } from '../data/store';
 import { useStore } from '../data/store';
 import { regionOfEx } from '../engine';
@@ -20,11 +22,19 @@ import s from './HomePage.module.css';
 
 type Edit = { row: number; field: 'weight' | 'reps'; fresh: boolean; checkin: boolean };
 const regionName = (id: string) => { const ex = env.ex.get(id); return ex ? REGION_NAME[regionOfEx(env, ex)] : ''; };
+const HEAD: Record<string, string> = Object.fromEntries(muscles.heads.map((h) => [h.id, h.name]));
 
-export function TrainingView({ a, now }: { a: ActiveSession; now: number }) {
+export function TrainingView({ a, now, onFind, onGuide }: { a: ActiveSession; now: number;
+  /** 6e：列表末尾「＋ 加一个动作」打开找动作；主角卡「要领」进动作要领页 */
+  onFind?: () => void; onGuide?: (exerciseId: string) => void }) {
   const st = useStore(), nav = useNavigate(), toast = useToast();
   const [edit, setEdit] = useState<Edit | null>(null);
   const [confirm, setConfirm] = useState(false);
+  // 暂停面板（6e，线框 pause W2）：页头「暂停」和系统返回键都打开它；换一个面板（线框 swap W1）
+  const [pause, setPause] = useState(false);
+  const [swapOpen, setSwapOpen] = useState(false);
+  const [pick, setPick] = useState<string | null>(null);
+  useBackHandler(true, () => setPause(true));
   const [dock, setDock] = useState(false);
   const [swap, setSwap] = useState<string[]>([]);  // 正在换位的两个动作（只给它们起共享名，见 motion.tsx 的遮挡说明）
   const hero = useRef<HTMLDivElement>(null), topRef = useRef<HTMLDivElement>(null);
@@ -52,11 +62,17 @@ export function TrainingView({ a, now }: { a: ActiveSession; now: number }) {
   }, [dock]);
 
   const en = a.entries[a.cur];
-  const cur = en.rows.findIndex((r) => !r.done);
-  const total = a.entries.reduce((n, x) => n + (x.skipped ? 0 : x.rows.length), 0);
-  const doneSets = a.entries.reduce((n, x) => n + x.rows.filter((r) => r.done).length, 0);
-  const pending = a.entries.reduce((n, x) => n + (x.skipped ? 0 : x.rows.filter((r) => !r.done).length), 0);
+  // 热身组（6e）不计数、不占序号：下面的数都只数正式组；cur 是 rows 里的下标
+  const cur = en.rows.findIndex((r) => !r.done && isWork(r));
+  const warm = en.rows.map((r, j) => [r, j] as const).filter(([r]) => !isWork(r));
+  const work = en.rows.map((r, j) => [r, j] as const).filter(([r]) => isWork(r));
+  const total = a.entries.reduce((n, x) => n + (x.skipped ? 0 : x.rows.filter(isWork).length), 0);
+  const doneSets = a.entries.reduce((n, x) => n + x.rows.filter((r) => r.done && isWork(r)).length, 0);
+  const pending = a.entries.reduce((n, x) => n + (x.skipped ? 0 : x.rows.filter((r) => !r.done && isWork(r)).length), 0);
   const curRow = cur >= 0 && !en.skipped ? en.rows[cur] : null;
+  const curNo = work.findIndex(([, j]) => j === cur) + 1;   // 第几组（正式组序号）
+  // 热身条：还没打正式组时才显示，打完第 1 组正式组就收起
+  const showWarm = warm.length > 0 && !en.skipped && !work.some(([r]) => r.done);
 
   // ---- 换动作：点列表行 → 它原地长成主角卡，原主角缩回列表（M03） ----
   const switchTo = (i: number) => {
@@ -106,18 +122,18 @@ export function TrainingView({ a, now }: { a: ActiveSession; now: number }) {
   const primary = (() => {
     if (pending === 0) return { label: hasWork(a) ? '结束并结算' : '放弃这次训练', run: () => (hasWork(a) ? end() : setConfirm(true)) };
     if (!curRow) {
-      const next = a.entries.findIndex((x) => !x.skipped && x.rows.some((r) => !r.done));
+      const next = a.entries.findIndex((x) => !x.skipped && !workDone(x));
       return { label: `下一个 · ${a.entries[next].name}`, run: () => switchTo(next) };
     }
-    if (!curRow.weight.trim()) return { label: `填重量 · 第 ${cur + 1} 组`, run: () => open(cur, true) };
+    if (!curRow.weight.trim()) return { label: `填重量 · 第 ${curNo} 组`, run: () => open(cur, true) };
     // 重量 × 次数就在主角卡高亮的那一行里，按钮只写「打卡 · 第 N 组」（休息时按钮让出左边给休息胶囊，也放得下）
-    return { label: `打卡 · 第 ${cur + 1} 组`, run: () => completeSet(a.cur, cur) };
+    return { label: `打卡 · 第 ${curNo} 组`, run: () => completeSet(a.cur, cur) };
   })();
 
   return (
     <>
       <PageHeader title="今日处方"
-        trailing={<Button kind="ghost" size="s" onClick={() => (hasWork(a) && pending === 0 ? end() : setConfirm(true))}>结束</Button>}>
+        trailing={<Button kind="ghost" size="s" onClick={() => (hasWork(a) && pending === 0 ? end() : setPause(true))}>{hasWork(a) && pending === 0 ? '结束' : '暂停'}</Button>}>
         <p className={`milo-text-caption ${s.date}`}>{dateLabel(now)} · 训练中 {mins} 分钟</p>
       </PageHeader>
       <div ref={topRef} className={s.body} data-training>
@@ -128,16 +144,23 @@ export function TrainingView({ a, now }: { a: ActiveSession; now: number }) {
 
         <div ref={hero} style={sharedName('swap', en.exerciseId)}>
           <Card hero>
-            <div className={s.heroTop}><span className="milo-text-caption">第 {a.cur + 1} 个 · {regionName(en.exerciseId)} · {en.rows.filter((r) => r.done).length} / {en.rows.length} 组</span></div>
+            <div className={s.heroTop}><span className="milo-text-caption">第 {a.cur + 1} 个 · {regionName(en.exerciseId)} · {work.filter(([r]) => r.done).length} / {work.length} 组</span>
+              <span className={s.heroLinks}>
+                {onGuide && <button type="button" className={`milo-press milo-focus ${s.link}`} onClick={() => onGuide(en.exerciseId)}>要领</button>}
+                {!work.some(([r]) => r.done) || !workDone(en) ? <button type="button" className={`milo-press milo-focus ${s.link}`} onClick={() => { setPick(null); setSwapOpen(true); }}>换一个</button> : null}
+              </span></div>
             <div className={`milo-text-heading ${s.primary}`}>{en.name}</div>
             <div className="milo-text-caption">{en.sets} × {en.repRange.join('–')} · 休息 {Math.round(en.restSec / 60 * 10) / 10} 分钟{en.suggestKg == null ? ` · 首次：选一个能干净做完 ${en.repRange[0]} 次的重量` : ''}</div>
             {en.skipped ? <p className={`milo-text-body ${s.muted}`}>已标为「未做」，不计入统计。</p> : (
-              <div className={s.lines}>
-                {en.rows.map((r, j) => <SetLine key={j} index={j + 1} weight={r.weight} reps={r.reps} status={r.done ? 'done' : j === cur ? 'current' : 'todo'} onClick={() => open(j, false)} />)}
-              </div>
+              <>
+                {showWarm && <WarmupStrip sets={warm.map(([r]) => r)} onToggle={(i) => toggleWarmup(a.cur, warm[i][1])} />}
+                <div className={s.lines}>
+                  {work.map(([r, j], k) => <SetLine key={j} index={k + 1} weight={r.weight} reps={r.reps} status={r.done ? 'done' : j === cur ? 'current' : 'todo'} onClick={() => open(j, false)} />)}
+                </div>
+              </>
             )}
             <div className={s.heroActions}>
-              {!en.skipped && en.rows.length < MAX_SETS && <Button kind="ghost" size="s" icon="plus" onClick={() => addSet(a.cur)}>加一组</Button>}
+              {!en.skipped && work.length < MAX_SETS && <Button kind="ghost" size="s" icon="plus" onClick={() => addSet(a.cur)}>加一组</Button>}
               <Button kind="ghost" size="s" onClick={() => toggleSkip(a.cur)}>{en.skipped ? '恢复这个动作' : '跳过这个动作'}</Button>
             </div>
           </Card>
@@ -148,10 +171,11 @@ export function TrainingView({ a, now }: { a: ActiveSession; now: number }) {
           <Cascade>
             {a.entries.map((x, i) => i === a.cur ? null : (
               <div key={x.exerciseId} style={swap.includes(x.exerciseId) ? sharedName('swap', x.exerciseId) : undefined}><ExerciseRow name={x.name} detail={`${regionName(x.exerciseId)} · ${x.sets} × ${x.repRange.join('–')}`} weight={x.suggestKg}
-                status={x.skipped ? 'skipped' : x.rows.every((r) => r.done) ? 'done' : 'todo'} sets={[x.rows.filter((r) => r.done).length, x.rows.length]}
-                dots={x.skipped ? undefined : [x.rows.filter((r) => r.done).length, x.rows.length]} onClick={() => switchTo(i)} /></div>
+                status={x.skipped ? 'skipped' : workDone(x) ? 'done' : 'todo'} sets={[x.rows.filter((r) => r.done && isWork(r)).length, x.rows.filter(isWork).length]}
+                dots={x.skipped ? undefined : [x.rows.filter((r) => r.done && isWork(r)).length, x.rows.filter(isWork).length]} onClick={() => switchTo(i)} /></div>
             )).filter(Boolean)}
           </Cascade>
+          {onFind && <button type="button" className={`milo-press milo-focus ${s.addEx}`} onClick={onFind}><Icon name="plus" small />加一个动作</button>}
         </div>
       </div>
 
@@ -162,12 +186,16 @@ export function TrainingView({ a, now }: { a: ActiveSession; now: number }) {
       <div className={s.cta} style={{ ...(st.rest && !dock && pillW ? { left: T['size/gutter'] + pillW + T['space/s'] } : {}), ...(armed ? {} : { transition: 'none' }) }}><Button onClick={primary.run}>{primary.label}</Button></div>
 
       {edit && er && (
-        <Sheet title={`${en.name} · 第 ${edit.row + 1} 组`} meta={er.done ? '已打卡 · 改完点「好了」' : undefined} onClose={() => setEdit(null)}>
+        <Sheet title={`${en.name} · ${isWork(en.rows[edit.row]) ? `第 ${work.findIndex(([, j]) => j === edit.row) + 1} 组` : '热身'}`} meta={er.done ? '已打卡 · 改完点「好了」' : undefined} onClose={() => setEdit(null)}>
           <SetEditor weight={er.weight} reps={er.reps} field={edit.field} onField={(f) => setEdit({ ...edit, field: f, fresh: true })} onKey={key} onStep={stepBy} step={env.cfg.loadStep}
             hint={hint} error={err?.field === edit.field ? err.msg : err?.msg} onDone={editDone} doneLabel={edit.checkin ? '打卡' : '好了'} doneDisabled={!er.weight.trim() || !er.reps.trim() || !!err} />
         </Sheet>
       )}
 
+      {pause && <PauseSheet a={a} onClose={() => setPause(false)} onPause={() => { setPause(false); sharedTransition(() => pauseSession()); }}
+        onEnd={() => { setPause(false); if (hasWork(a) && pending === 0) end(); else setConfirm(true); }} />}
+      {swapOpen && <SwapSheet a={a} e={a.cur} pick={pick} onPick={setPick} onClose={() => setSwapOpen(false)}
+        onSwap={(id) => { setSwapOpen(false); sharedTransition(() => swapTo(a.cur, id, st.history)); toast.show('已换：只换今天，下次处方照常排'); }} />}
       <Dialog open={confirm} onClose={() => setConfirm(false)} title={hasWork(a) ? '结束这次训练？' : '还没有打卡任何一组'}
         confirm={hasWork(a) ? '结束并结算' : '放弃这次训练'} tone={hasWork(a) ? 'neutral' : 'danger'}
         onConfirm={hasWork(a) ? end : () => { setConfirm(false); discardSession(); }}>
@@ -175,5 +203,47 @@ export function TrainingView({ a, now }: { a: ActiveSession; now: number }) {
       </Dialog>
       <BackToTop target={topRef} lift />
     </>
+  );
+}
+
+/** 暂停训练？（6e，线框 pause W2 + Stitch pause-v2）：底部面板，按钮全在拇指区；面板外点一下 = 继续练。
+ *  可撤销的走底部面板、不可撤销的（删除训练）走居中对话框（DESIGN §9.6 补）。 */
+function PauseSheet({ a, onPause, onEnd, onClose }: { a: ActiveSession; onPause: () => void; onEnd: () => void; onClose: () => void }) {
+  const done = a.entries.reduce((n, x) => n + x.rows.filter((r) => r.done && isWork(r)).length, 0);
+  const ni = a.entries.findIndex((x) => !x.skipped && !workDone(x));
+  const next = ni >= 0 ? a.entries[ni] : null;
+  const k = next ? next.rows.filter(isWork).findIndex((r) => !r.done) + 1 : 0;
+  return (
+    <Sheet title="暂停训练？" meta="点面板外面 = 继续练" onClose={onClose}>
+      <div className={s.pause}>
+        <dl className={s.pauseSum}>
+          <div><dt className="milo-text-caption">已记录</dt><dd className="milo-text-body-strong">{done} 组</dd></div>
+          <div><dt className="milo-text-caption">下一组</dt><dd className="milo-text-body-strong">{next ? `${next.name} 第 ${k} 组` : '都打完了'}</dd></div>
+        </dl>
+        <p className="milo-text-body">已记的组都在，回来接着练；休息计时也会停。</p>
+        <Button kind="neutral" onClick={onPause}>暂停</Button>
+        <Button kind="ghost" onClick={onEnd}>结束并结算</Button>
+      </div>
+    </Sheet>
+  );
+}
+
+/** 换一个（6e，线框 swap W1 + Stitch swap-v1，借 v2 的「推荐」）：同练主练肌头、我有的器械；第一个推荐并默认选中；底部「换成 X」是唯一主操作。只换今天。 */
+function SwapSheet({ a, e, pick, onPick, onSwap, onClose }: { a: ActiveSession; e: number; pick: string | null; onPick: (id: string) => void; onSwap: (id: string) => void; onClose: () => void }) {
+  const st = useStore();
+  const en = a.entries[e], ex = env.ex.get(en.exerciseId);
+  const list = swapCandidates(en.exerciseId, { history: st.history, profile: st.profile }, a.entries.map((x) => x.exerciseId));
+  const sel = pick ?? list[0]?.ex.id ?? null, selName = list.find((r) => r.ex.id === sel)?.ex.name;
+  const heads = (ex?.primaryHeads ?? []).map((h) => HEAD[h] ?? h).join('、');
+  const done = en.rows.some((r) => r.done && isWork(r));
+  return (
+    <Sheet title={`换掉 ${en.name}`} meta={`同练${heads} · 同器械优先 · 只换今天${done ? ' · 已打的组留在原动作下' : ''}`} onClose={onClose}>
+      <div className={s.swap} role="radiogroup" aria-label="换成哪个动作">
+        {list.length ? list.map((r, i) => <SwapRow key={r.ex.id} name={r.ex.name} detail={`${EQUIP_NAME[r.ex.equipmentType] ?? r.ex.equipment} · ${r.ex.primaryHeads.map((h) => HEAD[h] ?? h).join(' · ')}`}
+          last={r.last} selected={sel === r.ex.id} recommended={i === 0} onClick={() => onPick(r.ex.id)} />)
+          : <p className="milo-text-body">你现有的器械里没有能替换它的动作。</p>}
+        {sel && selName && <Button onClick={() => onSwap(sel)}>换成 {selName}</Button>}
+      </div>
+    </Sheet>
   );
 }

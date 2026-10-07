@@ -47,7 +47,7 @@ describe('首页即打卡（2026-10-06：取消独立训练页）', () => {
     expect(window.location.pathname).toBe('/today');
     check.click();
     await screen.findByRole('button', { name: /^打卡 · 第 2 组/ });
-    expect(store.get().active?.entries[0].rows[0].done).toBe(true);
+    expect(store.get().active?.entries[0].rows.find((r) => r.type === 'work')?.done).toBe(true);   // 前面可能有热身组（6e），热身不占序号
     expect(store.get().rest).not.toBeNull();
     // 首页只有一个计时器：主按钮旁的胶囊；导航上不重复显示
     expect(screen.getByRole('button', { name: /组间休息剩余/ })).toBeInTheDocument();
@@ -58,8 +58,11 @@ describe('首页即打卡（2026-10-06：取消独立训练页）', () => {
     await screen.findByRole('link', { name: /增量，休息剩余/ }, { timeout: 5000 });
     screen.getByRole('link', { name: /首页/ }).click();
     await screen.findByRole('button', { name: /组间休息剩余/ }, { timeout: 5000 });
-    screen.getByRole('button', { name: '结束' }).click();
+    // 6e：页头「暂停」打开暂停面板（暂停 / 结束并结算）；还有没打的组 → 再确认一次
+    screen.getByRole('button', { name: '暂停' }).click();
     (await screen.findByRole('button', { name: '结束并结算' })).click();
+    const dlg = await screen.findByRole('alertdialog');
+    within(dlg).getByRole('button', { name: '结束并结算' }).click();
     await screen.findByText('练完了');
     expect(window.location.pathname).toMatch(/^\/summary\//);
     expect(store.get().active).toBeNull();

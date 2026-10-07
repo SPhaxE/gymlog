@@ -72,3 +72,22 @@
 .whyHeads { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--milo-space-xs); }
 .whyHeads li { display: flex; align-items: center; gap: var(--milo-space-s); flex-wrap: wrap; color: var(--milo-color-text-primary); }
 .scrimLow { composes: scrim; height: calc(var(--nav-clear) + var(--milo-size-button-h) + var(--milo-space-3xl)); }
+
+/* 6e：主角卡右上「要领 · 换一个」、列表末尾「加一个动作」、暂停面板、换一个面板、暂停后的首页 */
+.heroLinks { display: inline-flex; gap: var(--milo-space-s); margin-right: calc(var(--milo-space-s) * -1); }
+.heroLinks .link { margin-right: 0; color: var(--milo-color-text-secondary); text-decoration: underline; text-underline-offset: var(--milo-space-xs); }
+.addEx { display: inline-flex; align-items: center; justify-content: center; gap: var(--milo-space-xs); min-height: var(--milo-size-hit-min); margin: var(--milo-space-xs) var(--milo-space-m) 0;
+  border: var(--milo-stroke-hairline) dashed var(--milo-color-line-strong); border-radius: var(--milo-radius-m); background: none; color: var(--milo-color-text-secondary); font: inherit; }
+.pause { display: grid; gap: var(--milo-space-m); padding-bottom: var(--milo-space-s); }
+.pause > p { margin: 0; color: var(--milo-color-text-secondary); }
+.pauseSum { display: grid; grid-template-columns: auto minmax(0, 1fr); margin: 0; border-radius: var(--milo-radius-m); background: var(--milo-color-bg-raised-2); }
+.pauseSum > div { display: grid; gap: var(--milo-space-2xs); padding: var(--milo-space-m); }
+.pauseSum > div + div { border-left: var(--milo-stroke-hairline) solid var(--milo-color-line-default); }
+.pauseSum dt { color: var(--milo-color-text-secondary); }
+.pauseSum dd { margin: 0; color: var(--milo-color-text-primary); }
+.swap { display: grid; gap: var(--milo-space-m); padding-bottom: var(--milo-space-s); }
+.swap > button:last-child { margin-top: var(--milo-space-s); }
+.pausedNum { display: flex; align-items: baseline; gap: var(--milo-space-xs); color: var(--milo-color-text-primary); }
+.pausedBar { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--milo-space-2xs); margin: var(--milo-space-s) 0; }
+.pausedBar i { height: var(--milo-space-xs); border-radius: var(--milo-radius-pill); background: var(--milo-color-data-track); }
+.pausedBar i.on { background: var(--milo-color-data-fill); }

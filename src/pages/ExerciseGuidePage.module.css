@@ -1,0 +1,24 @@
+/* 动作要领（P04）：视频占上半屏（1:1 居中裁），顶栏压在视频上（上方渐隐垫底），要领抽屉在下 */
+.page { position: relative; height: 100%; overflow: hidden; background: var(--milo-color-bg-base); }
+.video { position: absolute; left: 0; right: 0; top: 0; height: 62dvh; }
+.video::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(var(--milo-color-bg-scrim), transparent 30%, transparent 70%, var(--milo-color-bg-base)); }
+.top { position: relative; z-index: 1; display: grid; gap: var(--milo-space-s); padding-bottom: var(--milo-space-s); }
+.rest { display: flex; align-items: center; gap: var(--milo-space-s); justify-self: start; margin: 0 var(--milo-size-gutter); padding: var(--milo-space-xs) var(--milo-space-m);
+  border-radius: var(--milo-radius-pill); background: var(--milo-color-bg-raised-2); color: var(--milo-color-text-primary); }
+.rest > :last-child { margin-left: var(--milo-space-s); }
+.block { display: grid; gap: var(--milo-space-s); }
+.block h2 { margin: 0; color: var(--milo-color-text-secondary); }
+.heads { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--milo-space-l); align-items: center; }
+.fig { display: flex; }
+.headList { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--milo-space-s); }
+.headList li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--milo-space-s); color: var(--milo-color-text-primary); }
+.headList li > :last-child { color: var(--milo-color-text-secondary); }
+.headList i { width: var(--milo-space-m); height: var(--milo-space-m); border-radius: var(--milo-radius-xs); background: var(--milo-prim-gray-600); }
+.headList i.on { background: var(--milo-color-text-primary); }
+.progress { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: var(--milo-space-m); width: 100%; min-height: calc(var(--milo-size-hit-min) + var(--milo-space-m));
+  padding: var(--milo-space-s) var(--milo-space-m); border: 0; border-radius: var(--milo-radius-m); background: var(--milo-color-bg-raised-2); color: var(--milo-color-text-primary); text-align: left; font: inherit; }
+.progress > span:first-child { display: grid; gap: var(--milo-space-2xs); }
+.progress > span:first-child > :first-child { color: var(--milo-color-text-secondary); }
+.already { margin: 0; display: flex; justify-content: center; min-height: var(--milo-size-hit-min); align-items: center; }
+.missing { padding: var(--milo-size-gutter); color: var(--milo-color-text-secondary); }

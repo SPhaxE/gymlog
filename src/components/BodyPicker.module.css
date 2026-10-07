@@ -6,6 +6,7 @@
   mask: linear-gradient(90deg, transparent 0, black calc(var(--milo-ratio-figure-fade) * 100%));
 }
 .measuring { visibility: hidden; }
+.still { cursor: default; }
 .figure path { vector-effect: non-scaling-stroke; stroke: var(--milo-color-bg-sheet); stroke-width: calc(var(--milo-stroke-focus) * 1.25); stroke-linejoin: round; transition: fill var(--milo-motion-fast) var(--milo-motion-ease-standard); }
 .base path { fill: var(--milo-prim-gray-200); stroke: none; }
 .neutral path { fill: var(--milo-prim-gray-200); }

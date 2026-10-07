@@ -11,12 +11,15 @@
  *  页面可以竖向滚动：胶囊列至少保留每颗 capsule-rest-max-h 的高度，放不下就滚；胶囊列上竖向短滑也是滚动，按住才进放大镜。 */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { BackToTop, Banner, BodyFigure, CapsuleRail, LandmarkRuler, Nav, Num, PageHeader, PhaseSegments, Screen, Segmented, Sheet, SheetBlock, Ticks, TierLegend, sharedTransition, type Anchors, type Tab } from '../components';
+import { BackToTop, Banner, BodyFigure, Button, CapsuleRail, LandmarkRuler, Nav, Num, PageHeader, PhaseSegments, Screen, Segmented, Sheet, SheetBlock, Ticks, TierLegend, sharedTransition, type Anchors, type Tab } from '../components';
 import { ago, bodyData, fmt, REGION_NAME } from '../data/demo';
 import { useStore } from '../data/store';
 import { useTrainingNav } from '../data/useTrainingNav';
 import type { HeadStat } from '../engine';
 import { T } from '../styles/tokens.gen';
+import { FAMILY_OF } from '../data/finder';
+import { useSource } from '../data/useSource';
+import { FinderSheet, useFinderParam } from './FinderSheet';
 import s from './BodyPage.module.css';
 
 const TIER_NAME = { large: '大肌群', medium: '中肌群', small: '小肌群' } as const;
@@ -30,6 +33,8 @@ const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia
 export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: string; now: number; initialFocus: string | null; onTab?: (tab: Tab, path: string) => void }) {
   const st = useStore();
   const topRef = useRef<HTMLDivElement>(null);
+  const { src } = useSource(scenario, now);
+  const finder = useFinderParam();
   const data = useMemo(() => bodyData(scenario ?? st, now), [scenario, st.history, st.profile, now]); // eslint-disable-line react-hooks/exhaustive-deps
   // 训练中切过来也看得到今日进度和休息（ia §1.12）
   const navState = useTrainingNav(scenario, data.trainedToday ? 1 : 0, now);
@@ -121,7 +126,9 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
       </div>
       </div>
 
-      {sheet && <HeadSheet h={data.stats.get(sheet)!} shared={shared === sheet} onClose={closeSheet} />}
+      {sheet && <HeadSheet h={data.stats.get(sheet)!} shared={shared === sheet} onClose={closeSheet}
+        onFind={FAMILY_OF[sheet] ? () => { const id = sheet; setSheet(null); setShared(null); finder.open(FAMILY_OF[id], id); } : undefined} />}
+      {finder.find && <FinderSheet src={src} caption="加的动作排在今天处方后面" onClose={finder.close} />}
       <Nav selected="body" {...navState} onSelect={onTab} />
       <BackToTop target={topRef} />
     </Screen>
@@ -129,7 +136,8 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
 }
 
 /** 肌头详情（线框 sheet W1：恢复在上、容量在下，阅读顺序同处方逻辑） */
-function HeadSheet({ h, shared, onClose }: { h: HeadStat; shared: boolean; onClose: () => void }) {
+function HeadSheet({ h, shared, onClose, onFind }: { h: HeadStat; shared: boolean; onClose: () => void;
+  /** 6e：找练这块的动作（打开找动作面板，选中这块肌肉、细分落在这个肌头） */ onFind?: () => void }) {
   return (
     <Sheet title={h.name} meta={`${REGION_NAME[h.region]} · ${TIER_NAME[h.tier]}`} onClose={onClose} sharedId={shared ? h.id : undefined}>
       <SheetBlock label="恢复">
@@ -144,6 +152,7 @@ function HeadSheet({ h, shared, onClose }: { h: HeadStat; shared: boolean; onClo
         <LandmarkRuler value={h.sets7d} mev={h.mev} mav={h.mav} mrv={h.mrv} />
         {h.hoursSince != null && <div className="milo-text-caption">最近一次：{ago(h.hoursSince)} · {fmt(h.lastSets)} 组</div>}
       </SheetBlock>
+      {onFind && <Button kind="ghost" icon="plus" onClick={onFind}>找练这块的动作</Button>}
     </Sheet>
   );
 }

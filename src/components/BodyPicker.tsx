@@ -27,7 +27,8 @@ export function BodyPicker({ gender, view, height, groupOf, groupName, skip = []
   skip?: string[];
   /** 亮（选中）的肌头；dim = 同一组里没选到的肌头 */
   lit?: string[]; dim?: string[];
-  onPick: (group: string) => void;
+  /** 不传 = 只展示（动作要领页里「练到的肌头」） */
+  onPick?: (group: string) => void;
 }) {
   const [data, setData] = useState<BodyMap | null>(null);
   const [vb, setVb] = useState<number[] | null>(null);
@@ -96,9 +97,9 @@ export function BodyPicker({ gender, view, height, groupOf, groupName, skip = []
   const cls = (h: string) => (lit.includes(h) ? s.lit : dim.includes(h) ? s.dim : pressed && groupOf(h) === pressed ? s.pressed : s.muscle);
   return (
     <div className={s.wrap}>
-      <svg ref={svg} className={vb ? s.figure : s.measuring} viewBox={box.join(' ')} height={height} width={(height * box[2]) / box[3]} preserveAspectRatio="xMinYMin meet" aria-hidden="true"
-        onPointerDown={(e) => setPressed(groupAt(e))} onPointerLeave={() => setPressed(null)} onPointerCancel={() => setPressed(null)}
-        onPointerUp={(e) => { const g = groupAt(e); setPressed(null); if (g) onPick(g); }}>
+      <svg ref={svg} className={`${vb ? s.figure : s.measuring} ${onPick ? '' : s.still}`} viewBox={box.join(' ')} height={height} width={(height * box[2]) / box[3]} preserveAspectRatio="xMinYMin meet" aria-hidden="true"
+        onPointerDown={onPick && ((e) => setPressed(groupAt(e)))} onPointerLeave={() => setPressed(null)} onPointerCancel={() => setPressed(null)}
+        onPointerUp={onPick && ((e) => { const g = groupAt(e); setPressed(null); if (g) onPick(g); })}>
         <g className={s.base}>{(v.body?.paths ?? []).map((p, i) => <path key={i} d={p.d} />)}</g>
         <g className={s.neutral}>{NEUTRAL.flatMap((k) => (v[k]?.paths ?? []).map((p, i) => <path key={k + i} d={p.d} />))}</g>
         {heads.map((h) => {
@@ -106,7 +107,7 @@ export function BodyPicker({ gender, view, height, groupOf, groupName, skip = []
           return <g key={h} data-head={h} data-group={g ?? undefined} className={cls(h)}>{(v[h].paths ?? []).map((p, i) => <path key={i} d={p.d} />)}</g>;
         })}
       </svg>
-      <div className={s.sr}>{groupsHere.map((g) => <button key={g} type="button" aria-pressed={heads.some((h) => groupOf(h) === g && lit.includes(h))} onClick={() => onPick(g)}>{groupName(g)}</button>)}</div>
+      {onPick && <div className={s.sr}>{groupsHere.map((g) => <button key={g} type="button" aria-pressed={heads.some((h) => groupOf(h) === g && lit.includes(h))} onClick={() => onPick(g)}>{groupName(g)}</button>)}</div>}
     </div>
   );
 }
