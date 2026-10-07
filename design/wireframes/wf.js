@@ -1126,6 +1126,49 @@
     },
   };
   LAYERS.proentry = ['战略：「Pro 标」和「冻结卡提示」是付费墙的入口，但入口要落在真东西上——标在哪，那项权益就在哪看得见；不为了导流造一个空页', '范围：高级分析 = 肌群容量趋势（肌头面板「近 8 周」）+ 动作对比（曲线页叠一条）；冻结卡提示 = 引擎「快断」（还差次数 > 剩下天数）时牛龄页一行，按有没有卡 / 是不是会员给不同出口', '结构：Pro 标 → 未开通 /pro、已开通 /me/pro；会员中心「高级分析」→ 容量页打开练得最多那块的面板；快断行「兑一张」→ 钱包兑换面板（只放冻结卡）、「Pro 每月送 2 张」→ /pro', '框架：Pro 标是块标题旁的小标，不是主操作；快断行是辅助信息，按钮最多一个（描边），Pro 是文字链；有卡时不放按钮', '表现：Pro 标描边 / 已开通骨白实底，不用荧光；快断行用「!」标 + 深灰底，不用危险红（不是错误）'];
+  // ---------- 6h · 触点静态稿（App 外面：通知、桌面小组件、图标；只做设计稿，不做真功能——真实本地通知 2026-10-06 已划掉） ----------
+  const wall = (dark = true) => `<div class="abs" style="inset:0;background:${dark ? 'linear-gradient(160deg,#3a3a37,#1d1d1b)' : 'linear-gradient(160deg,#ECECE8,#CFCFCA)'}"></div>`;
+  const sbar = (dark = true) => `<div class="abs row" style="left:0;right:0;top:0;height:28px;padding:0 16px;font-size:11px;color:${dark ? '#FAFAF8' : '#1d1d1b'}"><span>18:00</span><div class="sp"></div><span style="display:inline-block;width:14px;height:10px;border:1.5px solid currentColor;border-radius:2px;margin-left:8px;opacity:.7"></span><span style="margin-left:6px">▣</span></div>`;
+  const noti = (state, title, body, act = '', time = '刚刚') => `<div class="box" style="padding:10px 12px;border-radius:16px" data-a="1"><div class="row" style="gap:6px"><span class="badge" style="background:#2b2b29;color:#FAFAF8">${state}</span><span class="t-s">慢牛 Milo · ${time}</span></div><div class="row" style="gap:10px;margin-top:6px;align-items:flex-start"><div style="flex:1"><div class="t-b" style="font-weight:700">${title}</div><div class="t-s" style="margin-top:2px">${body}</div></div><div class="slot" style="width:40px;height:40px">Logo</div></div>${act ? `<div class="row" style="gap:16px;margin-top:8px">${act.split('|').map((a) => `<span class="t-b" data-hit style="font-weight:700;min-height:32px;display:flex;align-items:center">${a}</span>`).join('')}</div>` : ''}</div>`;
+  const appGrid = (dark = true, n = 16) => `<div class="abs" style="left:24px;right:24px;bottom:120px;display:grid;grid-template-columns:repeat(4,1fr);gap:22px 18px">${Array.from({ length: n }, (_, i) => i === 5 ? `<div style="text-align:center"><div class="dark" style="width:52px;height:52px;margin:0 auto;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:10px">Milo</div><div style="font-size:10px;margin-top:4px;color:${dark ? '#FAFAF8' : '#1d1d1b'}">慢牛</div></div>` : `<div style="text-align:center"><div style="width:52px;height:52px;margin:0 auto;border-radius:14px;background:${dark ? 'rgba(255,255,255,.18)' : 'rgba(0,0,0,.12)'}"></div><div style="height:8px;width:30px;margin:6px auto 0;border-radius:3px;background:${dark ? 'rgba(255,255,255,.18)' : 'rgba(0,0,0,.12)'}"></div></div>`).join('')}</div>`;
+  const TOUCH = {
+    W1: {
+      title: '通知：四种，Logo 状态当图标',
+      note: '<em>每条一件事、带数</em>：图标用 Logo 的状态（训练中 / 破纪录 / 减量周 / 平常），标题写结论、正文写数。① 休息结束（训练中）：「第 3 组 · 杠铃深蹲 85 kg × 6」+ 「打卡 / +30 秒」；② 连胜快断（周六）：「这周还差 2 次」+ 冻结卡状态；③ 新纪录：预估 1RM + 涨了多少（和结算页同一个口径）；④ 减量建议：依据一句话 + 「看看」。不做每日打卡式提醒（「我们不奖励打开 App」）。锁屏上只露标题，不露重量。',
+      html: () => `${wall()}${sbar()}<div class="abs" style="left:12px;right:12px;top:40px;display:grid;gap:8px">
+        <div class="t-s" style="color:#FAFAF8;opacity:.8;padding-left:4px">通知</div>
+        ${noti('训练中', '休息结束 · 第 3 组', '杠铃深蹲 85 kg × 6', '打卡|+30 秒')}
+        ${noti('平常', '这周还差 2 次', '周日前练够，连胜 21 周保住；手上有 1 张冻结卡。', '', '周六 18:00')}
+        ${noti('破纪录', '新纪录：杠铃深蹲', '预估 1RM 102.5 kg，比之前最好 +2.5 kg', '看看', '10 分钟前')}
+        ${noti('减量周', '该减量了', '三个主项的预估 1RM 连降三次，建议 6 天减量周', '看看', '昨天')}</div>`,
+    },
+    W2: {
+      title: '小组件 A：今日处方为主',
+      note: '<em>回答「今天练什么」</em>：2×2 = 今日部位 + 第一个动作的重量 × 次数 + 今日组数小环；4×2 = 今日处方前 3 个动作（各一行：名称 · 重量 × 次数）+ 右下「开始」。点哪里都进首页（小组件不能直接打卡）。训练中换成休息倒计时（同一个计时，只是在桌面上）；今天练完换成「今天已练完 · 明天 胸 + 三头」。',
+      html: () => `${wall()}${sbar()}<div class="abs" style="left:20px;right:20px;top:56px;display:grid;gap:14px" data-a="1">
+        <div class="row" style="gap:14px"><div class="dark" style="width:148px;height:148px;padding:12px;border-radius:22px"><div style="font-size:10px;opacity:.7">今日 · 下肢 A</div><div style="font-size:15px;font-weight:700;margin-top:8px">杠铃深蹲</div><div style="font-size:22px;font-weight:800;margin-top:2px">85 × 6</div><div class="row" style="margin-top:14px;gap:6px"><span style="width:26px;height:26px;border-radius:50%;border:3px solid #FAFAF8;opacity:.6"></span><span style="font-size:10px">0 / 14 组</span></div></div>
+          <div class="dark" style="width:148px;height:148px;padding:12px;border-radius:22px"><div style="font-size:10px;opacity:.7">训练中 · 休息</div><div style="font-size:30px;font-weight:800;margin-top:18px">1:35</div><div style="height:4px;border-radius:2px;background:rgba(255,255,255,.25);margin-top:14px"><i style="display:block;width:60%;height:100%;background:#FAFAF8;border-radius:2px"></i></div><div style="font-size:10px;margin-top:8px">下一组：第 3 组</div></div></div>
+        <div class="dark" style="height:148px;padding:12px 14px;border-radius:22px"><div class="row"><span style="font-size:10px;opacity:.7">今日处方 · 下肢 A · 约 55 分钟</span><div class="sp"></div><span style="font-size:10px">慢牛</span></div>
+          ${[['杠铃深蹲', '85 × 6'], ['罗马尼亚硬拉', '70 × 8'], ['坐姿腿屈伸', '45 × 12']].map(([a, b]) => `<div class="row" style="margin-top:8px;font-size:12px"><span style="flex:1">${a}</span><b>${b}</b></div>`).join('')}
+          <div class="row" style="margin-top:8px"><div class="sp"></div><span style="background:#FAFAF8;color:#1d1d1b;font-size:11px;font-weight:700;padding:4px 12px;border-radius:12px">开始</span></div></div></div>${appGrid(true, 8)}`,
+    },
+    W3: {
+      title: '小组件 B：小牛与连胜为主',
+      note: '<em>回答「我长到哪了」</em>：2×2 = 小牛（当前牛龄 · 当前状态：恢复日趴着、减量周叹气……）+ 连胜周数；4×1 = 本周守约进度（4 个点，练一次亮一个）+ 「这周还差 N 次」。情绪更强、品牌感更重，但每天打开的理由弱（数据少）。可以和 A 搭着出：A 是工具、B 是陪伴。',
+      html: () => `${wall()}${sbar()}<div class="abs" style="left:20px;right:20px;top:56px;display:grid;gap:14px" data-a="1">
+        <div class="row" style="gap:14px"><div class="dark" style="width:148px;height:148px;padding:12px;border-radius:22px;display:flex;flex-direction:column"><div class="slot" style="flex:1;background:rgba(255,255,255,.08);color:#ccc;font-size:10px">小牛 PNG · 恢复日</div><div class="row" style="margin-top:6px"><b style="font-size:20px">21</b><span style="font-size:10px;margin-left:4px">周连胜</span></div></div>
+          <div class="dark" style="width:148px;height:148px;padding:12px;border-radius:22px"><div style="font-size:10px;opacity:.7">公牛 · 2 级</div><div class="slot" style="height:70px;margin-top:6px;background:rgba(255,255,255,.08);color:#ccc;font-size:10px">小牛 PNG</div><div style="height:4px;border-radius:2px;background:rgba(255,255,255,.25);margin-top:10px"><i style="display:block;width:12%;height:100%;background:#FAFAF8;border-radius:2px"></i></div><div style="font-size:9px;margin-top:6px;opacity:.8">再完成 5 个训练周期</div></div></div>
+        <div class="dark row" style="height:72px;padding:0 16px;border-radius:22px;gap:10px"><span style="font-size:11px">本周</span>${[1, 0, 0, 0].map((f) => `<i style="width:16px;height:16px;border-radius:50%;${f ? 'background:#FAFAF8' : 'border:1.5px solid rgba(255,255,255,.5)'}"></i>`).join('')}<div class="sp"></div><span style="font-size:11px">这周还差 3 次</span></div></div>${appGrid(true, 8)}`,
+    },
+    W4: {
+      title: '图标：桌面、主题图标、启动',
+      note: '<em>在别人的桌面上认得出</em>：深色 / 浅色壁纸上的 App 图标（递增条牛头，两根荧光角）；Android 13 的「主题图标」单色版（系统按壁纸上色，只留轮廓）；三种系统遮罩（圆、圆角方、方圆）下角条不被切；启动页 = 横排 Logo + 加载状态（条一根根长出来）。不做商店上架素材（2026-10-06 已划掉）。',
+      html: () => `${wall(false)}${sbar(false)}<div class="abs" style="left:20px;right:20px;top:48px;display:grid;gap:12px" data-a="1">
+        <div class="row" style="gap:12px;justify-content:center">${['圆', '圆角方', '方圆'].map((m, i) => `<div style="text-align:center"><div class="dark" style="width:64px;height:64px;border-radius:${i === 0 ? '50%' : i === 1 ? '16px' : '24px'};display:flex;align-items:center;justify-content:center;font-size:10px">Milo</div><div class="t-s" style="margin-top:4px">${m}</div></div>`).join('')}<div style="text-align:center"><div style="width:64px;height:64px;border-radius:50%;background:#DADAD4;display:flex;align-items:center;justify-content:center;font-size:10px;color:#555">单色</div><div class="t-s" style="margin-top:4px">主题图标</div></div></div>
+        <div class="dark" style="height:150px;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px"><span style="font-size:14px;font-weight:700">慢牛 Milo</span><span style="font-size:10px;opacity:.7">启动页 · 条一根根长出来</span></div></div>${appGrid(false, 12)}`,
+    },
+  };
+  LAYERS.touch = ['战略：作品集里证明「品牌不只在 App 里」——通知、桌面、图标都是同一套语言；也守住产品的态度：不做每日打卡式提醒（不奖励打开 App）', '范围：通知 4 种（休息结束 · 连胜快断 · 新纪录 · 减量建议）、桌面小组件（今日处方 / 训练中休息 / 今天已练完；或小牛与连胜）、App 图标（深浅壁纸、三种遮罩、主题单色）、启动页；只做设计稿，不做真实通知和商店素材', '结构：放在 /spec 新开第 7 章「触点」，用真组件实时渲染（Logo 状态、AppIcon、小牛、码表），不放截图；每张写出现时机和点了去哪', '框架：通知 = 标题结论 + 正文带数 + 最多 2 个动作；小组件一张一件事，点了都进对应页；图标在 16–64 尺寸都认得出', '表现：暖黑 + 骨白，荧光只在 Logo 的角上；锁屏不露训练数字（隐私）；小组件不做动画（系统限制），状态靠换图'];
   LAYERS.pro = ['战略：完整展示会员商业链路（作品集），但不误导、不拦截——演示模式下全部功能照常可用（T18）', '范围：免费 vs Pro 对比 · 月 ¥18 / 年 ¥128（默认）/ 试用 7 天 · 假成功开通 · 开通成功（Milo 庆祝）· 已开通转 P21；不收集任何支付信息', '结构：P20 /pro；入口 我的「会员」行、高级分析 Pro 标、冻结卡提示、会员价；开通成功 → 回来源页', '框架：第一优先 = 对我有什么用（W1 对比表 / W2 用我的数据）；主操作 = 拇指区「开始 7 天试用 / 开通」；方案选择紧贴主按钮上方', '表现：荧光只给主按钮；年度「省 40%」是骨白标；开通成功是品牌位置，放 Milo'];
   LAYERS.prohub = ['战略：开通以后看得见「值不值」，也能退得出去（切回免费不收回已得的东西）', '范围：会员卡（方案 · 到期 / 试用剩几天）· 本月 Pro 给了你什么（多拿的牛劲 · 冻结卡领 / 用 · 会员价省下）· 权益入口 · 管理订阅（演示切回免费，二次确认）', '结构：P21 /me/pro；入口 开通成功、我的「会员」行（已开通 / 试用中）', '框架：第一优先 = 到期日 + 本月得到的；没有主操作（不制造「再买点」的压力）；危险操作（切回免费）沉底、先确认', '表现：数字窄体；不放荧光块'];
   Object.assign(LAYERS, {
@@ -1161,6 +1204,7 @@
     tips: { title: '6f · 知识卡提示放在哪（容量 P06 / 增量 P09）', sub: '演示用户：胸部恢复慢 → 蛋白质与睡眠；深蹲 142 kg ÷ 93 kg = 1.52 → 腰带', v: TIPS, layers: LAYERS.tips },
     pro: { title: '6g · 会员 · 付费墙（P20）', sub: '演示用户：进阶、连胜 21 周、这 30 天拿了 1,050 牛劲 · 演示模式全部权益不拦截', v: PRO, layers: LAYERS.pro },
     prohub: { title: '6g · 会员中心（P21）与「我的」会员行', sub: '已开通 / 试用中 / 未开通三态', v: PROHUB, layers: LAYERS.prohub },
+    touch: { title: '6h · 触点静态稿（通知 · 桌面小组件 · 图标）', sub: '演示用户：连胜 21 周、本周 1 / 4、今日下肢 A · 只做设计稿，放进 /spec 第 7 章', v: TOUCH, layers: LAYERS.touch },
     proentry: { title: '6g 补 · Pro 标与冻结卡提示的落点', sub: '演示用户：股四头肌外侧头近 7 天 11 组；连胜 21 周、本周 1 / 3、周六', v: PROENTRY, layers: LAYERS.proentry },
     pause: { title: '6e · 暂停训练确认', sub: '训练中在首页按系统返回 · 已记 6 / 13 组', v: PAUSE, layers: LAYERS.pause },
   };
