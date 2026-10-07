@@ -696,6 +696,45 @@
     pause: ['战略：训练中误触返回 / 被打断时，进度一组不丢，回来能接着练', '范围：返回键 / 返回手势触发；三出口 暂停 · 结束并结算 · 继续练；暂停后计时停、训练保留；12 小时没回来下次问要不要结算', '结构：首页训练中（根页）的系统返回 → 确认 → 暂停后回到首页的「已暂停」态 → 继续训练', '框架：第一优先 = 「已记的都在」这句话；主操作 = 暂停（骨白）；结束并结算是次要（描边），继续练最轻', '表现：W1 居中对话框（同删除确认） / W2 底部面板（同替换动作）'],
   };
 
+  // ---------- 6e 追加（2026-10-07 用户）：点选肌头检索动作（V1 动作库的核心交互，brief P1「动作库浏览与搜索、添加到今日训练」一直没排进 Milo） ----------
+  const PEC = [['杠铃卧推', '杠铃', '主练', '80 kg', 1], ['哑铃卧推', '哑铃', '主练', '30 kg', 1], ['双杠臂屈伸', '自重', '主练', '首次', 1], ['器械推胸', '固定器械', '主练', '55 kg', 1], ['绳索夹胸', '绳索', '主练', '首次', 0], ['上斜哑铃卧推', '哑铃', '协同', '26 kg', 1]];
+  const exRow = ([n, e, role, k, ok], add) => `<div class="row" data-hit style="height:56px;border-bottom:1px solid #EEE;gap:10px;${ok ? '' : 'opacity:.45'}"><div style="flex:1"><div class="row" style="gap:6px"><span class="t-b" style="font-weight:700">${n}</span>${role === '协同' ? '<span class="badge" style="font-weight:400;border-color:#B9B9B5">协同</span>' : ''}</div><div class="t-s">${e}${ok ? '' : ' · 你的器械里没有'} · ${k === '首次' ? '首次' : '上次 ' + k}</div></div>${add && ok ? '<span class="chip" data-hit style="height:32px;width:32px;justify-content:center;padding:0;font-size:16px">＋</span>' : '<span class="t-s">›</span>'}</div>`;
+  const FIND = {
+    W1: {
+      title: '藏在容量页的肌头面板里',
+      note: '<em>不加新页面</em>：容量页点胶囊或点人体上的肌肉 → 已有的肌头面板（恢复、近 7 天容量）下面加一段「练这块的动作」：主练在前、协同在后，写器械和我上次的重量，你的器械里没有的变灰。点一行进要领 P04，在要领页「加到今天」。<b>闭环</b>：看到这块练少了 → 找动作 → 加到今天 → 打卡 → 容量更新。代价：只能从容量页进，训练中想加动作要切 Tab。',
+      html: () => `${dim(300).replace(ckHead(), '<div class="t-title" style="margin-top:16px">容量</div>')}<div class="abs box" style="left:0;right:0;bottom:0;height:610px;border-radius:20px 20px 0 0;padding:14px 16px 18px">
+          <div class="row"><div><div class="t-h" style="font-size:18px">中下胸</div><div class="t-s">胸 · 大肌群</div></div><div class="sp"></div><span class="t-s">✕</span></div>
+          <div class="row" style="gap:10px;margin-top:10px"><div class="fill" style="flex:1;padding:8px 10px"><div class="t-s">恢复</div><div class="t-h">92% · 黄金窗</div></div><div class="fill" style="flex:1;padding:8px 10px"><div class="t-s">近 7 天容量</div><div class="t-h">4.5 / 16 组</div></div></div>
+          <div class="row" style="margin-top:14px" data-a="1"><span class="t-h">练这块的 6 个动作</span><div class="sp"></div><span class="t-s">主练在前</span></div>
+          <div data-a="2">${PEC.map((r) => exRow(r)).join('')}</div>
+          <div class="t-s" style="margin-top:8px">点一行 → 动作要领（那里有「加到今天」）</div></div>`,
+    },
+    W2: {
+      title: '检索面板：点人体筛动作（V1 那套）',
+      note: '<em>保留初版的签名交互</em>：一个整高的底部面板，上半是半身人体（复用容量页的人体与 O2 + F1 视效），点哪块肌肉就筛哪块（肌肉小于 48 的用放大镜同一套命中放大），正 / 背切换；下面器械筛选 + 结果列表，每行右边「＋」直接加到今天、点名字进要领。入口两个：首页处方末尾「＋ 加一个动作」、容量页肌头面板「找动作」。替换动作就是它的一个预设（锁定同肌头）。代价：人体占了半屏，列表短；点小肌肉要靠放大镜。',
+      html: () => `${dim(120)}<div class="abs box" style="left:0;right:0;bottom:0;height:720px;border-radius:20px 20px 0 0;padding:12px 16px 18px">
+          <div class="row"><div class="t-h" style="font-size:17px">找动作</div><div class="sp"></div><div class="seg" data-hit style="height:32px"><span class="on">正面</span><span>背面</span></div><span class="t-s" data-hit style="margin-left:12px">✕</span></div>
+          <div class="row" style="gap:12px;margin-top:10px"><div class="slot" data-a="1" style="width:140px;height:230px">半身人体<br>点肌肉 = 筛选<br>选中的亮（F1）</div>
+            <div style="flex:1"><div class="t-s">已选</div><div class="row" style="flex-wrap:wrap;gap:6px;margin-top:4px"><span class="chip on" data-hit style="height:32px">中下胸 ✕</span></div><div class="t-s" style="margin-top:12px;line-height:1.6">再点一块 = 多选<br>主练在前，协同在后</div></div></div>
+          <div class="row" style="gap:6px;margin-top:10px;overflow:hidden">${['全部器械', '杠铃', '哑铃', '固定器械', '绳索'].map((c, i) => `<span class="chip${i ? '' : ' on'}" data-hit style="height:32px">${c}</span>`).join('')}</div>
+          <div class="t-s" style="margin-top:8px">6 个动作</div>
+          <div data-a="2">${PEC.slice(0, 5).map((r) => exRow(r, true)).join('')}</div></div>`,
+    },
+    W3: {
+      title: '搜索框 + 部位分级',
+      note: '<em>最快找到已知名字的动作</em>：顶部搜索框（点了才弹键盘）+ 部位分段（胸 / 背 / 肩 / 手臂 / 核心 / 下肢）+ 肌头小胶囊，结果列表同 W2；人体只做小图反馈（选了哪块亮哪块），不用来点。代价：丢掉了「点人体」这个最有辨识度的交互；32 个肌头的名字用户未必认得。',
+      html: () => `${dim(120)}<div class="abs box" style="left:0;right:0;bottom:0;height:720px;border-radius:20px 20px 0 0;padding:12px 16px 18px">
+          <div class="row"><div class="t-h" style="font-size:17px">找动作</div><div class="sp"></div><span class="t-s" data-hit>✕</span></div>
+          <div class="fill row" data-hit style="height:44px;margin-top:22px;padding:0 12px"><span class="t-s">⌕ 搜动作名，如「卧推」</span></div>
+          <div class="seg" data-hit style="margin-top:10px;width:100%;height:36px">${['胸', '背', '肩', '手臂', '核心', '下肢'].map((x, i) => `<span class="${i ? '' : 'on'}" style="flex:1;justify-content:center">${x}</span>`).join('')}</div>
+          <div class="row" style="gap:8px;margin-top:10px" data-a="1"><span class="chip" data-hit style="height:32px">上胸</span><span class="chip on" data-hit style="height:32px">中下胸</span><div class="sp"></div><div class="slot" style="width:56px;height:72px;font-size:9px">小人体<br>反馈</div></div>
+          <div class="t-s" style="margin-top:6px">6 个动作</div>
+          <div data-a="2">${PEC.slice(0, 6).map((r) => exRow(r, true)).join('')}</div></div>`,
+    },
+  };
+  LAYERS.find = ['战略：想加练或换练某块肌肉时，按肌肉找到能练它、我又有器械的动作；也是 V1 用户最熟的「点人体找动作」（初版签名交互），作品集里展示 154 动作 × 32 肌头的数据模型', '范围：按肌头筛（主练 / 协同）、按器械筛、可选搜名字；每个结果写器械和我上次的重量，器械没有的变灰不隐藏；结果 → 要领 P04；「加到今天」把动作加到今日处方末尾（引擎按它出建议重量，没有历史就「首次：填重量」）；自定义动作不做（素材只用 MuscleWiki，非目标）', '结构：一个检索面板，三个入口——容量页肌头面板「找动作」（带上这块肌头）· 首页处方末尾「＋ 加一个动作」· 替换动作（锁定同肌头的预设）；不新增 Tab、不新增页面', '框架：第一优先 = 选中的肌肉 + 结果列表；主操作 = 结果行（点名字进要领 / 「＋」加到今天）；关闭在右上，面板外点一下也收', '表现：人体复用容量页 BodyFigure（O2 + F1，选中的亮）；面板 M05；加到今天时那一行 M02 飞进首页处方末尾'];
+
   const PAGES = {
     body: { title: '身体 · 容量与恢复（P06）', sub: '放大镜按住「中下胸」· 数据 design/benchmark/p06.json', v: BODY },
     home: { title: '首页 · 今日处方（P01）', sub: '有处方、还没开始 · 演示场景 plain-prescription', v: HOME },
@@ -711,6 +750,7 @@
     p04: { title: '6e · 动作要领（P04）', sub: '杠铃深蹲 · 训练中从主角卡「要领」进入（顶部保留休息提示）', v: P04, layers: LAYERS.p04 },
     swap: { title: '6e · 替换动作（底部面板）', sub: '训练中，主角卡「换一个」· 杠铃深蹲 → 同练股四头', v: SWAP, layers: LAYERS.swap },
     warm: { title: '6e · 热身组', sub: '开始训练后的主角卡 · 杠铃深蹲正式重量 85 kg', v: WARM, layers: LAYERS.warm },
+    find: { title: '6e · 点选肌头检索动作', sub: '容量页点「中下胸」/ 首页「＋ 加一个动作」· 演示用户器械：杠铃 / 哑铃 / 固定器械 / 自重（没有绳索）', v: FIND, layers: LAYERS.find },
     pause: { title: '6e · 暂停训练确认', sub: '训练中在首页按系统返回 · 已记 6 / 13 组', v: PAUSE, layers: LAYERS.pause },
   };
 
