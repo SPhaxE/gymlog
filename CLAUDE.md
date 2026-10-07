@@ -1,6 +1,6 @@
 # 慢牛 Milo · 给 AI 客户端的入口
 
-**先读 [`HANDOFF.md`](HANDOFF.md)**（现状、架构、命令、素材管线、坑、下一步），再按需读 `docs/brief.md`（决定记录）→ `docs/ia.md`（功能规格）→ `docs/DESIGN.md`（视觉与交互规范）。
+**先读 [`HANDOFF.md`](HANDOFF.md)**（现状、架构、命令、素材管线、坑、下一步），再按需读 `docs/workflow.md`（工作流：本项目版 + 用户最初的模板原文）→ `docs/brief.md`（决定记录）→ `docs/ia.md`（功能规格）→ `docs/DESIGN.md`（视觉与交互规范）。
 
 ## 不许破的规则（摘自 HANDOFF §2 与 DESIGN §9.6）
 
@@ -12,7 +12,7 @@
 - 组件或规范有更新，`/playground`（`src/playground/catalog.tsx`）和 `/demo`（`DemoPage` 路线）必须同步改；不要把密钥建议「作废」挂在嘴边——后面还要继续用 Stitch（用户 2026-10-06）。
 - `.claude/skills/` 里装了第三方 taste-skill（反模板化设计指南，面向着陆页）：当参考用，**与 `docs/DESIGN.md` 冲突时以 DESIGN.md 为准**，详见 `.claude/skills/README-taste-skill.md`。
 - 需要用户拍板的图像、方案、对比图，一律用 `SendUserFile` 直接推到窗口，不要只写文件路径（用户 2026-10-06）。
-- 新页面流程：灰阶线框 → Stitch 多方案 → 代码定稿 → 截图给用户验收；交互五层分析写在页面文件头注释里。
+- 每页 / 每块新功能五步（用户 2026-10-07，详见 `docs/workflow.md` §A）：**① 五层分析 + 手指热区低保真线框 → ② Stitch 视觉参考 → ③ 高保真搭建 → ④ 用户视觉审查微调 → ⑤ 定稿植入**；①②④ 都要用户选或点头，五层分析写在页面文件头注释里。
 - 视效 / 组件的待选方案一律上 `/preview` 方案台（`src/pages/OptionsBoard.tsx`）：逐组对照 + 自由组合（组合写进地址栏），实时渲染不放截图；用户选定后定为默认，**旧默认和落选方案留在方案台不删**——作品集要展示这个过程（用户 2026-10-07）。
 
 ## 动手前后

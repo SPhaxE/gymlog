@@ -8,7 +8,7 @@
 import argparse, os, sys
 from playwright.sync_api import sync_playwright
 
-PAGES = {'body': 3, 'home': 3, 'gains': 3, 'log': 2, 'me': 2, 'me2': 3, 'level': 3, 'session': 2, 'sheet': 2, 'story': 6, 'checkin': 3}
+PAGES = {'body': 3, 'home': 3, 'gains': 3, 'log': 2, 'me': 2, 'me2': 3, 'level': 3, 'session': 2, 'sheet': 2, 'story': 6, 'checkin': 3, 'p04': 3, 'swap': 2, 'warm': 2, 'pause': 3}
 ap = argparse.ArgumentParser()
 ap.add_argument('--base', default='http://localhost:8765/design/wireframes/')
 ap.add_argument('--chromium', default=os.environ.get('CHROMIUM', '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'))
@@ -25,7 +25,7 @@ with sync_playwright() as p:
         pg = b.new_page(viewport={'width': 360, 'height': 800}, device_scale_factor=2)
         pg.on('pageerror', lambda e: errors.append(str(e)))
         for i in range(1, n + 1):
-            pg.goto(f'{args.base}?page={page}&v=W{i}&anno=0')
+            pg.goto(f'{args.base}?page={page}&v=W{i}&anno=0&hit=0')
             pg.wait_for_selector('body[data-ready]', timeout=20000)
             pg.wait_for_timeout(200)
             f = os.path.join(OUT, page, f'W{i}.png')

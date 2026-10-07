@@ -1,12 +1,17 @@
 /* 慢牛 Milo · 框架层线框。
  *   index.html                 总览
  *   index.html?board=body      同一页的几个方案并排（对比板）
- *   index.html?page=body&v=W1  单张（截图用）；&anno=0 关掉标注
+ *   index.html?page=body&v=W1  单张（截图用）；&anno=0 关掉标注；&hit=0 关掉手指热区
+ * 手指热区（2026-10-07 用户：低保真线框要带手指点击热区）：屏幕底下铺拇指可达区（右手单手：易 / 够得着 / 难），
+ * 每个可点元素（data-hit，或 .btn / .nav .it）画出实际命中区——不足 48 的按 48 补齐、居中；命中区互相重叠的标红，
+ * 主操作（data-a="2"）落在「难」区的标红。
  * 数据：data.json（引擎实算值）、../benchmark/p06.json（身体页）、../../mock/muscles.json（肌头 → 部位）。
  * 人体：body-*.svg 是 MuscleWiki 真实路径（build_assets.py 生成），这里按包围盒中线裁成半身。 */
 (function () {
   const Q = new URLSearchParams(location.search);
   const ANNO = Q.get('anno') !== '0';
+  const HIT = Q.get('hit') !== '0';
+  const HIT_MIN = 48;
   let D, P06, REGION = {}, RNAME = {}, SVG = {};
   const j = (u) => fetch(u).then((r) => r.json());
   const t = (u) => fetch(u).then((r) => r.text());
@@ -562,6 +567,135 @@
   });
   const STORYV = { W1: storyA(0), W2: storyA(1), W3: storyA(2), W4: storyB(0), W5: storyB(1), W6: storyB(2) };
 
+
+  // ---------- 6e 首页补全（2026-10-07）：P04 动作要领 / 替换动作 / 热身组 / 暂停确认 ----------
+  // 数据：杠铃深蹲（演示用户 85 kg × 3 × 6–8）；要领文案、肌头取自 mock/exercises.json 的同一个动作
+  const SQ = { name: '杠铃深蹲', kg: 85, plan: '3 × 6–8', cue: '核心收紧，蹲到大腿平行或略低，膝盖朝脚尖方向', steps: ['杠铃放上斜方肌，脚略宽于肩、脚尖外八', '吸气屏住，屈髋屈膝同时下蹲', '蹲到大腿平行，脚掌全踩发力站起'], heads: ['股四头肌', '臀大肌', '大腿内收肌'], e1rm: 102 };
+  const back = (title, right = '') => `<div class="row" style="height:48px;padding:0 4px 0 0" data-a="3"><div data-hit style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:20px">‹</div><div class="t-h" style="font-size:16px">${title}</div><div class="sp"></div>${right}</div>`;
+  const restLine = '<div class="row" style="height:32px;margin:0 16px;padding:0 12px;border-radius:16px;background:#EFEFEC"><span class="t-s">组间休息还在走</span><div class="sp"></div><span class="t-num t-b">1:35</span></div>';
+  const video = (h, extra = '') => `<div class="dark" style="height:${h}px;position:relative;display:flex;align-items:center;justify-content:center;border-radius:${extra.includes('bleed') ? 0 : 14}px">
+      <span style="font-size:11px;color:#bbb">MuscleWiki 示范视频 · 循环</span>
+      <div class="seg" style="position:absolute;left:12px;bottom:12px;background:#FFF;color:#1d1d1b;height:32px" data-hit><span class="on">正面</span><span>侧面</span></div>
+      <span style="position:absolute;right:10px;top:8px;font-size:9px;color:#aaa">© MuscleWiki</span></div>`;
+  const steps = () => SQ.steps.map((s, i) => `<div class="row" style="align-items:flex-start;gap:10px;margin-top:8px"><span class="t-h" style="width:18px">${i + 1}</span><span class="t-b" style="line-height:1.5">${s}</span></div>`).join('');
+  const headsRow = () => `<div class="row" style="gap:12px;margin-top:8px"><div class="slot" style="width:92px;height:120px">半身人体<br>只亮这 3 块<br>（F1 金属渐变）</div><div style="flex:1">${SQ.heads.map((h, i) => `<div class="row" style="height:28px"><i class="sq${i < 2 ? ' on' : ''}" style="width:10px;height:10px"></i><span class="t-b">${h}</span><div class="sp"></div><span class="t-s">${i < 2 ? '主练' : '协同'}</span></div>`).join('')}</div></div>`;
+  const progressRow = () => `<div class="box row" style="height:56px;padding:0 14px;margin-top:12px" data-hit><div style="flex:1"><div class="t-s">我的进步 · 预估 1RM</div><div class="row" style="gap:6px"><span class="t-h">${SQ.e1rm} kg</span><span class="t-s">近 8 次 ▲ 4.5</span></div></div>${spark([94, 95, 95, 97, 98, 98, 100, 102])}<span class="t-s" style="margin-left:6px">›</span></div>`;
+
+  const P04 = {
+    W1: {
+      title: '视频在上，往下读',
+      note: '<em>最常见、最好懂</em>：示范视频占上方（正面 / 侧面切换在视频左下角，拇指够得着），下面一句话要点用大字，再 3 步、练到的肌头（半身人体只亮这几块，复用容量页的金属渐变）、「我的进步」一行进曲线页。训练中顶部多一行休息提示。代价：肌头和进步要往下滑才看到；视频滚走后对照着做要滑回来。',
+      html: () => `${status}${back('杠铃深蹲')}${restLine}<div class="pad" style="padding-top:10px">${video(210)}
+        <div data-a="1" style="margin-top:12px"><div class="t-h" style="font-size:17px;line-height:1.45">${SQ.cue}</div></div>
+        <div style="margin-top:6px">${steps()}</div>
+        <div class="t-s" style="margin-top:14px;font-weight:700">练到的肌头</div>${headsRow()}
+        <div data-a="2">${progressRow()}</div></div>`,
+    },
+    W2: {
+      title: '视频钉住，下面三个分段',
+      note: '<em>视频一直在眼前</em>：视频钉在顶部不滚走（边看边对照做），下面一个分段 要领 / 肌肉 / 我的进步，切换只换下半屏；分段在屏幕中部，单手够得着。代价：多一层分段，信息被藏起来两份；视频占的高度固定，矮屏上下半屏偏挤。',
+      html: () => `${status}${back('杠铃深蹲')}${restLine}<div class="pad" style="padding-top:10px">${video(230)}
+        <div class="seg" style="margin-top:12px;width:100%;height:44px;font-size:13px" data-hit><span class="on" style="flex:1;justify-content:center">要领</span><span style="flex:1;justify-content:center">肌肉</span><span style="flex:1;justify-content:center">我的进步</span></div>
+        <div data-a="1" style="margin-top:12px"><div class="t-h" style="font-size:17px;line-height:1.45">${SQ.cue}</div></div>
+        <div style="margin-top:6px">${steps()}</div></div>
+        <div class="abs t-s" style="left:16px;right:16px;bottom:24px;text-align:center">分段切到「我的进步」= 预估 1RM 曲线缩略 + 「看完整曲线」进 P10</div>`,
+    },
+    W3: {
+      title: '全屏示范 + 底部要领抽屉',
+      note: '<em>最有沉浸感</em>：示范视频铺满全屏（深底），返回和正面 / 侧面在顶部；要领是一个底部抽屉，常态露出一句话要点和 3 步（全在拇指区），往上拉出肌头和我的进步（M05 阻尼抽屉）。代价：抽屉手势要学一下；视频被抽屉盖住一部分；文字压在视频上要保证对比度。',
+      html: () => `<div class="dark" style="position:absolute;inset:0;border-radius:0;display:flex;align-items:center;justify-content:center"><span style="font-size:11px;color:#bbb;margin-top:-180px">示范视频铺满 · 循环 · © MuscleWiki</span></div>
+        <div style="position:relative;color:#FAFAF8">${status.replace('class="status"', 'class="status" style="color:#bbb"')}<div class="row" style="height:48px" data-a="3"><div data-hit style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:20px">‹</div><div class="t-h" style="font-size:16px">杠铃深蹲</div><div class="sp"></div><div class="seg" style="margin-right:12px;background:#FFF;color:#1d1d1b;height:32px" data-hit><span class="on">正面</span><span>侧面</span></div></div>
+        <div class="row" style="height:28px;margin:4px 16px;padding:0 12px;border-radius:14px;background:rgba(255,255,255,.14)"><span class="t-s" style="color:#ddd">组间休息还在走</span><div class="sp"></div><span class="t-b">1:35</span></div></div>
+        <div class="abs box" style="left:0;right:0;bottom:0;height:330px;border-radius:20px 20px 0 0;padding:8px 16px 16px">
+          <div data-hit style="height:24px;display:flex;justify-content:center;align-items:center;margin:0 120px"><i style="width:40px;height:4px;border-radius:2px;background:#C9C9C5"></i></div>
+          <div data-a="1"><div class="t-h" style="font-size:17px;line-height:1.45">${SQ.cue}</div></div>${steps()}
+          <div class="row" style="margin-top:14px"><span class="t-s">往上拉：练到的肌头 · 我的进步</span><div class="sp"></div><span class="t-s">⌃</span></div></div>`,
+    },
+  };
+
+  const cand = [['器械站姿深蹲', '固定器械', '股四头肌 · 臀大肌', '70 kg', 1], ['哑铃高脚杯深蹲', '哑铃', '股四头肌 · 臀大肌', '首次', 0], ['杠铃前蹲', '杠铃', '股四头肌', '首次', 0], ['腿举', '固定器械', '股四头肌 · 臀大肌', '120 kg', 0]];
+  const dim = (h = 260) => `${status}<div class="pad" style="padding-top:10px;opacity:.35">${ckHead()}<div class="fill" style="height:${h}px;margin-top:16px"></div></div><div class="abs" style="inset:0;background:rgba(0,0,0,.3)"></div>`;
+  const SWAP = {
+    W1: {
+      title: '底部面板 · 候选列表',
+      note: '<em>一眼比完</em>：主角卡「换一个」（或组行左滑）拉出底部面板：同肌群候选按「同器械 → 练过的 → 首次」排，每行写器械、练到的肌头、我上次的重量；点一行选中，底部「换成 器械站姿深蹲」。只换今天，已打的组保留在原动作下；面板外点一下就收。代价：只看名字和文字，不熟的动作要再点进要领。',
+      html: () => `${dim()}<div class="abs box" style="left:0;right:0;bottom:0;border-radius:20px 20px 0 0;padding:14px 16px 18px">
+          <div data-a="1"><div class="t-h" style="font-size:17px">换掉 杠铃深蹲</div><div class="t-s" style="margin-top:2px">同练股四头 · 同器械优先 · 只换今天</div></div>
+          <div style="margin-top:8px">${cand.map(([n, e, h, k, on]) => `<div class="row" data-hit style="height:60px;border-bottom:1px solid #EEE;gap:10px"><i style="width:18px;height:18px;border-radius:50%;${on ? 'border:6px solid #2b2b29' : 'border:1.5px solid #8E8E8A'}"></i><div style="flex:1"><div class="t-b" style="font-weight:700">${n}</div><div class="t-s">${e} · ${h}</div></div><span class="t-s">${k}</span></div>`).join('')}</div>
+          <div class="btn" style="margin-top:14px" data-a="2">换成 器械站姿深蹲</div></div>`,
+    },
+    W2: {
+      title: '底部面板 · 横滑示范卡',
+      note: '<em>看得到动作长什么样</em>：面板里候选做成横滑卡片，每张上半是示范视频（静音循环）、下半名字 + 器械 + 我上次的重量，左右滑吸附到一张，底部「换成这个」跟着当前卡变。代价：一次只看清一张，比较要来回滑；视频多，流量和电量更费。',
+      html: () => `${dim()}<div class="abs box" style="left:0;right:0;bottom:0;border-radius:20px 20px 0 0;padding:14px 0 18px">
+          <div class="pad"><div class="t-h" style="font-size:17px">换掉 杠铃深蹲</div><div class="t-s" style="margin-top:2px">同练股四头 · 左右滑看候选 · 只换今天</div></div>
+          <div class="row" style="gap:10px;margin-top:12px;padding-left:16px;overflow:hidden" data-a="1">${cand.slice(0, 3).map(([n, e, h, k], i) => `<div class="box" data-hit style="flex:0 0 ${i ? 230 : 250}px;${i ? 'opacity:.6' : ''}"><div class="dark" style="height:150px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:center"><span style="font-size:10px;color:#bbb">示范 · 静音循环</span></div><div style="padding:10px 12px"><div class="t-b" style="font-weight:700">${n}</div><div class="t-s">${e} · 上次 ${k}</div></div></div>`).join('')}</div>
+          <div class="row" style="justify-content:center;gap:6px;margin-top:10px">${[1, 0, 0, 0].map((x) => `<i style="width:${x ? 16 : 6}px;height:6px;border-radius:3px;background:${x ? '#2b2b29' : '#C9C9C5'}"></i>`).join('')}</div>
+          <div class="pad"><div class="btn" style="margin-top:12px" data-a="2">换成 器械站姿深蹲</div></div></div>`,
+    },
+  };
+
+  const wLine = (label, kgv, reps, st) => `<div class="row" style="height:44px;gap:10px;color:#8a8a86;${st === 'cur' ? 'background:#FFF;border-radius:10px;padding:0 8px;margin:0 -8px;box-shadow:0 0 0 1.5px #8E8E8A;color:#1d1d1b' : ''}"><span class="t-b" style="width:22px">${label}</span><span style="flex:1"><span class="t-h">${kgv}</span><span class="t-s"> kg × </span><span class="t-h">${reps}</span></span><span class="badge" style="border-color:#B9B9B5;color:#8a8a86;font-weight:400">不计入</span>${st === 'done' ? '<span class="t-h" style="margin-left:8px">✓</span>' : '<span style="width:20px"></span>'}</div>`;
+  const heroTop = (sub) => `<div class="row"><div><div class="t-s">第 1 个 · 下肢 · ${sub}</div><div class="t-h" style="font-size:18px;margin-top:2px">${SQ.name}</div></div><div class="sp"></div><span class="t-s" data-hit style="text-decoration:underline;padding:0 4px">要领</span><span class="t-s" data-hit style="text-decoration:underline;padding:0 4px;margin-left:16px">换一个</span></div>`;
+  const WARM = {
+    W1: {
+      title: '热身组排在正式组上面',
+      note: '<em>最直白</em>：开始训练后，主角卡在正式组上方多出 3 行热身（40% × 8 → 60% × 5 → 80% × 3，按 2.5 kg 取整），浅色 + 「不计入」；底部大按钮按顺序走，先「打卡热身 2 · 50 kg × 5」，热身打完自动接正式组。热身打完后 3 行折成一行「热身 3 组 ✓」。代价：卡片变长，正式组被挤到下面。',
+      html: () => `${status}<div class="pad" style="padding-top:10px">${ckHead()}
+        <div class="fill" style="margin-top:12px;padding:12px 14px" data-a="1">${heroTop('热身 1 / 3')}
+          <div style="margin-top:8px">${wLine('热', 35, 8, 'done')}${wLine('热', 50, 5, 'cur')}${wLine('热', 67.5, 3, '')}</div>
+          <div class="hr" style="margin:6px 0"></div>${setLine(1, SQ.kg, 7, '')}${setLine(2, SQ.kg, 7, '')}${setLine(3, SQ.kg, 7, '')}</div></div>
+        <div class="abs" style="left:16px;right:16px;bottom:94px;z-index:5" data-a="2"><div class="btn">打卡热身 2 · 50 kg × 5</div></div>${navRing()}`,
+    },
+    W2: {
+      title: '热身折成一条进度',
+      note: '<em>不抢正式组</em>：热身折成卡片顶部一条「热身 35 · 50 · 67.5 kg」，每个数字是一颗可点的小胶囊（命中区 48），点了就算做完；底部大按钮直接是「打卡第 1 组」，不想热身就不管它。第一组正式组打卡后热身条自动收起。代价：热身的次数不显眼；点小胶囊和大按钮是两套动作。',
+      html: () => `${status}<div class="pad" style="padding-top:10px">${ckHead()}
+        <div class="fill" style="margin-top:12px;padding:12px 14px" data-a="1">${heroTop('0 / 3 组')}
+          <div class="row" style="margin-top:10px;gap:8px"><span class="t-s" style="width:30px">热身</span>${[[35, 8, 1], [50, 5, 0], [67.5, 3, 0]].map(([k, r, d]) => `<span class="chip${d ? ' on' : ''}" data-hit style="height:32px;flex:1;justify-content:center">${d ? '✓ ' : ''}${k}×${r}</span>`).join('')}</div>
+          <div class="t-s" style="margin-top:4px">不计入容量和新纪录 · 点一颗算做完一组</div>
+          <div class="hr" style="margin:8px 0"></div>${setLine(1, SQ.kg, 7, 'cur')}${setLine(2, SQ.kg, 7, '')}${setLine(3, SQ.kg, 7, '')}</div></div>
+        <div class="abs" style="left:16px;right:16px;bottom:94px;z-index:5" data-a="2"><div class="btn">打卡第 1 组 · ${SQ.kg} kg × 7</div></div>${navRing()}`,
+    },
+  };
+
+  const PAUSE = {
+    W1: {
+      title: '居中对话框',
+      note: '<em>和删除确认同一套</em>：训练中在首页按系统返回键（或手势返回），弹出居中对话框「暂停训练？」，写清已记几组都在、回来从哪接着练；三个出口：暂停（主，骨白）· 结束并结算 · 继续练（文字）。代价：按钮在屏幕中部，单手要伸一下拇指。',
+      html: () => `${dim(420)}<div class="abs box" style="left:28px;right:28px;top:250px;padding:20px 18px 14px;border-radius:20px">
+          <div data-a="1"><div class="t-h" style="font-size:18px">暂停训练？</div><div class="t-b" style="margin-top:8px;line-height:1.55;color:#555">已记的 6 组都在。回来从「杠铃硬拉 第 1 组」接着练，休息计时也会停。</div></div>
+          <div class="btn" style="margin-top:16px;height:48px" data-a="2">暂停</div>
+          <div class="btn ghost" style="margin-top:8px;height:48px">结束并结算</div>
+          <div data-hit style="height:48px;display:flex;align-items:center;justify-content:center" class="t-b">继续练</div></div>`,
+    },
+    W2: {
+      title: '底部面板（拇指区）',
+      note: '<em>单手最顺</em>：同样的内容放进底部面板，三个按钮全在拇指区；面板外点一下 = 继续练（不用专门的按钮）。和替换动作、改数面板同一种容器。代价：和「删除训练」的居中对话框不是一套样式，要在规范里说明：可撤销的走面板，不可撤销的走对话框。',
+      html: () => `${dim(420)}<div class="abs box" style="left:0;right:0;bottom:0;border-radius:20px 20px 0 0;padding:18px 16px 22px">
+          <div data-a="1"><div class="t-h" style="font-size:18px">暂停训练？</div><div class="t-b" style="margin-top:8px;line-height:1.55;color:#555">已记的 6 组都在。回来从「杠铃硬拉 第 1 组」接着练，休息计时也会停。点面板外面 = 继续练。</div></div>
+          <div class="btn" style="margin-top:18px" data-a="2">暂停</div>
+          <div class="btn ghost" style="margin-top:10px">结束并结算</div></div>`,
+    },
+    W3: {
+      title: '共用：暂停后的首页',
+      note: '两个方案共用。暂停后回到首页（未开始的样子），主角卡位置变成「已暂停 · 12 分钟前」+ 已记 6 / 13 组的进度，底部大按钮「继续训练」（拇指区）；导航外圈保留 6/13，但不画休息描边。超过 12 小时没继续，下次打开问一次「结束并结算这次？」。',
+      html: () => `${status}<div class="pad" style="padding-top:10px"><div class="t-title">今日处方</div><div class="t-s" style="margin-top:4px">${H().date} · 5 个动作 · 13 组</div>
+        <div class="fill" style="margin-top:14px;padding:14px" data-a="1"><div class="t-s">已暂停 · 12 分钟前</div><div class="row" style="align-items:baseline;margin-top:4px"><span class="t-xl">6</span><span class="t-b"> / 13 组</span></div>
+          <div class="row" style="margin-top:8px;gap:3px">${Array.from({ length: 13 }, (_, i) => `<i class="sq${i < 6 ? ' on' : ''}" style="flex:1;height:5px;border-radius:2px"></i>`).join('')}</div>
+          <div class="t-b" style="margin-top:10px">下一组：杠铃硬拉 第 1 组 · 首次</div></div>
+        <div class="t-s" style="margin:14px 0 4px;font-weight:700">已做完</div>
+        ${['杠铃深蹲 · 3 组', '器械站姿提踵 · 2 组', '窄握下拉 · 1 / 3 组'].map((x) => `<div class="row" style="height:44px;border-bottom:1px solid #DEDED9"><span class="t-b">${x}</span><div class="sp"></div><span class="t-s">✓</span></div>`).join('')}</div>
+        <div class="abs" style="left:16px;right:16px;bottom:94px;z-index:5" data-a="2"><div class="btn">继续训练</div></div>${navRing().replace('首页 1:35', '首页').replace('box-shadow:inset 0 0 0 3px #8E8E8A', '')}`,
+    },
+  };
+  const LAYERS = {
+    p04: ['战略：练到一半不确定动作做没做对，3 秒内看到示范和要点，看完回去接着打卡（T5）', '范围：示范视频（正 / 侧，按档案体型）· 一句话要点 + 3 步 · 练到的肌头 · 我的进步入口；无示范 / 加载失败只留文字，不拿相近动作顶替；MuscleWiki 署名', '结构：子页 /exercise/:id，无 Tab；入口 主角卡「要领」· 处方行 · 训练详情动作行 · 进步曲线；返回来源页；训练中顶部保留一行休息', '框架：第一优先 = 示范 + 一句话要点；没有主操作（看完就返回），次要 = 进曲线页；返回在左上（导航，不在拇指区可接受：系统返回键 / 边缘手势是主路径）', '表现：示范深底；肌头图复用容量页 O2 + F1；进场 M03 共享元素（主角卡里的动作名飞成标题）'],
+    swap: ['战略：器械被占 / 没有 / 不舒服时，不用退出训练就换一个能练到同样肌肉的动作', '范围：候选 = 同主练肌头、档案里有的器械；排序 同器械 → 练过 → 首次；只换今天；已打的组留在原动作下；换过的动作下次处方照常由引擎排', '结构：主角卡「换一个」→ 底部面板 → 选一个 → 主角卡换成新动作（重量按新动作的建议 / 首次填重量）；面板外点一下收起', '框架：第一优先 = 候选列表；主操作 = 「换成 X」整宽、拇指区；行高 60', '表现：面板 M05；换完主角卡 M02 形变（旧名淡出、新名弹入）'],
+    warm: ['战略：大重量复合动作先热身不受伤，又不让热身干扰打卡节奏、不污染数据', '范围：只给当天第一个用到这块肌肉的复合动作排热身，正式重量 ≥ 40 kg 才排；40% × 8 → 60% × 5 → 80% × 3（2.5 kg 取整）；不计入容量 / 趋势 / 新纪录 / 导航外圈', '结构：开始训练后出现在主角卡里；可以整组跳过；打完正式组第 1 组后收起', '框架：第一优先仍是当前组；主操作仍是底部大按钮（W1 按顺序带上热身 / W2 只管正式组）', '表现：热身行浅色 + 「不计入」标签（已有 SetRow warmup 态）'],
+    pause: ['战略：训练中误触返回 / 被打断时，进度一组不丢，回来能接着练', '范围：返回键 / 返回手势触发；三出口 暂停 · 结束并结算 · 继续练；暂停后计时停、训练保留；12 小时没回来下次问要不要结算', '结构：首页训练中（根页）的系统返回 → 确认 → 暂停后回到首页的「已暂停」态 → 继续训练', '框架：第一优先 = 「已记的都在」这句话；主操作 = 暂停（骨白）；结束并结算是次要（描边），继续练最轻', '表现：W1 居中对话框（同删除确认） / W2 底部面板（同替换动作）'],
+  };
+
   const PAGES = {
     body: { title: '身体 · 容量与恢复（P06）', sub: '放大镜按住「中下胸」· 数据 design/benchmark/p06.json', v: BODY },
     home: { title: '首页 · 今日处方（P01）', sub: '有处方、还没开始 · 演示场景 plain-prescription', v: HOME },
@@ -574,6 +708,10 @@
     checkin: { title: '首页即打卡（P01 + 原 P03）', sub: '已开始：第 1 个动作做完 2 组、正在休息 · 导航外圈 2/13 · 选中胶囊「首页 1:35」', v: CHECKIN },
     sheet: { title: '肌头详情面板（身体页）', sub: '松手后打开「中下胸」', v: SHEET },
     story: { title: '故事引导（P12 前 3 屏）', sub: 'A = 三幕插画，B = 一条成长线；各 3 屏', v: STORYV },
+    p04: { title: '6e · 动作要领（P04）', sub: '杠铃深蹲 · 训练中从主角卡「要领」进入（顶部保留休息提示）', v: P04, layers: LAYERS.p04 },
+    swap: { title: '6e · 替换动作（底部面板）', sub: '训练中，主角卡「换一个」· 杠铃深蹲 → 同练股四头', v: SWAP, layers: LAYERS.swap },
+    warm: { title: '6e · 热身组', sub: '开始训练后的主角卡 · 杠铃深蹲正式重量 85 kg', v: WARM, layers: LAYERS.warm },
+    pause: { title: '6e · 暂停训练确认', sub: '训练中在首页按系统返回 · 已记 6 / 13 组', v: PAUSE, layers: LAYERS.pause },
   };
 
   // ---------- 标注 ----------
@@ -591,6 +729,39 @@
     }
   }
 
+  // ---------- 手指热区 ----------
+  // 拇指可达区：以右下角外侧为圆心的两道弧（Hoober 单手握持图的简化），半径按 360 × 800 屏取
+  const ZONE = { cx: 330, cy: 860, easy: 380, ok: 560 };
+  const zoneOf = (x, y) => { const d = Math.hypot(x - ZONE.cx, y - ZONE.cy); return d <= ZONE.easy ? '易' : d <= ZONE.ok ? '够得着' : '难'; };
+  function hitmap(screen) {
+    if (!HIT) return;
+    const sr = screen.getBoundingClientRect(), W = sr.width, H = sr.height;
+    const z = document.createElement('div');
+    z.className = 'zones';
+    z.innerHTML = `<svg width="${W}" height="${H}"><circle cx="${ZONE.cx}" cy="${ZONE.cy}" r="${ZONE.ok}" class="z-ok"/><circle cx="${ZONE.cx}" cy="${ZONE.cy}" r="${ZONE.easy}" class="z-easy"/>
+      <text x="12" y="${H - 300}" class="z-t">够得着</text><text x="${W - 40}" y="${H - 150}" class="z-t">易</text><text x="12" y="70" class="z-t">难</text></svg>`;
+    screen.insertBefore(z, screen.firstChild);
+    const els = [...screen.querySelectorAll('[data-hit], .btn, .nav .it')].filter((e) => e.dataset.hit !== 'no');
+    const boxes = els.map((e) => {
+      const r = e.getBoundingClientRect();
+      const w = Math.max(r.width, HIT_MIN), h = Math.max(r.height, HIT_MIN);
+      const x = r.left - sr.left + r.width / 2 - w / 2, y = r.top - sr.top + r.height / 2 - h / 2;
+      return { e, x, y, w, h, grown: r.width < HIT_MIN || r.height < HIT_MIN };
+    });
+    const overlap = (a, b) => a.x < b.x + b.w - 0.5 && b.x < a.x + a.w - 0.5 && a.y < b.y + b.h - 0.5 && b.y < a.y + a.h - 0.5;
+    boxes.forEach((b, i) => {
+      // 父子关系不算重叠（整行可点、里面还有一个按钮的情况，线框里不该出现；出现了照样标）
+      const bad = boxes.some((o, j) => j !== i && !o.e.contains(b.e) && !b.e.contains(o.e) && overlap(b, o));
+      const primary = b.e.closest('[data-a="2"]') && zoneOf(b.x + b.w / 2, b.y + b.h / 2) === '难';
+      const d = document.createElement('div');
+      d.className = 'hitbox' + (bad || primary ? ' bad' : '') + (b.grown ? ' grown' : '');
+      Object.assign(d.style, { left: b.x + 'px', top: b.y + 'px', width: b.w + 'px', height: b.h + 'px' });
+      d.innerHTML = `<i>${Math.round(b.w)}×${Math.round(b.h)}${bad ? ' 重叠' : ''}${primary ? ' 主操作在难区' : ''}</i>`;
+      screen.appendChild(d);
+    });
+    screen.dataset.hitBad = String(screen.querySelectorAll('.hitbox.bad').length);
+  }
+
   function mount(host, page, key) {
     const v = PAGES[page].v[key];
     const s = document.createElement('div');
@@ -599,6 +770,7 @@
     host.appendChild(s);
     if (v.post) v.post(s);
     annotate(s);
+    hitmap(s);
     return s;
   }
 
@@ -618,7 +790,7 @@
       const P = PAGES[board];
       const b = document.createElement('section');
       b.className = 'board';
-      b.innerHTML = `<h1>${P.title}<small>${P.sub}</small></h1><div class="legend-anno"><span class="a1">① 第一优先信息</span><span class="a2">② 主操作</span><span class="a3">③ 导航</span></div><div class="board-row"></div>`;
+      b.innerHTML = `<h1>${P.title}<small>${P.sub}</small></h1><div class="legend-anno"><span class="a1">① 第一优先信息</span><span class="a2">② 主操作</span><span class="a3">③ 导航</span>${HIT ? '<span class="hz">手指热区：底色 = 拇指可达（易 / 够得着 / 难），虚框 = 命中区（不足 48 补到 48），红 = 重叠或主操作在难区</span>' : ''}</div>${P.layers ? `<ol class="layers">${P.layers.map((l) => `<li>${l.replace(/^([^：]+)：/, '<b>$1</b>')}</li>`).join('')}</ol>` : ''}<div class="board-row"></div>`;
       app.appendChild(b);
       for (const k of Object.keys(P.v)) {
         const c = document.createElement('div');
