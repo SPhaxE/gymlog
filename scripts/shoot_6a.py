@@ -307,7 +307,7 @@ def gains_checks(b, w, h):
     # 曲线页（P10）：点一行进去，大数字和增量页那一行是同一个数；点明细的一行换成那天；返回后筛选和滚动位置还在
     pg.goto(f'{args.base}/gains?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(700)
     for i in range(pg.locator('button[aria-expanded=false]').count()):   # 展开全部组，进最后一行
-        hd = pg.locator('button[aria-expanded=false]').first; hd.scroll_into_view_if_needed(); click(pg, hd); pg.wait_for_timeout(700)
+        hd = pg.locator('button[aria-expanded=false]').first; hd.evaluate('e => e.scrollIntoView({ block: "center" })'); pg.wait_for_timeout(300); click(pg, hd); pg.wait_for_timeout(700)
     rows_all = pg.get_by_role('button', name=re.compile(r'^查看.+的进步曲线$'))
     rows_all.last.evaluate('e => e.scrollIntoView({ block: "center" })'); pg.wait_for_timeout(500)   # 滚到屏幕中间：贴底会被悬浮导航盖住
     top_before = pg.evaluate('document.querySelector("[class*=_scroll_]").scrollTop')
