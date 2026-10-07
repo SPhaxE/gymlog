@@ -3,7 +3,7 @@
  *  原来 /preview 上的基础规范页挪到了 /spec。
  *  当前三组（都是容量页的人体）：描边 O、肌头内部容量 F、热力图扫描线 S；每组第一格是现行做法。
  *  最上面是「自由组合」（2026-10-07 用户）：三组各挑一个，右边是真实的容量页（带胶囊、可以点、可以切正反男女）；
- *  组合写在地址里（?o=hair&f=metal&s=wave），复制链接就能把这个组合发给别人。 */
+ *  组合写在地址里（?o=hair&f=metal&s=molten），复制链接就能把这个组合发给别人。 */
 import { useMemo, useRef, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { BodyFigure, Chip, ContourFx, FillFx, ScanFx, type ContourFxKind, type FillFxKind, type ScanFxKind } from '../components';
@@ -22,7 +22,7 @@ const CONTOUR: [ContourFxKind | null, string, string][] = [
 ];
 const FILL: [FillFxKind | null, string, string][] = [
   [null, 'F0 现行', '热成像：每块肌肉径向渐变 + 扩散 + 荧光渐变映射'],
-  ['metal', 'F1 金属渐变', '参考 AE 演示：Gradient Ramp → Colorama（熔融色带）→ Turbulent Displace + 模糊 → 亮边 + 外发光 + 颗粒：越热越亮，像烧红的金属'],
+  ['metal', 'F1 金属渐变', '参考 AE 演示：Gradient Ramp → Turbulent Displace + 模糊 → Colorama → 下缘白热亮边 + 外发光 + 颗粒；静态，配 S9 熔流就会流动'],
   ['topo', 'F2 等高线', '热度量化成几档，只画档与档之间的细线，档内很淡'],
   ['halftone', 'F3 半调点阵', '网格点，热度越高点越大'],
   ['liquid', 'F4 液位', '近 7 天组数 ÷ 最大可恢复量 = 液面高度，液面一道亮线'],
@@ -32,6 +32,11 @@ const SCAN: [ScanFxKind, string, string][] = [
   ['slice', 'S2 切片扫描', '亮线一行行跳上去，留余辉'],
   ['wave', 'S3 呼吸波', '一道亮度波逐行往上传'],
   ['iso', 'S4 等温分层', '最热的肌肉先亮，一层层亮到最凉的'],
+  ['pump', 'S5 泵感', '练过的肌肉像充血一样「咚-咚」双拍胀亮，越热越亮；节拍是慢牛的静息心率'],
+  ['steam', 'S6 蒸腾', '练过的肌肉往上冒热气：细小光点上升、散开、消失，越热冒得越多'],
+  ['fiber', 'S7 牛劲', '沿肌肉轮廓跑一段段流光，像力量顺着肌纤维传过去，越热越亮越快'],
+  ['beam', 'S8 丁达尔', '呼应记录页钢板：一束斜光慢慢扫过人体，光里有浮尘，照到的肌肉提亮'],
+  ['molten', 'S9 熔流', '只有「流」这一层：亮带一直往上流，穿过湍流扭曲场被搅成流纹；叠在任何 F 上，配 F1 金属渐变就是流动的熔融金属（这一格叠的是 F1）'],
 ];
 
 function Figure({ now, children }: { now: number; children?: (fig: ReactNode) => ReactNode }) {
@@ -102,7 +107,7 @@ export function OptionsBoard({ now }: { now: number }) {
       </section>
       <section className={s.group} aria-label="热力图扫描线">
         <h2 className="milo-text-heading">热力图扫描线 · S</h2>
-        <div className={s.grid}>{SCAN.map(([k, t, n]) => <Cell key={t} id={`scan-${k}`} title={t} note={n}><ScanFx.Provider value={k}><Figure now={now} /></ScanFx.Provider></Cell>)}</div>
+        <div className={s.grid}>{SCAN.map(([k, t, n]) => <Cell key={t} id={`scan-${k}`} title={t} note={n}><ScanFx.Provider value={k}><FillFx.Provider value={k === 'molten' ? 'metal' : null}><Figure now={now} /></FillFx.Provider></ScanFx.Provider></Cell>)}</div>
       </section>
     </div>
   );

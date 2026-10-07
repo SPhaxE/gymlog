@@ -87,3 +87,37 @@
 .lqSurface { stop-color: var(--milo-prim-lime-300); }
 .lqEmpty { stop-color: var(--milo-prim-gray-150); }
 .lqHead path { stroke: var(--milo-color-bg-base); stroke-width: calc(var(--milo-stroke-hairline) * 0.4); }
+
+/* S 层第二批（ThemeFx）：泵感 / 蒸腾 / 牛劲 / 丁达尔 */
+/* 泵感：「咚-咚」双拍，亮度跟热度 --h；只动 opacity / transform */
+.pumpHead { fill: var(--milo-prim-lime-300); opacity: 0; transform-box: fill-box; transform-origin: center;
+  animation: pumpBeat calc(var(--milo-motion-slow) * 5) var(--milo-motion-ease-standard) infinite both; }
+@keyframes pumpBeat {
+  0% { opacity: 0; transform: scale(1); }
+  8% { opacity: calc(var(--h) * 0.75); transform: scale(1.03); }
+  16% { opacity: calc(var(--h) * 0.2); transform: scale(1.005); }
+  24% { opacity: calc(var(--h) * 0.55); transform: scale(1.02); }
+  50%, 100% { opacity: 0; transform: scale(1); } }
+/* 蒸腾：光点往上飘、略横漂、变大变淡 */
+.steamDot { fill: var(--milo-prim-lime-300); opacity: 0; transform-box: fill-box; transform-origin: center;
+  animation: steamUp calc(var(--milo-motion-slow) * 8) var(--milo-motion-ease-standard) infinite both; }
+@keyframes steamUp {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+  15% { opacity: calc(0.35 + var(--h) * 0.65); }
+  100% { opacity: 0; transform: translate(var(--drift), var(--rise)) scale(1.8); } }
+/* 牛劲：轮廓上一段段流光沿线跑（pathLength = 100） */
+.fiberRun { fill: none; stroke: var(--milo-prim-lime-300); stroke-linecap: round; stroke-dasharray: 9 22; opacity: calc(0.4 + var(--h) * 0.6);
+  animation: fiberRun calc(var(--milo-motion-slow) * 8) linear infinite both; }
+@keyframes fiberRun { to { stroke-dashoffset: -64; } }
+/* 丁达尔：光束左右慢慢摆；浮尘漂；照到的人体提亮 */
+.beamSway { transform-box: view-box; transform-origin: 20% 0; animation: beamSway calc(var(--milo-motion-slow) * 30) var(--milo-motion-ease-standard) infinite alternate both; }
+@keyframes beamSway { from { transform: rotate(-12deg); } to { transform: rotate(10deg); } }
+.beamStop0 { stop-color: var(--milo-prim-gray-900); stop-opacity: 0.1; }
+.beamStop1 { stop-color: var(--milo-prim-lime-300); stop-opacity: 0.03; }
+.beamLit { fill: var(--milo-prim-lime-300); opacity: 0.42; }
+.beamDust { fill: var(--milo-prim-gray-900); opacity: 0; transform-box: fill-box; transform-origin: center;
+  animation: beamDust calc(var(--milo-motion-slow) * 18) linear infinite both; }
+@keyframes beamDust { 0% { opacity: 0; transform: translate(0, 0); } 20%, 80% { opacity: 0.7; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)); } }
+@media (prefers-reduced-motion: reduce) {
+  .pumpHead, .steamDot, .fiberRun, .beamSway, .beamDust { animation: none; }
+  .pumpHead, .steamDot { opacity: 0; } }

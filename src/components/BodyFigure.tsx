@@ -25,8 +25,15 @@ export type Anchors = Record<string, [number, number]>;
  *  raster 逐行显影：扫描线先是一排暗栅，从脚到头一行行打开、露出底下的热力，停一会儿再从下往上一行行合上；
  *  slice  切片扫描：一条亮线一行一行往上跳（不是平滑滑动），走过的行留一段渐暗的余辉，像 CT 一层层切过去；
  *  wave   呼吸波：所有扫描线常亮很淡，一道亮度波逐行往上传，连续不断；
- *  iso    等温分层：按每块肌肉的热度分层——最热的肌肉里的扫描线先亮，接着次热的，一层层亮到最凉的，再一起暗下去。 */
-export type ScanFxKind = 'raster' | 'slice' | 'wave' | 'iso';
+ *  iso    等温分层：按每块肌肉的热度分层——最热的肌肉里的扫描线先亮，接着次热的，一层层亮到最凉的，再一起暗下去。
+ *  第二批（2026-10-07 用户：S 层再来四种呼应主题的，不局限扫描线）——见 ThemeFx：
+ *  pump   泵感：练过的肌肉像练完充血一样「咚-咚」双拍胀亮，越热越亮，节拍是慢牛的静息心率；
+ *  steam  蒸腾：练过的肌肉往上冒热气（细小光点上升、散开、消失），越热冒得越多越快；
+ *  fiber  牛劲：沿肌肉的轮廓线跑一段段流光（像力量顺着肌纤维传过去），越热越亮越快；
+ *  beam   丁达尔：呼应记录页的钢板——一束斜光慢慢扫过人体，光里有浮尘，照到的肌肉提亮；
+ *  molten 熔流（2026-10-07 用户：金属渐变留在 F，流动效果放 S）：只有「流」这一层——一道道亮带一直往上流，
+ *         穿过固定的 Turbulent Displace 扭曲场被搅弯，裁在练过的肌肉里、screen 叠在 F 层上；越热越亮、流得越快。配 F1 就是流动的熔融金属。 */
+export type ScanFxKind = 'raster' | 'slice' | 'wave' | 'iso' | 'pump' | 'steam' | 'fiber' | 'beam' | 'molten';
 export const ScanFx = createContext<ScanFxKind | null>(null);
 
 /** 描边方案（2026-10-06 用户：现在的描边太抢眼，要四个方案）：
@@ -38,8 +45,8 @@ export type ContourFxKind = 'hair' | 'soft' | 'dot' | 'rim';
 export const ContourFx = createContext<ContourFxKind | null>(null);
 
 /** 肌头内部容量的显示方案（2026-10-06 用户要四个，其中一个是 Metallic Gradient）：
- *  metal    Metallic Gradient（按用户给的 AE 参考视频）：Gradient Ramp → Turbulent Displace（大尺度）+ Fast Box Blur（强）
- *           → Colorama（暗 → 橄榄 → 荧光 → 骨白热）→ 内缘光 + 外发光 + 颗粒，像一块从里往外发光的熔融体；
+ *  metal    Metallic Gradient（按用户给的 AE 参考视频）：Gradient Ramp → Turbulent Displace + 模糊 → Colorama（暗 → 橄榄 → 荧光 → 骨白热）
+ *           → 下缘白热亮边 + 细内缘高光 + 外发光 + 颗粒；静态。流动那一层在 S 层（ScanFxKind molten），两层叠起来就是流动的熔融金属；
  *  topo     等高线：热度量化成几档，只画档与档之间的细线（像地形图），档内很淡；
  *  halftone 半调点阵：同样大小的网格点，热度越高点越大（印刷网点）；
  *  liquid   液位：每块肌肉像一个容器，近 7 天组数 ÷ 最大可恢复量 = 液面高度，液面一道亮线。 */
@@ -212,6 +219,7 @@ function ThermalLight({ box, height, width, v, fid, noBeam, contour: kind }: { b
  *  每行的动画一样、只差起始时间（从脚往头按行错开），所以看起来是一层层推上去的；只动 opacity。
  *  raster 用 multiply（暗栅盖在热力上，打开才露出来），其余用 screen（只提亮）；iso 不按行、按肌肉热度排先后。 */
 function ScanLines({ kind, box, height, width, v, fid, heat }: { kind: ScanFxKind; box: number[]; height: number; width: number; v: Record<string, Part>; fid: string; heat: (k: string) => number }) {
+  if (kind === 'pump' || kind === 'steam' || kind === 'fiber' || kind === 'beam' || kind === 'molten') return <ThemeFx kind={kind} box={box} height={height} width={width} v={v} fid={fid} heat={heat} />;
   const [x, y, bw, bh] = box, unit = bh / 100, pitch = unit * 0.9, n = Math.floor(bh / pitch);
   const heads = Object.keys(v).filter((k) => !NEUTRAL.includes(k) && k !== 'body');
   const silhouette = Object.keys(v).filter((k) => k !== 'body').flatMap((k) => (v[k].paths ?? []).map((p, i) => <path key={k + i} d={p.d} />));
@@ -241,6 +249,129 @@ function ScanLines({ kind, box, height, width, v, fid, heat }: { kind: ScanFxKin
           return <rect key={i} className={cls} x={x} y={y + i * pitch} width={bw} height={kind === 'raster' ? pitch * 0.62 : unit * 0.3} style={{ animationDelay: `${Math.round(delay)}ms` }} />;
         })}
       </g>
+    </svg>
+  );
+}
+
+/** 可复现的伪随机（mulberry32）：同一个种子每次渲染出一样的粒子 */
+function rng(seed: number) {
+  let a = seed >>> 0;
+  return () => { a = (a + 0x6d2b79f5) >>> 0; let x = Math.imul(a ^ (a >>> 15), 1 | a); x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x; return ((x ^ (x >>> 14)) >>> 0) / 4294967296; };
+}
+
+/** S 层第二批：呼应主题的四个动效（说明见 ScanFxKind）。只动 transform / opacity / stroke-dashoffset，减少动态效果时全静止 */
+function ThemeFx({ kind, box, height, width, v, fid, heat }: { kind: 'pump' | 'steam' | 'fiber' | 'beam' | 'molten'; box: number[]; height: number; width: number; v: Record<string, Part>; fid: string; heat: (k: string) => number }) {
+  const [x, y, bw, bh] = box, unit = bh / 100, slow = T['motion/slow'];
+  const gray = (t: number) => `color-mix(in srgb, white ${Math.round(t * 100)}%, black)`;
+  const heads = Object.keys(v).filter((k) => !NEUTRAL.includes(k) && k !== 'body');
+  const hot = heads.map((k) => [k, heat(k)] as const).filter(([, h]) => h > 0.12);
+  const silhouette = Object.keys(v).filter((k) => k !== 'body').flatMap((k) => (v[k].paths ?? []).map((p, i) => <path key={k + i} d={p.d} />));
+  // 蒸腾要知道每块肌肉的上沿在哪：先画一份看不见的量包围盒
+  const meas = useRef<SVGGElement>(null);
+  const [boxes, setBoxes] = useState<Record<string, [number, number, number, number]>>({});
+  useLayoutEffect(() => {
+    if (kind !== 'steam' || !meas.current) return;
+    const out: Record<string, [number, number, number, number]> = {};
+    meas.current.querySelectorAll<SVGGElement>('g[data-m]').forEach((g) => {
+      try { const b = g.getBBox(); if (b.width) out[g.dataset.m!] = [b.x, b.y, b.width, b.height]; } catch { /* jsdom 没有 getBBox */ }
+    });
+    setBoxes(out);
+  }, [kind, v]);
+  const svgProps = { className: `${s.fx} ${s.fxScreen} ${s.lightHalf}`, viewBox: box.join(' '), width, height, preserveAspectRatio: 'xMinYMin meet', 'aria-hidden': true } as const;
+
+  if (kind === 'molten') {
+    // 亮带 = spreadMethod reflect 的竖向渐变（暗 → 亮 → 暗），一直往上平移；扭曲场不动，亮带流过它就被搅成熔体的流纹。
+    // 滤镜和渐变的属性 CSS 动不了，用 SMIL；减少动态效果时不挂动画（只剩静止的一层淡流纹）
+    const still = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return (
+      <svg {...svgProps}>
+        <defs>
+          {hot.map(([k, h]) => (
+            <linearGradient key={k} id={`mo${fid}${k}`} x1="0" y1="0" x2="0" y2="0.45" spreadMethod="reflect">
+              <stop offset="0" style={{ stopColor: gray(0) }} /><stop offset="0.7" style={{ stopColor: gray(h * 0.25) }} /><stop offset="1" style={{ stopColor: gray(Math.min(1, h * 0.95)) }} />
+              {!still && <animateTransform attributeName="gradientTransform" type="translate" from="0 0" to="0 -0.9" dur={`${Math.round(slow * (34 - h * 18))}ms`} repeatCount="indefinite" />}
+            </linearGradient>
+          ))}
+          <filter id={`mo${fid}`} colorInterpolationFilters="sRGB" x="-10%" y="-10%" width="120%" height="120%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.025" numOctaves={2} seed={5} result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale={unit * 7} xChannelSelector="R" yChannelSelector="G" result="disp">
+              {!still && <animate attributeName="scale" values={`${unit * 5};${unit * 9};${unit * 5}`} dur={`${slow * 24}ms`} repeatCount="indefinite" />}
+            </feDisplacementMap>
+            <feGaussianBlur in="disp" stdDeviation={unit * 0.35} result="soft" />
+            <feComposite in="soft" in2="SourceAlpha" operator="in" result="inner" />
+            {/* 灰阶 → 荧光到骨白（只提亮，screen 叠上去不会压暗 F 层） */}
+            <feColorMatrix in="inner" type="matrix" values="0.85 0 0 0 0  0 1 0 0 0  0.55 0 0 0 0  0 0 0 1 0" />
+          </filter>
+        </defs>
+        <g filter={`url(#mo${fid})`}>
+          {hot.map(([k]) => <g key={k}>{(v[k].paths ?? []).map((p, j) => <path key={j} d={p.d} fill={`url(#mo${fid}${k})`} />)}</g>)}
+        </g>
+      </svg>
+    );
+  }
+
+  if (kind === 'pump') return (
+    <svg {...svgProps}>
+      <defs><filter id={`pp${fid}`} x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation={unit * 0.8} /></filter></defs>
+      {hot.map(([k, h]) => (
+        <g key={k} className={s.pumpHead} style={{ '--h': h.toFixed(2), animationDuration: `${Math.round(slow * (6 - h * 2))}ms` } as React.CSSProperties} filter={`url(#pp${fid})`}>
+          {(v[k].paths ?? []).map((p, j) => <path key={j} d={p.d} />)}
+        </g>
+      ))}
+    </svg>
+  );
+
+  if (kind === 'fiber') return (
+    <svg {...svgProps}>
+      <defs><filter id={`fb${fid}`} x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation={unit * 0.25} result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter></defs>
+      <g filter={`url(#fb${fid})`}>
+        {hot.map(([k, h], i) => (v[k].paths ?? []).map((p, j) => (
+          <path key={k + j} d={p.d} pathLength={100} className={s.fiberRun} strokeWidth={unit * (0.22 + h * 0.3)}
+            style={{ '--h': h.toFixed(2), animationDuration: `${Math.round(slow * (12 - h * 6))}ms`, animationDelay: `${-Math.round((i * 7 + j * 3) * slow / 5)}ms` } as React.CSSProperties} />
+        )))}
+      </g>
+    </svg>
+  );
+
+  if (kind === 'steam') {
+    const parts: ReactNode[] = [];
+    hot.forEach(([k, h], i) => {
+      const b = boxes[k]; if (!b) return;
+      const r = rng(i * 97 + 13), n = Math.round(4 + h * 10);
+      for (let j = 0; j < n; j++) {
+        const px = b[0] + b[2] * (0.15 + r() * 0.7), py = b[1] + b[3] * (0.1 + r() * 0.4);
+        const dur = slow * (9 - h * 4) * (0.8 + r() * 0.4);
+        parts.push(<circle key={k + j} className={s.steamDot} cx={px} cy={py} r={unit * (0.3 + r() * 0.45)}
+          style={{ '--rise': `${-(unit * (6 + r() * 6)).toFixed(1)}px`, '--drift': `${((r() - 0.5) * unit * 3).toFixed(1)}px`, '--h': h.toFixed(2), animationDuration: `${Math.round(dur)}ms`, animationDelay: `${-Math.round(r() * dur)}ms` } as React.CSSProperties} />);
+      }
+    });
+    return (
+      <svg {...svgProps}>
+        <g ref={meas} className={s.measureOnly}>{hot.map(([k]) => <g key={k} data-m={k}>{(v[k].paths ?? []).map((p, j) => <path key={j} d={p.d} />)}</g>)}</g>
+        <defs><filter id={`st${fid}`} x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation={unit * 0.12} /></filter></defs>
+        <g filter={`url(#st${fid})`}>{parts}</g>
+      </svg>
+    );
+  }
+
+  // beam：斜光从左上打下来，整束左右慢慢摆；光里浮尘漂；照到的人体（裁在剪影里）提亮一层
+  const r = rng(7), dust = Array.from({ length: 34 }, (_, i) => {
+    const dur = slow * (14 + r() * 10);
+    return <circle key={i} className={s.beamDust} cx={x + bw * (0.1 + r() * 0.8)} cy={y + bh * (0.05 + r() * 0.9)} r={unit * (0.15 + r() * 0.3)}
+      style={{ '--dx': `${((r() - 0.5) * unit * 5).toFixed(1)}px`, '--dy': `${((r() - 0.3) * unit * 5).toFixed(1)}px`, animationDuration: `${Math.round(dur)}ms`, animationDelay: `${-Math.round(r() * dur)}ms` } as React.CSSProperties} />;
+  });
+  const cone = `M${x + bw * 0.2} ${y - bh * 0.05} L${x + bw * 0.36} ${y - bh * 0.05} L${x + bw * 0.88} ${y + bh * 1.05} L${x + bw * 0.42} ${y + bh * 1.05} Z`;
+  return (
+    <svg {...svgProps}>
+      <defs>
+        <linearGradient id={`bg${fid}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" className={s.beamStop0} /><stop offset="1" className={s.beamStop1} /></linearGradient>
+        <filter id={`bf${fid}`} x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation={unit * 2.4} /></filter>
+        <clipPath id={`bc${fid}`}>{silhouette}</clipPath>
+        <mask id={`bm${fid}`} maskUnits="userSpaceOnUse" x={x - bw} y={y - bh * 0.1} width={bw * 3} height={bh * 1.2}><g className={s.beamSway}><path d={cone} fill="white" filter={`url(#bf${fid})`} /></g></mask>
+      </defs>
+      <g className={s.beamSway}><path d={cone} fill={`url(#bg${fid})`} filter={`url(#bf${fid})`} /></g>
+      <g clipPath={`url(#bc${fid})`} mask={`url(#bm${fid})`}><rect x={x} y={y} width={bw} height={bh} className={s.beamLit} /></g>
+      <g mask={`url(#bm${fid})`}>{dust}</g>
     </svg>
   );
 }
