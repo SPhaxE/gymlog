@@ -38,8 +38,8 @@ export type ContourFxKind = 'hair' | 'soft' | 'dot' | 'rim';
 export const ContourFx = createContext<ContourFxKind | null>(null);
 
 /** 肌头内部容量的显示方案（2026-10-06 用户要四个，其中一个是 Metallic Gradient）：
- *  metal    金属渐变：Gradient Ramp（每块肌肉按热度的灰阶渐变）→ Turbulent Displace（湍流噪声置换，金属拉丝的不规则流纹）
- *           → Fast Box Blur（轻模糊）→ Colorama（循环色带映射成枪灰 → 钢 → 骨白高光 → 荧光，热的偏亮偏荧光）；
+ *  metal    Metallic Gradient（按用户给的 AE 参考视频）：Gradient Ramp → Turbulent Displace（大尺度）+ Fast Box Blur（强）
+ *           → Colorama（暗 → 橄榄 → 荧光 → 骨白热）→ 内缘光 + 外发光 + 颗粒，像一块从里往外发光的熔融体；
  *  topo     等高线：热度量化成几档，只画档与档之间的细线（像地形图），档内很淡；
  *  halftone 半调点阵：同样大小的网格点，热度越高点越大（印刷网点）；
  *  liquid   液位：每块肌肉像一个容器，近 7 天组数 ÷ 最大可恢复量 = 液面高度，液面一道亮线。 */
@@ -155,7 +155,7 @@ function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pi
           <g key={k} data-head={k}>{(v[k].paths ?? []).map((p, i) => <path key={i} d={p.d} fill={`url(#g${fid}${k})`} />)}</g>
         ))}
       </g>)}
-      {thermal.style === 'scan' && (
+      {thermal.style === 'scan' && !fill && (
         <g className={s.scan}>
           {Object.keys(v).filter((k) => k !== 'body').flatMap((k) => (v[k].paths ?? []).map((p, i) => <path key={k + i} d={p.d} fill={`url(#s${fid})`} />))}
           <g filter={`url(#n${fid})`} className={s.grain}>{Object.keys(v).filter((k) => k !== 'body').flatMap((k) => (v[k].paths ?? []).map((p, i) => <path key={k + i} d={p.d} />))}</g>
@@ -280,24 +280,46 @@ function FillLayer({ kind, v, heads, stats, fid, unit, gray }: { kind: FillFxKin
   const neutral = NEUTRAL.flatMap((k) => (v[k]?.paths ?? []).map((p, i) => <path key={k + i} d={p.d} style={{ fill: gray(0.06) }} />));
   const H = (k: string) => heatOf(stats.get(k));
   if (kind === 'metal') {
-    // Colorama：灰阶输入循环两圈，暗处枪灰、中间钢、亮处骨白高光，最热的一端带荧光
-    const [r, g, b] = rampTables(['gray-50', 'gray-300', 'gray-600', 'gray-300', 'gray-800', 'gray-900', 'gray-500', 'lime-500', 'lime-300']);
+    // 照用户给的 AE 参考（2026-10-07）：Gradient Ramp（每块肌肉自下而上的灰阶，热度越高越亮）→ Turbulent Displace（大尺度湍流扭曲）
+    // + Fast Box Blur（强模糊，像熔化的流体）→ Colorama（暗 → 橄榄 → 荧光 → 浅荧光 → 骨白热）→ 形状边缘一圈亮的内缘光 + 外发光 + 一点颗粒
+    const [r, g, b] = rampTables(['gray-50', 'lime-900', 'lime-700', 'lime-500', 'lime-300', 'gray-900']);
     return (
       <>
         <defs>
           {heads.map((k) => { const h = H(k); return (
-            <linearGradient key={k} id={`mg${fid}${k}`} x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" style={{ stopColor: gray(Math.min(1, h * 1.1)) }} /><stop offset="0.55" style={{ stopColor: gray(h * 0.6) }} /><stop offset="1" style={{ stopColor: gray(Math.min(1, h * 0.95)) }} />
+            <linearGradient key={k} id={`mg${fid}${k}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" style={{ stopColor: gray(h * 0.62) }} /><stop offset="0.55" style={{ stopColor: gray(Math.min(1, h * 0.9)) }} /><stop offset="1" style={{ stopColor: gray(Math.min(1, h * 1.12)) }} />
             </linearGradient>); })}
-          <filter id={`mf${fid}`} colorInterpolationFilters="sRGB" x="-5%" y="-5%" width="110%" height="110%">
-            <feTurbulence type="turbulence" baseFrequency="0.012 0.05" numOctaves={3} seed={7} result="noise" />
+          <filter id={`mf${fid}`} colorInterpolationFilters="sRGB" x="-20%" y="-10%" width="140%" height="120%">
+            {/* Turbulent Displace：只在形状内部把渐变搅成熔融的流动，形状本身的边不动（再裁回原形） */}
+            <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves={2} seed={3} result="noise" />
             <feDisplacementMap in="SourceGraphic" in2="noise" scale={unit * 5} xChannelSelector="R" yChannelSelector="G" result="disp" />
-            {/* Fast Box Blur：SVG 没有盒式模糊，用小半径高斯模糊代替 */}
-            <feGaussianBlur in="disp" stdDeviation={unit * 0.45} result="soft" />
-            <feColorMatrix in="noise" type="matrix" values="0.33 0.33 0.33 0 0  0.33 0.33 0.33 0 0  0.33 0.33 0.33 0 0  0 0 0 0 1" result="grain" />
-            <feComposite in="soft" in2="grain" operator="arithmetic" k1="0" k2="1.25" k3="0.4" k4="-0.12" result="lum" />
-            <feComponentTransfer in="lum" result="metal"><feFuncR type="table" tableValues={r} /><feFuncG type="table" tableValues={g} /><feFuncB type="table" tableValues={b} /></feComponentTransfer>
-            <feComposite in="metal" in2="SourceAlpha" operator="in" />
+            {/* Fast Box Blur：SVG 没有盒式模糊，用高斯模糊代替 */}
+            <feGaussianBlur in="disp" stdDeviation={unit * 0.9} result="soft" />
+            <feComposite in="soft" in2="SourceAlpha" operator="in" result="inner" />
+            {/* Colorama：暗 → 橄榄 → 荧光 → 浅荧光 → 骨白热 */}
+            <feComponentTransfer in="inner" result="col"><feFuncR type="table" tableValues={r} /><feFuncG type="table" tableValues={g} /><feFuncB type="table" tableValues={b} /></feComponentTransfer>
+            {/* 底缘白热亮边：形状减去上移一点的自己 = 只剩下沿一道月牙；亮度跟着那里的颜色走（凉的肌肉不发亮） */}
+            <feOffset in="SourceAlpha" dy={unit * -0.5} result="up" />
+            <feComposite in="SourceAlpha" in2="up" operator="out" result="lip" />
+            <feGaussianBlur in="lip" stdDeviation={unit * 0.12} result="lipS" />
+            <feComposite in="col" in2="lipS" operator="in" result="rimBase" />
+            <feComponentTransfer in="rimBase" result="rim"><feFuncR type="linear" slope="2.4" /><feFuncG type="linear" slope="2.4" /><feFuncB type="linear" slope="2.4" /></feComponentTransfer>
+            {/* 整圈极细的内缘高光（参考里形状四周那道亮线） */}
+            <feMorphology in="SourceAlpha" operator="erode" radius={unit * 0.18} result="er" />
+            <feComposite in="SourceAlpha" in2="er" operator="out" result="edge" />
+            <feComposite in="col" in2="edge" operator="in" result="edgeCol" />
+            <feComponentTransfer in="edgeCol" result="edgeHi"><feFuncR type="linear" slope="1.5" /><feFuncG type="linear" slope="1.5" /><feFuncB type="linear" slope="1.5" /><feFuncA type="linear" slope="0.8" /></feComponentTransfer>
+            {/* 外发光：大半径 + 小半径两层 */}
+            <feGaussianBlur in="col" stdDeviation={unit * 3} result="glowL" />
+            <feComponentTransfer in="glowL" result="glowLD"><feFuncA type="linear" slope="0.9" /></feComponentTransfer>
+            <feGaussianBlur in="col" stdDeviation={unit * 0.9} result="glowS" />
+            <feComponentTransfer in="glowS" result="glowSD"><feFuncA type="linear" slope="0.7" /></feComponentTransfer>
+            {/* 颗粒（Noise） */}
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves={1} seed={11} result="grain" />
+            <feColorMatrix in="grain" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0.12 0 0 0 0" result="grainW" />
+            <feComposite in="grainW" in2="inner" operator="in" result="grainIn" />
+            <feMerge><feMergeNode in="glowLD" /><feMergeNode in="glowSD" /><feMergeNode in="col" /><feMergeNode in="grainIn" /><feMergeNode in="edgeHi" /><feMergeNode in="rim" /></feMerge>
           </filter>
         </defs>
         <g filter={`url(#mf${fid})`}>

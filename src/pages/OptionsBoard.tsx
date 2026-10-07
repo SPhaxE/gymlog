@@ -1,10 +1,15 @@
 /** /preview 方案台（2026-10-06 用户：新建一个 /preview 专门用来测试方案）：同一个人、同一份演示数据，把待选的视觉方案并排放，
  *  每格一个真实渲染（不是截图），动效照常跑。选定的方案再定为默认、写进 DESIGN.md，这里留作对照。
  *  原来 /preview 上的基础规范页挪到了 /spec。
- *  当前三组（都是容量页的人体）：描边 O、肌头内部容量 F、热力图扫描线 S；每组第一格是现行做法。 */
+ *  当前三组（都是容量页的人体）：描边 O、肌头内部容量 F、热力图扫描线 S；每组第一格是现行做法。
+ *  最上面是「自由组合」（2026-10-07 用户）：三组各挑一个，右边是真实的容量页（带胶囊、可以点、可以切正反男女）；
+ *  组合写在地址里（?o=hair&f=metal&s=wave），复制链接就能把这个组合发给别人。 */
 import { useMemo, useRef, type ReactNode } from 'react';
-import { BodyFigure, ContourFx, FillFx, ScanFx, type ContourFxKind, type FillFxKind, type ScanFxKind } from '../components';
+import { useSearchParams } from 'react-router';
+import { BodyFigure, Chip, ContourFx, FillFx, ScanFx, type ContourFxKind, type FillFxKind, type ScanFxKind } from '../components';
 import { bodyData } from '../data/demo';
+import { BodyPage } from './BodyPage';
+import { Stage } from '../playground/Stage';
 import s from './OptionsBoard.module.css';
 
 const noop = () => {};
@@ -17,7 +22,7 @@ const CONTOUR: [ContourFxKind | null, string, string][] = [
 ];
 const FILL: [FillFxKind | null, string, string][] = [
   [null, 'F0 现行', '热成像：每块肌肉径向渐变 + 扩散 + 荧光渐变映射'],
-  ['metal', 'F1 金属渐变', 'Gradient Ramp → Turbulent Displace → Fast Box Blur → Colorama：枪灰 / 钢 / 骨白高光，热的偏荧光'],
+  ['metal', 'F1 金属渐变', '参考 AE 演示：Gradient Ramp → Colorama（熔融色带）→ Turbulent Displace + 模糊 → 亮边 + 外发光 + 颗粒：越热越亮，像烧红的金属'],
   ['topo', 'F2 等高线', '热度量化成几档，只画档与档之间的细线，档内很淡'],
   ['halftone', 'F3 半调点阵', '网格点，热度越高点越大'],
   ['liquid', 'F4 液位', '近 7 天组数 ÷ 最大可恢复量 = 液面高度，液面一道亮线'],
@@ -45,6 +50,38 @@ function Cell({ id, title, note, children }: { id: string; title: string; note: 
   );
 }
 
+/** 自由组合：三组各挑一个，套在真实的容量页上 */
+function Composer({ now }: { now: number }) {
+  const [q, setQ] = useSearchParams();
+  const pickOf = <K extends string>(key: string, list: readonly (readonly [K | null, string, string])[]) => {
+    const v = q.get(key); return list.find(([k]) => (k ?? 'now') === (v ?? 'now')) ?? list[0];
+  };
+  const set = (key: string, v: string | null) => { const n = new URLSearchParams(q); if (v == null || v === 'now') n.delete(key); else n.set(key, v); setQ(n, { replace: true }); };
+  const scanList: (readonly [ScanFxKind | null, string, string])[] = [[null, 'S0 现行', '一条扫描光带周期从脚扫到头'], ...SCAN];
+  const o = pickOf('o', CONTOUR), f = pickOf('f', FILL), sc = pickOf('s', scanList);
+  const row = <K extends string>(key: string, label: string, list: readonly (readonly [K | null, string, string])[], cur: readonly [K | null, string, string]) => (
+    <div className={s.ctlRow} role="group" aria-label={label}>
+      <span className="milo-text-label">{label}</span>
+      <div className={s.chips}>{list.map(([k, t]) => <Chip key={t} selected={cur[1] === t} onClick={() => set(key, k)}>{t}</Chip>)}</div>
+      <span className={`milo-text-caption ${s.ctlNote}`}>{cur[2]}</span>
+    </div>
+  );
+  return (
+    <section className={s.composer} aria-label="自由组合">
+      <div className={s.ctl}>
+        <h2 className="milo-text-heading">自由组合</h2>
+        <p className="milo-text-caption">三组各挑一个，右边是真实的容量页（胶囊可按、正反男女可切）。组合写在地址栏里，复制链接就能分享这个组合。</p>
+        {row('o', '描边', CONTOUR, o)}
+        {row('f', '肌头内部容量', FILL, f)}
+        {row('s', '热力图扫描线', scanList, sc)}
+      </div>
+      <ContourFx.Provider value={o[0]}><FillFx.Provider value={f[0]}><ScanFx.Provider value={sc[0]}>
+        <div className={s.phone}><Stage tall label="容量页 · 组合预览"><BodyPage key={`${o[1]}${f[1]}${sc[1]}`} scenario="plain-prescription" now={now} initialFocus={null} /></Stage></div>
+      </ScanFx.Provider></FillFx.Provider></ContourFx.Provider>
+    </section>
+  );
+}
+
 export function OptionsBoard({ now }: { now: number }) {
   return (
     <div className={s.page}>
@@ -52,6 +89,8 @@ export function OptionsBoard({ now }: { now: number }) {
         <h1 className="milo-text-title-l">方案台</h1>
         <p className="milo-text-caption">同一个人、同一份演示数据，待选方案并排实时渲染。选定后定为默认；基础规范在 /spec，组件在 /playground。</p>
       </header>
+      <Composer now={now} />
+      <h2 className={`milo-text-heading ${s.sub}`}>逐组对照</h2>
       <section className={s.group} aria-label="描边">
         <h2 className="milo-text-heading">描边 · O</h2>
         <div className={s.grid}>{CONTOUR.map(([k, t, n]) => <Cell key={t} id={`contour-${k ?? 'now'}`} title={t} note={n}><ContourFx.Provider value={k}><Figure now={now} /></ContourFx.Provider></Cell>)}</div>
