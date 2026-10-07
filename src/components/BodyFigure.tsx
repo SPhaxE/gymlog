@@ -30,7 +30,7 @@ export type Anchors = Record<string, [number, number]>;
  *  pump   泵感：练过的肌肉像练完充血一样「咚-咚」双拍胀亮，越热越亮，节拍是慢牛的静息心率；
  *  steam  蒸腾：练过的肌肉往上冒热气（细小光点上升、散开、消失），越热冒得越多越快；
  *  fiber  牛劲：沿肌肉的轮廓线跑一段段流光（像力量顺着肌纤维传过去），越热越亮越快；
- *  beam   丁达尔：呼应记录页的钢板——一束斜光慢慢扫过人体，光里有浮尘，照到的肌肉提亮；
+ *  beam   奥赛台顶光：呼应记录页钢板的丁达尔光束——斜光慢慢摆过人体、光里有浮尘；跟着光摆的点光源在肌肉上打高光和阴影，强化形体；
  *  molten 熔流（2026-10-07 用户：金属渐变留在 F，流动效果放 S）：只有「流」这一层——一道道亮带一直往上流，
  *         穿过固定的 Turbulent Displace 扭曲场被搅弯，裁在练过的肌肉里、screen 叠在 F 层上；越热越亮、流得越快。配 F1 就是流动的熔融金属。 */
 export type ScanFxKind = 'raster' | 'slice' | 'wave' | 'iso' | 'pump' | 'steam' | 'fiber' | 'beam' | 'molten';
@@ -354,25 +354,64 @@ function ThemeFx({ kind, box, height, width, v, fid, heat }: { kind: 'pump' | 's
     );
   }
 
-  // beam：斜光从左上打下来，整束左右慢慢摆；光里浮尘漂；照到的人体（裁在剪影里）提亮一层
+  // beam：奥赛台顶光（2026-10-07 用户：光束要能在肌肉上打出高光和阴影，像站上奥赛台，强化形体）。
+  // 斜光从左上打下来、整束左右慢慢摆，光里浮尘漂；同时把每块肌肉当成一个鼓起的枕头（白色肌肉 + 黑色缝 → 模糊 = 高度图），
+  // 用一盏跟着光束摆的点光源做 SVG 光照：镜面高光走 screen 层（只提亮），漫反射的暗面走 multiply 层（只压暗），都裁在剪影里。
   const r = rng(7), dust = Array.from({ length: 34 }, (_, i) => {
     const dur = slow * (14 + r() * 10);
     return <circle key={i} className={s.beamDust} cx={x + bw * (0.1 + r() * 0.8)} cy={y + bh * (0.05 + r() * 0.9)} r={unit * (0.15 + r() * 0.3)}
       style={{ '--dx': `${((r() - 0.5) * unit * 5).toFixed(1)}px`, '--dy': `${((r() - 0.3) * unit * 5).toFixed(1)}px`, animationDuration: `${Math.round(dur)}ms`, animationDelay: `${-Math.round(r() * dur)}ms` } as React.CSSProperties} />;
   });
   const cone = `M${x + bw * 0.2} ${y - bh * 0.05} L${x + bw * 0.36} ${y - bh * 0.05} L${x + bw * 0.88} ${y + bh * 1.05} L${x + bw * 0.42} ${y + bh * 1.05} Z`;
+  const still = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // 光源：人体左上方高处，和光束同周期左右摆（光束 CSS 摆 30 个 slow 来回，这里一来一回 60 个 slow）
+  const lx = x + bw * 0.4, ly = y - bh * 0.12, lz = bh * 0.32, swing = bw * 0.3;
+  const light = (
+    <fePointLight x={lx} y={ly} z={lz}>
+      {!still && <animate attributeName="x" values={`${lx + swing};${lx - swing};${lx + swing}`} dur={`${slow * 60}ms`} repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1" />}
+    </fePointLight>
+  );
+  // 高度图：黑底 + 白色肌肉，肌肉之间描一道黑缝，模糊后每块肌肉都是中间高、边上低
+  const relief = (
+    <>
+      <rect x={x} y={y} width={bw} height={bh} className={s.reliefBase} />
+      {Object.keys(v).filter((k) => k !== 'body').flatMap((k) => (v[k].paths ?? []).map((p, i) => <path key={k + i} d={p.d} className={s.reliefMuscle} strokeWidth={unit * 0.4} />))}
+    </>
+  );
+  const heightMap = <><feColorMatrix in="SourceGraphic" type="luminanceToAlpha" result="h0" /><feGaussianBlur in="h0" stdDeviation={unit * 0.9} result="h" /></>;
   return (
-    <svg {...svgProps}>
-      <defs>
-        <linearGradient id={`bg${fid}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" className={s.beamStop0} /><stop offset="1" className={s.beamStop1} /></linearGradient>
-        <filter id={`bf${fid}`} x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation={unit * 2.4} /></filter>
-        <clipPath id={`bc${fid}`}>{silhouette}</clipPath>
-        <mask id={`bm${fid}`} maskUnits="userSpaceOnUse" x={x - bw} y={y - bh * 0.1} width={bw * 3} height={bh * 1.2}><g className={s.beamSway}><path d={cone} fill="white" filter={`url(#bf${fid})`} /></g></mask>
-      </defs>
-      <g className={s.beamSway}><path d={cone} fill={`url(#bg${fid})`} filter={`url(#bf${fid})`} /></g>
-      <g clipPath={`url(#bc${fid})`} mask={`url(#bm${fid})`}><rect x={x} y={y} width={bw} height={bh} className={s.beamLit} /></g>
-      <g mask={`url(#bm${fid})`}>{dust}</g>
-    </svg>
+    <>
+      <svg {...svgProps} className={`${s.fx} ${s.fxMul} ${s.lightHalf}`}>
+        <defs>
+          <clipPath id={`bsc${fid}`}>{silhouette}</clipPath>
+          <filter id={`bd${fid}`} x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
+            {heightMap}
+            <feDiffuseLighting in="h" surfaceScale={unit * 3} diffuseConstant={1.25} className={s.stageLight}>{light}</feDiffuseLighting>
+            {/* 暗面压得更深一点（gamma），亮面接近白 = multiply 后不变 */}
+            <feComponentTransfer><feFuncR type="gamma" exponent="1.35" amplitude="1.08" /><feFuncG type="gamma" exponent="1.35" amplitude="1.08" /><feFuncB type="gamma" exponent="1.35" amplitude="1.08" /></feComponentTransfer>
+          </filter>
+        </defs>
+        <g clipPath={`url(#bsc${fid})`} className={s.stageShade}><g filter={`url(#bd${fid})`}>{relief}</g></g>
+      </svg>
+      <svg {...svgProps}>
+        <defs>
+          <linearGradient id={`bg${fid}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" className={s.beamStop0} /><stop offset="1" className={s.beamStop1} /></linearGradient>
+          <filter id={`bf${fid}`} x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation={unit * 2.4} /></filter>
+          <clipPath id={`bc${fid}`}>{silhouette}</clipPath>
+          <mask id={`bm${fid}`} maskUnits="userSpaceOnUse" x={x - bw} y={y - bh * 0.1} width={bw * 3} height={bh * 1.2}><g className={s.beamSway}><path d={cone} fill="white" filter={`url(#bf${fid})`} /></g></mask>
+          <filter id={`bs${fid}`} x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
+            {heightMap}
+            <feSpecularLighting in="h" surfaceScale={unit * 3} specularConstant={1.1} specularExponent={22} className={s.stageLight} result="spec">{light}</feSpecularLighting>
+            {/* 镜面光的 alpha 就是亮度：只留高光本身，暗处全透明 */}
+            <feComposite in="spec" in2="spec" operator="arithmetic" k1={0} k2={1} k3={0} k4={0} />
+          </filter>
+        </defs>
+        <g className={s.beamSway}><path d={cone} fill={`url(#bg${fid})`} filter={`url(#bf${fid})`} /></g>
+        <g clipPath={`url(#bc${fid})`} mask={`url(#bm${fid})`}><rect x={x} y={y} width={bw} height={bh} className={s.beamLit} /></g>
+        <g clipPath={`url(#bc${fid})`} className={s.stageSpec}><g filter={`url(#bs${fid})`}>{relief}</g></g>
+        <g mask={`url(#bm${fid})`}>{dust}</g>
+      </svg>
+    </>
   );
 }
 

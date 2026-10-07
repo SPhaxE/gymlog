@@ -114,7 +114,13 @@
 @keyframes beamSway { from { transform: rotate(-12deg); } to { transform: rotate(10deg); } }
 .beamStop0 { stop-color: var(--milo-prim-gray-900); stop-opacity: 0.1; }
 .beamStop1 { stop-color: var(--milo-prim-lime-300); stop-opacity: 0.03; }
-.beamLit { fill: var(--milo-prim-lime-300); opacity: 0.42; }
+.beamLit { fill: var(--milo-prim-lime-300); opacity: 0.2; }
+/* 奥赛台顶光：高度图（黑底白肌肉 + 黑缝）、光的颜色（暖白）、高光层强度 */
+.reliefBase { fill: var(--milo-prim-gray-50); }
+.reliefMuscle { fill: var(--milo-prim-gray-900); stroke: var(--milo-prim-gray-50); }
+.stageLight { lighting-color: var(--milo-prim-gray-900); }
+.stageSpec { opacity: 0.7; }
+.stageShade { opacity: 0.72; }
 .beamDust { fill: var(--milo-prim-gray-900); opacity: 0; transform-box: fill-box; transform-origin: center;
   animation: beamDust calc(var(--milo-motion-slow) * 18) linear infinite both; }
 @keyframes beamDust { 0% { opacity: 0; transform: translate(0, 0); } 20%, 80% { opacity: 0.7; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)); } }
