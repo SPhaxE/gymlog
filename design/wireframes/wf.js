@@ -1038,6 +1038,52 @@
     },
   };
   LAYERS.tips = ['战略：在数据说明「需要」的那一刻给一张知识卡，而不是做广告（T16）；商城的主要入口', '范围：容量页（恢复慢 → 蛋白质与睡眠、深蹲量高 → 护膝）· 增量页（e1RM ÷ 体重 ≥ 1.5 → 腰带、近 4 周量上升 → 肌酸）；一屏最多一条，按优先级取第一张；✕ 本次收起、知识卡页底「不再提示这一类」永久静音这一类；训练中的首页不出', '结构：提示 → P16 知识卡（返回回原页原滚动位置）；静音记在本机', '框架：提示是辅助信息，不抢页面主角（人体 / 增量列表）；主体 + ✕ 两个命中区，各 ≥ 48', '表现：深灰底 + 「i」标；不用荧光（荧光留给页面唯一焦点）；进场 M03 高度弹簧，收起反向'];
+  // ---------- 6g 会员（P20 付费墙 / P21 会员中心，ia §1.17：演示不拦截，支付走假成功，标「演示模式」） ----------
+  const perkRows = [['处方 · 记录 · 容量 · 增量', '✓', '✓'], ['周期计划自动编排', '—', '✓'], ['高级分析', '—', '✓'], ['牛劲', '×1', '×1.5'], ['连胜冻结卡', '兑换', '每月 2 张'], ['商城会员价 · 免邮券', '—', '✓'], ['数据导出', '—', '✓']];
+  const perkTable = (n = 7) => `<div class="box" style="padding:4px 12px">${perkRows.slice(0, n).map(([a, f, p], i) => `<div class="row" style="height:34px;${i ? 'border-top:1px solid #EEE' : ''}"><span class="t-s" style="flex:1">${a}</span><span class="t-s" style="width:44px;text-align:center">${f}</span><span class="t-b" style="width:64px;text-align:center;font-weight:700">${p}</span></div>`).join('')}</div>`;
+  const plan = (n, p, sub, on, tag) => `<div class="box" data-hit style="flex:1;padding:10px;${on ? 'border:2px solid #1d1d1b' : ''};position:relative">${tag ? `<span class="badge" style="position:absolute;top:-9px;left:8px;background:#fff">${tag}</span>` : ''}<div class="t-s">${n}</div><div class="t-h">${p}</div><div class="t-s">${sub}</div></div>`;
+  const demoBar = '<div class="fill" style="padding:6px 12px"><span class="t-s">演示模式 · 不收集支付信息，不扣费</span></div>';
+  const PRO = {
+    W1: {
+      title: '对比表在上，方案在拇指区',
+      note: '<em>最常见、最诚实</em>：顶部一句「练得更聪明一点」+ 免费 vs Pro 对比表（7 行）；底部拇指区三张方案卡（月 ¥18 / 年 ¥128 默认选中 · 省 40% / 试用 7 天）+ 主按钮「开始 7 天试用」。代价：对比表是一堵字墙，权益「为什么对我有用」看不出来。',
+      html: () => `${status}${back('Milo Pro')}<div class="pad" style="padding-top:6px;display:grid;gap:10px">${demoBar}<div data-a="1"><div class="t-title" style="font-size:20px">练得更聪明一点</div><div class="t-s" style="margin:4px 0 8px">免费版保留处方、记录、容量、增量的完整闭环</div>${perkTable()}</div></div>
+        <div class="abs" style="left:16px;right:16px;bottom:30px;display:grid;gap:10px" data-a="2"><div class="row" style="gap:8px">${plan('月度', '¥18', '/ 月')}${plan('年度', '¥128', '≈ ¥10.7 / 月', 1, '省 40%')}${plan('试用', '7 天', '不自动扣费')}</div><div class="btn">开始 7 天试用</div></div>`,
+    },
+    W2: {
+      title: '用你的数据讲权益（个性化）',
+      note: '<em>不是广告，是账单</em>：每条权益配一句「按你的数据」——「过去 30 天你会多拿 525 牛劲（×1.5）」「上次断档时冻结卡能保住连胜 21 周」「你买腰带会员价省 ¥33」；方案压成一行分段（月 / 年 / 试用），主按钮在拇指区。代价：要从引擎多算几个数；没有历史的新用户只能退回 W1 的通用说法。',
+      html: () => `${status}${back('Milo Pro')}<div class="pad" style="padding-top:6px;display:grid;gap:8px">${demoBar}<div class="t-title" style="font-size:20px" data-a="1">这 30 天，Pro 会多给你</div>
+        ${[['+525 牛劲', '你这 30 天拿了 1,050，Pro ×1.5'], ['2 张冻结卡 / 月', '9 月那次断档能保住连胜 21 周'], ['会员价省 ¥33', '杠铃腰带 ¥329 → ¥296'], ['周期自动编排', '减量周到点自动插进处方']].map(([a, b]) => `<div class="box row" style="height:56px;padding:0 12px;gap:10px"><span class="t-h" style="width:112px">${a}</span><span class="t-s" style="flex:1">${b}</span></div>`).join('')}
+        <div class="t-s" data-hit style="text-align:center;padding:12px 0">看完整对比 ›</div></div>
+        <div class="abs" style="left:16px;right:16px;bottom:30px;display:grid;gap:10px" data-a="2"><div class="seg" data-hit style="height:40px;width:100%"><span style="flex:1;justify-content:center">月 ¥18</span><span class="on" style="flex:1;justify-content:center">年 ¥128</span><span style="flex:1;justify-content:center">试用 7 天</span></div><div class="btn">开通年度（演示，不扣费）</div></div>`,
+    },
+    W3: {
+      title: '开通成功（品牌时刻）',
+      note: '<em>收得住</em>：全屏 Milo 庆祝（IP 品牌位置）+ 「欢迎加入 Milo Pro」+ 刚到手的三样东西（本月 2 张冻结卡已放进钱包 · 牛劲 ×1.5 从下一次训练起 · 会员价已生效）；主按钮「开始用」回到来源页。',
+      html: () => `${status}<div class="pad" style="padding-top:50px;text-align:center">${demoBar}<div class="slot" style="width:150px;height:150px;margin:24px auto 0">Milo · 庆祝</div><div class="t-title" style="margin-top:14px" data-a="1">欢迎加入 Milo Pro</div><div class="t-s" style="margin-top:4px">年度会员 · 2027 年 10 月 7 日到期</div></div>
+        <div class="pad" style="margin-top:14px">${[['冻结卡 ×2', '已放进钱包'], ['牛劲 ×1.5', '从下一次训练起'], ['会员价', '商城已生效']].map(([a, b]) => `<div class="row" style="height:40px;border-bottom:1px solid #EEE"><span class="t-b" style="flex:1;font-weight:700">${a}</span><span class="t-s">${b}</span></div>`).join('')}</div>
+        <div class="abs" style="left:16px;right:16px;bottom:30px" data-a="2"><div class="btn">开始用</div></div>`,
+    },
+  };
+  const PROHUB = {
+    W1: {
+      title: '会员中心：到期 + 这个月用了什么',
+      note: '<em>让会员看见值不值</em>：顶部会员卡（年度 · 到期日 · 试用中写剩几天）；「这个月 Pro 给了你」三格：多拿的牛劲 · 冻结卡已领 / 已用 · 会员价省下；下面权益列表（每行可点进对应页面）；最底「管理订阅」（演示：切回免费 → 二次确认 → 回到未开通，已得的牛劲与卡券不收回）。没有主操作。',
+      html: () => `${status}${back('会员中心')}<div class="pad" style="padding-top:6px;display:grid;gap:10px">${demoBar}<div class="fill" data-a="1" style="padding:14px"><div class="row"><span class="t-h" style="flex:1">Milo Pro · 年度</span><span class="badge">已开通</span></div><div class="t-s" style="margin-top:4px">2027 年 10 月 7 日到期</div></div>
+        <div class="t-s" style="font-weight:700">这个月 Pro 给了你</div><div class="row" style="gap:8px">${[['+525', '牛劲'], ['2 / 0', '冻结卡 领 / 用'], ['¥33', '会员价省']].map(([a, b]) => `<div class="box" style="flex:1;padding:10px;text-align:center"><div class="t-h">${a}</div><div class="t-s">${b}</div></div>`).join('')}</div>
+        ${['周期计划自动编排 ›', '高级分析 ›', '钱包（冻结卡） ›', '商城（会员价） ›'].map((x) => `<div class="row" data-hit style="height:48px;border-bottom:1px solid #EEE"><span class="t-b">${x}</span></div>`).join('')}
+        <div class="t-s" data-hit style="text-align:center;padding:14px 0;text-decoration:underline">管理订阅（演示：切回免费）</div></div>`,
+    },
+    W2: {
+      title: '「我的」里的会员行（入口三态）',
+      note: '<em>入口不放死路</em>：未开通 = 「Milo Pro · 7 天试用」→ P20；试用中 = 「试用中 · 还剩 5 天」→ P21；已开通 = 「Pro · 2027-10-07 到期」→ P21。另外三处入口：高级分析的 Pro 标记、连胜快断时的冻结卡提示、商品详情会员价旁的「Pro」小标——都进 P20（已开通进 P21）。',
+      html: () => `${status}${back('我的（会员行示意）')}<div class="pad" style="padding-top:6px;display:grid;gap:12px" data-a="1">${[['未开通', 'Milo Pro', '7 天免费试用 ›'], ['试用中', 'Milo Pro · 试用中', '还剩 5 天 ›'], ['已开通', 'Milo Pro', '2027-10-07 到期 ›']].map(([a, b, c]) => `<div><div class="t-s" style="margin-bottom:4px">${a}</div><div class="box row" data-hit style="height:56px;padding:0 12px"><span class="t-b" style="flex:1;font-weight:700">${b}</span><span class="t-s">${c}</span></div></div>`).join('')}
+        <div class="t-s" style="margin-top:6px">其余入口：高级分析 Pro 标 · 冻结卡提示 · 会员价旁 Pro 小标</div></div>`,
+    },
+  };
+  LAYERS.pro = ['战略：完整展示会员商业链路（作品集），但不误导、不拦截——演示模式下全部功能照常可用（T18）', '范围：免费 vs Pro 对比 · 月 ¥18 / 年 ¥128（默认）/ 试用 7 天 · 假成功开通 · 开通成功（Milo 庆祝）· 已开通转 P21；不收集任何支付信息', '结构：P20 /pro；入口 我的「会员」行、高级分析 Pro 标、冻结卡提示、会员价；开通成功 → 回来源页', '框架：第一优先 = 对我有什么用（W1 对比表 / W2 用我的数据）；主操作 = 拇指区「开始 7 天试用 / 开通」；方案选择紧贴主按钮上方', '表现：荧光只给主按钮；年度「省 40%」是骨白标；开通成功是品牌位置，放 Milo'];
+  LAYERS.prohub = ['战略：开通以后看得见「值不值」，也能退得出去（切回免费不收回已得的东西）', '范围：会员卡（方案 · 到期 / 试用剩几天）· 本月 Pro 给了你什么（多拿的牛劲 · 冻结卡领 / 用 · 会员价省下）· 权益入口 · 管理订阅（演示切回免费，二次确认）', '结构：P21 /me/pro；入口 开通成功、我的「会员」行（已开通 / 试用中）', '框架：第一优先 = 到期日 + 本月得到的；没有主操作（不制造「再买点」的压力）；危险操作（切回免费）沉底、先确认', '表现：数字窄体；不放荧光块'];
   Object.assign(LAYERS, {
     wallet: ['战略：知道自己攒了多少牛劲、能换什么，并且把它用掉（T15 / T17）；钱包是「增长闭环后半段」的落点', '范围：余额（≈ 元）、明细（获得 / 支出，会员 ×1.5）、卡券（可用 / 已用 / 过期）、兑换卡券（冻结卡 800 · 免邮 300 · 商家券 1,500 · Pro 体验 2,000）、去商城抵扣', '结构：P14 /me/wallet；入口 我的「钱包 · 商城」、奖励弹窗「去钱包」；兑换走底部面板（可撤销 → 面板），兑换成功轻提示', '框架：第一优先 = 余额；主操作因方案而异（W1 兑换卡券 / W2 两个出口 / W3 兑换列表）；返回左上', '表现：余额用窄体大数；支出灰；牛劲图标用 PropGlyph；不加荧光（荧光留给奖励时刻）'],
     shop: ['战略：在训练数据说明「需要」的时候，弄懂补给 / 护具该不该用，并能直接买到（T16）；不做成一般电商', '范围：为你推荐（知识卡驱动，没有触发时是通用入门卡）· 品类 全部 / 护具 / 补给 · 5 款商品 × 状态（热销 / 折扣 / 新品 / 缺货 / 已下架）× 会员价 · 牛劲可抵 / 不足；商家与品牌虚构', '结构：P15 /shop；入口 我的「钱包 · 商城」、钱包；→ 知识卡 P16、商品 P17', '框架：第一优先 = 为你推荐的理由；主操作 = 点商品；钱包余额在右上（可点进钱包）', '表现：状态标用形状 + 文字（缺货虚线）；价格窄体；划线价灰；会员价骨白'],
@@ -1069,6 +1115,8 @@
     item: { title: '6f · 商品详情（P17）', sub: '杠铃腰带（折扣）· 7 毫米护膝（缺货）', v: ITEM, layers: LAYERS.item },
     order: { title: '6f · 下单确认（P18）与订单完成（P19）', sub: '腰带 M 码 · 会员价 · 满 200 减 30 · 牛劲抵 ¥59', v: ORDER, layers: LAYERS.order },
     tips: { title: '6f · 知识卡提示放在哪（容量 P06 / 增量 P09）', sub: '演示用户：胸部恢复慢 → 蛋白质与睡眠；深蹲 142 kg ÷ 93 kg = 1.52 → 腰带', v: TIPS, layers: LAYERS.tips },
+    pro: { title: '6g · 会员 · 付费墙（P20）', sub: '演示用户：进阶、连胜 21 周、这 30 天拿了 1,050 牛劲 · 演示模式全部权益不拦截', v: PRO, layers: LAYERS.pro },
+    prohub: { title: '6g · 会员中心（P21）与「我的」会员行', sub: '已开通 / 试用中 / 未开通三态', v: PROHUB, layers: LAYERS.prohub },
     pause: { title: '6e · 暂停训练确认', sub: '训练中在首页按系统返回 · 已记 6 / 13 组', v: PAUSE, layers: LAYERS.pause },
   };
 
