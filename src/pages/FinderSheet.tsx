@@ -16,6 +16,13 @@ const HEAD: Record<string, string> = Object.fromEntries(muscles.heads.map((h) =>
 const groupOf = (h: string) => FAMILY_OF[h] ?? null;
 const famName = (g: string) => familyById(g)?.name ?? g;
 
+/** 找动作入口图标（IP 画法的背面展肌人，荧光只点背阔肌 = 「选中的那块肌肉」；男 / 女跟档案的体型示意走）。
+ *  原图 docs/sources/brand-refs/icon-finder-*.jpg（Nano Banana，品红底），抠图后导出 public/icons/finder-*@1x/2x/3x.webp */
+export function FinderGlyph({ gender = 'male', className }: { gender?: 'male' | 'female'; className?: string }) {
+  const b = `${import.meta.env.BASE_URL}icons/finder-${gender}`;
+  return <img className={className} src={`${b}@2x.webp`} srcSet={`${b}@1x.webp 1x, ${b}@2x.webp 2x, ${b}@3x.webp 3x`} alt="" aria-hidden="true" />;
+}
+
 /** 进动作要领页的地址参数：保留场景 / 时间，去掉面板自己的参数，带上从哪来 */
 export function guideQuery(search: string, from: 'finder' | 'training' | 'today' | 'trend') {
   const n = new URLSearchParams(search);

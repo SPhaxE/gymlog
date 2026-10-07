@@ -8,7 +8,7 @@ import { useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { resumeSession, startSession } from '../data/session';
 import { suggestFamily, useExtras, withExtras } from '../data/finder';
-import { FinderSheet, guideQuery, useFinderParam } from './FinderSheet';
+import { FinderGlyph, FinderSheet, guideQuery, useFinderParam } from './FinderSheet';
 import { useStore, type ActiveSession } from '../data/store';
 import { useSource } from '../data/useSource';
 import { useTrainingNav } from '../data/useTrainingNav';
@@ -91,7 +91,7 @@ export function HomePage({ scenario, now, onTab }: { scenario?: string; now: num
             </div>
           </>
         )}
-        {!done && (rx.kind === 'plan' || rx.kind === 'rest') && <button type="button" className={`milo-press milo-focus ${s.addEx}`} onClick={openFinder}><Icon name="plus" small />加一个动作</button>}
+        {!done && (rx.kind === 'plan' || rx.kind === 'rest') && <button type="button" className={`milo-press milo-focus ${s.addEx}`} onClick={openFinder}><FinderGlyph gender={src.profile?.gender ?? 'male'} className={s.addGlyph} />加一个动作</button>}
       </div>
       </div>
 

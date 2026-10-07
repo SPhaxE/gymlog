@@ -10,11 +10,12 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { T } from '../styles/tokens.gen';
 import { flushSync } from 'react-dom';
 import { useNavigate } from 'react-router';
-import { BackToTop, Button, Card, Cascade, Dialog, ExerciseRow, Icon, Odometer, PageHeader, RestDock, SectionLabel, SetEditor, SetLine, Sheet, SwapRow, WarmupStrip, sharedName, sharedTransition, useBackHandler, useCountdown, useToast } from '../components';
+import { BackToTop, Button, Card, Cascade, Dialog, ExerciseRow, Odometer, PageHeader, RestDock, SectionLabel, SetEditor, SetLine, Sheet, SwapRow, WarmupStrip, sharedName, sharedTransition, useBackHandler, useCountdown, useToast } from '../components';
 import { dateLabel, env, REGION_NAME } from '../data/demo';
 import { addSet, adjustRest, completeSet, discardSession, finishSession, focusExercise, hasWork, isWork, pauseSession, setError, setField, skipRest, toggleSkip, toggleWarmup, workDone, MAX_SETS } from '../data/session';
 import { EQUIP_NAME, swapCandidates, swapTo } from '../data/finder';
 import muscles from '../../mock/muscles.json';
+import { FinderGlyph } from './FinderSheet';
 import type { ActiveSession } from '../data/store';
 import { useStore } from '../data/store';
 import { regionOfEx } from '../engine';
@@ -175,7 +176,7 @@ export function TrainingView({ a, now, onFind, onGuide }: { a: ActiveSession; no
                 dots={x.skipped ? undefined : [x.rows.filter((r) => r.done && isWork(r)).length, x.rows.filter(isWork).length]} onClick={() => switchTo(i)} /></div>
             )).filter(Boolean)}
           </Cascade>
-          {onFind && <button type="button" className={`milo-press milo-focus ${s.addEx}`} onClick={onFind}><Icon name="plus" small />加一个动作</button>}
+          {onFind && <button type="button" className={`milo-press milo-focus ${s.addEx}`} onClick={onFind}><FinderGlyph gender={st.profile?.gender ?? 'male'} className={s.addGlyph} />加一个动作</button>}
         </div>
       </div>
 

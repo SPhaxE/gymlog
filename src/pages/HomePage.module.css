@@ -91,3 +91,4 @@
 .pausedBar { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--milo-space-2xs); margin: var(--milo-space-s) 0; }
 .pausedBar i { height: var(--milo-space-xs); border-radius: var(--milo-radius-pill); background: var(--milo-color-data-track); }
 .pausedBar i.on { background: var(--milo-color-data-fill); }
+.addGlyph { width: var(--milo-space-3xl); height: var(--milo-space-3xl); }
