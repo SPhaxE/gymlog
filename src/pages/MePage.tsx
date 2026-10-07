@@ -18,6 +18,7 @@ import { mergeProfile, profileError, profileFacts, updateProfile } from '../data
 import { setSettings } from '../data/settings';
 import { DEFAULT_PROFILE, demoState, store, useStore } from '../data/store';
 import { useSource } from '../data/useSource';
+import { restockMessages, useWallet } from '../data/wallet';
 import { weeklyTarget } from '../engine';
 import type { Profile } from '../engine/types';
 import { GoalHint } from './GoalHint';
@@ -36,9 +37,10 @@ export function MePage({ scenario, now, onTab }: { scenario?: string; now: numbe
   // 演示场景（?scenario=）不读也不写本机存储：改档案只改本页内存，刷新复位——点了不会没反应
   const [local, setLocal] = useState<Profile | null>(null);
   const profile = local ?? src.profile ?? DEFAULT_PROFILE;
-  const g = useMemo(() => growthOf({ ...src, profile }, now), [src, profile, now]);
+  const [wallet] = useWallet(scenario, now);
+  const g = useMemo(() => growthOf({ ...src, profile, wallet }, now), [src, profile, wallet, now]);
   // 演示场景不标已读（消息页同样不显示未读点），这里也不显示未读数，免得「N 条新」点进去清不掉
-  const unread = useMemo(() => (scenario ? 0 : unreadOf(messagesOf(g), st.messagesSeenAt)), [scenario, g, st.messagesSeenAt]);
+  const unread = useMemo(() => (scenario ? 0 : unreadOf([...messagesOf(g), ...restockMessages(wallet)], st.messagesSeenAt)), [scenario, g, wallet, st.messagesSeenAt]);
   const facts = profileFacts(profile);
   const [edit, setEdit] = useState<ProfileField | null>(null);
   const [restSheet, setRestSheet] = useState(false);

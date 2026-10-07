@@ -8,12 +8,17 @@
 import { useSyncExternalStore } from 'react';
 import { DAY, blockedHeads, planFor, prescribe, simulateUser, startOfDay } from '../engine';
 import { demoEnv } from '../engine/demo';
+import type { WalletAction } from '../engine';
 import type { DeloadState, Profile, Session } from '../engine/types';
+import type { KnowledgeId } from './growth';
+import { demoWallet } from './wallet';
 
 export const STORE_KEY = 'milo:v1';
 export const DEMO_WEEKS = 30;
 /** 演示数据多模拟的周数（相位）：0 = 最后一周正好是减量周；3 = 最后一周是减量后第 3 周，有升有平有降；见 demoState */
 export const DEMO_PHASE = 3;
+/** 演示用户的体重（kg） */
+export const DEMO_WEIGHT = 93;
 
 /** 进行中训练的一组：输入框里的原始文字（保留用户正在输入的状态），完成后才计入 */
 export interface DraftSet { type: 'work' | 'warmup' | 'drop'; weight: string; reps: string; done: boolean }
@@ -38,6 +43,17 @@ export const DEFAULT_SETTINGS: Settings = { ring: true, restOutline: true, restE
 /** 成长记录里存的说明（目前只有删训练后的降级）：牛龄 / 连胜是从历史现算的，降级发生在删的那一刻，事后算不出来，所以记一条（ia §1.14） */
 export interface GrowthNote { atMs: number; kind: 'demote'; text: string }
 
+/** 钱包与商城（6f，data/wallet.ts）：用户主动花牛劲的动作、演示订单、到货提醒、「不再提示这一类」的知识卡 */
+export interface Order {
+  id: string; atMs: number; productId: string; name: string; size: string | null;
+  /** 原价、会员价、运费、券抵、牛劲抵（元）、实付 */
+  price: number; member: number; ship: number; couponOff: number; niujinOff: number; pay: number;
+  couponId: string | null; couponTitle: string | null;
+}
+export interface Restock { productId: string; atMs: number }
+export interface WalletState { actions: WalletAction[]; orders: Order[]; restock: Restock[]; muted: KnowledgeId[] }
+export const EMPTY_WALLET: WalletState = { actions: [], orders: [], restock: [], muted: [] };
+
 export interface AppState {
   v: 1;
   profile: Profile | null;
@@ -57,12 +73,13 @@ export interface AppState {
   extras: { day: number; ids: string[] } | null;
   /** 看过消息的时刻（毫秒）：比它新的消息算未读 */
   messagesSeenAt: number;
+  wallet: WalletState;
   /** 最后一次写入失败的原因（只在内存里） */
   saveError?: string;
 }
 
 export const DEFAULT_PROFILE: Profile = { experience: 'intermediate', equipment: ['barbell', 'dumbbell', 'machine', 'cable', 'smith', 'bodyweight'], minutes: 60, gender: 'male' };
-const EMPTY: AppState = { v: 1, profile: null, draft: null, history: [], deload: { status: 'none', atMs: 0 }, deloads: [], active: null, rest: null, demo: false, settings: DEFAULT_SETTINGS, notes: [], messagesSeenAt: 0, extras: null };
+const EMPTY: AppState = { v: 1, profile: null, draft: null, history: [], deload: { status: 'none', atMs: 0 }, deloads: [], active: null, rest: null, demo: false, settings: DEFAULT_SETTINGS, notes: [], messagesSeenAt: 0, extras: null, wallet: EMPTY_WALLET };
 
 function read(): AppState {
   try {
@@ -71,7 +88,7 @@ function read(): AppState {
     const s = JSON.parse(raw) as AppState;
     // settings 逐项补默认：旧存档没有这个字段，以后新加的设置项也不用迁移
     // 「看过消息的时刻」：升级前的旧存档没有这个字段，从这一刻起算新消息，否则有历史的人一打开「我的」就是几十条「新」
-    return s && s.v === 1 ? { ...EMPTY, ...s, settings: { ...DEFAULT_SETTINGS, ...s.settings }, messagesSeenAt: s.messagesSeenAt ?? Date.now(), saveError: undefined } : { ...EMPTY };
+    return s && s.v === 1 ? { ...EMPTY, ...s, settings: { ...DEFAULT_SETTINGS, ...s.settings }, wallet: { ...EMPTY_WALLET, ...s.wallet }, messagesSeenAt: s.messagesSeenAt ?? Date.now(), saveError: undefined } : { ...EMPTY };
   } catch {
     return { ...EMPTY };
   }
@@ -120,7 +137,7 @@ const ACCESSORY: [string, number, number, number][][] = [
 ];
 
 /** 演示数据：进阶用户、每周 4 练，练到昨天为止的 30 周（成长引擎同一套模拟，数字全部实算），每次训练再加辅助动作 */
-export function demoState(now: number, profile?: Profile, phase = DEMO_PHASE): Pick<AppState, 'profile' | 'history' | 'deload' | 'deloads' | 'demo' | 'messagesSeenAt'> {
+export function demoState(now: number, profile?: Profile, phase = DEMO_PHASE): Pick<AppState, 'profile' | 'history' | 'deload' | 'deloads' | 'demo' | 'messagesSeenAt' | 'wallet'> {
   // 模拟里每 5 周一个减量周（w % 5 === 4）。多模拟 phase 周、再截掉开头，让展示的最后一周落在减量之后的正常周：
   // 否则演示用户正好停在减量周，增量页「与上一次比」几乎全是 ▼，像是全面退步（2026-10-06）
   const total = DEMO_WEEKS + phase;
@@ -138,8 +155,9 @@ export function demoState(now: number, profile?: Profile, phase = DEMO_PHASE): P
   });
   shapeNextSteps(history);
   backfill(history, profile ?? u.profile, now);
-  return { profile: profile ?? u.profile, history, deload: { status: 'none', atMs: 0 }, deloads: u.deloads.filter((ms) => ms >= from && ms < startOfDay(now)), demo: true,
-    messagesSeenAt: startOfDay(now) - 5 * DAY };
+  // 演示用户填了体重（建档里可选）：腰带知识卡要用「预估 1RM ÷ 体重」
+  return { profile: profile ?? { ...u.profile, weightKg: DEMO_WEIGHT }, history, deload: { status: 'none', atMs: 0 }, deloads: u.deloads.filter((ms) => ms >= from && ms < startOfDay(now)), demo: true,
+    messagesSeenAt: startOfDay(now) - 5 * DAY, wallet: demoWallet(now) };
 }
 
 /** 让演示用户的「下一步」有升有保有降（增量页分三组、首页处方都靠它），不动预估 1RM 的走向：

@@ -329,10 +329,10 @@ export function Paywall({ plan, member, success, onPlan, onBuy }: { plan: 'month
 
 /* ---------------- 消息 ---------------- */
 
-/** 「我的」→ 消息里的一行：合并的奖励 / 冻结卡已自动使用 / 降级说明（删除训练后重算）；奖励的图标只有未读时是荧光，读过的变回中性（一屏很多条时不会满屏荧光） */
+/** 「我的」→ 消息里的一行：合并的奖励 / 冻结卡已自动使用 / 降级说明（删除训练后重算）/ 到货提醒（6f，商家图标）；奖励的图标只有未读时是荧光，读过的变回中性（一屏很多条时不会满屏荧光） */
 /** amount：这一条入账多少牛劲——单独一列右对齐的大数字（2026-10-06 审美调整：别埋在小字里，一眼扫得到） */
-export function MessageRow({ kind, title, detail, date, unread, amount }: { kind: 'reward' | 'freeze' | 'demote'; title: string; detail: string; date: string; unread?: boolean; amount?: number }) {
-  const mark: ReactNode = kind === 'reward' ? <Icon name="star" small /> : kind === 'freeze' ? <PropGlyph kind="freeze" className={s.iceS} /> : <Icon name="down" small />;
+export function MessageRow({ kind, title, detail, date, unread, amount }: { kind: 'reward' | 'freeze' | 'demote' | 'restock'; title: string; detail: string; date: string; unread?: boolean; amount?: number }) {
+  const mark: ReactNode = kind === 'reward' ? <Icon name="star" small /> : kind === 'freeze' ? <PropGlyph kind="freeze" className={s.iceS} /> : kind === 'restock' ? <PropGlyph kind="merchant" className={s.iceS} /> : <Icon name="down" small />;
   return (
     <div className={cx(s.msg, s[`msg_${kind}`], unread && s.msgUnread)}>
       <span className={s.msgMark} aria-hidden="true">{mark}</span>

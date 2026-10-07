@@ -7,7 +7,7 @@
 import { growth, GROWTH_CONFIG, levelInfo, REWARD_PRIORITY, STAGE_LABEL, type GrowthEvent, type GrowthState } from '../engine';
 import type { DeloadState, Profile, Session } from '../engine/types';
 import { env, fmt, type Source } from './demo';
-import type { GrowthNote } from './store';
+import type { GrowthNote, WalletState } from './store';
 
 /** 主项预估 1RM 要涨的 kg 超过这个数，就不写「再涨 X kg」 */
 export const LIFT_MAX = 10;
@@ -16,8 +16,9 @@ export const LIFT_MAX = 10;
 /** 减量状态 → 减量周列表（演示场景只有最近一次；真存储另有 deloads 列表） */
 export const deloadsOf = (deload: DeloadState, stored?: number[]): number[] => stored ?? (deload.status === 'adopted' ? [deload.atMs] : []);
 
-export function growthOf(src: Pick<Source, 'history' | 'profile'> & { deloads?: number[]; deload?: DeloadState }, now: number): GrowthState {
-  return growth(env, { history: src.history, profile: src.profile, now, deloads: src.deloads ?? (src.deload ? deloadsOf(src.deload) : []) });
+/** wallet：用户兑换卡券、下单抵扣花掉的牛劲（6f，data/wallet.ts）；不传 = 没花过 */
+export function growthOf(src: Pick<Source, 'history' | 'profile'> & { deloads?: number[]; deload?: DeloadState; wallet?: Pick<WalletState, 'actions'> }, now: number): GrowthState {
+  return growth(env, { history: src.history, profile: src.profile, now, deloads: src.deloads ?? (src.deload ? deloadsOf(src.deload) : []), wallet: src.wallet?.actions });
 }
 
 /** 「壮牛 · 2 级」 */
@@ -98,7 +99,7 @@ export function noteForDelete(history: Session[], id: string, profile: Profile |
 export interface Message {
   id: string;
   atMs: number;
-  kind: 'reward' | 'freeze';
+  kind: 'reward' | 'freeze' | 'restock';
   title: string;
   detail: string;
   /** 这一条入账的牛劲（冻结卡为 0）：页面单独一列右对齐 */

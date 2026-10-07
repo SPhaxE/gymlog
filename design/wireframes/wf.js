@@ -1008,6 +1008,36 @@
         <div class="abs" style="left:16px;right:16px;bottom:30px" data-a="2"><div class="btn">回商城</div></div>`,
     },
   };
+  // ---------- 6f 追加：知识卡提示放在哪（容量页 P06 / 增量页 P09，ia §1.16：一屏最多一条、可关闭、可「不再提示这一类」、训练流程里不出现） ----------
+  const capStub = (top, n = 18) => `<div class="abs" style="left:216px;right:16px;top:${top}px;display:grid;gap:4px">${Array.from({ length: n }, (_, i) => `<div class="box" style="height:20px;opacity:${i % 3 ? 1 : 0.6}"></div>`).join('')}</div>`;
+  const capHead = `${status}<div class="pad" style="padding-top:10px"><div class="row"><div class="t-title">容量</div><div class="sp"></div>${toggles}</div><div class="t-s" style="margin-top:8px">近 7 天 · <b class="t-num">12,504</b> kg · <b class="t-num">38</b> 组 · <b class="t-num">3</b> 天</div></div>`;
+  const tipRow = (why, title, extra = '') => `<div class="fill row" style="padding:0 0 0 12px;gap:8px;min-height:56px;${extra}" data-a="1"><span class="badge">i</span><div style="flex:1;padding:6px 0" data-hit><div class="t-s">${why}</div><div class="t-b" style="font-weight:700">${title} ›</div></div><span class="t-s" data-hit style="width:48px;height:48px;display:flex;align-items:center;justify-content:center">✕</span></div>`;
+  const gainsHead = `${status}<div class="pad" style="padding-top:10px"><div class="t-title">增量</div><div class="t-h" style="margin-top:6px">近 4 周练了 15 个动作</div><div class="fill" style="height:56px;margin-top:8px"></div><div class="row" style="align-items:baseline;gap:6px;margin-top:10px"><span class="t-xl">26</span><span class="t-b">次破纪录</span></div></div>`;
+  const gChips = `<div class="row" data-hit style="gap:6px;margin-top:10px">${['全部', '下肢', '背', '胸', '肩'].map((x, i) => `<span class="chip${i ? '' : ' on'}" style="height:32px">${x}</span>`).join('')}</div>`;
+  const gRow = (n, next, tip) => `<div class="row" data-hit style="height:64px;border-bottom:1px solid #EEE;gap:10px"><div style="flex:1"><div class="t-b" style="font-weight:700">${n}</div><div class="t-s">下次 ${next}</div></div>${spark([1, 2, 2, 3, 4, 5])}<span class="t-h t-num">142</span></div>${tip || ''}`;
+  const TIPS = {
+    W1: {
+      title: '容量 · 摘要下一条细横幅',
+      note: '<em>离它解释的数据最近</em>：「近 7 天」摘要下面插一条 56 高的横幅（恢复慢 → 蛋白质与睡眠；深蹲量高 → 护膝），点主体进知识卡，右边 ✕ 收起；收起后人体回到原高度（高度弹簧，提示本身不顶歪别的组件）。「不再提示这一类」放进知识卡页底部，不在横幅上挤第三个命中区。代价：人体和胶囊列下移 64，最下一个胶囊贴近导航。',
+      html: () => `${capHead}<div class="pad" style="margin-top:10px">${tipRow('你的胸部恢复比预期窗口慢约 20%', '恢复：蛋白质与睡眠比补剂更重要')}</div><div class="slot abs" style="left:16px;top:200px;width:180px;height:500px">半身人体</div>${capStub(200)}${nav('body')}`,
+    },
+    W2: {
+      title: '容量 · 底部浮条（拇指区）',
+      note: '<em>不动版式、最好点</em>：横幅浮在导航上方，盖住人体脚踝一段；进页 600 ms 后从下滑入，✕ 或往下滑收起。代价：盖住最下面两颗胶囊（胫骨前肌、比目鱼肌）的命中区——要么胶囊列整体上移、要么浮条在时这两颗点不到，违反「不给死路」；容量页本来就是满屏的图，浮层会被当成广告。',
+      html: () => `${capHead}<div class="slot abs" style="left:16px;top:136px;width:180px;height:560px">半身人体</div>${capStub(136, 22)}<div class="abs" style="left:16px;right:16px;bottom:96px">${tipRow('你的深蹲量高，膝部动作多', '护膝：保暖支撑，不是「借力」', 'background:#DEDED9')}</div>${nav('body')}`,
+    },
+    W3: {
+      title: '增量 · 首屏下、筛选上',
+      note: '<em>和容量页同一个位置规律</em>：页头首屏（涨 / 平 / 退 + 破纪录）下面、部位筛选上面一条横幅（深蹲预估 1RM 到体重 1.5 倍 → 腰带；近 4 周训练量持续上升 → 肌酸）。滑过去就跟着页头滑走，不贴顶。代价：和具体是哪个动作的证据隔开了，要靠文案写清「深蹲」。',
+      html: () => `${gainsHead}<div class="pad" style="margin-top:12px">${tipRow('你的深蹲预估 1RM 已到体重的 1.5 倍', '腰带：什么时候该系')}${gChips}<div class="fill" style="height:44px;margin-top:10px"></div>${gRow('上斜哑铃卧推', '27.5 kg × 6')}${gRow('杠铃深蹲', '85 kg × 6')}</div>${nav('gains')}`,
+    },
+    W4: {
+      title: '增量 · 挂在证据那一行下面',
+      note: '<em>最贴数据</em>：提示长在触发它的动作行下（杠铃深蹲行下面一条缩进的细行「已到体重 1.52 倍 · 腰带什么时候该系 ›」）。代价：那一行在收起的分组里、或被部位筛选掉时提示就看不到；肌酸 / 蛋白质这类不对应单个动作的没地方挂，两页规则不一致。',
+      html: () => `${gainsHead}<div class="pad" style="margin-top:12px">${gChips}<div class="fill" style="height:44px;margin-top:10px"></div>${gRow('上斜哑铃卧推', '27.5 kg × 6')}${gRow('杠铃深蹲', '85 kg × 6', `<div class="row" data-a="1" style="gap:8px;padding-left:16px;min-height:48px;border-bottom:1px solid #EEE"><span class="badge">i</span><span class="t-s" style="flex:1" data-hit>已到体重 1.52 倍 · 腰带什么时候该系 ›</span><span class="t-s" data-hit style="width:48px;height:48px;display:flex;align-items:center;justify-content:center">✕</span></div>`)}</div>${nav('gains')}`,
+    },
+  };
+  LAYERS.tips = ['战略：在数据说明「需要」的那一刻给一张知识卡，而不是做广告（T16）；商城的主要入口', '范围：容量页（恢复慢 → 蛋白质与睡眠、深蹲量高 → 护膝）· 增量页（e1RM ÷ 体重 ≥ 1.5 → 腰带、近 4 周量上升 → 肌酸）；一屏最多一条，按优先级取第一张；✕ 本次收起、知识卡页底「不再提示这一类」永久静音这一类；训练中的首页不出', '结构：提示 → P16 知识卡（返回回原页原滚动位置）；静音记在本机', '框架：提示是辅助信息，不抢页面主角（人体 / 增量列表）；主体 + ✕ 两个命中区，各 ≥ 48', '表现：深灰底 + 「i」标；不用荧光（荧光留给页面唯一焦点）；进场 M03 高度弹簧，收起反向'];
   Object.assign(LAYERS, {
     wallet: ['战略：知道自己攒了多少牛劲、能换什么，并且把它用掉（T15 / T17）；钱包是「增长闭环后半段」的落点', '范围：余额（≈ 元）、明细（获得 / 支出，会员 ×1.5）、卡券（可用 / 已用 / 过期）、兑换卡券（冻结卡 800 · 免邮 300 · 商家券 1,500 · Pro 体验 2,000）、去商城抵扣', '结构：P14 /me/wallet；入口 我的「钱包 · 商城」、奖励弹窗「去钱包」；兑换走底部面板（可撤销 → 面板），兑换成功轻提示', '框架：第一优先 = 余额；主操作因方案而异（W1 兑换卡券 / W2 两个出口 / W3 兑换列表）；返回左上', '表现：余额用窄体大数；支出灰；牛劲图标用 PropGlyph；不加荧光（荧光留给奖励时刻）'],
     shop: ['战略：在训练数据说明「需要」的时候，弄懂补给 / 护具该不该用，并能直接买到（T16）；不做成一般电商', '范围：为你推荐（知识卡驱动，没有触发时是通用入门卡）· 品类 全部 / 护具 / 补给 · 5 款商品 × 状态（热销 / 折扣 / 新品 / 缺货 / 已下架）× 会员价 · 牛劲可抵 / 不足；商家与品牌虚构', '结构：P15 /shop；入口 我的「钱包 · 商城」、钱包；→ 知识卡 P16、商品 P17', '框架：第一优先 = 为你推荐的理由；主操作 = 点商品；钱包余额在右上（可点进钱包）', '表现：状态标用形状 + 文字（缺货虚线）；价格窄体；划线价灰；会员价骨白'],
@@ -1038,6 +1068,7 @@
     guide: { title: '6f · 知识卡（P16）', sub: '腰带：深蹲预估 1RM 142 kg ÷ 体重 93 kg = 1.52', v: GUIDE, layers: LAYERS.guide },
     item: { title: '6f · 商品详情（P17）', sub: '杠铃腰带（折扣）· 7 毫米护膝（缺货）', v: ITEM, layers: LAYERS.item },
     order: { title: '6f · 下单确认（P18）与订单完成（P19）', sub: '腰带 M 码 · 会员价 · 满 200 减 30 · 牛劲抵 ¥59', v: ORDER, layers: LAYERS.order },
+    tips: { title: '6f · 知识卡提示放在哪（容量 P06 / 增量 P09）', sub: '演示用户：胸部恢复慢 → 蛋白质与睡眠；深蹲 142 kg ÷ 93 kg = 1.52 → 腰带', v: TIPS, layers: LAYERS.tips },
     pause: { title: '6e · 暂停训练确认', sub: '训练中在首页按系统返回 · 已记 6 / 13 组', v: PAUSE, layers: LAYERS.pause },
   };
 

@@ -77,14 +77,38 @@ export const KNOWLEDGE: Record<KnowledgeId, Knowledge> = {
     how: ['选保暖支撑型（5–7 毫米）', '弹力很强的护膝会「借力」，记录 PR 时注明', '膝盖疼不是护膝能解决的，先降重量'] },
 };
 
-export interface Product { id: string; name: string; merchant: string; spec: string; price: number; member: number; category: '护具' | '补给'; knowledge: KnowledgeId }
+/** 商品状态（ia §1.16，2026-10-06）：热销 / 折扣（划线价）/ 新品 / 缺货（不可下单，可「到货提醒」）/ 已下架（不在商城列表里，从知识卡或旧链接进来时详情页提示并回商城） */
+export type ProductStatus = 'normal' | 'hot' | 'sale' | 'new' | 'oos' | 'off';
+export interface Product {
+  id: string; name: string; merchant: string; spec: string; price: number; member: number; category: '护具' | '补给'; knowledge: KnowledgeId;
+  status: ProductStatus;
+  /** 折扣前的价格（划线价），只有折扣商品有 */
+  was?: number;
+  /** 可选规格（尺码 / 口味）；没有 = 只有一种 */
+  sizes?: string[];
+  /** 商家写的说明（详情页「商家 · 规格说明」），只写材质与用法，不写功效数字 */
+  about: string;
+  /** 缺货：预计到货 */
+  eta?: string;
+}
 export const PRODUCTS: Product[] = [
-  { id: 'belt-10', name: '杠铃腰带 10 毫米', merchant: '铁砧运动', spec: '牛皮 · 单齿扣 · M 码', price: 329, member: 296, category: '护具', knowledge: 'belt' },
-  { id: 'straps', name: '8 字助力带', merchant: '铁砧运动', spec: '棉 + 硅胶防滑 · 一对', price: 69, member: 62, category: '护具', knowledge: 'straps' },
-  { id: 'whey', name: '乳清蛋白 2 磅', merchant: '慢火补给', spec: '原味 · 约 30 份', price: 259, member: 233, category: '补给', knowledge: 'protein' },
-  { id: 'creatine', name: '一水肌酸 300 克', merchant: '慢火补给', spec: '无味 · 约 60 份', price: 119, member: 107, category: '补给', knowledge: 'creatine' },
-  { id: 'knee', name: '7 毫米护膝', merchant: '山羊护具', spec: '氯丁橡胶 · 一对 · M 码', price: 199, member: 179, category: '护具', knowledge: 'knee' },
+  { id: 'belt-10', name: '杠铃腰带 10 毫米', merchant: '铁砧运动', spec: '牛皮 · 单齿扣', price: 329, member: 296, category: '护具', knowledge: 'belt', status: 'sale', was: 399, sizes: ['S', 'M', 'L'],
+    about: '10 毫米植鞣牛皮，单齿扣一拉到位；前后同宽。尺码按系腰带的位置量腰围：S 64–76、M 74–90、L 86–102 厘米。' },
+  { id: 'whey', name: '乳清蛋白 2 磅', merchant: '慢火补给', spec: '约 30 份', price: 259, member: 233, category: '补给', knowledge: 'protein', status: 'hot', sizes: ['原味', '可可'],
+    about: '每份 30 克粉约含 22 克蛋白质。先吃够正餐，差多少补多少；乳糖不耐受选小份量试。' },
+  { id: 'creatine', name: '一水肌酸 300 克', merchant: '慢火补给', spec: '无味 · 约 60 份', price: 119, member: 107, category: '补给', knowledge: 'creatine', status: 'new',
+    about: '一水肌酸单一成分，无添加。每天 5 克，随水或饭后都行。' },
+  { id: 'knee', name: '7 毫米护膝', merchant: '山羊护具', spec: '氯丁橡胶 · 一对', price: 199, member: 179, category: '护具', knowledge: 'knee', status: 'oos', sizes: ['S', 'M', 'L'], eta: '预计 10 月中到货',
+    about: '7 毫米氯丁橡胶套筒，保暖、支撑，不带弹力绑带。尺码按膝盖上方 10 厘米的腿围：S 31–35、M 35–38、L 38–42 厘米。' },
+  { id: 'straps', name: '8 字助力带', merchant: '铁砧运动', spec: '棉 + 硅胶防滑 · 一对', price: 69, member: 62, category: '护具', knowledge: 'straps', status: 'normal',
+    about: '棉织带 + 硅胶防滑点，8 字形套腕。适合硬拉、耸肩这类握力先到极限的拉。' },
+  { id: 'chalk', name: '液体镁粉 50 毫升', merchant: '山羊护具', spec: '速干', price: 39, member: 35, category: '护具', knowledge: 'straps', status: 'off',
+    about: '涂在手掌，干了以后防滑。' },
 ];
+/** 商城列表里的商品：已下架的不出现（详情页仍能打开，提示并回商城） */
+export const SHOP_PRODUCTS = PRODUCTS.filter((p) => p.status !== 'off');
+export const productById = (id: string) => PRODUCTS.find((p) => p.id === id);
+export const STATUS_LABEL: Record<ProductStatus, string> = { normal: '', hot: '热销', sale: '折扣', new: '新品', oos: '缺货', off: '已下架' };
 /** 牛劲抵扣：100 牛劲抵 1 元，单笔最多抵 20%（brief §4） */
 export const niujinOff = (price: number, balance: number) => Math.min(Math.floor(balance / 100), Math.floor(price * 0.2));
 

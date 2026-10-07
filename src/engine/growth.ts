@@ -44,8 +44,8 @@ export const GROWTH_CONFIG: GrowthConfig = {
 export const STAGES = ['newborn', 'young', 'sturdy', 'bull', 'milo'] as const;
 export type Stage = (typeof STAGES)[number];
 
-/** 用户主动做的事：兑换卡券（扣牛劲；冻结卡兑换会加卡） */
-export interface WalletAction { atMs: number; kind: 'redeem'; label: string; cost: number; freeze?: number }
+/** 用户主动做的事：兑换卡券（扣牛劲；冻结卡兑换会加卡）、下单时用牛劲抵扣（6f）。id / coupon 给钱包用（哪张券、被哪一单用掉），引擎只看 cost 与 freeze */
+export interface WalletAction { atMs: number; kind: 'redeem' | 'order'; label: string; cost: number; freeze?: number; id?: string; coupon?: string }
 export interface GrowthInput {
   history: Session[];
   profile: Profile | null;
@@ -181,7 +181,7 @@ export function growth(env: Env, input: GrowthInput): GrowthState {
   const applyWallet = (until: number) => {
     while (wi < wallet.length && wallet[wi].atMs <= until) {
       const a = wallet[wi++];
-      ledger.push({ atMs: a.atMs, amount: -a.cost, label: `兑换：${a.label}`, pro: false });
+      if (a.cost) ledger.push({ atMs: a.atMs, amount: -a.cost, label: `${a.kind === 'order' ? '下单抵扣' : '兑换'}：${a.label}`, pro: false });
       freeze += a.freeze ?? 0;
     }
   };
