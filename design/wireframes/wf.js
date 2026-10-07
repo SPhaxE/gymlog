@@ -12,7 +12,7 @@
   const ANNO = Q.get('anno') !== '0';
   const HIT = Q.get('hit') !== '0';
   const HIT_MIN = 48;
-  let D, P06, REGION = {}, RNAME = {}, SVG = {};
+  let D, P06, EX = [], REGION = {}, RNAME = {}, HNAME = {}, SVG = {};
   const j = (u) => fetch(u).then((r) => r.json());
   const t = (u) => fetch(u).then((r) => r.text());
   const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
@@ -735,6 +735,146 @@
   };
   LAYERS.find = ['战略：想加练或换练某块肌肉时，按肌肉找到能练它、我又有器械的动作；也是 V1 用户最熟的「点人体找动作」（初版签名交互），作品集里展示 154 动作 × 32 肌头的数据模型', '范围：按肌头筛（主练 / 协同）、按器械筛、可选搜名字；每个结果写器械和我上次的重量，器械没有的变灰不隐藏；结果 → 要领 P04；「加到今天」把动作加到今日处方末尾（引擎按它出建议重量，没有历史就「首次：填重量」）；自定义动作不做（素材只用 MuscleWiki，非目标）', '结构：一个检索面板，三个入口——容量页肌头面板「找动作」（带上这块肌头）· 首页处方末尾「＋ 加一个动作」· 替换动作（锁定同肌头的预设）；不新增 Tab、不新增页面', '框架：第一优先 = 选中的肌肉 + 结果列表；主操作 = 结果行（点名字进要领 / 「＋」加到今天）；关闭在右上，面板外点一下也收', '表现：人体复用容量页 BodyFigure（O2 + F1，选中的亮）；面板 M05；加到今天时那一行 M02 飞进首页处方末尾'];
 
+  // ---------- 检索面板定稿线框（2026-10-07 用户选 W2，并改：不用容量页视效，可读性优先；人体放右边，方便手指点） ----------
+  // 布局思路：像键盘一样「输入在下、结果在上」——手在右下角点人体，眼睛看左边列表跟着变，手指不挡结果。
+  // 人体：右栏，半身（中线贴左栏），整体往下放，胸肩落在「够得着」、腿在「易」；正 / 背切换在人体正下方（易）。
+  // 命中区：点在肌肉之间的缝里也算离得最近的那块（最近吸附），每块的实际命中区 = 它周围的一片；这里用真实路径算出来画给你看。
+  // 点人体按「整块肌肉」选（同一块肌肉的几个头合并成一个命中目标），左栏再细分到肌头。
+  // 原因：真实路径算出来，半身人体上逐个肌头点，正 / 背各有 9 块的命中区 < 48（三角肌前束只有 24）。
+  const FAM = { '三角肌': ['anterior-deltoid', 'lateral-deltoid', 'posterior-deltoid'], '胸': ['upper-pectoralis', 'mid-lower-pectoralis'], '肱二头肌': ['long-head-bicep', 'short-head-bicep'],
+    '肱三头肌': ['lateral-head-triceps', 'long-head-triceps', 'medial-head-triceps'], '前臂': ['wrist-extensors', 'wrist-flexors'], '腹直肌': ['upper-abdominals', 'lower-abdominals'], '腹斜肌': ['obliques'],
+    '斜方肌': ['upper-trapezius', 'traps-middle', 'lower-trapezius'], '背阔肌': ['lats'], '下背': ['lowerback'], '臀': ['gluteus-maximus', 'gluteus-medius'], '股四头肌': ['inner-quadricep', 'outer-quadricep', 'rectus-femoris'],
+    '腘绳肌': ['lateral-hamstrings', 'medial-hamstrings'], '大腿内收肌': ['inner-thigh'], '小腿': ['gastrocnemius', 'soleus', 'tibialis'] };
+  const FAM_OF = {}; for (const [f, hs] of Object.entries(FAM)) for (const h of hs) FAM_OF[h] = f;
+  // 某一面上太小、另一面上够大的肌头，在这一面不当目标（它的地方归给旁边的肌肉）：大腿内收肌在背面只露一条
+  const SKIP = { back: ['inner-thigh'], front: ['upper-trapezius'] };   // 斜方肌在正面只露肩上一条（46 px），去背面点
+  const OWNED = ['barbell', 'dumbbell', 'machine', 'bodyweight'];
+  const EQN = { barbell: '杠铃', dumbbell: '哑铃', machine: '固定器械', bodyweight: '自重', cable: '绳索', smith: '史密斯' };
+  const LAST = { '杠铃卧推': '80 kg', '哑铃卧推': '30 kg', '坐姿推胸机': '55 kg', '上斜哑铃卧推': '26 kg', '哑铃飞鸟': '14 kg' };
+  const exFor = (sel) => {
+    const rows = EX.filter((e) => sel.some((h) => e.primaryHeads.includes(h) || e.secondaryHeads.includes(h)))
+      .map((e) => ({ e, prim: sel.some((h) => e.primaryHeads.includes(h)), own: OWNED.includes(e.equipmentType) }));
+    return rows.sort((a, b) => (b.own - a.own) || (b.prim - a.prim) || (!!LAST[b.e.name] - !!LAST[a.e.name]));
+  };
+  const fRow = ({ e, prim, own }, i, a, cover) => `<div ${cover ? '' : 'data-hit'} style="padding:9px 0;border-bottom:1px solid #E6E6E2;${own ? '' : 'opacity:.42'}">
+      <div class="t-b" style="font-weight:700;font-size:14px;line-height:1.3">${e.name}</div>
+      <div class="t-s" style="margin-top:2px">${EQN[e.equipmentType]}${prim ? '' : ' · 协同'} · ${own ? (LAST[e.name] ? '上次 ' + LAST[e.name] : '首次') : '没有这个器械'}</div></div>`;
+  // 右栏人体：平涂、选中的深色，没选的浅灰 + 白缝；返回肌肉 → 屏幕坐标里的格子（命中区）
+  function mountPick(screen, side, sel, o) {
+    const host = screen.querySelector('[data-pick]');
+    host.innerHTML = SVG[side];
+    const svg = host.querySelector('svg');
+    svg.setAttribute('width', 676); svg.setAttribute('height', 1203);
+    const bb = svg.getBBox(), cx = bb.x + bb.width / 2;
+    const vb = [cx, bb.y - 4, bb.x + bb.width - cx + 4, bb.height + 8];
+    svg.setAttribute('viewBox', vb.join(' ')); svg.setAttribute('preserveAspectRatio', 'xMinYMin meet');
+    const h = Math.min(o.h, (o.w * vb[3]) / vb[2]), w = (h * vb[2]) / vb[3];
+    svg.setAttribute('height', h); svg.setAttribute('width', w);
+    Object.assign(host.style, { left: o.x + 'px', top: o.y + o.h - h + 'px' });
+    const groups = [...svg.querySelectorAll('g[id^="muscle--"]')];
+    for (const g of groups) for (const p of g.querySelectorAll('path')) {
+      const on = sel.includes(g.id.slice(8)) || sel.includes(FAM_OF[g.id.slice(8)]);
+      p.setAttribute('fill', on ? '#2b2b29' : '#DADAD6'); p.setAttribute('stroke', '#FAFAF8'); p.setAttribute('stroke-width', '3');
+    }
+    return { svg, groups, rect: { x: o.x, y: o.y + o.h - h, w, h } };
+  }
+  // 最近吸附的命中区：3 px 网格采样，肌肉内部直接归属，缝里和剪影外 24 px 以内归给最近的肌肉（多源 BFS ≈ Voronoi）
+  function hitCells(screen, pick, side) {
+    const { svg, rect } = pick, groups = pick.groups.filter((g) => !SKIP[side].includes(g.id.slice(8))), S = 3, cols = Math.ceil(rect.w / S) + 16, rows = Math.ceil(rect.h / S) + 16, ox = rect.x - 24, oy = rect.y - 24;
+    const sr = screen.getBoundingClientRect(), inv = svg.getScreenCTM().inverse();
+    const lab = new Int16Array(cols * rows).fill(-1), q = [];
+    const boxes = groups.map((g) => g.getBBox());
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      const pt = new DOMPoint(sr.left + ox + c * S, sr.top + oy + r * S).matrixTransform(inv);
+      for (let i = 0; i < groups.length; i++) {
+        const b = boxes[i]; if (pt.x < b.x || pt.x > b.x + b.width || pt.y < b.y || pt.y > b.y + b.height) continue;
+        if ([...groups[i].querySelectorAll('path')].some((p) => p.isPointInFill(pt))) { lab[r * cols + c] = i; q.push(r * cols + c); break; }
+      }
+    }
+    for (let k = 0, depth = new Int16Array(cols * rows); k < q.length; k++) {
+      const v = q[k], r = (v / cols) | 0, c = v % cols;
+      if (depth[v] >= 8) continue;
+      for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const rr = r + dr, cc = c + dc; if (rr < 0 || cc < 0 || rr >= rows || cc >= cols) continue;
+        const u = rr * cols + cc; if (lab[u] !== -1) continue;
+        lab[u] = lab[v]; depth[u] = depth[v] + 1; q.push(u);
+      }
+    }
+    // 按整块肌肉合并
+    const famKeys = [...new Set(groups.map((g) => FAM_OF[g.id.slice(8)] || g.id.slice(8)))];
+    const fi = groups.map((g) => famKeys.indexOf(FAM_OF[g.id.slice(8)] || g.id.slice(8)));
+    for (let v = 0; v < lab.length; v++) if (lab[v] >= 0) lab[v] = fi[lab[v]];
+    const cells = famKeys.map((f) => ({ id: f, n: 0, sx: 0, sy: 0 }));
+    for (let v = 0; v < lab.length; v++) if (lab[v] >= 0) { const m = cells[lab[v]]; m.n++; m.sx += v % cols; m.sy += (v / cols) | 0; }
+    return { lab, cols, rows, S, ox, oy, cells: cells.filter((m) => m.n).map((m) => ({ ...m, size: Math.sqrt(m.n) * S, cx: ox + (m.sx / m.n) * S, cy: oy + (m.sy / m.n) * S })) };
+  }
+  function drawCells(screen, hc) {
+    const cv = document.createElement('canvas'), W = 360, H = 800;
+    cv.width = W * 2; cv.height = H * 2; Object.assign(cv.style, { position: 'absolute', left: 0, top: 0, width: W + 'px', height: H + 'px', zIndex: 30, pointerEvents: 'none' });
+    const x = cv.getContext('2d'); x.scale(2, 2);
+    const hue = (i) => `hsla(${(i * 67) % 360}, 70%, 55%, .28)`;
+    for (let v = 0; v < hc.lab.length; v++) { const l = hc.lab[v]; if (l < 0) continue; x.fillStyle = hue(l); x.fillRect(hc.ox + (v % hc.cols) * hc.S, hc.oy + ((v / hc.cols) | 0) * hc.S, hc.S, hc.S); }
+    screen.appendChild(cv);
+    for (const m of hc.cells) {
+      const d = document.createElement('div');
+      d.className = 'cellLab' + (m.size < HIT_MIN ? ' bad' : '');
+      Object.assign(d.style, { left: m.cx + 'px', top: m.cy + 'px' });
+      d.textContent = `${HNAME[m.id] || m.id} ${Math.round(m.size)}`;
+      screen.appendChild(d);
+    }
+    const small = hc.cells.filter((m) => m.size < HIT_MIN);
+    screen.dataset.cellBad = String(small.length);
+    return small;
+  }
+
+  const finderHtml = ({ fam, sub = null, from, side = 'front', menu = false }) => {
+    const heads = sub ? [sub] : FAM[fam], list = exFor(heads);
+    const subs = FAM[fam].length > 1 ? `<div class="row" style="flex-wrap:wrap;gap:0 6px;margin-top:2px">${['全部', ...FAM[fam]].map((h) => `<span class="chip${(h === '全部' ? !sub : sub === h) ? ' on' : ''}" data-hit style="height:28px;font-size:12px;margin:10px 0">${h === '全部' ? '全部' : HNAME[h]}</span>`).join('')}</div>` : '';
+    return `${status}<div class="pad" style="padding-top:10px;opacity:.35"><div class="t-title">${from === 'body' ? '容量' : '今日处方'}</div></div><div class="abs" style="inset:0;background:rgba(0,0,0,.3)"></div>
+      <div class="abs box" style="left:0;right:0;top:64px;bottom:0;border-radius:20px 20px 0 0">
+        <div style="display:flex;justify-content:center;padding-top:6px"><i style="width:40px;height:4px;border-radius:2px;background:#C9C9C5"></i></div>
+        <div class="row" style="padding:2px 4px 0 16px"><div style="flex:1"><div class="t-h" style="font-size:18px">找动作</div><div class="t-s">${from === 'body' ? '从容量页「中下胸」进来' : '先替你选了本周还差最多的：' + fam}</div></div><div data-hit style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:18px">✕</div></div>
+      </div>
+      <div class="abs" style="left:16px;top:132px;width:156px;bottom:0;overflow:hidden" data-a="1">
+        <div class="row"><span class="t-h" style="font-size:20px">${fam}</span><span class="t-s" style="margin-left:6px">${list.length} 个动作</span></div>
+        ${subs}
+        <div class="row" style="height:48px"><span class="t-s">${menu ? '' : '只看我有的器械'}</span><div class="sp"></div><span class="chip" data-hit style="height:30px;font-size:12px">器械 ▾</span></div>
+        ${menu ? `<div class="box" style="position:absolute;left:6px;top:${subs ? 184 : 136}px;width:150px;z-index:8;padding:4px 0;box-shadow:0 6px 20px rgba(0,0,0,.18)">${['全部器械', '杠铃', '哑铃', '固定器械', '自重', '只看我有的'].map((x, i) => `<div data-hit class="t-b" style="height:48px;display:flex;align-items:center;padding:0 12px;${i === 5 ? 'font-weight:700' : ''}">${i === 5 ? '✓ ' : ''}${x}</div>`).join('')}</div>` : ''}
+        <div>${list.slice(0, 9).map((r, i) => fRow(r, i, null, menu)).join('')}</div>
+        <div class="fade" style="height:60px;background:linear-gradient(rgba(255,255,255,0),#FFF)"></div></div>
+      <div class="abs t-s" style="left:186px;top:136px;width:160px;line-height:1.5">点一块肌肉 = 选它<br>左边再细分到肌头</div>
+      <div class="abs fig" data-pick data-a="2"></div>
+      <div class="abs seg" data-hit style="right:16px;bottom:20px;height:36px;font-size:12px"><span class="${side === 'front' ? 'on' : ''}" style="padding:0 14px">正面</span><span class="${side === 'back' ? 'on' : ''}" style="padding:0 14px">背面</span></div>`;
+  };
+  const FIG = { x: 180, y: 182, w: 172, h: 556 };
+  const FINDER = {
+    W1: {
+      title: '从首页进：先替你选好本周还差最多的',
+      note: '<em>输入在下、结果在上</em>：右手拇指在右侧点人体，左栏结果跟着变，手指不挡结果。<b>点一下选整块肌肉</b>（胸、三角肌、肱三头肌……），左栏标题就是它，下面一排小胶囊再细分到肌头（全部 / 上胸 / 中下胸）。从首页「＋ 加一个动作」进来，先替你选好本周容量还差最多的那块，一进来就有结果。列表只写三样：动作名、器械、上次重量；你没有的器械变灰排后。点一行进要领，在那里「加到今天」。平涂、高对比，不用容量页视效。',
+      html: () => finderHtml({ fam: '胸', from: 'home' }),
+      post: (s) => { mountPick(s, 'front', ['胸'], FIG); },
+    },
+    W2: {
+      title: '从容量页进（细分到中下胸）+ 器械菜单',
+      note: '从容量页肌头面板「找动作」进来：选中整块「胸」、细分自动落在你点的「中下胸」上。「器械 ▾」是一个小菜单（左栏窄，一排胶囊放不下），默认「只看我有的」；菜单点别处就收。',
+      html: () => finderHtml({ fam: '胸', sub: 'mid-lower-pectoralis', from: 'body', menu: true }),
+      post: (s) => { mountPick(s, 'front', ['mid-lower-pectoralis'], FIG); },
+    },
+    W3: {
+      title: '命中区验证 · 正面（整块肌肉）',
+      note: '用真实路径算每块肌肉的<b>实际命中区</b>：点在缝里或剪影边上 24 px 以内都归最近的那块；数字 = 折算成方块的边长（px），红 = 小于 48。逐个肌头点时正面有 9 块不到 48（三角肌前束 24、上胸 30），按整块肌肉合并后全部 ≥ 48。',
+      html: () => finderHtml({ fam: '胸', from: 'home' }),
+      post: (s) => { const pk = mountPick(s, 'front', ['胸'], FIG); drawCells(s, hitCells(s, pk, 'front')); },
+    },
+    W4: {
+      title: '命中区验证 · 背面（整块肌肉）',
+      note: '背面同样算。<b>规则：每块肌肉至少在一面上 ≥ 48</b>；在某一面只露一条的不当目标，去另一面点——大腿内收肌背面只有 27（正面 69），斜方肌正面只有 46（背面大）。',
+      html: () => finderHtml({ fam: '背阔肌', from: 'home', side: 'back' }),
+      post: (s) => { const pk = mountPick(s, 'back', ['背阔肌'], FIG); drawCells(s, hitCells(s, pk, 'back')); },
+    },
+  };
+  LAYERS.finder = ['战略：同 find——按肌肉找到能练它、我有器械的动作；用户 2026-10-07 选 W2（点人体筛），并要求：只是检索器，可读性优先，不用容量页视效；人体放右边方便手指点', '范围：点人体选整块肌肉（同一块肌肉的几个头合并成一个目标，逐个肌头点时正背各有 9 块命中区 < 48），左栏小胶囊细分到肌头 · 器械菜单（只看我有的）· 列表三样（名字 / 器械 / 上次重量）· 结果进要领再「加到今天」；从首页进默认选本周还差最多的肌头，从容量页进带上那一块', '结构：底部面板（整高），入口 首页「＋ 加一个动作」/ 容量页肌头面板「找动作」/ 替换动作（锁定同肌头）；点一行进 P04，返回回到面板原状态', '框架：左栏 = 已选 + 数量 + 器械 + 结果（第一优先，眼睛看）；右栏 = 人体（主操作，拇指点，往下放）；正 / 背在人体正下方；关闭右上 + 下拉 + 点面板外', '表现：平涂高对比——没选的浅灰、选中的深色（高保真里是骨白或荧光其一）、白缝分块；不加发光、扫描、流动'];
+
   const PAGES = {
     body: { title: '身体 · 容量与恢复（P06）', sub: '放大镜按住「中下胸」· 数据 design/benchmark/p06.json', v: BODY },
     home: { title: '首页 · 今日处方（P01）', sub: '有处方、还没开始 · 演示场景 plain-prescription', v: HOME },
@@ -751,6 +891,7 @@
     swap: { title: '6e · 替换动作（底部面板）', sub: '训练中，主角卡「换一个」· 杠铃深蹲 → 同练股四头', v: SWAP, layers: LAYERS.swap },
     warm: { title: '6e · 热身组', sub: '开始训练后的主角卡 · 杠铃深蹲正式重量 85 kg', v: WARM, layers: LAYERS.warm },
     find: { title: '6e · 点选肌头检索动作', sub: '容量页点「中下胸」/ 首页「＋ 加一个动作」· 演示用户器械：杠铃 / 哑铃 / 固定器械 / 自重（没有绳索）', v: FIND, layers: LAYERS.find },
+    finder: { title: '6e · 检索面板（选定 W2 后重排）', sub: '人体在右（拇指区），列表在左（眼睛看）· 数据：mock/exercises.json 实际动作 · 演示器械：杠铃 / 哑铃 / 固定器械 / 自重', v: FINDER, layers: LAYERS.finder },
     pause: { title: '6e · 暂停训练确认', sub: '训练中在首页按系统返回 · 已记 6 / 13 组', v: PAUSE, layers: LAYERS.pause },
   };
 
@@ -820,6 +961,8 @@
     for (const h of M.heads) REGION[h.id] = h.region;
     for (const r of M.regions) RNAME[r.id] = r.name;
     SVG.front = await t('body-male-front.svg');
+    SVG.back = await t('body-male-back.svg');
+    EX = await j('../../mock/exercises.json'); for (const h of M.heads) HNAME[h.id] = h.name;
     try { await document.fonts.ready; } catch (e) { /* 字体没到就用系统字体 */ }
     const app = document.getElementById('app');
     const page = Q.get('page'), board = Q.get('board');
