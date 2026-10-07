@@ -1,10 +1,11 @@
-/** /spec：活的规范（DESIGN.md v2 的实物）——讲「规则」：颜色角色、文字样式、间距圆角、版式、品牌（IP 与 Logo 的用法）。
+/** /spec：活的规范（DESIGN.md v2 的实物）——讲「规则」：颜色角色、文字样式、间距圆角、版式、品牌（IP 与 Logo 的用法）、触点（App 外面：通知、桌面小组件、图标）。
  *  数值直接读 tokens.css / tokens.gen.ts；改 tokens.json 重新生成后这里同步变化。每页开工前先对照这里。
  *  2026-10-07 地址各司其职：组件的全部变体与交互态只在 /playground；待选与落选方案只在 /preview；原 /brand 并成本页第 6 章，原 /check 的构建信息放在页头。 */
 import { useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { SectionLabel } from '../components';
 import { BrandSpec } from './BrandSpec';
+import { TouchSpec } from './TouchSpec';
 import tokens from '../../design/tokens/tokens.json';
 import { T } from '../styles/tokens.gen';
 import s from './Preview.module.css';
@@ -81,6 +82,9 @@ export function Preview() {
 
       <h2 className="milo-text-heading" id="brand">6 品牌：IP 小牛与 Logo</h2>
       <BrandSpec />
+
+      <h2 className="milo-text-heading" id="touch">7 触点：通知 · 桌面小组件 · 图标</h2>
+      <TouchSpec />
     </div>
   );
 }
