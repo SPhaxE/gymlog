@@ -221,12 +221,15 @@ def gains_checks(b, w, h):
     ok([heads.nth(i).get_attribute('aria-expanded') for i in range(heads.count())] == ['true'] + ['false'] * (heads.count() - 1), f'{tag} 增量·分组：默认只展开第一组（{heads.count()} 组）')
     body_h = lambda i: pg.evaluate(f"document.getElementById(document.querySelectorAll('button[aria-expanded]')[{i}].getAttribute('aria-controls')).getBoundingClientRect().height")
     ok(body_h(1) < 1 and body_h(0) > 100, f'{tag} 增量·分组：收起的组只剩组头（{body_h(1):.0f}），展开的有内容（{body_h(0):.0f}）')
+    heads.nth(1).evaluate('e => e.scrollIntoView({ block: "center" })'); pg.wait_for_timeout(300)
     click(pg, heads.nth(1)); pg.wait_for_timeout(120)
     mid = body_h(1); pg.wait_for_timeout(900)
     ok(heads.nth(1).get_attribute('aria-expanded') == 'true' and 0 < mid < body_h(1), f'{tag} 增量·分组：点组头展开，高度是过渡过去的（{mid:.0f} → {body_h(1):.0f}）')
+    heads.nth(0).evaluate('e => e.scrollIntoView({ block: "center" })'); pg.wait_for_timeout(300)
     click(pg, heads.nth(0)); pg.wait_for_timeout(900)
     ok(heads.nth(0).get_attribute('aria-expanded') == 'false' and body_h(0) < 1, f'{tag} 增量·分组：再点组头收起')
     click(pg, heads.nth(0)); pg.wait_for_timeout(900)
+    pg.locator('[class*=_scroll_]').first.evaluate('e => e.scrollTo(0, 0)'); pg.wait_for_timeout(400)
     ok(pg.get_by_text('近 4 周练了').count() == 1 and pg.get_by_text('个在涨').count() == 1 and pg.get_by_text('次破纪录').count() == 1, f'{tag} 增量：摘要每个数都带单位（个动作 / 个在涨 / 次破纪录）')
     sparks = pg.evaluate('''() => [...document.querySelectorAll('svg[class*=spark]')].filter((e) => { const r = e.getBoundingClientRect(); return r.top > 0 && r.bottom < innerHeight; }).map((e) => Math.round(e.getBoundingClientRect().left))''')
     ok(len(sparks) >= 3 and max(sparks) - min(sparks) <= 1, f'{tag} 增量：每行的小曲线从同一条竖线开始 {sparks}')
@@ -306,7 +309,7 @@ def gains_checks(b, w, h):
     for i in range(pg.locator('button[aria-expanded=false]').count()):   # 展开全部组，进最后一行
         hd = pg.locator('button[aria-expanded=false]').first; hd.scroll_into_view_if_needed(); click(pg, hd); pg.wait_for_timeout(700)
     rows_all = pg.get_by_role('button', name=re.compile(r'^查看.+的进步曲线$'))
-    rows_all.last.scroll_into_view_if_needed(); pg.wait_for_timeout(500)
+    rows_all.last.evaluate('e => e.scrollIntoView({ block: "center" })'); pg.wait_for_timeout(500)   # 滚到屏幕中间：贴底会被悬浮导航盖住
     top_before = pg.evaluate('document.querySelector("[class*=_scroll_]").scrollTop')
     row = rows_all.last
     row_name = row.get_attribute('aria-label')[2:-5]
@@ -704,6 +707,20 @@ def shop_checks(b, w, h):
     pg.goto(args.base + '/onboarding'); pg.evaluate('localStorage.clear()'); pg.goto(args.base + '/onboarding'); pg.wait_for_selector('button:has-text("跳过")'); pg.wait_for_timeout(600)
     click(pg, pg.get_by_role('button', name='跳过')); click(pg, pg.get_by_role('button', name='下一步')); click(pg, pg.get_by_role('button', name='下一步'))
     click(pg, pg.get_by_role('button', name='载入演示数据 · 练了 30 周的进阶用户')); pg.wait_for_url('**/today**'); pg.wait_for_timeout(900)
+    # 增量页的知识卡横幅（线框 tips W3）：页头下、筛选上；✕ 这次收起；静音后不再出现；容量页一屏最多一条
+    pg.goto(args.base + '/gains'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(1200)
+    tip = pg.get_by_role('button', name=re.compile('腰带：什么时候该系'))
+    ok(tip.count() == 1, f'{tag} 增量：有一条腰带知识卡横幅')
+    if tip.count():
+        ty = tip.bounding_box()['y'] if tip.bounding_box() else 0
+        chips = pg.get_by_role('group', name='按部位筛选').bounding_box()
+        ok(chips is not None and ty < chips['y'], f'{tag} 增量：横幅在部位筛选上面')
+    small = pg.evaluate(AUDIT); ok(not small, f'{tag} 增量·横幅：命中区都 ≥ 48 {small[:3]}')
+    if not args.no_shots and w == 360: pg.screenshot(path=os.path.join(OUT, 'shop-tip-gains.png'))
+    click(pg, pg.get_by_role('button', name='收起这条提示')); pg.wait_for_timeout(900)
+    ok(pg.get_by_role('button', name=re.compile('腰带：什么时候该系')).count() == 0, f'{tag} 增量：✕ 收起后横幅没了')
+    pg.goto(args.base + '/body'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(1000)
+    ok(pg.get_by_role('button', name='收起这条提示').count() <= 1, f'{tag} 容量：知识卡提示一屏最多一条')
     pg.goto(args.base + '/me'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)
     before = niujin()
     ok(before >= 6000, f'{tag} 我的：「钱包 · 商城」行写牛劲余额（{before}）')
@@ -735,7 +752,11 @@ def shop_checks(b, w, h):
     ok(pg.get_by_text(re.compile('不构成医疗建议')).count() == 1 and pg.get_by_text(re.compile(r'\+\d+%')).count() == 0, f'{tag} 知识卡：写「不构成医疗建议」，没有功效百分比')
     tap(pg.get_by_role('button', name='不再提示这一类')); pg.wait_for_timeout(400)
     ok('belt' in store()['wallet']['muted'], f'{tag} 知识卡：「不再提示这一类」记进存储')
+    pg.goto(args.base + '/gains'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(1000)
+    ok(pg.get_by_role('button', name=re.compile('腰带：什么时候该系')).count() == 0, f'{tag} 增量：「不再提示这一类」后，刷新也不再出现')
+    pg.go_back(); pg.wait_for_url('**/shop/guide/belt'); pg.wait_for_timeout(900)
     tap(pg.get_by_role('button', name=re.compile('恢复提示'))); pg.wait_for_timeout(300)
+    ok('belt' not in store()['wallet']['muted'], f'{tag} 知识卡：恢复提示')
     click(pg, pg.get_by_role('button', name='看杠铃腰带 10 毫米')); pg.wait_for_url('**/shop/item/belt-10'); pg.wait_for_timeout(900)
     page_ok('item')
     ok(pg.get_by_text('¥399').count() >= 1 and pg.get_by_text('会员 ¥296').count() == 1 and pg.get_by_text('牛劲可抵 ¥59').count() == 1, f'{tag} 详情：划线价、会员价、牛劲可抵 ¥59')

@@ -20,6 +20,7 @@ import { useSource } from '../data/useSource';
 import type { Region } from '../engine';
 import { T } from '../styles/tokens.gen';
 import { DeloadBanner } from './DeloadBanner';
+import { TipBanner } from './TipBanner';
 import { DeloadSheet } from './DeloadSheet';
 import { TabNav } from './TabNav';
 import s from './GainsPage.module.css';
@@ -76,6 +77,7 @@ export function GainsPage({ scenario, now, onTab }: { scenario?: string; now: nu
           ) : (
             <>
               <DeloadBanner dv={d.dv} hits={d.sig.hits.length} onOpen={() => setDeloadOpen(true)} />
+              <TipBanner page="gains" src={src} scenario={scenario} now={now} />
 
               {d.regions.length > 1 && (
                 <div className={s.chipBar}>

@@ -17,7 +17,7 @@ _Updated: 2026-10-07 12:30_
 - [x] 6f 第 ② 步 Stitch：用户说「按 UI/UX 设计方法论来分析决定」→ 取舍记在 `docs/brief.md` 2026-10-07（钱包 V1 + 刻度尺；商城 V2 排法 + V1 缺货变暗；知识卡 V1 + 结论句；详情 V1；缺货 V2；确认订单 V2 灰标；完成 V2 真小牛）
 - [x] 到货提醒：本机记录 + 「我的 · 消息」来一条「演示：已到货」（用户选）
 - [x] 6f 第 ③ 步：数据层 `data/wallet.ts` + `data/knowledge.ts`、组件 `components/shop.tsx`（进 playground「商城」组）、六页、我的「钱包 · 商城」行、DemoPage 三步、门禁 `--only shop`；已推 main
-- [ ] 知识卡提示放容量页 / 增量页：线框 `?board=tips`（W1–W4）已推给用户，**等用户选**（我倾向 W1 + W3：两页都放在页面摘要下面）
+- [x] 知识卡提示：用户选 W1 + W3，已上线（`pages/TipBanner.tsx`）；增量页 `.body` 加了 min-height: 100%，分组都收起时部位筛选也能贴顶
 - [ ] 6f 第 ④ 步：用户视觉审查
 - [ ] 6g 会员（P20 / P21）、6h 收尾（作品集案例页等）未开始
 
@@ -77,11 +77,10 @@ python3 scripts/shoot_wireframes.py --base http://localhost:8765/design/wirefram
 - Env vars / 依赖注意事项: Chromium 在 `/opt/pw-browsers/chromium`；Stitch 走 `design/hifi/tools/stitch.py`（读本机 MCP 配置）；ffmpeg 可用
 
 ## 10. Open Questions
-- 知识卡提示位置选哪个（`?board=tips`，截图 `screenshots/wireframes/tips/board.png`）。我倾向 W1 + W3
 - 演示用户只触发腰带（增量页）；容量页的两类（恢复慢 → 蛋白质、深蹲量大 → 护膝）按真实阈值演示数据不触发。要不要给演示数据加一点腿部量让护膝也出现（会改动处方 / 增量页的演示数字）
 
 ## 11. Specific Next Steps
-1. 等用户选知识卡提示位置；选定后：`KnowledgeTip` 改成横幅（✕ 收起本次，「不再提示这一类」挪到知识卡页底，已经做了），容量页 / 增量页接 `tipFor(page, hits, wallet.muted, dismissed)`，playground + 门禁同步
+1. 等用户第 ④ 步视觉审查 6f；回答「容量页提示要不要在演示里出现」后按需调演示数据
 2. 数据层（`src/data/wallet.ts` 新建 + `store.ts`）：store 加 `wallet: WalletAction[]`、`orders`、`restock: string[]`；`growthOf()` 传 wallet；兑换卡券（扣牛劲、冻结卡 +1）、下单（扣牛劲 / 卡券、生成演示订单号）、到货提醒；演示场景走模块内存（同 `finder.ts` 的 `useExtras` 做法）；写单测
 3. 知识卡触发函数（腰带 e1RM ≥ 1.5 × 体重、恢复慢、近 4 周训练量上升、深蹲量高；助力带不触发）+ 单测
 4. 组件：扩 `ProductCard` 状态；新增钱包出口按钮 / 优惠券行等（先进 `src/playground/catalog.tsx`）

@@ -643,7 +643,7 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'KnowledgeTip', group: '增长',
-    desc: '情境知识卡（商城的主要入口）：由引擎数据触发，先讲为什么现在给你看、适合什么时候、怎么用，再给商品。页内提示只在容量页、增量页出现，一屏最多一条，可关闭、可「不再提示这一类」；补剂写明「不构成医疗建议」。',
+    desc: '情境知识卡（商城的主要入口）：由引擎数据触发，先讲为什么现在给你看、适合什么时候、怎么用，再给商品。页内提示是摘要下面一条细横幅（容量页「近 7 天」下、增量页页头下，线框 tips W1 + W3）：点主体进知识卡、✕ 这次收起（高度弹簧收回），一屏最多一条；「不再提示这一类」在知识卡页底；不用荧光。补剂写明「不构成医疗建议」。',
     axes: { card: ['belt', 'straps', 'protein', 'creatine', 'knee'], variant: ['k-tip', 'k-header'] }, rows: ['card'], cols: 'variant', size: 'card',
     render: (p) => { const k = KNOWLEDGE[p.card as KnowledgeId]; return <KnowledgeTip {...k} variant={p.variant === 'k-tip' ? 'tip' : 'header'} />; },
   },

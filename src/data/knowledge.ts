@@ -5,6 +5,7 @@
  *  - 护膝：近 4 周平均每周膝主导动作（主练股四头）≥ 12 组 → 容量页
  *  - 助力带：没有「握力先力竭」的数据，不触发，作为通用卡留在商城（用户 2026-10-06）
  *  一屏最多一条：每页按上面的顺序取第一张没被静音、这次没被收起的。训练流程里不出现（只有容量页、增量页用）。 */
+import { useSyncExternalStore } from 'react';
 import { DAY, exerciseRecords, headStats, startOfDay } from '../engine';
 import type { Session } from '../engine/types';
 import { env, fmt, type Source } from './demo';
@@ -93,3 +94,11 @@ export const tipFor = (page: 'body' | 'gains', hits: TipHit[], muted: KnowledgeI
 
 /** 商城「为你推荐」：第一张触发了的（不管静音——商城是用户自己进来的）；没有就给通用入门卡（助力带） */
 export const recommendFor = (hits: TipHit[]): { id: KnowledgeId; why: string | null } => (hits[0] ? { id: hits[0].id, why: hits[0].why } : { id: 'straps', why: null });
+
+/* ---- ✕ 收起：只管这一次打开 App（模块内存，刷新复位）；永久不提示走「不再提示这一类」（store.wallet.muted） ---- */
+let closed: KnowledgeId[] = [];
+const subs = new Set<() => void>();
+export const dismissTip = (id: KnowledgeId) => { closed = [...closed, id]; subs.forEach((f) => f()); };
+/** 测试用 */
+export const resetDismissed = () => { closed = []; subs.forEach((f) => f()); };
+export const useDismissed = () => useSyncExternalStore((f) => { subs.add(f); return () => { subs.delete(f); }; }, () => closed);

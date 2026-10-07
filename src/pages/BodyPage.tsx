@@ -18,6 +18,7 @@ import { useTrainingNav } from '../data/useTrainingNav';
 import type { HeadStat } from '../engine';
 import { T } from '../styles/tokens.gen';
 import { FAMILY_OF } from '../data/finder';
+import { TipBanner } from './TipBanner';
 import { useSource } from '../data/useSource';
 import { FinderSheet, useFinderParam } from './FinderSheet';
 import s from './BodyPage.module.css';
@@ -103,6 +104,7 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
           <Num value={fmt(k.load)} unit="kg" /><Num value={k.sets} unit="组" /><Num value={k.days} unit="天" />
         </div>
         <Ticks />
+        <TipBanner page="body" src={src} scenario={scenario} now={now} />
         {k.sets === 0 && <Banner quiet detail="练完第一次训练后，这里会显示每块肌肉近 7 天的容量和恢复。" />}
         <TierLegend />
       </PageHeader>

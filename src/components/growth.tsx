@@ -222,21 +222,19 @@ export function Coupon({ type, title, detail, state, cost, balance, onRedeem, on
 
 /* ---------------- 商城 ---------------- */
 
-/** 情境知识卡：tip = 容量页 / 增量页里的一行提示（一屏最多一条，可关闭、可「不再提示这一类」）；header = 知识卡详情页头 */
-export function KnowledgeTip({ title, why, when, how, supplement, variant, onOpen, onDismiss, onMute }: {
-  title: string; why: string; when?: string; how?: string[]; supplement?: boolean; variant: 'tip' | 'header'; onOpen?: () => void; onDismiss?: () => void; onMute?: () => void;
+/** 情境知识卡：tip = 容量页 / 增量页摘要下面的一条细横幅（线框 ?board=tips W1 + W3，用户 2026-10-07 选）——点主体进知识卡，✕ 这次收起；
+ *  一屏最多一条；「不再提示这一类」放在知识卡页底（不在横幅上挤第三个命中区）；不用荧光（荧光留给页面唯一焦点）。header = 知识卡详情页头 */
+export function KnowledgeTip({ title, why, when, how, supplement, variant, onOpen, onDismiss, state }: {
+  title: string; why: string; when?: string; how?: string[]; supplement?: boolean; variant: 'tip' | 'header'; onOpen?: () => void; onDismiss?: () => void; state?: Forced;
 }) {
   if (variant === 'tip') return (
     <div className={s.tip}>
-      <button type="button" className={cx(s.tipMain, 'milo-press milo-focus')} onClick={onOpen}>
+      <button type="button" className={cx(s.tipMain, 'milo-press milo-focus')} onClick={onOpen} {...forced(state)}>
         <span className={s.tipMark} aria-hidden="true">i</span>
         <span className={s.tipText}><span className={cx('milo-text-caption', s.muted)}>{why}</span><b className="milo-text-body-strong">{title}</b></span>
         <Icon name="chevron" small />
       </button>
-      <div className={s.tipActions}>
-        <button type="button" className={cx(s.link, 'milo-text-caption milo-focus')} onClick={onMute}>不再提示这一类</button>
-        <button type="button" className={cx(s.close, 'milo-focus')} aria-label="关闭提示" onClick={onDismiss}><Icon name="close" small /></button>
-      </div>
+      <button type="button" className={cx(s.close, 'milo-focus')} aria-label="收起这条提示" onClick={onDismiss}><Icon name="close" small /></button>
     </div>
   );
   return (

@@ -7,7 +7,8 @@
   background: repeating-radial-gradient(circle at 50% 50%, transparent 0 var(--milo-space-m), var(--milo-color-line-strong) var(--milo-space-m) calc(var(--milo-space-m) + var(--milo-stroke-hairline)));
   -webkit-mask-image: radial-gradient(closest-side, var(--milo-color-text-primary), transparent); mask-image: radial-gradient(closest-side, var(--milo-color-text-primary), transparent); }
 
-.body { display: grid; align-content: start; grid-auto-rows: max-content; gap: var(--milo-space-m); padding: 0 var(--milo-size-gutter) calc(var(--nav-clear) + var(--milo-space-2xl)); }
+/* 至少一屏高：分组都收起、上面又有横幅时，部位筛选也滑得到顶、贴得住 */
+.body { min-height: 100%; display: grid; align-content: start; grid-auto-rows: max-content; gap: var(--milo-space-m); padding: 0 var(--milo-size-gutter) calc(var(--nav-clear) + var(--milo-space-2xl)); }
 
 /* 部位筛选：贴顶（半透明 + 虚化，下面滚过的列表隐约可见）；左右出血到屏幕边，里面横向滚动，右侧渐隐提示还有；
    上下留白让 Chip 外扩的命中区不被滚动容器裁掉 */
