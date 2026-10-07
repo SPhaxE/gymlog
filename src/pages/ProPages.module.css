@@ -1,0 +1,14 @@
+/* 会员两页（6g）：付费墙 P20 / 开通成功 / 会员中心 P21。滚动区、底部按钮、文字链沿用 ShopPages.module.css */
+.payBody { padding-bottom: calc(var(--milo-size-button-h) + var(--milo-size-hit-min) + var(--milo-space-5xl) * 1.6); }
+.hubBody { padding-bottom: var(--milo-space-5xl); }
+.welcomeBody { gap: var(--milo-space-m); min-height: 100%; align-content: center; }
+.head { display: grid; gap: var(--milo-space-2xs); }
+.title { margin: 0; color: var(--milo-color-text-primary); text-wrap: balance; }
+.more { display: inline-flex; align-items: center; gap: var(--milo-space-xs); text-decoration: none; color: var(--milo-color-text-secondary); }
+.caret { display: inline-block; transition: transform var(--milo-motion-base) var(--milo-motion-ease-spring); }
+.caretUp { transform: rotate(-90deg); }
+/* 方案分段 + 主按钮：上面多留出「省 40%」小标的位置 */
+.buy { gap: var(--milo-space-m); }
+.manage { margin-top: var(--milo-space-2xl); color: var(--milo-color-text-secondary); font-size: var(--milo-font-size-caption); }
+.dlgNote { margin: 0; color: var(--milo-color-text-secondary); text-wrap: pretty; }
+@media (prefers-reduced-motion: reduce) { .caret { transition: none; } }

@@ -1,0 +1,121 @@
+/* 会员组件（6g）：一张卡 + 刻度尺分隔；入场用 M07 交错（--d = 第几个）+ 刻度尺从左往右画出 */
+.muted { color: var(--milo-color-text-secondary); }
+
+/* ---------- 权益账单 ---------- */
+.ledger { display: grid; padding: var(--milo-space-2xs) var(--milo-space-l); border-radius: var(--milo-radius-l); color: var(--milo-color-text-primary); overflow: clip; isolation: isolate;
+  background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
+.ledger_link { padding: var(--milo-space-2xs) var(--milo-space-xs); }
+.item { display: grid; animation: rise var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring-soft) both; animation-delay: calc(var(--d) * var(--milo-motion-stagger)); }
+.row { display: grid; gap: var(--milo-space-2xs); padding: var(--milo-space-m) 0; text-align: left; }
+.ledger_value .row { padding: var(--milo-space-l) 0 var(--milo-space-m); }
+.ledger_pair .row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--milo-space-m); min-height: var(--milo-size-hit-min); padding: var(--milo-space-s) 0; }
+.rowBtn { display: flex; align-items: center; gap: var(--milo-space-m); width: 100%; min-height: calc(var(--milo-size-hit-min) + var(--milo-space-m)); padding: var(--milo-space-s) var(--milo-space-m);
+  border: 0; border-radius: var(--milo-radius-m); background: none; color: inherit; font: inherit; }
+.linkText { display: grid; gap: var(--milo-space-2xs); flex: 1; }
+.valueLine { display: flex; align-items: baseline; gap: var(--milo-space-s); }
+.unit { color: var(--milo-color-text-primary); }
+.word { margin: 0; }
+.pairKey { display: inline-flex; align-items: baseline; gap: var(--milo-space-xs); }
+.pairUnit { color: var(--milo-color-text-primary); }
+/* 行间刻度尺：从左往右画出来，比这一行晚半拍 */
+.rule { display: block; height: var(--milo-size-tick-minor); transform-origin: left center;
+  background: repeating-linear-gradient(90deg, var(--milo-color-line-strong) 0 var(--milo-stroke-hairline), transparent var(--milo-stroke-hairline) var(--milo-size-tick-pitch));
+  -webkit-mask: linear-gradient(90deg, black 75%, transparent); mask: linear-gradient(90deg, black 75%, transparent);
+  animation: draw var(--milo-motion-spring-ms) var(--milo-motion-ease-decelerate) both; animation-delay: calc(var(--d) * var(--milo-motion-stagger) + var(--milo-motion-fast)); }
+.ledger_link .rule { margin: 0 var(--milo-space-m); }
+@keyframes rise { from { opacity: 0; transform: translateY(var(--milo-space-xl)); } }
+@keyframes draw { from { transform: scaleX(0); } }
+
+/* ---------- 方案分段（一行，滑块按软弹簧滑） ---------- */
+.plans { position: relative; display: grid; grid-template-columns: repeat(var(--n), 1fr); padding: var(--milo-space-xs); border-radius: var(--milo-radius-l); isolation: isolate;
+  background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
+.thumb { position: absolute; z-index: -1; top: var(--milo-space-xs); bottom: var(--milo-space-xs); left: var(--milo-space-xs);
+  width: calc((100% - var(--milo-space-xs) * 2) / var(--n)); border-radius: var(--milo-radius-m); background: var(--milo-color-control-selected);
+  transform: translateX(calc(100% * var(--i))); transition: transform var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring-soft); }
+.plan { position: relative; display: grid; justify-items: center; align-content: center; gap: 0; min-height: calc(var(--milo-size-hit-min) + var(--milo-space-s)); padding: var(--milo-space-xs);
+  border: 0; border-radius: var(--milo-radius-m); background: none; color: var(--milo-color-text-secondary); font: inherit;
+  transition: color var(--milo-motion-base) var(--milo-motion-ease-standard), transform var(--milo-motion-press) var(--milo-motion-ease-standard); }
+.plan b { color: var(--milo-color-text-primary); transition: color var(--milo-motion-base) var(--milo-motion-ease-standard); }
+.plan:active { transform: scale(var(--milo-motion-press-scale)); }
+.planOn, .planOn b { color: var(--milo-color-control-selected-ink); }
+.save { position: absolute; top: 0; left: 50%; transform: translate(-50%, -75%); padding: 0 var(--milo-space-xs); border-radius: var(--milo-radius-pill); white-space: nowrap; pointer-events: none;
+  background: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); font-weight: 700; box-shadow: 0 0 0 var(--milo-space-2xs) var(--milo-color-bg-base); }
+
+/* ---------- 完整对比表 ---------- */
+.table { display: grid; padding: var(--milo-space-xs) var(--milo-space-l); border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised); color: var(--milo-color-text-primary); }
+.tRow { display: grid; grid-template-columns: 1fr calc(var(--milo-space-5xl) + var(--milo-space-s)) calc(var(--milo-space-5xl) * 1.5); align-items: center; min-height: calc(var(--milo-space-3xl) + var(--milo-space-xs));
+  border-top: var(--milo-stroke-hairline) solid var(--milo-color-line-default); }
+.tRow > :not(:first-child) { text-align: center; }
+.tHead { border-top: 0; color: var(--milo-color-text-secondary); }
+
+/* ---------- 会员卡（有效期刻度尺） ---------- */
+.card { position: relative; display: grid; gap: var(--milo-space-xs); padding: var(--milo-space-xl) var(--milo-space-l) var(--milo-space-l); border-radius: var(--milo-radius-xl); color: var(--milo-color-text-primary);
+  overflow: clip; isolation: isolate; background: radial-gradient(120% 90% at 100% 0%, var(--milo-color-bg-raised-2), transparent 70%), var(--milo-color-bg-raised);
+  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); }
+/* 配重片同心槽纹（品牌语言，同商城推荐卡） */
+.card::before { content: ''; position: absolute; z-index: -1; right: calc(var(--milo-space-5xl) * -1.4); top: calc(var(--milo-space-5xl) * -1.2); width: calc(var(--milo-space-5xl) * 4); aspect-ratio: 1; border-radius: 50%;
+  background: repeating-radial-gradient(circle, transparent 0 var(--milo-space-s), var(--milo-color-line-default) var(--milo-space-s) calc(var(--milo-space-s) + var(--milo-stroke-hairline))); opacity: var(--milo-opacity-figure);
+  -webkit-mask: radial-gradient(circle, black 30%, transparent 70%); mask: radial-gradient(circle, black 30%, transparent 70%); }
+.cardOff { opacity: var(--milo-opacity-done-row); }
+.cardHead { display: flex; align-items: center; justify-content: space-between; gap: var(--milo-space-m); }
+.cardTitle { font-family: var(--milo-font-number); letter-spacing: 0.01em; }
+.cardLine { margin: 0 0 var(--milo-space-l); }
+.state { flex: none; padding: var(--milo-space-2xs) var(--milo-space-s); border-radius: var(--milo-radius-xs); font-weight: 700; }
+.state_pro { background: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); }
+.state_trial { box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-control-selected); color: var(--milo-color-text-primary); }
+.state_expired { background: var(--milo-color-data-track); color: var(--milo-color-text-secondary); }
+/* 刻度尺：小刻度 4 间距、每 6 格一根大刻度；走过的部分骨白（从开通那头裁出到今天），今天一根荧光刻度 */
+.ruler { display: grid; gap: var(--milo-space-xs); }
+.span { position: relative; height: calc(var(--milo-size-tick-major) * 1.5); }
+.spanDim, .spanLit { position: absolute; inset: 0;
+  background: repeating-linear-gradient(90deg, var(--c) 0 var(--milo-stroke-hairline), transparent var(--milo-stroke-hairline) var(--milo-size-tick-pitch)) left bottom / 100% var(--milo-size-tick-minor) no-repeat; }
+.spanDim { --c: var(--milo-color-line-strong); }
+.spanLit { --c: var(--milo-color-control-selected); clip-path: inset(0 calc((1 - var(--p)) * 100%) 0 0); animation: lit var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-decelerate) both; animation-delay: var(--milo-motion-base); }
+.spanDim::after, .spanLit::after { content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(90deg, var(--c) 0 var(--milo-stroke-hairline), transparent var(--milo-stroke-hairline) calc(var(--milo-size-tick-pitch) * 6)) left bottom / 100% var(--milo-size-tick-major) no-repeat; }
+.today { position: absolute; top: 0; bottom: calc(var(--milo-space-2xs) * -1); left: calc(var(--p) * 100%); width: var(--milo-stroke-focus);
+  border-radius: var(--milo-radius-pill); background: var(--milo-color-accent-default); box-shadow: 0 0 var(--milo-space-s) var(--milo-color-accent-glow);
+  animation: slide var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring-soft) both; animation-delay: var(--milo-motion-base); }
+@keyframes lit { from { clip-path: inset(0 100% 0 0); } }
+@keyframes slide { from { left: 0; opacity: 0; } }
+@keyframes slideLabel { from { left: 0; transform: none; opacity: 0; } }
+.spanEnds { display: flex; justify-content: space-between; color: var(--milo-color-text-secondary); font-family: var(--milo-font-number); }
+/* 「今天」在尺子上方，跟着荧光刻度走：靠左时左对齐、靠右时右对齐，不出卡 */
+.todayLabel { position: relative; justify-self: start; min-height: 1lh; left: calc(var(--p) * 100%); transform: translateX(calc(var(--p) * -100%)); color: var(--milo-color-text-primary); font-weight: 700;
+  animation: slideLabel var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring-soft) both; animation-delay: var(--milo-motion-base); }
+
+/* ---------- 本月三格 ---------- */
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--milo-space-xs); }
+.stat { display: grid; gap: var(--milo-space-xs); padding: var(--milo-space-m); border-radius: var(--milo-radius-m); background: var(--milo-color-bg-raised); color: var(--milo-color-text-primary); overflow: clip;
+  animation: rise var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring-soft) both; animation-delay: calc(var(--d) * var(--milo-motion-stagger) + var(--milo-motion-fast)); }
+.statRule { display: block; height: var(--milo-stroke-hairline); background: var(--milo-color-line-default); }
+
+/* ---------- 开通成功 ---------- */
+.welcome { display: grid; justify-items: center; text-align: center; color: var(--milo-color-text-primary); }
+.stage { position: relative; display: grid; place-items: end center; width: 100%; height: calc(var(--milo-space-5xl) * 3.4); isolation: isolate;
+  --mascot-unit: calc(var(--milo-stroke-hairline) * 0.24); --mascot-max-h: calc(var(--milo-space-5xl) * 3.4 * 0.86); }
+/* 背后一团骨白柔光 + 配重片同心槽纹（同牛龄页） */
+.grooves { position: absolute; z-index: -2; inset: 0; margin: auto; width: calc(var(--milo-space-5xl) * 5.6); aspect-ratio: 1; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, var(--milo-color-bg-raised-2) 0 22%, transparent 55%),
+    repeating-radial-gradient(circle, transparent 0 calc(var(--milo-space-xl) - var(--milo-stroke-hairline)), var(--milo-color-line-default) 0 var(--milo-space-xl));
+  -webkit-mask: radial-gradient(circle, black 30%, transparent 70%); mask: radial-gradient(circle, black 30%, transparent 70%);
+  animation: fade var(--milo-motion-slow) var(--milo-motion-ease-decelerate) both; }
+/* 三道环纹从脚下荡开一次 */
+.wave { position: absolute; z-index: -1; left: 50%; top: 50%; width: calc(var(--milo-space-5xl) * 2.4); aspect-ratio: 1; border-radius: 50%; pointer-events: none; opacity: 0;
+  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-control-selected);
+  animation: wave calc(var(--milo-motion-spring-soft-ms) * 2) var(--milo-motion-ease-decelerate) both; animation-delay: calc(var(--milo-motion-fast) + var(--d) * var(--milo-motion-base)); }
+@keyframes wave { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); } 15% { opacity: 0.9; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(2.3); } }
+@keyframes fade { from { opacity: 0; } }
+.pop { display: grid; place-items: end center; width: 100%; height: 100%; transform-origin: 50% 90%;
+  animation: pop var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring-soft) both; animation-delay: var(--milo-motion-fast); }
+@keyframes pop { from { opacity: 0; transform: translateY(var(--milo-space-2xl)) scale(0.6); } }
+.wTitle { margin: var(--milo-space-l) 0 0; animation: rise var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring-soft) both; animation-delay: var(--milo-motion-slow); }
+.wLine { margin: var(--milo-space-2xs) 0 0; font-family: var(--milo-font-number); animation: rise var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring-soft) both; animation-delay: calc(var(--milo-motion-slow) + var(--milo-motion-stagger)); }
+.wMore { width: 100%; margin-top: var(--milo-space-2xl); text-align: left; }
+.wMore .item, .wMore .rule { animation-delay: calc((var(--d) + 5) * var(--milo-motion-stagger) + var(--milo-motion-slow)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .item, .rule, .spanLit, .today, .todayLabel, .stat, .grooves, .pop, .wTitle, .wLine { animation: none; }
+  .wave { display: none; }
+  .thumb, .plan, .plan b { transition: none; }
+}

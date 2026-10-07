@@ -8,13 +8,14 @@ import {
   BodyPicker, PickRow, SwapRow, WarmupStrip,
   ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProfileTile, ProgressSteps, RestBar, SectionLabel, Segmented,
   SessionRow, SetEditor, SetLine, SetRow, NumPad, Sheet, Tilt, SheetBlock, Skeleton, Sparkline, StateView, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
-  AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, PropGlyph, type PropKind, RewardCard, AgeBadge, Coupon, FreezeCard, GrowthBar, GrowthCard, StageHero, StreakWeeks, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, ProductCard, StreakBar, Breakdown, DemoBanner, EvidencePanel, NiujinLine, OrderLine, PriceBlock, ProductGrid, RecommendCard, WalletExits,
+  AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, PropGlyph, type PropKind, RewardCard, AgeBadge, Coupon, FreezeCard, GrowthBar, GrowthCard, StageHero, StreakWeeks, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, ProductCard, StreakBar, Breakdown, DemoBanner, EvidencePanel, NiujinLine, OrderLine, PriceBlock, ProductGrid, RecommendCard, WalletExits, MonthStats, PerkLedger, PerkTable, PlanPicker, ProCard, ProWelcome,
   type LogoState, type MascotMood, type MascotStage, type StreakStatus, type StreakWeekStatus,
   type Forced, type IconName, type NumSize, type SkeletonShape, type Tab, type TagTone,
 } from '../components';
 import type { DeltaDir } from '../components';
 import { REGION_NAME, fmt } from '../data/demo';
 import { COUPONS, KNOWLEDGE, PRODUCTS, dateOf, growthSample, sampleRewards, type KnowledgeId } from '../data/growth';
+import { PRO_PERKS } from '../data/pro';
 import { GROWTH_CONFIG } from '../engine';
 import { T } from '../styles/tokens.gen';
 import type { Fixtures } from './fixtures';
@@ -39,7 +40,7 @@ export interface Entry {
   render: (p: Props, f: Fixtures) => ReactNode;
 }
 
-export const GROUPS = ['基础', '表单', '反馈与悬浮层', '列表与页头', '训练与记录', '数据图形', '容量', '导航', '品牌', '增长', '商城'] as const;
+export const GROUPS = ['基础', '表单', '反馈与悬浮层', '列表与页头', '训练与记录', '数据图形', '容量', '导航', '品牌', '增长', '商城', '会员'] as const;
 
 /** 只在交互演示或页面里出现、不进矩阵的导出（catalog.test 读这张表） */
 export const NOT_IN_MATRIX: Record<string, string> = {
@@ -72,6 +73,8 @@ export const CN: Record<string, string> = {
   suggest: '建议减量', week: '减量周', quiet: '一行小字', 'pool-empty': '动作池不足', resume: '继续上次训练', info: '信息', page: '子页', session: '训练中',
   sub: '标题下带日期与附件', fold: '收起', closed: '已收起', pill: '小胶囊', open: '展开', loadingState: '加载中', shown: '已出现', lifted: '抬到主按钮上面', 'today-done': '今天练过',
   experience: '训练经验', minutes: '单次时长', equipment: '可用器械', 'w-steady': '稳定守约', 'w-mixed': '有减量也有冻结', 'w-cold': '刚起步',
+  'k-value': '付费墙 · 按你的数据', 'k-link': '会员中心 · 权益入口', 'k-pair': '开通成功 · 刚到手的', 'plan-year': '选中年度', 'plan-month': '选中月度', 'plan-trial': '选中试用', 'plan-two': '试用用过了',
+  'pb-pro': '已开通 · Pro 实底', 'pc-pro': '已开通', 'pc-trial': '试用中', 'pc-expired': '已到期',
   'g-cycles': '涨幅太大 · 只写周期', 'g-bare': '牛龄页（不重复段名）',
   newborn: '牛犊', young: '小牛', sturdy: '壮牛', bull: '公牛', milo: 'Milo', 'm-idle': '平常', 'm-focused': '专注', 'm-happy': '开心', 'm-rest': '恢复日', 'm-pr': '破纪录', 'm-deload': '减量周', idle: '平常', training: '训练中',
   'r-stage': '升段', 'r-milo': '升段 · Milo', 'r-pr': '破纪录', 'r-streak': '连胜里程碑', 'r-level': '升小级', 'r-cycle': '周期完成', free: '免费', pro: 'Pro 会员',
@@ -664,9 +667,9 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'PriceBlock', group: '商城', covers: ['NiujinLine'],
-    desc: '商品详情的价格区（详情 Stitch V1）：现价大字 + 划线价 + 会员价标一行读完；下面牛劲能抵多少（余额 · 每单最多 20%），一元都抵不了时写还差多少牛劲。',
-    axes: { state: ['pb-sale', 'pb-normal', 'pb-short'] }, size: 'card',
-    render: (p) => <div className={s.growCol}>{p.state === 'pb-sale' ? <PriceBlock price={329} was={399} member={296} /> : <PriceBlock price={69} member={62} />}
+    desc: '商品详情的价格区（详情 Stitch V1）：现价大字 + 划线价 + 会员价标一行读完；会员价旁「Pro ›」进付费墙（未开通描边 / 已开通骨白实底进会员中心，命中区 48，6g）；下面牛劲能抵多少（余额 · 每单最多 20%），一元都抵不了时写还差多少牛劲。',
+    axes: { state: ['pb-sale', 'pb-normal', 'pb-short', 'pb-pro'] }, size: 'card',
+    render: (p) => <div className={s.growCol}>{p.state === 'pb-sale' ? <PriceBlock price={329} was={399} member={296} onPro={noop} /> : p.state === 'pb-pro' ? <PriceBlock price={329} was={399} member={296} onPro={noop} proActive /> : <PriceBlock price={69} member={62} />}
       <NiujinLine off={p.state === 'pb-short' ? 0 : p.state === 'pb-sale' ? 59 : 12} balance={p.state === 'pb-short' ? 40 : 6060} short={60} /></div>,
   },
   {
@@ -691,6 +694,45 @@ export const CATALOG: Entry[] = [
           <Breakdown rows={[['商品', 329], ['会员价', 33, 'minus'], ['铁砧运动 满 200 减 30', 30, 'minus'], ['牛劲 5,900', 59, 'minus']]} total={207} /></div>
       : <div className={s.growCol}><DemoBanner /><OrderLine id="straps" name="8 字助力带" size={null} merchant="铁砧运动" category="护具" member={62} />
           <Breakdown rows={[['商品', 69], ['会员价', 7, 'minus'], ['运费', 10], ['免邮券', 10, 'minus']]} total={62} /></div>,
+  },
+  {
+    name: 'PerkLedger', group: '会员',
+    desc: '权益账单（6g，Stitch 付费墙 V2 的单卡 + 刻度尺分隔）：value = 付费墙「这 30 天，Pro 会多给你」四条——窄体大数 + 单位在上、按你的数据的一句理由在下（不折行）；link = 会员中心的权益入口（名称 / 说明 + ›，整行可点 ≥ 48）；pair = 开通成功「刚到手的」三条（左名右注一行）。入场：行按 M07 交错弹入，行间刻度尺从左往右画出来。',
+    axes: { kind: ['k-value', 'k-link', 'k-pair'] }, size: 'card',
+    render: (p) => p.kind === 'k-value'
+      ? <PerkLedger label="Pro 会多给你" items={[{ value: '+525', unit: '牛劲', reason: '你这 30 天拿了 1,050，Pro ×1.5' }, { value: '2', unit: '张冻结卡 / 月', reason: '断档那周自动用，连胜 21 周不会断' }, { value: '¥33', unit: '会员价省', reason: '杠铃腰带 10 毫米 ¥329 → ¥296' }, { value: '周期自动编排', reason: '减量周到点自动插进处方' }]} />
+      : p.kind === 'k-link'
+        ? <PerkLedger kind="link" label="权益" items={[{ value: '周期计划自动编排', reason: '减量周到点自动插进处方', onClick: noop }, { value: '高级分析', reason: '肌群容量趋势 · 动作对比', onClick: noop }, { value: '钱包', reason: '冻结卡 · 免邮券', onClick: noop }, { value: '商城', reason: '会员价已生效', onClick: noop }]} />
+        : <PerkLedger kind="pair" label="刚到手的" items={[{ value: '冻结卡', unit: '×2', reason: '已放进钱包' }, { value: '牛劲', unit: '×1.5', reason: '从下一次训练起' }, { value: '会员价', reason: '商城已生效' }]} />,
+  },
+  {
+    name: 'PlanPicker', group: '会员',
+    desc: '方案分段（6g，Stitch 付费墙 V1 的一行分段）：月度 / 年度（默认，骨白「省 40%」小标挂在上方）/ 试用 7 天；骨白滑块按软弹簧滑到选中项（M02 尺寸弹簧），每项 ≥ 48 高，方向键可切；用过试用就只剩两项。贴在主按钮正上方（拇指区）。',
+    axes: { state: ['plan-year', 'plan-month', 'plan-trial', 'plan-two'] }, size: 'card',
+    render: (p) => { const plans = [{ id: 'month', name: '月度', price: '¥18' }, { id: 'year', name: '年度', price: '¥128', tag: '省 40%' }, { id: 'trial', name: '试用', price: '7 天' }];
+      return <div style={{ paddingTop: 'var(--milo-space-m)' }}><PlanPicker plans={p.state === 'plan-two' ? plans.slice(0, 2) : plans} value={p.state === 'plan-month' ? 'month' : p.state === 'plan-trial' ? 'trial' : 'year'} /></div>; },
+  },
+  {
+    name: 'PerkTable', group: '会员',
+    desc: '免费 vs Pro 完整对比（7 行）：付费墙「看完整对比」就地展开（高度弹簧）；没有训练历史的新用户直接看它（线框 pro W1）。Pro 一列加粗，不用荧光。',
+    axes: {}, size: 'card',
+    render: () => <PerkTable rows={PRO_PERKS} />,
+  },
+  {
+    name: 'ProCard', group: '会员', covers: ['MonthStats'],
+    desc: '会员卡 + 本月三格（6g，Stitch 会员中心 V2 骨架 + V1 卡上的刻度尺）：方案 + 状态标（已开通骨白实底 / 试用中描边 / 已到期灰）+ 到期与剩几天；下面一把有效期刻度尺——走过的骨白、没走的暗，荧光刻度 = 今天（会员中心这一屏唯一的荧光），挂载时从开通那头滑到今天。三格：数在上（码表）、名称在下。',
+    axes: { state: ['pc-pro', 'pc-trial', 'pc-expired'] }, size: 'card',
+    render: (p) => { const now = Date.UTC(2026, 9, 7, 10), from = p.state === 'pc-trial' ? now - 2 * 86_400_000 : p.state === 'pc-expired' ? now - 40 * 86_400_000 : now - 120 * 86_400_000;
+      const to = p.state === 'pc-trial' ? from + 7 * 86_400_000 : p.state === 'pc-expired' ? from + 30 * 86_400_000 : from + 365 * 86_400_000;
+      return <div className={s.growCol}><ProCard plan={p.state === 'pc-trial' ? '试用' : p.state === 'pc-expired' ? '月度' : '年度'} status={p.state === 'pc-pro' ? 'pro' : p.state === 'pc-trial' ? 'trial' : 'expired'} fromMs={from} toMs={to} now={now} />
+        {p.state !== 'pc-expired' && <MonthStats items={[{ value: p.state === 'pc-trial' ? '+40' : '+525', label: '多拿的牛劲' }, { value: '2 / 0', label: '冻结卡 领 / 用' }, { value: p.state === 'pc-trial' ? '¥0' : '¥33', label: '会员价省' }]} />}</div>; },
+  },
+  {
+    name: 'ProWelcome', group: '会员',
+    desc: '开通成功的品牌时刻（6g，Stitch 开通成功 V2，占位换真小牛）：小牛站在配重片同心环里，三道骨白环纹从脚下荡开一次，小牛按软弹簧弹出；标题、到期日依次升起，「刚到手的」三条随后交错弹入、刻度尺画出。荧光只留给页面底部的「开始用」。减少动态效果时直接定格。',
+    axes: {}, size: 'screen',
+    render: () => <ProWelcome stage="bull" title="欢迎加入 Milo Pro" line="年度会员 · 2027 年 10 月 7 日到期">
+      <PerkLedger kind="pair" label="刚到手的" items={[{ value: '冻结卡', unit: '×2', reason: '已放进钱包' }, { value: '牛劲', unit: '×1.5', reason: '从下一次训练起' }, { value: '会员价', reason: '商城已生效' }]} /></ProWelcome>,
   },
   {
     name: 'Paywall', group: '增长',

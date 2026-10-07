@@ -2,14 +2,15 @@
  *  五层：
  *  - 战略：用户在这里回答三件事——我现在长到哪儿了（牛龄 · 连胜 · 牛劲）、我的档案对不对（改一项，处方跟着变）、我的数据我做主（导出 / 载入示例 / 清除）。
  *  - 范围：成长卡 + 档案四格（经验 · 时长 · 器械 · 体型，含可选体重）+ 消息 + 导航三项设置（进度环 · 休息描边 · 结束提示）+ 数据（载入示例 · 导出 CSV · 清除）+ 关于。
- *    「钱包 · 商城」一行（6f：牛劲余额 · 可用卡券数，进钱包，钱包里去商城）；「会员」一行等 6g 的页面有了再出现（不放点了没去处的行）。
+ *    「钱包 · 商城」一行（6f：牛劲余额 · 可用卡券数，进钱包，钱包里去商城）；「Milo Pro」一行（6g，线框 prohub W2 三态：未开通 → 付费墙 /pro，试用中 / 已开通 → 会员中心 /me/pro）。
+ *    数据里「演示：会员状态」开关（ia §1.17：会员 / 非会员两种状态在这里切换展示；打开 = 开通年度，关掉 = 切回免费，已得的不收回）。
  *  - 结构：Tab 根页（导航「我的」选中）；整页一个滚动区；子页：牛龄 /me/level、钱包 /me/wallet（→ 商城 /shop）、消息 /me/messages；改档案走底部面板（点哪格改哪项）。
  *  - 框架：页头（跟着滑走）→ 成长卡（第一屏主角）→ 档案四格 → 消息 → 导航 → 数据 → 关于。没有主操作按钮（设置页）；面板里的「保存」在拇指区。
  *  - 表现：荧光只有成长卡的进度条一处；危险操作（清除）用危险色，载入 / 清除都先二次确认；设置的开关立即生效、不需要保存。
  *  设计过程见 design/hifi/me/（线框 me2 W2 成长卡做主角；Stitch 第 1 轮 m6）。 */
 import { useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { BackToTop, Dialog, GrowthCard, List, ListRow, OptionCard, OptionGroup, PageHeader, ProfileTile, Screen, SectionLabel, Sheet, Switch, Tag, useToast } from '../components';
+import { BackToTop, Dialog, GrowthCard, List, ListRow, OptionCard, OptionGroup, PageHeader, ProBadge, ProfileTile, Screen, SectionLabel, Sheet, Switch, Tag, useToast } from '../components';
 import { env } from '../data/demo';
 import { csvFileName, csvSetCount, historyCsv } from '../data/exportCsv';
 import { saveTextFile } from '../data/exportFile';
@@ -17,7 +18,7 @@ import { growthOf, messagesOf, unreadOf } from '../data/me';
 import { mergeProfile, profileError, profileFacts, updateProfile } from '../data/profile';
 import { setSettings } from '../data/settings';
 import { DEFAULT_PROFILE, demoState, store, useStore } from '../data/store';
-import { proPeriods, usePro } from '../data/pro';
+import { activate, cancel, dayText, proPeriods, proStatus, trialUsed, usePro } from '../data/pro';
 import { useSource } from '../data/useSource';
 import { couponsOf, restockMessages, useWallet } from '../data/wallet';
 import { weeklyTarget } from '../engine';
@@ -39,8 +40,11 @@ export function MePage({ scenario, now, onTab }: { scenario?: string; now: numbe
   const [local, setLocal] = useState<Profile | null>(null);
   const profile = local ?? src.profile ?? DEFAULT_PROFILE;
   const [wallet] = useWallet(scenario, now);
-  const [pro] = usePro(scenario);
+  const [pro, setPro] = usePro(scenario);
   const g = useMemo(() => growthOf({ ...src, profile, wallet, pro: proPeriods(pro) }, now), [src, profile, wallet, pro, now]);
+  const ps = proStatus(pro, now);
+  const proDetail = ps.kind === 'trial' ? `试用中 · 还剩 ${ps.daysLeft} 天` : ps.kind === 'pro' ? `${dayText(ps.period!.toMs)}到期` : trialUsed(pro) ? '月 ¥18 · 年 ¥128' : '7 天免费试用';
+  const toggleDemoPro = (on: boolean) => { setPro((x) => (on ? activate(x, 'year', now) : cancel(x, now))); toast.show(on ? '演示：已开通年度会员' : '演示：已切回免费，已得的牛劲和卡券不收回'); };
   // 演示场景不标已读（消息页同样不显示未读点），这里也不显示未读数，免得「N 条新」点进去清不掉
   const unread = useMemo(() => (scenario ? 0 : unreadOf([...messagesOf(g), ...restockMessages(wallet)], st.messagesSeenAt)), [scenario, g, wallet, st.messagesSeenAt]);
   const facts = profileFacts(profile);
@@ -90,8 +94,10 @@ export function MePage({ scenario, now, onTab }: { scenario?: string; now: numbe
             </div>
           </section>
 
-          <div className={s.card}><List label="钱包与消息">
+          <div className={s.card}><List label="钱包、会员与消息">
             <ListRow kind="nav" title="钱包 · 商城" detail={`牛劲 ${g.niujin.balance.toLocaleString('en-US')} · ${couponsOf(wallet, now).filter((c) => c.state === 'available').length + (g.streak.freezeCards > 0 ? 1 : 0)} 张卡券可用`} onClick={() => nav(`/me/wallet${loc.search}`)} />
+            <ListRow kind="nav" title="Milo Pro" detail={proDetail} onClick={() => nav(`${ps.kind === 'free' ? '/pro' : '/me/pro'}${loc.search}`)}
+              trailing={ps.kind !== 'free' ? <ProBadge state="active" /> : undefined} />
             <ListRow kind="nav" title="消息" detail="同时达成的其余奖励、冻结卡自动使用" onClick={() => nav(`/me/messages${loc.search}`)}
               trailing={unread > 0 ? <Tag tone="strong">{unread} 条新</Tag> : undefined} />
           </List></div>
@@ -109,6 +115,7 @@ export function MePage({ scenario, now, onTab }: { scenario?: string; now: numbe
             <SectionLabel>数据</SectionLabel>
             <div className={s.card}><List>
               <ListRow kind="nav" title="载入示例数据" detail="练了 30 周的进阶用户，各页都有内容" onClick={() => setConfirm('load')} />
+              <ListRow kind="toggle" title="演示：会员状态" detail="打开 = 年度会员，关掉 = 免费；各页一起变" trailing={<Switch checked={ps.kind !== 'free'} label="演示：会员状态" onChange={toggleDemoPro} />} />
               <ListRow kind="nav" title="导出 CSV" detail={empty ? '还没有训练记录' : `${src.history.length} 次训练 · ${sets} 组，用表格软件打开`} disabled={empty} onClick={exportCsv} />
               <ListRow kind="danger" title="清除全部数据" onClick={() => setConfirm('clear')} />
             </List></div>

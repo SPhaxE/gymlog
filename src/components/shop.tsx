@@ -81,13 +81,15 @@ export function RecommendCard({ title, why, product, onClick, state }: { title: 
   );
 }
 
-/** 详情页价格区（详情 V1）：现价大字 + 划线价 + 会员价标，一行读完 */
-export function PriceBlock({ price, was, member }: { price: number; was?: number; member: number }) {
+/** 详情页价格区（详情 V1）：现价大字 + 划线价 + 会员价标，一行读完；onPro = 会员价旁的「Pro ›」入口（6g，进付费墙 / 会员中心，命中区 48） */
+export function PriceBlock({ price, was, member, onPro, proActive }: { price: number; was?: number; member: number; onPro?: () => void; proActive?: boolean }) {
   return (
     <div className={s.priceBlock}>
       <b className="milo-text-number-xl">{yuan(price)}</b>
       {was && <s className={cx('milo-text-caption', s.muted)}>{yuan(was)}</s>}
       <span className={cx('milo-text-label', s.member)}>会员 {yuan(member)}</span>
+      {onPro && <button type="button" className={cx('milo-focus', s.proLink)} onClick={onPro} aria-label={proActive ? '会员价已生效，查看会员中心' : '会员价是 Milo Pro 的权益，看看 Pro'}>
+        <span className={cx(s.proMark, proActive && s.proMarkOn)}>Pro</span><Icon name="chevron" small /></button>}
     </div>
   );
 }

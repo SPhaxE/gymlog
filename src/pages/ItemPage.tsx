@@ -10,6 +10,7 @@ import { useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { BackToTop, Banner, Button, List, ListRow, NiujinLine, PriceBlock, ProductImage, Screen, Segmented, SectionLabel, StateView, StatusTag, TopBar, useToast } from '../components';
 import { KNOWLEDGE, productById } from '../data/growth';
+import { proStatus, usePro } from '../data/pro';
 import { quote, remind } from '../data/wallet';
 import { useShop } from './useShop';
 import s from './ShopPages.module.css';
@@ -19,6 +20,8 @@ export function ItemPage({ scenario, now }: { scenario?: string; now: number }) 
   const topRef = useRef<HTMLDivElement>(null);
   const p = productById(useParams().id ?? '');
   const { balance, wallet, update } = useShop(scenario, now);
+  const [pro] = usePro(scenario);
+  const proOn = proStatus(pro, now).kind !== 'free';
   const [size, setSize] = useState(() => (p?.sizes ? p.sizes[Math.floor((p.sizes.length - 1) / 2)] : null));
   const back = () => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav('/shop' + loc.search, { replace: true }));
   const toShop = () => nav('/shop' + loc.search, { replace: true });
@@ -42,7 +45,7 @@ export function ItemPage({ scenario, now }: { scenario?: string; now: number }) 
           <div className={`${s.itemHead} ${off ? s.off : ''}`}>
             <span className={s.tagLine}><StatusTag status={p.status} /><span className={`milo-text-caption ${s.muted}`}>{p.merchant} · {p.category}</span></span>
             <h2 className={`milo-text-title-m ${s.kTitle}`}>{p.name}</h2>
-            <PriceBlock price={p.price} was={p.was} member={p.member} />
+            <PriceBlock price={p.price} was={p.was} member={p.member} proActive={proOn} onPro={() => nav((proOn ? '/me/pro' : '/pro') + loc.search)} />
             <span className={`milo-text-caption ${s.muted}`}>{p.spec}</span>
           </div>
           {!off && <NiujinLine off={q.niujinOff} balance={balance} short={q.niujinShort} />}

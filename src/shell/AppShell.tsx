@@ -23,6 +23,8 @@ import { ItemPage } from '../pages/ItemPage';
 import { OrderPage } from '../pages/OrderPage';
 import { ShopPage } from '../pages/ShopPage';
 import { WalletPage } from '../pages/WalletPage';
+import { ProPage } from '../pages/ProPage';
+import { ProHubPage } from '../pages/ProHubPage';
 import { MessagesPage } from '../pages/MessagesPage';
 import { OnboardingPage } from '../pages/OnboardingPage';
 import { SummaryPage } from '../pages/SummaryPage';
@@ -112,6 +114,8 @@ function Routed() {
       <Route path="/me/level" element={needProfile ?? <LevelPage key={scenario} scenario={scenario} now={now} />} />
       <Route path="/me/messages" element={needProfile ?? <MessagesPage key={scenario} scenario={scenario} now={now} />} />
       <Route path="/me/wallet" element={needProfile ?? <WalletPage key={scenario} scenario={scenario} now={now} />} />
+      <Route path="/me/pro" element={needProfile ?? <ProHubPage key={scenario} scenario={scenario} now={now} />} />
+      <Route path="/pro" element={needProfile ?? <ProPage key={scenario} scenario={scenario} now={now} />} />
       <Route path="/shop" element={needProfile ?? <ShopPage key={scenario} scenario={scenario} now={now} />} />
       <Route path="/shop/guide/:id" element={needProfile ?? <GuidePage key={loc.pathname} scenario={scenario} now={now} />} />
       <Route path="/shop/item/:id" element={needProfile ?? <ItemPage key={loc.pathname} scenario={scenario} now={now} />} />

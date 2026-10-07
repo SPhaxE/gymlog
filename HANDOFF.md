@@ -100,6 +100,8 @@ src/
 | `/me` | 我的 P11（成长卡 + 档案四格 + 消息 + 导航设置 + 数据 + 关于，`pages/MePage.*`） |
 | `/me/level` | 牛龄 P13（子页，无 Tab；`pages/LevelPage.*`） |
 | `/me/messages` | 消息（子页；同时达成的其余奖励、冻结卡自动使用，`pages/MessagesPage.*`） |
+| `/me/wallet` · `/shop/*` | 6f 钱包与商城（`pages/WalletPage.tsx`、`ShopPage.tsx` 等） |
+| `/pro` · `/me/pro` | 6g 付费墙 + 开通成功（`pages/ProPage.tsx`）· 会员中心（`pages/ProHubPage.tsx`） |
 | `/demo` | 实机演示 |
 | `/playground` · `/spec` · `/preview` · `/brand` · `/lab` | 组件目录 · 基础规范 · 方案台（待选视觉方案 + 自由组合）· IP 与 Logo · 参考要素实验 |
 
@@ -223,7 +225,7 @@ python3 scripts/shoot_growth.py     # 奖励弹窗 GIF → screenshots/growth/
 | **第 7 轮 · 用户 9 条反馈**（2026-10-06，计划见本节下方） | ① 页头：删细标题栏与标题上方的小字，五个 Tab 大标题同一位置；所有长页加「回到顶端」✅ ② 曲线页拖动不跳 ✅ ③ 增量分组可收起 + 8motions ✅ ④ 选中图标描线从左到右、从下到上 ✅ ⑤ 身体页 → 容量页（半身版式不变、胶囊缩 1/3、浅荧光轮廓 + 扫描线动效、胶囊 M03、切换一律左→右）✅⑥ 钢板日历重做（固定光源 + 透孔光束 + 浮尘、可拖可点、读数码表）✅⑦ 整体审美加强 ✅（对比度审查进门禁、消息页按月分段 + 牛劲一列、0 组胶囊字提亮；中途两条追加：容量页恢复半身版式、钢板透光改柔加泛光、钢板月份字提对比度）| 页头 / `BackToTop` / 各页 |
 | **6e 首页补全** ✅（2026-10-07 收尾：上线 + 演示路线 + DESIGN §9.4 / §9.6 + 找动作入口图标〔`public/icons/finder-*`，原图与 IP 风格板在 `docs/sources/brand-refs/`〕） | **P04 动作要领**（示范视频、要领文案、目标肌头高亮；入口：主角卡、处方行、记录详情、进步曲线）+ **点选肌头检索动作**（2026-10-07 补：检索面板，入口 容量页肌头面板 / 首页「＋ 加一个动作」/ 替换动作）+ **替换动作**（检索面板锁定同肌头的预设）+ **热身组** + 暂停训练确认（返回键）。P02 保持底部面板，不做整页。线框：`design/wireframes/?board=p04 / find / swap / warm / pause` | 动作要领（P0）；加练 / 换练有路可走；训练流程更可信 |
 | **6f 钱包与商城** ③ 已上线，等 ④ 用户视觉审查（2026-10-07） | ① 线框 `?board=wallet / shop / guide / item / order`（按我倾向）；② Stitch 11 张，用户授权按方法论定取舍（`docs/brief.md` 2026-10-07）；③ 数据层 `data/wallet.ts`（兑换 / 演示下单 / 到货提醒 / 静音，演示场景走模块内存）+ `data/knowledge.ts`（腰带 / 肌酸 / 蛋白质与睡眠 / 护膝触发，助力带通用）+ 商品状态（`data/growth.ts` 6 款，镁粉已下架只从知识卡进）；组件 `components/shop.tsx`；页面 P14 `/me/wallet`、P15 `/shop`、P16 `/shop/guide/:id`、P17 `/shop/item/:id`、P18 `/shop/checkout`、P19 `/shop/order/:id`；「我的」加「钱包 · 商城」行；门禁 `shoot_6a.py --only shop`。知识卡提示（用户定 `?board=tips` W1 + W3）：容量页「近 7 天」下、增量页页头下一条横幅（`pages/TipBanner.tsx`，✕ 本次收起、知识卡页底「不再提示这一类」）。演示用户只触发腰带（增量页），容量页那两类（恢复慢、深蹲量大）演示数据不触发 | 增长闭环后半段 |
-| **6g 会员** | P20 权益 / 付费墙、P21 会员中心；演示不拦截 | — |
+| **6g 会员** ③ 已上线，等 ④ 用户视觉审查（2026-10-07） | ① 线框 `?board=pro / prohub`（Claude 选，用户授权）；② Stitch 5 张，对比板 `screenshots/hifi/g6/g6-board.png`，取舍记在 `docs/brief.md`（Claude 选，用户授权）；③ 数据层 `data/pro.ts`（试用 / 月 / 年、切回免费不收回、`proFacts` / `proPitch` / `pitchProduct` / `proSaved`）；组件 `components/pro.tsx`（`PerkLedger`、`PlanPicker`、`PerkTable`、`ProCard` + `MonthStats`、`ProWelcome`，进 playground「会员」组）；页面 P20 `/pro`（付费墙 + 开通成功）、P21 `/me/pro`；入口 我的「Milo Pro」行三态、数据里「演示：会员状态」开关、商品详情会员价旁的「Pro ›」；DemoPage 一步；门禁 `shoot_6a.py --only pro`。没做的入口：高级分析 Pro 标、连胜快断时的冻结卡提示（演示不拦截，暂无落点）；钱包「Pro 体验 7 天」兑换券也还没上 | 商业链路 |
 | **6h 收尾** | **作品集案例页**（从 V1 到 Milo 的过程、决定记录、引擎、设计系统）+ 触点静态稿（通知、桌面小组件、图标）+ 演示路线与场景切换（会员 / 非会员、减量周、新纪录……）+ 一次真机体检 | 展示载体 |
 
 **商城的安排**（不新增 Tab）：入口三条——身体页、增量页顶部的知识卡提示（引擎数据触发，一屏一条，可关闭）→ 知识卡详情 → 商品详情 → 下单确认 → 订单完成；「我的 → 钱包 · 商城」；结算页奖励弹窗的「去钱包」。牛劲抵扣 ≤ 20%（100 牛劲 = 1 元）、兑换卡券；会员价与牛劲 ×1.5。训练流程里不出现。全部演示：商家虚构、支付假成功。

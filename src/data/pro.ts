@@ -5,7 +5,8 @@
  *  - 演示场景（?scenario=）不读也不写存储，记在模块内存（同 wallet.ts）。 */
 import { useSyncExternalStore } from 'react';
 import { DAY, GROWTH_CONFIG, type GrowthState } from '../engine';
-import { store, useStore, type ProPeriod } from './store';
+import { SHOP_PRODUCTS, type KnowledgeId, type Product } from './growth';
+import { store, useStore, type Order, type ProPeriod } from './store';
 
 export type Plan = ProPeriod['plan'];
 export const PLAN_DAYS: Record<Plan, number> = { trial: 7, month: 30, year: 365 };
@@ -37,13 +38,14 @@ export interface ProFacts {
   earned30: number; extra30: number;
   freezePerMonth: number;
   streak: number;
+  /** 近 30 天有进账才讲得出「你的账单」；没有（新用户、很久没练）退回通用对比表 W1 */
   hasHistory: boolean;
 }
 /** 付费墙 W2 的「按你的数据」：从成长引擎的流水算（已经是会员的那几天按 ×1 还原） */
 export function proFacts(g: GrowthState, now: number): ProFacts {
   const rate = GROWTH_CONFIG.niujin.proRate;
   const earned30 = Math.round(g.niujin.ledger.filter((r) => r.amount > 0 && r.atMs > now - 30 * DAY).reduce((a, r) => a + (r.pro ? r.amount / rate : r.amount), 0));
-  return { earned30, extra30: Math.round(earned30 * (rate - 1)), freezePerMonth: GROWTH_CONFIG.proFreezePerMonth, streak: g.streak.weeks, hasHistory: g.niujin.ledger.length > 0 };
+  return { earned30, extra30: Math.round(earned30 * (rate - 1)), freezePerMonth: GROWTH_CONFIG.proFreezePerMonth, streak: g.streak.weeks, hasHistory: earned30 > 0 };
 }
 
 /** 本月 Pro 给了你什么（会员中心）：这个月 ×1.5 多拿的牛劲 · 冻结卡领 / 用 */
@@ -53,6 +55,38 @@ export function proThisMonth(g: GrowthState, now: number) {
   const used = g.events.filter((e) => e.kind === 'freeze' && e.atMs >= from).length;
   return { extra, freezeGot: GROWTH_CONFIG.proFreezePerMonth, freezeUsed: used };
 }
+
+/** 免费 vs Pro 完整对比（付费墙「看完整对比」、没有历史的新用户；ia §1.17 Pro 权益） */
+export const PRO_PERKS: [string, string, string][] = [
+  ['处方 · 记录 · 容量 · 增量', '✓', '✓'], ['周期计划自动编排', '—', '✓'], ['高级分析', '—', '✓'],
+  ['牛劲', '×1', '×1.5'], ['连胜冻结卡', '兑换', '每月 2 张'], ['商城会员价 · 免邮券', '—', '✓'], ['数据导出', '—', '✓'],
+];
+
+/** 付费墙「会员价省多少」举的那件商品：被数据触发的知识卡对应的商品优先，没有就挑省得最多的（只看在售） */
+export function pitchProduct(hits: { id: KnowledgeId }[]): Product {
+  const byHit = hits.map((h) => SHOP_PRODUCTS.find((p) => p.knowledge === h.id && p.status !== 'oos')).find(Boolean);
+  return byHit ?? [...SHOP_PRODUCTS].filter((p) => p.status !== 'oos').sort((a, b) => b.price - b.member - (a.price - a.member))[0];
+}
+
+export interface PerkLine { value: string; unit?: string; reason: string }
+/** 付费墙 W2 的四条：都按这个人的数据写（Stitch 付费墙 V2 的单卡 + 刻度尺；docs/brief.md 2026-10-07） */
+export function proPitch(f: ProFacts, product: Product): PerkLine[] {
+  return [
+    { value: `+${f.extra30.toLocaleString('en-US')}`, unit: '牛劲', reason: `你这 30 天拿了 ${f.earned30.toLocaleString('en-US')}，Pro ×${GROWTH_CONFIG.niujin.proRate}` },
+    { value: String(f.freezePerMonth), unit: '张冻结卡 / 月', reason: f.streak > 0 ? `断档那周自动用，连胜 ${f.streak} 周不会断` : '断档那周自动用，连胜不会断' },
+    { value: `¥${product.price - product.member}`, unit: '会员价省', reason: `${product.name} ¥${product.price} → ¥${product.member}` },
+    { value: '周期自动编排', reason: '减量周到点自动插进处方' },
+  ];
+}
+
+/** 会员价这个月省下多少：本月下的演示订单里，下单那一刻是会员的，原价 − 会员价 */
+export const proSaved = (orders: Order[], ps: ProPeriod[], from: number) =>
+  orders.filter((o) => o.atMs >= from && activeOf(ps, o.atMs)).reduce((a, o) => a + (o.price - o.member), 0);
+export const monthStart = (now: number) => { const d = new Date(now); return new Date(d.getFullYear(), d.getMonth(), 1).getTime(); };
+
+/** 「2027 年 10 月 7 日」 */
+export const dayText = (ms: number) => { const d = new Date(ms); return `${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日`; };
+export const PLAN_NAME: Record<Plan, string> = { trial: '试用', month: '月度', year: '年度' };
 
 /* ---- 读写：真用户存 store.pro；演示场景存模块内存 ---- */
 const mem = new Map<string, ProPeriod[]>(), subs = new Set<() => void>();

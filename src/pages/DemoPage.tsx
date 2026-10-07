@@ -24,6 +24,7 @@ function stepOf(path: string): string {
   if (path.startsWith('/log')) return 'log';
   if (path.startsWith('/me/level')) return 'level';
   if (path.startsWith('/me/wallet')) return 'wallet';
+  if (path.startsWith('/pro') || path.startsWith('/me/pro')) return 'pro';
   if (path.startsWith('/shop/checkout') || path.startsWith('/shop/order')) return 'order';
   if (path.startsWith('/shop')) return 'shop';
   if (path.startsWith('/me')) return 'me';
@@ -79,6 +80,7 @@ export function DemoPage() {
     { id: 'wallet', t: '钱包', d: '「我的 → 钱包 · 商城」：牛劲余额（≈ 多少元、本月进账）、我的卡券（可用的能「去用」）、最近明细；底部拇指区两个出口——「去商城抵扣」和「兑换卡券」（底部面板，牛劲不够的写还差多少）。', go: { label: '打开钱包', run: withDemo('/me/wallet') } },
     { id: 'shop', t: '商城与知识卡', d: '顶上「为你推荐」是被你的训练数据触发的知识卡（演示用户：硬拉预估 1RM 已到体重 1.62 倍 → 腰带）；点进去先看证据和怎么用，再看商品。商品五种状态：折扣、热销、新品、缺货（整卡变暗，详情页「到货提醒」，消息里来一条）、已下架（从助力带知识卡里的镁粉进）。', go: { label: '打开商城', run: withDemo('/shop') } },
     { id: 'order', t: '演示下单', d: '腰带详情点「购买」：自动选好能用的满减券，牛劲按会员价的 20% 封顶抵扣（296 − 30 − 59 = ¥207）；不收集任何支付信息，提交即成功；订单完成页显示演示订单号和牛劲余额变化，返回回到商城。', go: { label: '打开腰带', run: withDemo('/shop/item/belt-10') } },
+    { id: 'pro', t: '会员 Milo Pro', d: '「我的 → Milo Pro」：权益用你的账单讲——这 30 天会多拿多少牛劲、每月 2 张冻结卡保住你的连胜、你最该买的那件会员价省多少；「看完整对比」就地展开。选月度 / 年度 / 试用，不收集支付信息，开通即成功：小牛在同心环纹里庆祝。会员中心看有效期走到哪了（荧光刻度 = 今天）、这个月 Pro 给了你什么；「管理订阅」能切回免费，已得的不收回。', go: { label: '打开会员', run: withDemo('/pro') } },
   ];
 
   if (!desk) return null;

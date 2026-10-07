@@ -28,7 +28,7 @@ ap.add_argument('--pace', type=float, default=float(os.environ.get('GATE_PACE', 
 ap.add_argument('--timeout', type=int, default=8000, help='单步等待上限（毫秒）；卡住的步骤 8 秒就报错，不再等 30 秒')
 args = ap.parse_args()
 SIZES = {360: (360, 800), 412: (412, 915)}
-ALL = ['flow', 'story', 'deload', 'gains', 'log', 'me', 'shop', 'demo']
+ALL = ['flow', 'story', 'deload', 'gains', 'log', 'me', 'shop', 'pro', 'demo']
 only = [x for x in args.only.split(',') if x] or ALL
 if any(x not in ALL for x in only): sys.exit(f'--only 只能是 {",".join(ALL)}')
 
@@ -64,7 +64,7 @@ if not args.worker and not args.serial:
         return job, pr.returncode, pr.stdout + pr.stderr
     took = {}
     # 最慢的先跑，墙钟时间 ≈ 最慢那一份
-    slow = ['flow', 'gains', 'log', 'shop', 'me', 'story', 'deload', 'demo']
+    slow = ['flow', 'gains', 'log', 'shop', 'me', 'pro', 'story', 'deload', 'demo']
     jobs = sorted(jobs, key=lambda j: slow.index(j[0]) if j[0] in slow else 99)
     with ThreadPoolExecutor(max_workers=max(2, os.cpu_count() or 2)) as ex:
         results = list(ex.map(one, jobs))
@@ -654,7 +654,7 @@ def me_checks(b, w, h):
         ok(pg.get_by_role('button', name=re.compile(f'^{t}：')).count() == 1, f'{tag} 我的：档案格「{t}」是一个按钮')
     ok(pg.get_by_role('button', name=re.compile(r'^牛龄 .+，连胜 \d+ 周，本周已练')).count() == 1, f'{tag} 我的：第一屏是成长卡（整张卡是按钮）')
     ok(pg.get_by_role('button', name=re.compile('^钱包 · 商城')).count() == 1, f'{tag} 我的：有「钱包 · 商城」一行（6f）')
-    ok(pg.get_by_text('会员', exact=True).count() == 0, f'{tag} 我的：会员一行还没有页面（6g），不放死路按钮')
+    ok(pg.get_by_role('button', name=re.compile('^Milo Pro')).count() == 1, f'{tag} 我的：有「Milo Pro」一行（6g）')
     # 页头跟着内容滑走
     pg.locator('[class*=_scroll_]').first.evaluate('e => e.scrollTo(0, 600)'); pg.wait_for_timeout(500)
     ok(pg.evaluate('document.querySelector("h1").getBoundingClientRect().bottom < 0'), f'{tag} 我的：大标题滑出了屏幕')
@@ -861,12 +861,101 @@ def shop_checks(b, w, h):
     ok('scenario=plain-prescription' in pg.url and json.dumps(store()['wallet'], sort_keys=True) == snap, f'{tag} 场景：下单走完、带着场景参数，不写本机存储')
     pg.close()
 
+def pro_checks(b, w, h):
+    """会员（6g，P20 付费墙 / 开通成功 / P21 会员中心）：真存储走一遍 我的 → 付费墙（按你的数据、看完整对比、选方案）→ 开通成功 → 会员中心 → 切回免费；
+    试用 → 会员中心试用态 → 只剩月 / 年；数据里的演示开关；商品详情会员价旁的 Pro；演示场景不写存储；没有进账的新用户退回通用对比表。"""
+    tag = f'{w}×{h}'
+    pg = b.new_page(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True)
+    pg.on('pageerror', lambda e: errors.append(f'{tag} pro pageerror: {e}'))
+    def page_ok(name):
+        pg.wait_for_timeout(300)
+        ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} {name}：无横向溢出')
+        small = audit(pg); ok(not small, f'{tag} {name}：命中区都 ≥ 48 {small[:3]}')
+        ok(not pg.evaluate(CRUSH), f'{tag} {name}：滚动区里没有被压扁的块')
+        ok(pg.get_by_role('navigation', name='主导航').count() == 0, f'{tag} {name}：子页没有 Tab 导航')
+        if not args.no_shots and w == 360: pg.screenshot(path=os.path.join(OUT, f'pro-{name}.png'))
+    def store():
+        return pg.evaluate('JSON.parse(localStorage.getItem("milo:v1"))')
+    def row():
+        return pg.get_by_role('button', name=re.compile('^Milo Pro'))
+    def open_me():
+        pg.goto(args.base + '/me'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)
+    pg.goto(args.base + '/onboarding'); pg.evaluate('localStorage.clear()'); pg.goto(args.base + '/onboarding'); pg.wait_for_selector('button:has-text("跳过")'); pg.wait_for_timeout(600)
+    click(pg, pg.get_by_role('button', name='跳过')); click(pg, pg.get_by_role('button', name='下一步')); click(pg, pg.get_by_role('button', name='下一步'))
+    click(pg, pg.get_by_role('button', name='载入演示数据 · 练了 30 周的进阶用户')); pg.wait_for_url('**/today**'); pg.wait_for_timeout(900)
+    open_me()
+    ok(row().count() == 1 and '7 天免费试用' in row().inner_text(), f'{tag} 我的：未开通的会员行写「7 天免费试用」')
+    click(pg, row()); pg.wait_for_url('**/pro'); pg.wait_for_timeout(1600)
+    page_ok('paywall')
+    ok(pg.get_by_role('heading', name='这 30 天，Pro 会多给你').count() == 1 and pg.get_by_role('list', name='Pro 会多给你').get_by_role('listitem').count() == 4, f'{tag} 付费墙：按你的数据，四条权益')
+    ok(pg.get_by_text(re.compile(r'^你这 30 天拿了 [\d,]+，Pro ×1\.5$')).count() == 1 and pg.get_by_text('杠铃腰带 10 毫米 ¥329 → ¥296').count() == 1, f'{tag} 付费墙：牛劲按近 30 天进账算、会员价举被触发的腰带')
+    ok(pg.get_by_text(re.compile('演示模式')).count() >= 1 and pg.locator('input').count() == 0, f'{tag} 付费墙：演示模式，没有任何输入框')
+    ok(pg.get_by_role('radio').count() == 3 and pg.get_by_role('radio', name=re.compile('^年度')).get_attribute('aria-checked') == 'true', f'{tag} 付费墙：三个方案，默认年度')
+    cta = pg.get_by_role('button', name='开通年度（演示，不扣费）')
+    bb = cta.bounding_box()
+    ok(bb is not None and bb['y'] > h * 0.75, f'{tag} 付费墙：主按钮在拇指区')
+    click(pg, pg.get_by_role('button', name='看完整对比')); pg.wait_for_timeout(1300)
+    tb = pg.get_by_role('table', name='免费与 Pro 对比').bounding_box()
+    ok(tb is not None and tb['y'] < h * 0.7, f'{tag} 付费墙：看完整对比 → 表就地展开并滚进视野')
+    page_ok('paywall-table')
+    click(pg, pg.get_by_role('radio', name=re.compile('^月度'))); pg.wait_for_timeout(300)
+    ok(pg.get_by_role('button', name='开通月度（演示，不扣费）').count() == 1, f'{tag} 付费墙：选月度，主按钮跟着改')
+    click(pg, pg.get_by_role('radio', name=re.compile('^年度'))); pg.wait_for_timeout(300)
+    click(pg, pg.get_by_role('button', name='开通年度（演示，不扣费）')); pg.wait_for_timeout(1800)
+    ok(pg.get_by_role('heading', name='欢迎加入 Milo Pro').count() == 1 and pg.get_by_text(re.compile(r'^年度会员 · \d{4} 年')).count() == 1, f'{tag} 开通成功：欢迎 + 到期日')
+    pro = store()['pro']
+    ok(len(pro) == 1 and pro[0]['plan'] == 'year', f'{tag} 开通成功：年度写进存储')
+    page_ok('welcome')
+    click(pg, pg.get_by_role('button', name='开始用')); pg.wait_for_url('**/me'); pg.wait_for_timeout(900)
+    ok('到期' in row().inner_text(), f'{tag} 开通成功：「开始用」回到来源页，会员行写到期日')
+    click(pg, row()); pg.wait_for_url('**/me/pro'); pg.wait_for_timeout(1600)
+    page_ok('hub')
+    ok(pg.get_by_role('region', name=re.compile('^Milo Pro 年度，已开通')).count() == 1, f'{tag} 会员中心：会员卡 已开通 + 到期')
+    ok(pg.get_by_role('list', name='权益').get_by_role('button').count() == 4, f'{tag} 会员中心：四个权益入口都能点')
+    ok(pg.locator('[class*=_glow_]').count() == 0, f'{tag} 会员中心：没有荧光主按钮（不制造再买点的压力）')
+    click(pg, pg.get_by_role('button', name='管理订阅（演示：切回免费）')); pg.wait_for_timeout(500)
+    ok(pg.get_by_role('alertdialog', name='切回免费？').count() == 1 and pg.get_by_text(re.compile('不收回')).count() == 1, f'{tag} 会员中心：切回免费先确认，写明已得的不收回')
+    click(pg, pg.get_by_role('alertdialog').get_by_role('button', name='切回免费')); pg.wait_for_url('**/me'); pg.wait_for_timeout(700)
+    ok(pg.get_by_text(re.compile('已切回免费')).count() == 1 and '7 天免费试用' in row().inner_text(), f'{tag} 切回免费：回我的 + 提示，会员行回到未开通')
+    # 试用（先等「已切回免费」的轻提示走掉，它盖在拇指区）
+    pg.wait_for_timeout(3200)
+    click(pg, row()); pg.wait_for_url('**/pro'); pg.wait_for_timeout(900)
+    click(pg, pg.get_by_role('radio', name=re.compile('^试用'))); pg.wait_for_timeout(300)
+    click(pg, pg.get_by_role('button', name='开始 7 天试用（演示）')); pg.wait_for_timeout(1200)
+    ok(pg.get_by_text(re.compile('试用会员 · .+不自动扣费')).count() == 1, f'{tag} 试用：开通成功写不自动扣费')
+    click(pg, pg.get_by_role('button', name='开始用')); pg.wait_for_url('**/me'); pg.wait_for_timeout(800)
+    ok('试用中 · 还剩 7 天' in row().inner_text(), f'{tag} 试用：会员行写「试用中 · 还剩 7 天」')
+    click(pg, row()); pg.wait_for_url('**/me/pro'); pg.wait_for_timeout(1200)
+    page_ok('hub-trial')
+    click(pg, pg.get_by_role('button', name='开通正式会员')); pg.wait_for_url('**/pro'); pg.wait_for_timeout(900)
+    ok(pg.get_by_role('radio').count() == 2 and pg.get_by_text(re.compile('^试用还剩 \\d+ 天')).count() == 1, f'{tag} 试用中的付费墙：只剩月 / 年，写试用还剩几天')
+    # 数据里的演示开关
+    open_me()
+    sw = pg.get_by_role('switch', name='演示：会员状态')
+    ok(sw.get_attribute('aria-checked') == 'true', f'{tag} 数据：试用中，会员开关是开的')
+    sw.evaluate('e => e.scrollIntoView({ block: "center" })'); pg.wait_for_timeout(200); click(pg, sw); pg.wait_for_timeout(500)
+    ok('月 ¥18 · 年 ¥128' in row().inner_text(), f'{tag} 数据：关掉 = 免费；用过试用，会员行写价格')
+    # 商品详情会员价旁的 Pro
+    pg.goto(args.base + '/shop/item/belt-10'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)
+    click(pg, pg.get_by_role('button', name=re.compile('看看 Pro'))); pg.wait_for_url('**/pro'); pg.wait_for_timeout(500)
+    # 演示场景不写存储
+    snap = json.dumps(store()['pro'])
+    pg.goto(args.base + '/pro?scenario=plain-prescription'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)
+    click(pg, pg.get_by_role('button', name='开通年度（演示，不扣费）')); pg.wait_for_timeout(900)
+    ok(pg.get_by_role('heading', name='欢迎加入 Milo Pro').count() == 1 and json.dumps(store()['pro']) == snap, f'{tag} 场景：开通走完，不写本机存储')
+    # 没有进账的新用户：通用对比表
+    pg.goto(args.base + '/pro?scenario=cold-start'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)
+    ok(pg.get_by_role('heading', name='练得更聪明一点').count() == 1 and pg.get_by_role('table', name='免费与 Pro 对比').count() == 1, f'{tag} 新用户：讲不出「你的」，退回通用对比表')
+    page_ok('paywall-new')
+    pg.close()
+
 def guarded(name, fn, *a):
     """一个类别中途抛错（等不到元素、超时）不拖垮后面的：记一条，写明卡在这个脚本的哪一行"""
     try: fn(*a)
     except Exception as e:
         here = [f for f in traceback.extract_tb(e.__traceback__) if f.filename.endswith('shoot_6a.py')]
         at = f'第 {here[-1].lineno} 行 {here[-1].line}' if here else ''
+        if len(here) > 1 and here[-1].name in ('click', 'tap', 'until', 'settle', 'audit'): at += f' ← 第 {here[-2].lineno} 行 {here[-2].line}'   # 卡在公用的点按 / 等待里时，写明是哪一步调的
         errors.append(f'{name} 中途出错：{str(e).splitlines()[0]}  @ {at}')
 
 with sync_playwright() as p:
@@ -881,7 +970,7 @@ with sync_playwright() as p:
     b.new_page = new_page
     CHECKS = {'flow': lambda W, H, w: run(b, W, H, w == 360), 'story': lambda W, H, w: story_checks(b, W, H), 'deload': lambda W, H, w: deload_checks(b, W, H),
               'gains': lambda W, H, w: gains_checks(b, W, H), 'log': lambda W, H, w: log_checks(b, W, H), 'me': lambda W, H, w: me_checks(b, W, H),
-              'shop': lambda W, H, w: shop_checks(b, W, H)}
+              'shop': lambda W, H, w: shop_checks(b, W, H), 'pro': lambda W, H, w: pro_checks(b, W, H)}
     for c, w in jobs:
         W, H = SIZES[w]
         if c in CHECKS: guarded(f'{c} · {w}', CHECKS[c], W, H, w)
