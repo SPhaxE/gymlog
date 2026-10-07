@@ -44,12 +44,16 @@ function belt(src: Pick<Source, 'history' | 'profile'>, now: number): TipHit | n
     const recs = exerciseRecords(env, src.history, ex.id).filter((r) => r.e1rm != null && r.session.startMs <= now);
     const last = recs.at(-1);
     if (!last || last.session.startMs < now - 28 * DAY) continue;
-    if (!best || last.e1rm! > best.e1rm) best = { name: ex.name, e1rm: last.e1rm!, series: recs.slice(-12).map((r) => r.e1rm! / w) };
+    // 近 4 周最好的一次；走势画「到那天为止的最好成绩」（减量周的低点不让线来回折）
+    const top = Math.max(...recs.filter((r) => r.session.startMs >= now - 28 * DAY).map((r) => r.e1rm!));
+    let run = 0;
+    const series = recs.map((r) => (run = Math.max(run, r.e1rm!)) / w).slice(-12);
+    if (!best || top > best.e1rm) best = { name: ex.name, e1rm: top, series };
   }
   if (!best || best.e1rm / w < BELT_RATIO) return null;
   const ratio = Math.round((best.e1rm / w) * 100) / 100;
   return { id: 'belt', why: `你的${best.name}预估 1RM 已到体重的 ${ratio} 倍`,
-    evidence: { label: `${best.name}预估 1RM ÷ 体重`, value: ratio.toFixed(2), unit: '× 体重', series: best.series, threshold: BELT_RATIO, detail: `${fmt(best.e1rm)} kg ÷ ${fmt(w)} kg` } };
+    evidence: { label: `${best.name}最好预估 1RM ÷ 体重`, value: ratio.toFixed(2), unit: '× 体重', series: best.series, threshold: BELT_RATIO, detail: `${fmt(best.e1rm)} kg ÷ ${fmt(w)} kg` } };
 }
 
 function creatine(src: Pick<Source, 'history'>, now: number): TipHit | null {

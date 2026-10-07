@@ -2,8 +2,8 @@
  *  五层：
  *  - 战略：用户在这里回答三件事——我现在长到哪儿了（牛龄 · 连胜 · 牛劲）、我的档案对不对（改一项，处方跟着变）、我的数据我做主（导出 / 载入示例 / 清除）。
  *  - 范围：成长卡 + 档案四格（经验 · 时长 · 器械 · 体型，含可选体重）+ 消息 + 导航三项设置（进度环 · 休息描边 · 结束提示）+ 数据（载入示例 · 导出 CSV · 清除）+ 关于。
- *    「钱包 · 商城」「会员」两行等 6f / 6g 的页面有了再出现（不放点了没去处的行）。
- *  - 结构：Tab 根页（导航「我的」选中）；整页一个滚动区；子页：牛龄 /me/level、消息 /me/messages；改档案走底部面板（点哪格改哪项）。
+ *    「钱包 · 商城」一行（6f：牛劲余额 · 可用卡券数，进钱包，钱包里去商城）；「会员」一行等 6g 的页面有了再出现（不放点了没去处的行）。
+ *  - 结构：Tab 根页（导航「我的」选中）；整页一个滚动区；子页：牛龄 /me/level、钱包 /me/wallet（→ 商城 /shop）、消息 /me/messages；改档案走底部面板（点哪格改哪项）。
  *  - 框架：页头（跟着滑走）→ 成长卡（第一屏主角）→ 档案四格 → 消息 → 导航 → 数据 → 关于。没有主操作按钮（设置页）；面板里的「保存」在拇指区。
  *  - 表现：荧光只有成长卡的进度条一处；危险操作（清除）用危险色，载入 / 清除都先二次确认；设置的开关立即生效、不需要保存。
  *  设计过程见 design/hifi/me/（线框 me2 W2 成长卡做主角；Stitch 第 1 轮 m6）。 */
@@ -18,7 +18,7 @@ import { mergeProfile, profileError, profileFacts, updateProfile } from '../data
 import { setSettings } from '../data/settings';
 import { DEFAULT_PROFILE, demoState, store, useStore } from '../data/store';
 import { useSource } from '../data/useSource';
-import { restockMessages, useWallet } from '../data/wallet';
+import { couponsOf, restockMessages, useWallet } from '../data/wallet';
 import { weeklyTarget } from '../engine';
 import type { Profile } from '../engine/types';
 import { GoalHint } from './GoalHint';
@@ -88,7 +88,8 @@ export function MePage({ scenario, now, onTab }: { scenario?: string; now: numbe
             </div>
           </section>
 
-          <div className={s.card}><List label="消息">
+          <div className={s.card}><List label="钱包与消息">
+            <ListRow kind="nav" title="钱包 · 商城" detail={`牛劲 ${g.niujin.balance.toLocaleString('en-US')} · ${couponsOf(wallet, now).filter((c) => c.state === 'available').length + (g.streak.freezeCards > 0 ? 1 : 0)} 张卡券可用`} onClick={() => nav(`/me/wallet${loc.search}`)} />
             <ListRow kind="nav" title="消息" detail="同时达成的其余奖励、冻结卡自动使用" onClick={() => nav(`/me/messages${loc.search}`)}
               trailing={unread > 0 ? <Tag tone="strong">{unread} 条新</Tag> : undefined} />
           </List></div>

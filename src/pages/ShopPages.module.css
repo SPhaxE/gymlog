@@ -1,0 +1,42 @@
+/* 钱包与商城的子页（6f）：整页一个滚动区，主按钮固定在拇指区（下面垫一层渐隐底色） */
+.scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.body { display: grid; align-content: start; grid-auto-rows: max-content; gap: var(--milo-space-l); padding: var(--milo-space-m) var(--milo-size-gutter) var(--milo-space-4xl); }
+/* 有固定主按钮的页：底部留出按钮的高度 */
+.withCta { padding-bottom: calc(var(--milo-size-button-h) + var(--milo-space-5xl)); }
+.withExits { padding-bottom: calc(var(--milo-size-hit-min) + var(--milo-space-l) + var(--milo-space-5xl)); }
+.sec { display: grid; gap: var(--milo-space-s); }
+.stack { display: grid; gap: var(--milo-space-xs); }
+.muted { color: var(--milo-color-text-secondary); }
+.note { margin: 0; color: var(--milo-color-text-secondary); text-wrap: pretty; }
+.cta { position: absolute; z-index: 9; left: var(--milo-size-gutter); right: var(--milo-size-gutter); bottom: var(--milo-space-2xl); display: grid; gap: var(--milo-space-xs); isolation: isolate; }
+.cta::before { content: ''; position: absolute; z-index: -1; pointer-events: none; left: calc(var(--milo-size-gutter) * -1); right: calc(var(--milo-size-gutter) * -1);
+  top: calc(var(--milo-space-3xl) * -1); bottom: calc(var(--milo-space-2xl) * -1); background: linear-gradient(to bottom, transparent, var(--milo-color-bg-base) 45%); }
+.ctaNote { margin: 0; text-align: center; color: var(--milo-color-text-secondary); }
+.link { position: relative; justify-self: center; min-height: var(--milo-size-hit-min); padding: 0 var(--milo-space-m); border: 0; background: none; color: var(--milo-color-text-primary);
+  font: inherit; text-decoration: underline; text-underline-offset: var(--milo-space-2xs); }
+.balanceChip { display: inline-flex; align-items: center; gap: var(--milo-space-2xs); min-height: var(--milo-size-hit-min); padding: 0 var(--milo-space-s); border: 0; border-radius: var(--milo-radius-pill);
+  background: none; color: var(--milo-color-text-primary); font: inherit; }
+.balanceChip b { font-family: var(--milo-font-number); }
+.card { padding: var(--milo-space-xs) 0; border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised); }
+.foot { margin: 0; text-align: center; color: var(--milo-color-text-secondary); }
+/* 知识卡 */
+.kTitle { margin: 0; color: var(--milo-color-text-primary); }
+.how { display: grid; gap: var(--milo-space-xs); margin: 0; padding: 0; list-style: none; counter-reset: how; }
+.how li { display: flex; gap: var(--milo-space-m); align-items: baseline; padding: var(--milo-space-m); border-radius: var(--milo-radius-m); background: var(--milo-color-bg-raised); color: var(--milo-color-text-primary); }
+.how b { font-family: var(--milo-font-number); color: var(--milo-color-text-secondary); }
+/* 详情 */
+.itemHead { display: grid; gap: var(--milo-space-xs); }
+.tagLine { display: flex; align-items: center; gap: var(--milo-space-s); }
+.off { opacity: var(--milo-opacity-done-row); }
+.switchRow { display: flex; align-items: center; gap: var(--milo-space-m); padding: var(--milo-space-s) var(--milo-space-m); color: var(--milo-color-text-primary); }
+.switchText { display: grid; gap: var(--milo-space-2xs); flex: 1; }
+.gray { display: inline-block; margin-left: var(--milo-space-xs); padding: 0 var(--milo-space-xs); border-radius: var(--milo-radius-xs); background: var(--milo-color-data-track); color: var(--milo-color-text-secondary); }
+/* 订单完成 */
+.done { display: grid; justify-items: center; gap: var(--milo-space-xs); padding-top: var(--milo-space-l); text-align: center; color: var(--milo-color-text-primary); }
+.doneMascot { display: grid; place-items: end center; width: 100%; height: calc(var(--milo-space-5xl) * 2.6); --mascot-unit: calc(var(--milo-stroke-hairline) * 0.2); --mascot-max-h: calc(var(--milo-space-5xl) * 2.6 * 0.9); }
+.doneTitle { margin: 0; }
+.kv { display: grid; gap: 0; }
+.kvRow { display: flex; justify-content: space-between; align-items: baseline; gap: var(--milo-space-m); min-height: var(--milo-size-hit-min); padding: var(--milo-space-xs) 0;
+  border-bottom: var(--milo-stroke-hairline) solid var(--milo-color-line-default); color: var(--milo-color-text-primary); }
+.kvRow > span:first-child { color: var(--milo-color-text-secondary); }
+.sheetBody { display: grid; align-content: start; grid-auto-rows: max-content; gap: var(--milo-space-s); padding: var(--milo-space-s) 0 var(--milo-space-l); }

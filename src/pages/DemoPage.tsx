@@ -23,6 +23,9 @@ function stepOf(path: string): string {
   if (path.startsWith('/log/')) return 'logdetail';
   if (path.startsWith('/log')) return 'log';
   if (path.startsWith('/me/level')) return 'level';
+  if (path.startsWith('/me/wallet')) return 'wallet';
+  if (path.startsWith('/shop/checkout') || path.startsWith('/shop/order')) return 'order';
+  if (path.startsWith('/shop')) return 'shop';
   if (path.startsWith('/me')) return 'me';
   if (path.startsWith('/today')) return st.active ? 'session' : 'today';
   return '';
@@ -73,6 +76,9 @@ export function DemoPage() {
     { id: 'logdetail', t: '训练详情', d: '点记录页的一行：日期飞成标题、部位飞成副标题；汇总三格、新纪录一行，每个动作一张卡，每一组「重量 × 次数」（热身灰字、递减组标出）；点动作卡头进它的进步曲线，返回回到这里；右上角「更多」可以删除这次训练（二次确认、不能撤销），删完回记录页，各页的容量、趋势、新纪录、处方都按新历史重算；返回记录页还原滚动位置和展开的周数。', go: { label: '从记录页进一次训练', run: withDemo('/log') } },
     { id: 'me', t: '我的', d: '第一屏是成长卡：小牛、牛龄、离下一级还差什么、连胜 · 本周 · 牛劲，点它进牛龄页；下面档案四格（点哪格改哪项，体重可选），消息、导航三项设置（进度环 · 休息描边 · 结束提示，立即生效）、数据（载入示例 · 导出 CSV · 清除，都先确认）、关于。', go: { label: '打开我的', run: withDemo('/me') } },
     { id: 'level', t: '牛龄', d: '5 段名字里当前一段加下划线，小牛站在一圈圈配重片里；离下一级用能照着做的说法（涨幅太大就写「再完成 N 个训练周期」）；连胜、本周、冻结卡三格，最近 12 周守约点阵，成长记录（连着破的几个 PR 合成一行）。删训练后牛龄或连胜回退，会在记录里写一行说明。', go: { label: '打开牛龄', run: withDemo('/me/level') } },
+    { id: 'wallet', t: '钱包', d: '「我的 → 钱包 · 商城」：牛劲余额（≈ 多少元、本月进账）、我的卡券（可用的能「去用」）、最近明细；底部拇指区两个出口——「去商城抵扣」和「兑换卡券」（底部面板，牛劲不够的写还差多少）。', go: { label: '打开钱包', run: withDemo('/me/wallet') } },
+    { id: 'shop', t: '商城与知识卡', d: '顶上「为你推荐」是被你的训练数据触发的知识卡（演示用户：硬拉预估 1RM 已到体重 1.62 倍 → 腰带）；点进去先看证据和怎么用，再看商品。商品五种状态：折扣、热销、新品、缺货（整卡变暗，详情页「到货提醒」，消息里来一条）、已下架（从助力带知识卡里的镁粉进）。', go: { label: '打开商城', run: withDemo('/shop') } },
+    { id: 'order', t: '演示下单', d: '腰带详情点「购买」：自动选好能用的满减券，牛劲按会员价的 20% 封顶抵扣（296 − 30 − 59 = ¥207）；不收集任何支付信息，提交即成功；订单完成页显示演示订单号和牛劲余额变化，返回回到商城。', go: { label: '打开腰带', run: withDemo('/shop/item/belt-10') } },
   ];
 
   if (!desk) return null;

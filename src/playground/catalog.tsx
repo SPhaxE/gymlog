@@ -648,7 +648,7 @@ export const CATALOG: Entry[] = [
     render: (p) => { const k = KNOWLEDGE[p.card as KnowledgeId]; return <KnowledgeTip {...k} variant={p.variant === 'k-tip' ? 'tip' : 'header'} />; },
   },
   {
-    name: 'ProductCard', group: '商城', covers: ['StatusTag', 'ProductGrid'],
+    name: 'ProductCard', group: '商城', covers: ['StatusTag', 'ProductGrid', 'ProductImage'],
     desc: '商品卡（6f，商城 Stitch V2 排法 + V1 缺货整卡变暗）：grid = 商城两列（图左上状态标 → 商家 → 名字 → 价格 + 划线价 → 会员价 · 牛劲抵）；row = 知识卡里的相关商品行。状态：热销 / 折扣 / 新品（实心标）、缺货（虚线标、整卡变暗，仍可点进详情设到货提醒）、已下架（灰字，不在商城列表）。商家与品牌全部虚构，价格为示例；没有商品图时显示品类占位。',
     axes: { product: PRODUCTS.map((x) => x.id), variant: ['v-grid', 'v-row'] }, rows: ['product'], cols: 'variant', size: 'card',
     render: (p) => { const x = PRODUCTS.find((y) => y.id === p.product)!; const off = Math.min(Math.floor(x.member * 0.2), Math.floor(growthSample().niujin.balance / 100));

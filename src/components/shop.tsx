@@ -29,6 +29,11 @@ function Pic({ id, category, className }: { id?: string; category: '护具' | '�
   );
 }
 
+/** 商品详情的大图（同一张商品图，占满宽度；缺货 / 已下架变灰） */
+export function ProductImage({ id, category, dim }: { id?: string; category: '护具' | '补给'; dim?: boolean }) {
+  return <span className={cx(s.hero, dim && s.dim)}><Pic id={id} category={category} /></span>;
+}
+
 export interface ProductCardProps {
   id?: string; name: string; merchant: string; spec?: string; price: number; member: number; category: '护具' | '补给'; status: ProductStatus; was?: number;
   /** 牛劲最多能抵多少元（会员价 × 20% 与余额取小） */

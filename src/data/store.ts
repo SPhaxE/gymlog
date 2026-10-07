@@ -155,8 +155,9 @@ export function demoState(now: number, profile?: Profile, phase = DEMO_PHASE): P
   });
   shapeNextSteps(history);
   backfill(history, profile ?? u.profile, now);
-  // 演示用户填了体重（建档里可选）：腰带知识卡要用「预估 1RM ÷ 体重」
-  return { profile: profile ?? { ...u.profile, weightKg: DEMO_WEIGHT }, history, deload: { status: 'none', atMs: 0 }, deloads: u.deloads.filter((ms) => ms >= from && ms < startOfDay(now)), demo: true,
+  // 演示用户填了体重（建档里可选）：腰带知识卡要用「预估 1RM ÷ 体重」；带着自己档案载入、又没填体重时，也用演示用户的体重（数据是演示用户的）
+  const p = profile ?? u.profile;
+  return { profile: p.weightKg ? p : { ...p, weightKg: DEMO_WEIGHT }, history, deload: { status: 'none', atMs: 0 }, deloads: u.deloads.filter((ms) => ms >= from && ms < startOfDay(now)), demo: true,
     messagesSeenAt: startOfDay(now) - 5 * DAY, wallet: demoWallet(now) };
 }
 

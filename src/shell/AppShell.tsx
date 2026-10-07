@@ -17,6 +17,12 @@ import { LogDetailPage } from '../pages/LogDetailPage';
 import { LevelPage } from '../pages/LevelPage';
 import { LogPage } from '../pages/LogPage';
 import { MePage } from '../pages/MePage';
+import { CheckoutPage } from '../pages/CheckoutPage';
+import { GuidePage } from '../pages/GuidePage';
+import { ItemPage } from '../pages/ItemPage';
+import { OrderPage } from '../pages/OrderPage';
+import { ShopPage } from '../pages/ShopPage';
+import { WalletPage } from '../pages/WalletPage';
 import { MessagesPage } from '../pages/MessagesPage';
 import { OnboardingPage } from '../pages/OnboardingPage';
 import { SummaryPage } from '../pages/SummaryPage';
@@ -105,6 +111,12 @@ function Routed() {
       <Route path="/me" element={needProfile ?? tab(<MePage key={scenario} scenario={scenario} now={now} onTab={onTab} />)} />
       <Route path="/me/level" element={needProfile ?? <LevelPage key={scenario} scenario={scenario} now={now} />} />
       <Route path="/me/messages" element={needProfile ?? <MessagesPage key={scenario} scenario={scenario} now={now} />} />
+      <Route path="/me/wallet" element={needProfile ?? <WalletPage key={scenario} scenario={scenario} now={now} />} />
+      <Route path="/shop" element={needProfile ?? <ShopPage key={scenario} scenario={scenario} now={now} />} />
+      <Route path="/shop/guide/:id" element={needProfile ?? <GuidePage key={loc.pathname} scenario={scenario} now={now} />} />
+      <Route path="/shop/item/:id" element={needProfile ?? <ItemPage key={loc.pathname} scenario={scenario} now={now} />} />
+      <Route path="/shop/checkout" element={needProfile ?? <CheckoutPage key={loc.search} scenario={scenario} now={now} />} />
+      <Route path="/shop/order/:id" element={needProfile ?? <OrderPage key={loc.pathname} scenario={scenario} now={now} />} />
       <Route path="/patterns/:kind" element={tab(<PatternRoute onTab={onTab} />)} />
       <Route path="/playground" element={<Playground now={now} />} />
       {/* /preview = 方案台（2026-10-06 用户）；原来的基础规范页挪到 /spec */}

@@ -178,14 +178,14 @@ describe('记录页 → 训练详情 → 删除（2026-10-06）', () => {
 describe('我的（P11）→ 牛龄（P13）→ 消息（2026-10-06）', () => {
   beforeEach(() => { store.clear(); store.update((x) => ({ ...x, ...demoState(Date.now()), draft: null })); });
 
-  it('「我的」：成长卡 + 档案四格 + 导航 + 数据 + 关于；改时长保存后档案变了；钱包 · 商城 / 会员两行不放（还没有页面）', async () => {
+  it('「我的」：成长卡 + 档案四格 + 导航 + 数据 + 关于；改时长保存后档案变了；有「钱包 · 商城」一行（6f），会员一行不放（6g 还没有页面）', async () => {
     window.history.pushState({}, '', '/me');
     render(<App />);
     expect(await screen.findByRole('heading', { level: 1, name: '我的' })).toBeInTheDocument();
     // 演示用户的小级随载入那天在公牛 1–3 级之间（CI 时区不同）
     expect(screen.getByRole('button', { name: /^牛龄 公牛 [123] 级，连胜 \d+ 周/ })).toBeInTheDocument();
     for (const t of ['训练经验', '单次时长', '可用器械', '体型示意']) expect(screen.getByRole('button', { name: new RegExp(`^${t}：`) })).toBeInTheDocument();
-    expect(screen.queryByText('钱包 · 商城')).toBeNull();
+    expect(screen.getByText('钱包 · 商城')).toBeTruthy();
     const before = store.get().profile!.minutes;
     screen.getByRole('button', { name: /^单次时长：/ }).click();
     const sheet = await screen.findByRole('dialog', { name: '单次训练时长' });

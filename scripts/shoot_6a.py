@@ -9,21 +9,21 @@
 提速（2026-10-06）：
   - 默认两个宽度各开一个进程同时跑（--serial 关掉），总时间约减半；
   - --no-shots 不再等故事 8 幕自己播完（只为截图）；
-  - --only 只跑某几类：flow（主流程）、story、deload、gains、log、me、demo，逗号分隔——改哪页只跑哪页，提交前再跑一遍完整的；
+  - --only 只跑某几类：flow（主流程）、story、deload、gains、log、me、shop（钱包与商城）、demo，逗号分隔——改哪页只跑哪页，提交前再跑一遍完整的；
   - --width 360|412 只跑一种宽度（并行时内部用）。"""
-import argparse, io, os, re, subprocess, sys
+import argparse, json, io, os, re, subprocess, sys
 from playwright.sync_api import sync_playwright
 
 ap = argparse.ArgumentParser()
 ap.add_argument('--base', default='http://127.0.0.1:5199')
 ap.add_argument('--chromium', default=os.environ.get('CHROMIUM', '/opt/pw-browsers/chromium'))
 ap.add_argument('--no-shots', action='store_true')
-ap.add_argument('--only', default='', help='flow,story,deload,gains,log,me,demo 逗号分隔；默认全部')
+ap.add_argument('--only', default='', help='flow,story,deload,gains,log,me,shop,demo 逗号分隔；默认全部')
 ap.add_argument('--width', type=int, choices=[360, 412], help='只跑一种宽度（并行时内部用）')
 ap.add_argument('--serial', action='store_true', help='两个宽度不并行')
 args = ap.parse_args()
 SIZES = {360: (360, 800), 412: (412, 915)}
-ALL = ['flow', 'story', 'deload', 'gains', 'log', 'me', 'demo']
+ALL = ['flow', 'story', 'deload', 'gains', 'log', 'me', 'shop', 'demo']
 only = [x for x in args.only.split(',') if x] or ALL
 if any(x not in ALL for x in only): sys.exit(f'--only 只能是 {",".join(ALL)}')
 
@@ -588,7 +588,8 @@ def me_checks(b, w, h):
     for t in ('训练经验', '单次时长', '可用器械', '体型示意'):
         ok(pg.get_by_role('button', name=re.compile(f'^{t}：')).count() == 1, f'{tag} 我的：档案格「{t}」是一个按钮')
     ok(pg.get_by_role('button', name=re.compile(r'^牛龄 .+，连胜 \d+ 周，本周已练')).count() == 1, f'{tag} 我的：第一屏是成长卡（整张卡是按钮）')
-    ok(pg.get_by_role('listitem').filter(has_text='钱包').count() == 0 and pg.get_by_text('会员', exact=True).count() == 0, f'{tag} 我的：钱包 · 商城 / 会员两行还没有页面，不放死路按钮')
+    ok(pg.get_by_role('button', name=re.compile('^钱包 · 商城')).count() == 1, f'{tag} 我的：有「钱包 · 商城」一行（6f）')
+    ok(pg.get_by_text('会员', exact=True).count() == 0, f'{tag} 我的：会员一行还没有页面（6g），不放死路按钮')
     # 页头跟着内容滑走
     pg.locator('[class*=_scroll_]').first.evaluate('e => e.scrollTo(0, 600)'); pg.wait_for_timeout(500)
     ok(pg.evaluate('document.querySelector("h1").getBoundingClientRect().bottom < 0'), f'{tag} 我的：大标题滑出了屏幕')
@@ -681,6 +682,102 @@ def me_checks(b, w, h):
     ok(pg.get_by_role('button', name=re.compile('^导出 CSV')).is_disabled(), f'{tag} 我的·没有历史：导出 CSV 不可用，写明「还没有训练记录」')
     pg.close()
 
+def shop_checks(b, w, h):
+    """钱包与商城（6f，P14–P19）：真存储（演示数据）走一遍 钱包 → 商城 → 知识卡 → 详情 → 下单 → 订单完成 → 钱包；兑换卡券；缺货到货提醒 → 消息；已下架；演示场景不写存储。"""
+    tag = f'{w}×{h}'
+    pg = b.new_page(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True)
+    pg.on('pageerror', lambda e: errors.append(f'{tag} shop pageerror: {e}'))
+    def page_ok(name):
+        pg.wait_for_timeout(300)
+        ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} {name}：无横向溢出')
+        small = pg.evaluate(AUDIT); ok(not small, f'{tag} {name}：命中区都 ≥ 48 {small[:3]}')
+        ok(not pg.evaluate(CRUSH), f'{tag} {name}：滚动区里没有被压扁的块')
+        ok(pg.get_by_role('navigation', name='主导航').count() == 0, f'{tag} {name}：子页没有 Tab 导航')
+        if not args.no_shots and w == 360: pg.screenshot(path=os.path.join(OUT, f'shop-{name}.png'))
+    def tap(loc):
+        loc.first.evaluate('e => e.scrollIntoView({ block: "center" })'); pg.wait_for_timeout(250); click(pg, loc)
+    def store():
+        return pg.evaluate('JSON.parse(localStorage.getItem("milo:v1"))')
+    def niujin():
+        return int(pg.get_by_role('button', name=re.compile('^钱包 · 商城')).inner_text().split('牛劲 ')[1].split(' ')[0].replace(',', ''))
+    # 真存储：建档最后一步载入演示数据
+    pg.goto(args.base + '/onboarding'); pg.evaluate('localStorage.clear()'); pg.goto(args.base + '/onboarding'); pg.wait_for_selector('button:has-text("跳过")'); pg.wait_for_timeout(600)
+    click(pg, pg.get_by_role('button', name='跳过')); click(pg, pg.get_by_role('button', name='下一步')); click(pg, pg.get_by_role('button', name='下一步'))
+    click(pg, pg.get_by_role('button', name='载入演示数据 · 练了 30 周的进阶用户')); pg.wait_for_url('**/today**'); pg.wait_for_timeout(900)
+    pg.goto(args.base + '/me'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)
+    before = niujin()
+    ok(before >= 6000, f'{tag} 我的：「钱包 · 商城」行写牛劲余额（{before}）')
+    tap(pg.get_by_role('button', name=re.compile('^钱包 · 商城'))); pg.wait_for_url('**/me/wallet'); pg.wait_for_timeout(900)
+    page_ok('wallet')
+    ok(pg.get_by_text('牛劲余额', exact=True).count() == 1 and pg.get_by_text(re.compile(r'^我的卡券 · \d+ 张可用$')).count() == 1, f'{tag} 钱包：余额 + 我的卡券')
+    ok(pg.get_by_role('button', name=re.compile('^去用')).count() == 2, f'{tag} 钱包：两张演示券都能「去用」')
+    # 兑换：面板 → 免邮券 → 提示，余额少 300
+    click(pg, pg.get_by_role('button', name=re.compile('^兑换卡券'))); pg.wait_for_timeout(500)
+    sheet = pg.get_by_role('dialog', name='兑换卡券')
+    ok(sheet.count() == 1 and sheet.get_by_role('button', name='兑换').count() == 3, f'{tag} 钱包：兑换走底部面板，三种券')
+    page_ok('wallet-redeem')
+    click(pg, sheet.get_by_role('button', name='兑换').nth(1)); pg.wait_for_timeout(600)
+    ok(sheet.count() == 0 and pg.get_by_text('已兑换：免邮券').count() == 1, f'{tag} 钱包：兑换后面板收起、有提示')
+    ok(any(a['label'] == '免邮券' and a['cost'] == 300 for a in store()['wallet']['actions'][-1:]), f'{tag} 钱包：兑换写进存储')
+    # 去商城
+    click(pg, pg.get_by_role('button', name=re.compile('^去商城抵扣'))); pg.wait_for_url('**/shop'); pg.wait_for_timeout(900)
+    page_ok('shop')
+    ok(pg.get_by_text('知识卡 · 按你的训练数据').count() == 1 and pg.get_by_text(re.compile('硬拉预估 1RM 已到体重的 1\\.\\d+ 倍')).count() >= 1, f'{tag} 商城：为你推荐是数据触发的腰带知识卡')
+    for t in ('折扣', '热销', '新品', '缺货'): ok(pg.get_by_text(t, exact=True).count() >= 1, f'{tag} 商城：有「{t}」标')
+    ok(pg.get_by_text('液体镁粉 50 毫升').count() == 0, f'{tag} 商城：已下架的不在列表里')
+    click(pg, pg.get_by_role('radio', name='补给')); pg.wait_for_timeout(400)
+    ok(pg.get_by_role('button', name=re.compile('^杠铃腰带 10 毫米，')).count() == 0 and pg.get_by_role('button', name=re.compile('^乳清蛋白')).count() == 1, f'{tag} 商城：品类「补给」只剩补给')
+    click(pg, pg.get_by_role('radio', name='全部')); pg.wait_for_timeout(300)
+    # 知识卡
+    click(pg, pg.get_by_role('button', name=re.compile('^知识卡 · 按你的训练数据'))); pg.wait_for_url('**/shop/guide/belt'); pg.wait_for_timeout(900)
+    page_ok('guide')
+    ok(pg.get_by_role('figure', name=re.compile('已越过推荐门槛')).count() == 1, f'{tag} 知识卡：证据面板写「已越过推荐门槛」')
+    ok(pg.get_by_text(re.compile('不构成医疗建议')).count() == 1 and pg.get_by_text(re.compile(r'\+\d+%')).count() == 0, f'{tag} 知识卡：写「不构成医疗建议」，没有功效百分比')
+    tap(pg.get_by_role('button', name='不再提示这一类')); pg.wait_for_timeout(400)
+    ok('belt' in store()['wallet']['muted'], f'{tag} 知识卡：「不再提示这一类」记进存储')
+    tap(pg.get_by_role('button', name=re.compile('恢复提示'))); pg.wait_for_timeout(300)
+    click(pg, pg.get_by_role('button', name='看杠铃腰带 10 毫米')); pg.wait_for_url('**/shop/item/belt-10'); pg.wait_for_timeout(900)
+    page_ok('item')
+    ok(pg.get_by_text('¥399').count() >= 1 and pg.get_by_text('会员 ¥296').count() == 1 and pg.get_by_text('牛劲可抵 ¥59').count() == 1, f'{tag} 详情：划线价、会员价、牛劲可抵 ¥59')
+    ok(pg.get_by_role('radio', name='M').get_attribute('aria-checked') == 'true', f'{tag} 详情：规格默认选中间一档 M')
+    click(pg, pg.get_by_role('button', name='购买 · 会员价 ¥296')); pg.wait_for_url('**/shop/checkout**'); pg.wait_for_timeout(900)
+    page_ok('checkout')
+    ok(pg.get_by_text(re.compile('演示模式')).count() >= 1 and pg.locator('input').count() == 0, f'{tag} 确认订单：演示模式横幅，没有任何输入框')
+    ok(pg.get_by_role('button', name='提交订单 · ¥207').count() == 1, f'{tag} 确认订单：满减券 + 牛劲 = ¥207')
+    sw = pg.get_by_role('switch', name='牛劲抵扣'); sw.click(); pg.wait_for_timeout(300)
+    ok(pg.get_by_role('button', name='提交订单 · ¥266').count() == 1, f'{tag} 确认订单：关掉牛劲抵扣 = ¥266')
+    sw.click(); pg.wait_for_timeout(300)
+    btn = pg.get_by_role('button', name='提交订单 · ¥207'); click(pg, btn); pg.wait_for_timeout(150)
+    ok(pg.locator('button[aria-busy=true]').count() == 1, f'{tag} 确认订单：提交中按钮禁用（不会重复下单）')
+    pg.wait_for_url('**/shop/order/**'); pg.wait_for_timeout(1000)
+    page_ok('order')
+    ok(pg.get_by_text('下单成功').count() == 1 and pg.get_by_text(re.compile(r'演示订单 MILO-\d{8}-\d{4}')).count() == 1, f'{tag} 订单完成：下单成功 + 演示订单号')
+    ok(len(store()['wallet']['orders']) == 1, f'{tag} 订单完成：只下了一单')
+    pg.go_back(); pg.wait_for_timeout(800)
+    ok('/shop/checkout' not in pg.url, f'{tag} 订单完成：浏览器返回不回到确认订单（{pg.url.split("5199")[-1]}）')
+    pg.goto(args.base + '/me'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)
+    ok(niujin() == before - 300 - 5900, f'{tag} 我的：牛劲余额扣了兑换 300 + 抵扣 5,900（{before} → {niujin()}）')
+    # 缺货：到货提醒 → 消息
+    pg.goto(args.base + '/shop/item/knee'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)
+    page_ok('item-oos')
+    ok(pg.get_by_role('button', name=re.compile('^购买')).count() == 0 and pg.get_by_text(re.compile('预计')).count() == 1, f'{tag} 缺货：没有购买键，写预计到货')
+    click(pg, pg.get_by_role('button', name='到货提醒')); pg.wait_for_timeout(500)
+    click(pg, pg.get_by_role('button', name='已设到货提醒 · 看消息')); pg.wait_for_url('**/me/messages'); pg.wait_for_timeout(900)
+    ok(pg.get_by_text('7 毫米护膝 已到货').count() == 1, f'{tag} 缺货：消息里来一条「已到货」')
+    # 已下架
+    pg.goto(args.base + '/shop/item/chalk'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)
+    page_ok('item-off')
+    ok(pg.get_by_text('这件商品已下架').count() == 1, f'{tag} 已下架：详情页提示')
+    click(pg, pg.get_by_role('button', name='回商城看看别的')); pg.wait_for_url('**/shop'); pg.wait_for_timeout(500)
+    # 演示场景：不写存储
+    snap = json.dumps(store()['wallet'], sort_keys=True)
+    pg.goto(args.base + '/shop/item/straps?scenario=plain-prescription'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)
+    click(pg, pg.get_by_role('button', name=re.compile('^购买'))); pg.wait_for_url('**/shop/checkout**'); pg.wait_for_timeout(800)
+    ok(pg.get_by_text('免邮券 −¥10').count() == 1, f'{tag} 场景·确认订单：助力带不到 ¥99，自动用免邮券抵运费')
+    click(pg, pg.get_by_role('button', name=re.compile('^提交订单'))); pg.wait_for_url('**/shop/order/**'); pg.wait_for_timeout(900)
+    ok('scenario=plain-prescription' in pg.url and json.dumps(store()['wallet'], sort_keys=True) == snap, f'{tag} 场景：下单走完、带着场景参数，不写本机存储')
+    pg.close()
+
 widths = [args.width] if args.width else list(SIZES)
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path=args.chromium if os.path.exists(args.chromium) else None)
@@ -692,6 +789,7 @@ with sync_playwright() as p:
         if 'gains' in only: gains_checks(b, W, H)
         if 'log' in only: log_checks(b, W, H)
         if 'me' in only: me_checks(b, W, H)
+        if 'shop' in only: shop_checks(b, W, H)
     # /demo 电脑版（只和 360 宽的那一份一起跑，不分宽度）
     if 'demo' in only and 360 in widths:
         d = b.new_page(viewport={'width': 1440, 'height': 900})
