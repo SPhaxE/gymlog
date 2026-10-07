@@ -5,6 +5,7 @@
 import { useRef, type ReactNode } from 'react';
 import {
   BackToTop, Banner, BodyFigure, DotCalendar, SteelPlate, GainGroupHead, GainRow, GainSummary, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
+  BodyPicker, PickRow, SwapRow, WarmupStrip,
   ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProfileTile, ProgressSteps, RestBar, SectionLabel, Segmented,
   SessionRow, SetEditor, SetLine, SetRow, NumPad, Sheet, Tilt, SheetBlock, Skeleton, Sparkline, StateView, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
   AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, PropGlyph, type PropKind, RewardCard, AgeBadge, Coupon, FreezeCard, GrowthBar, GrowthCard, StageHero, StreakWeeks, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, ProductCard, StreakBar,
@@ -17,6 +18,8 @@ import { COUPONS, KNOWLEDGE, PRODUCTS, dateOf, growthSample, niujinOff, sampleRe
 import { GROWTH_CONFIG } from '../engine';
 import { T } from '../styles/tokens.gen';
 import type { Fixtures } from './fixtures';
+import { FinderDemo, GuideDemo, famName, groupOf } from './finderDemos';
+import { PICK_SKIP } from '../data/finder';
 import s from './Playground.module.css';
 
 export type Props = Record<string, string>;
@@ -55,6 +58,8 @@ const noop = () => {};
 
 /** 轴取值的中文标注（矩阵表头与单元格说明） */
 export const CN: Record<string, string> = {
+  'w-none': '还没热身', 'w-one': '热了 1 组', 'w-all': '热身做完', last: '有上次重量', secondary: '只练到协同', 'not-owned': '没有这个器械', recommended: '推荐 · 已选', 'sw-plain': '普通', 'sw-first': '首次',
+  'sel-none': '没选', 'sel-family': '选整块肌肉', 'sel-sub': '细分到一个肌头', 'from-home': '从首页进', 'from-body': '从容量页进', peek: '常态',
   default: '默认', pressed: '按下', focused: '聚焦', disabled: '禁用', loading: '加载中', primary: '主操作', primary_glow: '主操作 · 光晕', neutral: '中性', ghost: '描边', danger: '危险',
   l: '大', s: '小', raised: '实底', plain: '无底', true: '是', false: '否', single: '单选', multi: '多选', empty: '空', filled: '已填', error: '错误', 'error-reps': '次数错误', 'np-ready': '可完成', 'np-blocked': '缺值 / 超范围', 'pk-freeze': '冻结卡', 'pk-niujin': '牛劲', 'pk-trial': 'Pro 体验', 'pk-shipping': '免邮券', 'pk-merchant': '商家券', 'ps-normal': '可用', 'ps-used': '刚用掉', 'ps-dim': '已用 / 过期',
   with: '带读数', without: '不带读数', mixed: '有涨有退', all_up: '全在涨', only_baseline: '都是基线', idle_4w: '近 4 周没练', min: '到下限', max: '到上限', strong: '强调', outline: '虚线', up: '上升', down: '下降', flat: '持平', baseline: '基线', static: '只读', nav: '可进入',
@@ -384,6 +389,52 @@ export const CATALOG: Entry[] = [
     name: 'MediaFrame', group: '训练与记录', desc: '动作示范（MuscleWiki 真实素材，经动作 media 字段引用）。没有素材写「暂无示范」，不拿相近动作顶替；加载失败不显示破图。保留署名链接。',
     axes: { state: ['loading', 'ready', 'missing', 'error'] }, size: 'card',
     render: (p, f) => <MediaFrame src={p.state === 'missing' ? null : f.media.src} label={`${f.media.name} 示范`} force={p.state as 'ready'} />,
+  },
+  /* ---------------- 6e 首页补全：找动作 / 替换 / 热身 / 要领 ---------------- */
+  {
+    name: 'WarmupStrip', group: '训练与记录',
+    desc: '热身组（6e，线框 warm W2 + Stitch warm-v1 / v2）：主角卡顶部一条，每组一颗胶囊（重量大、次数小），点一颗算做完 / 取消，做完的骨白打勾。只排给当天第一个练到这些主练肌头的复合动作、正式重量 ≥ 40 kg；40% × 8 → 60% × 5 → 80% × 3（2.5 kg 取整）。不计入容量、新纪录、导航外圈，不触发休息；底部大按钮只管正式组。',
+    axes: { done: ['w-none', 'w-one', 'w-all'], item: ['default', 'pressed', 'focused'] }, rows: ['item'], cols: 'done', size: 'card',
+    skip: (p) => p.item !== 'default' && p.done !== 'w-one',
+    render: (p) => { const n = p.done === 'w-none' ? 0 : p.done === 'w-one' ? 1 : 3; return <WarmupStrip sets={[['35', '8'], ['50', '5'], ['67.5', '3']].map(([w, r], i) => ({ weight: w, reps: r, done: i < n }))} onToggle={noop} state={st(p.item)} />; },
+  },
+  {
+    name: 'PickRow', group: '训练与记录',
+    desc: '找动作的结果行：动作名（加粗）/ 器械 · 上次重量（窄体加粗）。我没有的器械变灰、写「没有这个器械」，排在最后不隐藏；只练到协同的写「协同」。整行是按钮（≥ 56），点开动作要领。',
+    axes: { kind: ['last', 'first', 'secondary', 'not-owned'], item: ['default', 'pressed', 'focused'] }, rows: ['item'], cols: 'kind', size: 'card',
+    skip: (p) => p.item !== 'default' && p.kind !== 'last',
+    render: (p) => <PickRow name={p.kind === 'not-owned' ? '绳索夹胸' : p.kind === 'secondary' ? '上斜哑铃卧推' : '杠铃卧推'} equipment={p.kind === 'not-owned' ? '绳索' : p.kind === 'secondary' ? '哑铃' : '杠铃'}
+      last={p.kind === 'last' ? 80 : p.kind === 'secondary' ? 26 : null} owned={p.kind !== 'not-owned'} secondary={p.kind === 'secondary'} onClick={noop} state={st(p.item)} />,
+  },
+  {
+    name: 'SwapRow', group: '训练与记录',
+    desc: '换一个（6e，线框 swap W1 + Stitch swap-v1，借 v2 的「推荐」）：单选行，名字 / 器械 · 肌头，右边上次重量或「首次」。候选：主练肌头有交集、器械我有；同器械 → 练过 → 同类型在前，第一个「推荐」并默认选中。',
+    axes: { kind: ['recommended', 'sw-plain', 'sw-first'], item: ['default', 'pressed', 'focused'] }, rows: ['item'], cols: 'kind', size: 'card',
+    skip: (p) => p.item !== 'default' && p.kind !== 'sw-plain',
+    render: (p) => <SwapRow name={p.kind === 'sw-first' ? '杠铃前蹲' : p.kind === 'recommended' ? '器械站姿深蹲' : '腿举'} detail={p.kind === 'sw-first' ? '杠铃 · 股四头肌' : '固定器械 · 股四头肌 · 臀大肌'}
+      last={p.kind === 'sw-first' ? null : p.kind === 'recommended' ? 70 : 120} selected={p.kind === 'recommended'} recommended={p.kind === 'recommended'} onClick={noop} state={st(p.item)} />,
+  },
+  {
+    name: 'BodyPicker', group: '容量',
+    desc: '点人体选肌肉（找动作，6e；用户：只是检索器，可读性优先，不用容量页视效）：平涂高对比——没选的中灰、选中的骨白、同一块肌肉里没选到的肌头浅灰、肌肉之间留底色缝。按「整块肌肉」点（真实路径算过：逐个肌头点正背各 9 块命中区 < 48，合并后全部 ≥ 48），点在缝里或边上 24 px 以内算最近那块；某一面只露一条的不当目标（大腿内收肌去正面点、斜方肌去背面点）。按下先亮一档（M08），松手才选；读屏是一组看不见的按钮。',
+    axes: { view: ['front', 'back'], sel: ['sel-none', 'sel-family', 'sel-sub'] }, rows: ['view'], cols: 'sel', size: 'card',
+    render: (p) => {
+      const fam = p.view === 'front' ? ['upper-pectoralis', 'mid-lower-pectoralis'] : ['lats'];
+      const lit = p.sel === 'sel-none' ? [] : p.sel === 'sel-sub' ? [fam.at(-1)!] : fam, dim = p.sel === 'sel-sub' ? fam.slice(0, -1) : [];
+      return <BodyPicker gender="male" view={p.view as 'front'} height={300} groupOf={groupOf} groupName={famName} skip={PICK_SKIP[p.view as 'front']} lit={lit} dim={dim} onPick={noop} />;
+    },
+  },
+  {
+    name: 'FinderBody', group: '训练与记录', covers: [],
+    desc: '找动作检索面板的内容（6e，线框 ?board=finder，Stitch finder-v2）：「输入在下、结果在上」——右栏人体（拇指点，往下放）、正 / 背在人体下面；左栏 肌肉名 + 动作数（全屏唯一的荧光）+ 细分肌头 + 器械菜单（临时面板，点别处就收）+ 结果列表。入口：首页「＋ 加一个动作」（先选本周还差最多的）、容量页肌头面板「找动作」（带上那一块、细分落在点的肌头）、点一行进动作要领。可以直接点。',
+    axes: { from: ['from-home', 'from-body'] }, size: 'screen',
+    render: (p) => <FinderDemo start="chest" sub={p.from === 'from-body' ? 'mid-lower-pectoralis' : null} />,
+  },
+  {
+    name: 'GuideDrawer', group: '训练与记录',
+    desc: '动作要领的底部抽屉（P04，线框 p04 W3 + Stitch p04-v2 版式 + v3 的大号步骤编号）：常态露出一句话要点（前面一道荧光短竖 = 全屏唯一的荧光）和 3 步，全在拇指区；把手上下拖或点提示行展开出练到的肌头和我的进步，高度按弹簧过渡（M05）。从找动作进来时底部多一个「加到今天」。可以直接拖 / 点。',
+    axes: { open: ['peek', 'open'] }, size: 'screen',
+    render: (p) => <GuideDemo open={p.open === 'open'} />,
   },
   /* ---------------- 数据图形 ---------------- */
   {

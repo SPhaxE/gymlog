@@ -3,9 +3,12 @@ import './interactive.css';
 
 export { FluidBackdrop, grainTile, installGrain } from './atmosphere';
 export { BodyFigure, ContourFx, DEFAULT_LOOK, FillFx, ScanFx, type Anchors, type ContourFxKind, type FillFxKind, type ScanFxKind } from './BodyFigure';
+export { BodyPicker } from './BodyPicker';
 export { Button, IconButton, type ButtonKind } from './Button';
 export { Capsule, CapsuleRail } from './CapsuleRail';
 export { Sparkline, TrendChart, type Point } from './charts';
+export { FinderBody, PickRow, SwapRow, type EquipFilter } from './finder';
+export { GuideDrawer } from './guide';
 export { GainGroupHead, GainRow, GainSummary, type GroupKind as GainGroupKind } from './gains';
 export { DotCalendar, GiantNumber, Odometer, StepRing, WeekBars, dotDays, dotMonths, type DotCell, type DotMonth } from './dataviz';
 export { SteelPlate } from './plate';
@@ -26,7 +29,7 @@ export { Sheet, SheetBlock } from './Sheet';
 export { forced, type Forced } from './state';
 export { Ticks } from './Ticks';
 export {
-  DayCell, ExerciseRow, MediaFrame, PrescriptionHero, RestBar, SessionRow, SetEditor, SetLine, SetRow, NumPad, WeekStrip, clock, useCountdown,
+  DayCell, ExerciseRow, MediaFrame, PrescriptionHero, RestBar, SessionRow, SetEditor, SetLine, SetRow, NumPad, WarmupStrip, WeekStrip, clock, useCountdown,
   type DayProps, type DayStatus, type ExerciseStatus, type MediaState, type SetStatus, type SetType,
 } from './training';
 export { BackToTop } from './BackToTop';

@@ -114,6 +114,10 @@
 .mediaMsg b { color: var(--milo-color-text-primary); }
 .credit { color: var(--milo-color-text-secondary); }
 .credit a { color: inherit; }
+/* 铺满（P04）：视频按 cover 居中裁，署名压在右上角 */
+.mediaFill { position: absolute; inset: 0; gap: 0; }
+.mediaFill .mediaBox { height: 100%; aspect-ratio: auto; border-radius: 0; box-shadow: none; }
+.mediaFill .credit { position: absolute; top: var(--milo-space-s); right: var(--milo-space-m); z-index: 1; }
 
 @media (prefers-reduced-motion: reduce) { .mediaLoading { animation: none; } .restTrack i { transition: none; } }
 
@@ -158,3 +162,20 @@
 .tileEmpty { font-family: var(--milo-font-number); font-size: var(--milo-font-size-l); color: var(--milo-color-text-disabled); }
 .editorNote { margin: 0; min-height: 1lh; padding: 0 var(--milo-size-gutter); }
 .editor .pad { border-top: 0; padding-bottom: 0; }
+
+/* 热身条（6e）：卡片顶部一条小胶囊，做完的骨白打勾；每颗命中区 ≥ 48 */
+.warm { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: var(--milo-space-s); row-gap: var(--milo-space-2xs); padding: var(--milo-space-s) 0;
+  border-bottom: var(--milo-stroke-hairline) solid var(--milo-color-line-default); }
+.warmLabel { color: var(--milo-color-text-secondary); }
+.warmChips { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--milo-space-s); }
+.warmChip { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: var(--milo-space-2xs); height: var(--milo-size-segment-h); padding: 0 var(--milo-space-s);
+  border: 0; border-radius: var(--milo-radius-pill); background: var(--milo-color-bg-raised-2); color: var(--milo-color-text-primary); font: inherit;
+  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); }
+.warmChip::after { content: ''; position: absolute; inset: calc((var(--milo-size-segment-h) - var(--milo-size-hit-min)) / 2) 0; }
+.warmVal { display: inline-flex; align-items: baseline; gap: var(--milo-space-2xs); line-height: 1; }
+.warmChip b { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-body); }
+.warmChip i { font-style: normal; font-size: var(--milo-font-size-caption); color: var(--milo-color-text-secondary); }
+.warmChip > svg { align-self: center; }
+.warmOn { background: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); box-shadow: none; }
+.warmOn i { color: var(--milo-color-control-selected-ink); }
+.warmNote { grid-column: 1 / -1; color: var(--milo-color-text-secondary); }

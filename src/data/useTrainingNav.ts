@@ -18,7 +18,7 @@ export function useTrainingNav(scenario: string | undefined, fallback: number | 
   const a = st.active;
   let nav: TrainingNav;
   if (a) {
-    const total = a.entries.reduce((n, x) => n + (x.skipped ? 0 : x.rows.length), 0);
+    const total = a.entries.reduce((n, x) => n + (x.skipped ? 0 : x.rows.filter((r) => r.type !== 'warmup').length), 0);
     const done = a.entries.reduce((n, x) => n + x.rows.filter((r) => r.done && r.type !== 'warmup').length, 0);
     const resting = st.rest && left > 0;
     nav = { progress: total ? Math.min(1, done / total) : 0, started: true, ...(resting ? { rest: clock(left), restEndAt: st.rest!.endAt, restTotalMs: st.rest!.totalMs } : {}) };

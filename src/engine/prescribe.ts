@@ -25,6 +25,18 @@ export type Prescription =
   | (RxBase & { kind: 'pool-empty'; items: []; cands: HeadStat[] })
   | (RxBase & { kind: 'plan'; items: RxItem[]; cands: HeadStat[]; totals: { sets: number; exercises: number; regions: Region[]; heads: string[] } });
 
+/** 单个动作的处方条目：组数 / 次数区间 / 休息按动作类型（planFor），重量按它自己的历史（suggest）。
+ *  处方里排出来的动作、用户手动「加到今天」或「换一个」换上来的动作都走这一个函数（6e，ia §1.2 / T19）。 */
+export function rxItemFor(env: Env, history: Session[], ex: Exercise, deload = false, why: RxItem['why'] = { head: ex.primaryHeads[0], priority: 0 }): RxItem {
+  const plan = planFor(env, ex, deload);
+  return {
+    exerciseId: ex.id, name: ex.name, equipment: ex.equipment, mechanic: ex.mechanic, unilateral: ex.unilateral,
+    region: regionOfEx(env, ex), primaryHeads: ex.primaryHeads, secondaryHeads: ex.secondaryHeads,
+    sets: plan.sets, repRange: plan.repRange, restSec: plan.restSec, why,
+    suggestion: suggest(env, history, ex, plan, deload),
+  };
+}
+
 /** 今日处方（ia §1.2）：纯函数，同样的输入一定得到同样的处方 */
 export function prescribe(env: Env, history: Session[], profile: Profile, opts: { now: number; deload?: boolean }): Prescription {
   const { now } = opts;
@@ -92,12 +104,7 @@ export function prescribe(env: Env, history: Session[], profile: Profile, opts: 
   // 规则 5：部位成块，块内复合在前
   chosen.sort((a, b) => REGION_ORDER.indexOf(regionOfEx(env, a.ex)) - REGION_ORDER.indexOf(regionOfEx(env, b.ex))
     || Number(b.ex.mechanic === 'compound') - Number(a.ex.mechanic === 'compound'));
-  const items: RxItem[] = chosen.map(({ ex, plan, why }) => ({
-    exerciseId: ex.id, name: ex.name, equipment: ex.equipment, mechanic: ex.mechanic, unilateral: ex.unilateral,
-    region: regionOfEx(env, ex), primaryHeads: ex.primaryHeads, secondaryHeads: ex.secondaryHeads,
-    sets: plan.sets, repRange: plan.repRange, restSec: plan.restSec, why,
-    suggestion: suggest(env, history, ex, plan, deload),
-  }));
+  const items: RxItem[] = chosen.map(({ ex, why }) => rxItemFor(env, history, ex, deload, why));
   return {
     kind: 'plan', items, ...base, cands,
     totals: { sets: items.reduce((n, i) => n + i.sets, 0), exercises: items.length, regions: [...new Set(items.map((i) => i.region))], heads: [...new Set(items.flatMap((i) => i.primaryHeads))] },

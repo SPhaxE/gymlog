@@ -256,7 +256,9 @@ export function WeekStrip({ days, label = '本周' }: { days: DayProps[]; label?
 /* ---------- 动作示范（P05，ia §1.4） ---------- */
 export type MediaState = 'loading' | 'ready' | 'missing' | 'error';
 /** 只通过动作的 media 字段引用；没有素材显示「暂无示范」，不拿相近动作顶替；加载失败显示文字要领提示，不显示破图。保留 MuscleWiki 署名与链接 */
-export function MediaFrame({ src, label, force }: { src: string | null; label: string; force?: MediaState }) {
+export function MediaFrame({ src, label, force, fill }: { src: string | null; label: string; force?: MediaState;
+  /** 动作要领页（P04）：铺满容器、不留圆角，署名压在右上角 */
+  fill?: boolean }) {
   const [st, setSt] = useState<MediaState>(src ? 'loading' : 'missing');
   useEffect(() => setSt(src ? 'loading' : 'missing'), [src]);
   const shown = force ?? st;
@@ -264,7 +266,7 @@ export function MediaFrame({ src, label, force }: { src: string | null; label: s
   if (shown === 'missing') overlay = <><Icon name="info" /><b className="milo-text-body-strong">暂无示范</b><span className="milo-text-caption">按下方文字要领做</span></>;
   if (shown === 'error') overlay = <><Icon name="alert" /><b className="milo-text-body-strong">示范加载失败</b><span className="milo-text-caption">按下方文字要领做</span></>;
   return (
-    <figure className={s.media}>
+    <figure className={cx(s.media, fill && s.mediaFill)}>
       <div className={cx(s.mediaBox, shown === 'loading' && s.mediaLoading)} aria-busy={shown === 'loading' || undefined}>
         {src && shown !== 'missing' && shown !== 'error' && (
           <video src={src} muted loop playsInline autoPlay preload="metadata" aria-label={label} className={shown === 'ready' ? s.video : s.videoHidden}
@@ -274,5 +276,26 @@ export function MediaFrame({ src, label, force }: { src: string | null; label: s
       </div>
       <figcaption className={cx('milo-text-micro', s.credit)}>示范：<a href="https://musclewiki.com" target="_blank" rel="noreferrer">MuscleWiki</a></figcaption>
     </figure>
+  );
+}
+
+/* ---------- 热身组（6e，线框 warm W2 + Stitch warm-v1 / v2 的胶囊写法） ---------- */
+/** 主角卡顶部一条：「热身」+ 每组一颗胶囊（重量大、次数小），点一颗算做完 / 取消；做完的骨白打勾。
+ *  热身组不计入容量和新纪录、不触发休息；底部大按钮只管正式组，不想热身就不用管它。命中区每颗 ≥ 48。 */
+export function WarmupStrip({ sets, onToggle, state }: { sets: { weight: string; reps: string; done: boolean }[]; onToggle?: (i: number) => void; state?: Forced }) {
+  if (!sets.length) return null;
+  return (
+    <div className={s.warm} role="group" aria-label="热身组，不计入容量和新纪录">
+      <span className={cx('milo-text-label', s.warmLabel)}>热身</span>
+      <div className={s.warmChips}>
+        {sets.map((w, i) => (
+          <button key={i} type="button" aria-pressed={w.done} className={cx('milo-press milo-focus', s.warmChip, w.done && s.warmOn)} onClick={() => onToggle?.(i)} {...forced(i === 0 ? state : undefined)}
+            aria-label={`热身第 ${i + 1} 组 ${w.weight} 千克 ${w.reps} 次${w.done ? '，已做完，点一下取消' : ''}`}>
+            {w.done && <Icon name="check" small />}<span className={s.warmVal}><b>{w.weight}</b><i>×{w.reps}</i></span>
+          </button>
+        ))}
+      </div>
+      <span className={cx('milo-text-micro', s.warmNote)}>不计入容量和新纪录 · 点一颗算做完一组</span>
+    </div>
   );
 }

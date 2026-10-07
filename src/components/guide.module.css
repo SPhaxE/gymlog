@@ -1,0 +1,18 @@
+/* 动作要领抽屉（P04）：实底、上圆角；常态约半屏，展开到接近整屏；高度按弹簧过渡 */
+.drawer { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; display: flex; flex-direction: column; height: 46dvh; padding: 0 var(--milo-size-gutter) var(--milo-space-l);
+  border-radius: var(--milo-radius-xl) var(--milo-radius-xl) 0 0; background: var(--milo-color-bg-sheet); box-shadow: 0 calc(var(--milo-space-s) * -1) var(--milo-space-xl) var(--milo-color-bg-scrim);
+  transition: height var(--milo-motion-spring-ms) var(--milo-motion-ease-spring); }
+.open { height: 86dvh; }
+.grab { flex: none; display: grid; place-items: center; height: var(--milo-size-hit-min); margin: 0 auto; width: 40%; border: 0; background: none; touch-action: none; cursor: grab; }
+.grab i { width: var(--milo-space-3xl); height: var(--milo-space-xs); border-radius: var(--milo-radius-pill); background: var(--milo-color-line-strong); }
+.scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: grid; grid-auto-rows: max-content; gap: var(--milo-space-l); }
+.cue { margin: 0; padding-left: var(--milo-space-m); border-left: var(--milo-space-xs) solid var(--milo-color-accent-default); color: var(--milo-color-text-primary); }
+.steps { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--milo-space-m); }
+.steps li { display: grid; grid-template-columns: var(--milo-space-3xl) minmax(0, 1fr); align-items: baseline; column-gap: var(--milo-space-s); padding-bottom: var(--milo-space-m);
+  border-bottom: var(--milo-stroke-hairline) solid var(--milo-color-line-default); }
+.steps b { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-l); line-height: 1; color: var(--milo-color-text-primary); }
+.steps span { color: var(--milo-color-text-primary); }
+.peek { display: flex; align-items: center; justify-content: center; gap: var(--milo-space-xs); min-height: var(--milo-size-hit-min); border: 0; background: none; color: var(--milo-color-text-secondary); font: inherit; }
+.more { display: grid; gap: var(--milo-space-l); }
+.footer { flex: none; padding-top: var(--milo-space-m); }
+@media (prefers-reduced-motion: reduce) { .drawer { transition: none; } }

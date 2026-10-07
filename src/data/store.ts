@@ -18,7 +18,11 @@ export const DEMO_PHASE = 3;
 /** 进行中训练的一组：输入框里的原始文字（保留用户正在输入的状态），完成后才计入 */
 export interface DraftSet { type: 'work' | 'warmup' | 'drop'; weight: string; reps: string; done: boolean }
 export interface DraftEntry { exerciseId: string; name: string; sets: number; repRange: [number, number]; restSec: number; unilateral: boolean; suggestKg: number | null; skipped: boolean; rows: DraftSet[] }
-export interface ActiveSession { id: string; startMs: number; entries: DraftEntry[]; cur: number }
+export interface ActiveSession {
+  id: string; startMs: number; entries: DraftEntry[]; cur: number;
+  /** 暂停的时刻（6e：训练中按返回 → 暂停）：有值时首页显示「已暂停」，点「继续训练」清掉；已记的组都在 */
+  pausedAt?: number;
+}
 
 /** 「我的」里的导航设置（ia §1.11）：改动立即生效，不需要重启 */
 export interface Settings {
@@ -49,6 +53,8 @@ export interface AppState {
   demo: boolean;
   settings: Settings;
   notes: GrowthNote[];
+  /** 还没开始训练时手动「加到今天」的动作（6e 检索面板，T19）：只对 day 那一天有效，排在当天处方后面；开始训练时一起抄进草稿 */
+  extras: { day: number; ids: string[] } | null;
   /** 看过消息的时刻（毫秒）：比它新的消息算未读 */
   messagesSeenAt: number;
   /** 最后一次写入失败的原因（只在内存里） */
@@ -56,7 +62,7 @@ export interface AppState {
 }
 
 export const DEFAULT_PROFILE: Profile = { experience: 'intermediate', equipment: ['barbell', 'dumbbell', 'machine', 'cable', 'smith', 'bodyweight'], minutes: 60, gender: 'male' };
-const EMPTY: AppState = { v: 1, profile: null, draft: null, history: [], deload: { status: 'none', atMs: 0 }, deloads: [], active: null, rest: null, demo: false, settings: DEFAULT_SETTINGS, notes: [], messagesSeenAt: 0 };
+const EMPTY: AppState = { v: 1, profile: null, draft: null, history: [], deload: { status: 'none', atMs: 0 }, deloads: [], active: null, rest: null, demo: false, settings: DEFAULT_SETTINGS, notes: [], messagesSeenAt: 0, extras: null };
 
 function read(): AppState {
   try {

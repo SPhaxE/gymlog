@@ -117,3 +117,10 @@
 .traceGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--milo-space-5xl), 1fr)); gap: var(--milo-space-m); }
 .iconCellBig { display: grid; justify-items: center; gap: var(--milo-space-xs); color: var(--milo-color-text-primary); }
 .iconCellBig svg { width: var(--milo-space-3xl); height: var(--milo-space-3xl); }
+/* 6e 演示：检索面板、要领抽屉 */
+.finderBox { width: min(100%, calc(var(--milo-size-hit-min) * 8)); padding: var(--milo-space-m); border-radius: var(--milo-radius-l); background: var(--milo-color-bg-sheet); }
+.finderBox > div { height: calc(var(--milo-size-hit-min) * 9); }
+.guideBox { position: relative; overflow: hidden; width: min(100%, calc(var(--milo-size-hit-min) * 8)); height: calc(var(--milo-size-hit-min) * 14); border-radius: var(--milo-radius-l); background: var(--milo-color-bg-base); }
+.guideVideo { height: 55%; display: grid; place-items: center; color: var(--milo-color-text-secondary); background: var(--milo-color-bg-raised-2); font-size: var(--milo-font-size-caption); }
+.guideBox > section { height: 55%; }
+.guideBox > section[class*='open'] { height: 92%; }
