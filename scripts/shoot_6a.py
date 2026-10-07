@@ -131,8 +131,10 @@ def run(b, w, h, shots):
     step('body-training', '/body', 2500)
     ok('休息剩余' in navlabel() or pg.get_by_role('button', name='组间休息剩余').count() == 0, f'{tag} 容量页：休息计时在导航滑块上')
     pg.goto(args.base + '/today'); pg.wait_for_timeout(1200)
-    click(pg, pg.get_by_role('button', name='结束', exact=True)); step('end-confirm')
-    click(pg, pg.get_by_role('button', name='结束并结算')); pg.wait_for_selector('text=练完了'); step('summary', '/summary/', 2000)
+    # 6e：页头「暂停」→ 暂停面板（暂停 / 结束并结算）→ 还有没打的组再确认一次
+    click(pg, pg.get_by_role('button', name='暂停', exact=True)); pg.wait_for_selector('[role=dialog][aria-label="暂停训练？"]'); step('pause-sheet')
+    click(pg, pg.get_by_role('dialog', name='暂停训练？').get_by_role('button', name='结束并结算')); pg.wait_for_selector('[role=alertdialog]'); step('end-confirm')
+    click(pg, pg.locator('[role=alertdialog]').get_by_role('button', name='结束并结算')); pg.wait_for_selector('text=练完了'); step('summary', '/summary/', 2000)
     pg.keyboard.press('Escape'); pg.mouse.move(w / 2, h / 2); pg.mouse.wheel(0, 900); step('summary-bottom')
     click(pg, pg.get_by_role('button', name='完成', exact=True)); step('done-today', '/today', 2500)
     ok(pg.get_by_text('今天已练完').count() > 0, f'{tag} 首页显示「今天已练完」')

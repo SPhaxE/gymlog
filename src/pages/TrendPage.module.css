@@ -36,3 +36,7 @@
 .recPr { grid-column: 3; }
 .recV { grid-column: 4; justify-self: end; min-width: calc(var(--milo-space-5xl) + var(--milo-space-s)); text-align: right; }
 .recV i { font-style: normal; font-size: var(--milo-font-size-caption); color: var(--milo-color-text-secondary); margin-left: var(--milo-space-2xs); }
+
+/* 6e：页头右边「要领」（进动作要领 P04） */
+.guide { min-width: var(--milo-size-hit-min); min-height: var(--milo-size-hit-min); padding: 0 var(--milo-space-s); border: 0; background: none; font: inherit;
+  color: var(--milo-color-text-secondary); text-decoration: underline; text-underline-offset: var(--milo-space-xs); }
