@@ -24,7 +24,7 @@ npm ci && npm run check                 # 改之前、改之后都要全绿
 npx vite --port 5199 --host 127.0.0.1 & python3 scripts/shoot_6a.py   # 演示全流程门禁（两个宽度并行，约 1 分钟；加 --no-shots 不截图更快）
 ```
 
-日常迭代别每次跑全套：`npm run test:changed`（只跑改到的测试）、`python3 scripts/shoot_6a.py --no-shots --only gains`（只跑某类：flow / story / deload / gains / demo）；提交前再跑一遍完整的 `npm run check` 和 `npm run gate`。
+**门禁一律放后台跑（`run_in_background`），主线不等它**（用户 2026-10-07：「可以放后台的全放后台」）。门禁按「类别 × 宽度」并行、卡住 8 秒就报错并写明卡在哪一行；失败了只重跑失败项 `python3 scripts/shoot_6a.py --no-shots --failed`，不要整套连跑几遍。更快：先 `npm run build`，再 `npx vite preview --port 4173 --host 127.0.0.1 &` + `--base http://127.0.0.1:4173`（约 1.5 分钟）。日常迭代别每次跑全套：`npm run test:changed`（只跑改到的测试）、`python3 scripts/shoot_6a.py --no-shots --only gains`（只跑某类：flow / story / deload / gains / demo）；提交前再跑一遍完整的 `npm run check` 和 `npm run gate`。
 
 上线流程（用户 2026-10-06 改：PR / CI 来回太拖开发）：本机 `npm run check` + 相关 `gate` 过了，**直接推 `main`，不开 PR**；Vercel 自动部署（https://gymlog-taupe.vercel.app/demo），CI 在后台跑，红了马上补一个修复提交推上去。
 

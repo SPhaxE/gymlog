@@ -11,7 +11,8 @@
   - --no-shots 不再等故事 8 幕自己播完（只为截图）；
   - --only 只跑某几类：flow（主流程）、story、deload、gains、log、me、shop（钱包与商城）、demo，逗号分隔——改哪页只跑哪页，提交前再跑一遍完整的；
   - --width 360|412 只跑一种宽度（并行时内部用）。"""
-import argparse, json, io, os, re, subprocess, sys
+import argparse, json, io, os, re, subprocess, sys, tempfile, time, traceback, urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from playwright.sync_api import sync_playwright
 
 ap = argparse.ArgumentParser()
@@ -20,22 +21,67 @@ ap.add_argument('--chromium', default=os.environ.get('CHROMIUM', '/opt/pw-browse
 ap.add_argument('--no-shots', action='store_true')
 ap.add_argument('--only', default='', help='flow,story,deload,gains,log,me,shop,demo 逗号分隔；默认全部')
 ap.add_argument('--width', type=int, choices=[360, 412], help='只跑一种宽度（并行时内部用）')
-ap.add_argument('--serial', action='store_true', help='两个宽度不并行')
+ap.add_argument('--serial', action='store_true', help='不并行，在一个进程里按顺序跑（调试用）')
+ap.add_argument('--worker', action='store_true', help='并行时的子进程（内部用）')
+ap.add_argument('--failed', action='store_true', help='只重跑上一次失败的「类别 × 宽度」')
+ap.add_argument('--pace', type=float, default=float(os.environ.get('GATE_PACE', '1')), help='固定等待（动画落定、页面加载）的倍数；生产构建上 0.5 够用')
+ap.add_argument('--timeout', type=int, default=8000, help='单步等待上限（毫秒）；卡住的步骤 8 秒就报错，不再等 30 秒')
 args = ap.parse_args()
 SIZES = {360: (360, 800), 412: (412, 915)}
 ALL = ['flow', 'story', 'deload', 'gains', 'log', 'me', 'shop', 'demo']
 only = [x for x in args.only.split(',') if x] or ALL
 if any(x not in ALL for x in only): sys.exit(f'--only 只能是 {",".join(ALL)}')
 
-# 并行：每个宽度一个进程，结果按宽度顺序打印；任一失败则退出码非 0
-if args.width is None and not args.serial:
-    base = [sys.executable, os.path.abspath(__file__), '--base', args.base, '--chromium', args.chromium, '--only', ','.join(only)] + (['--no-shots'] if args.no_shots else [])
-    procs = [(w, subprocess.Popen(base + ['--width', str(w)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)) for w in SIZES]
-    code = 0
-    for w, pr in procs:
-        out, _ = pr.communicate(); print(f'===== {w} 宽 ====='); print(out.rstrip()); code = code or pr.returncode
-    print('\n全部通过' if code == 0 else '\n有失败项（见上）')
-    sys.exit(code)
+# 并行（2026-10-07 提速）：每个「类别 × 宽度」一个进程（各自的浏览器、各自的本机存储，互不干扰），按 CPU 数并发；
+# 只打印失败的那几份完整输出，最后给出只重跑失败项的命令（也可以直接 --failed）。
+FAILED_FILE = os.path.join(tempfile.gettempdir(), 'milo-gate-failed.json')
+if args.failed:
+    try: jobs = [tuple(j) for j in json.load(open(FAILED_FILE))]
+    except Exception: sys.exit('没有上一次的失败记录')
+    if not jobs: sys.exit('上一次全部通过，没有要重跑的')
+else:
+    jobs = [(c, w) for w in ([args.width] if args.width else SIZES) for c in only if not (c == 'demo' and w != 360)]
+def server_up():
+    try: urllib.request.urlopen(args.base, timeout=2); return True
+    except Exception: return False
+if not args.worker and not server_up():
+    # 本机开发服务器没开（或容器重启后没了）：自动起一个，最多等 30 秒
+    if '127.0.0.1:5199' in args.base or 'localhost:5199' in args.base:
+        print('开发服务器没开，自动启动 vite :5199 …')
+        subprocess.Popen(['npx', 'vite', '--port', '5199', '--host', '127.0.0.1'], cwd=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'),
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+        for _ in range(60):
+            if server_up(): break
+            time.sleep(0.5)
+    if not server_up(): sys.exit(f'连不上 {args.base}：先 npx vite --port 5199 --host 127.0.0.1')
+if not args.worker and not args.serial:
+    t0 = time.time()
+    base = [sys.executable, os.path.abspath(__file__), '--base', args.base, '--chromium', args.chromium, '--worker', '--pace', str(args.pace), '--timeout', str(args.timeout)] + (['--no-shots'] if args.no_shots else [])
+    def one(job):
+        c, w = job; t = time.time()
+        pr = subprocess.run(base + ['--only', c, '--width', str(w)], capture_output=True, text=True)
+        took[job] = time.time() - t
+        return job, pr.returncode, pr.stdout + pr.stderr
+    took = {}
+    # 最慢的先跑，墙钟时间 ≈ 最慢那一份
+    slow = ['flow', 'gains', 'log', 'shop', 'me', 'story', 'deload', 'demo']
+    jobs = sorted(jobs, key=lambda j: slow.index(j[0]) if j[0] in slow else 99)
+    with ThreadPoolExecutor(max_workers=max(2, os.cpu_count() or 2)) as ex:
+        results = list(ex.map(one, jobs))
+    bad = [(job, out) for job, code, out in results if code]
+    passed = sum(out.count('  ✓ ') for _, _, out in results)
+    for (c, w), out in bad:
+        print(f'===== ✗ {c} · {w} 宽 =====')
+        print('\n'.join(l for l in out.splitlines() if '  ✓ ' not in l).strip())
+    json.dump([list(j) for j, _ in bad], open(FAILED_FILE, 'w'))
+    print('各份用时：' + ' · '.join(f'{c}{w} {t:.0f}s' for (c, w), t in sorted(took.items(), key=lambda x: -x[1])))
+    print(f'\n{len(jobs) - len(bad)} / {len(jobs)} 份通过 · {passed} 项检查 · 用时 {time.time() - t0:.0f} 秒')
+    if bad:
+        print('只重跑失败项：python3 scripts/shoot_6a.py --no-shots --failed')
+        print('有失败项（见上）')
+    else:
+        print('全部通过')
+    sys.exit(1 if bad else 0)
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 OUT = os.path.join(ROOT, 'screenshots', 'stage6a')
@@ -52,10 +98,27 @@ def ok(cond, msg):
     print(('  ✓ ' if cond else '  ✗ ') + msg)
     if not cond: errors.append(msg)
 
+def until(pg, js, ms=4000):
+    """等到条件成立（动画放完、元素卸掉）就往下走，不睡固定时长；超时返回 False，交给 ok() 报错"""
+    try: pg.wait_for_function(js, timeout=ms); return True
+    except Exception: return False
+
+SETTLED = "() => document.getAnimations().every((a) => a.playState !== 'running' || a.effect?.getComputedTiming().iterations === Infinity)"
+def settle(pg, ms=3000):
+    """等页面上有限次的动画都放完（无限循环的呼吸光、扫光不算），再量命中区 / 位置"""
+    return until(pg, SETTLED, ms)
+
+def audit(pg):
+    settle(pg); return pg.evaluate(AUDIT)
+
 def click(pg, loc):
     """底部固定的按钮 Playwright 会判成「在视口外」，按坐标点"""
     loc = loc.first
-    loc.wait_for(); bb = loc.bounding_box(); pg.mouse.click(bb['x'] + bb['width'] / 2, bb['y'] + bb['height'] / 2)
+    loc.wait_for()
+    # 先滚到屏幕中间：贴着屏幕底的元素会被悬浮导航 / 固定按钮盖住（2026-10-07 连着踩了三次）；固定在屏幕上的元素滚不动，原地不变
+    loc.evaluate('e => { const r = e.getBoundingClientRect(); if (r.top < 0 || r.bottom > innerHeight * 0.8) e.scrollIntoView({ block: "center" }); }')
+    pg.wait_for_timeout(60)
+    bb = loc.bounding_box(); pg.mouse.click(bb['x'] + bb['width'] / 2, bb['y'] + bb['height'] / 2)
 
 def run(b, w, h, shots):
     tag = f'{w}×{h}'
@@ -68,7 +131,7 @@ def run(b, w, h, shots):
         ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} {name}：无横向溢出')
         crushed = pg.evaluate(CRUSH)
         ok(not crushed, f'{tag} {name}：滚动区里没有被压扁的块 {crushed[:3]}')
-        small = pg.evaluate(AUDIT)
+        small = audit(pg)
         ok(not small, f'{tag} {name}：命中区都 ≥ 48 {small[:3]}')
         if shots and not args.no_shots: pg.screenshot(path=os.path.join(OUT, f'{n[0]:02d}-{name}.png'))
         n[0] += 1
@@ -189,7 +252,7 @@ def deload_checks(b, w, h):
     click(pg, pg.get_by_role('button', name='看看')); pg.wait_for_timeout(900)
     ok(pg.get_by_role('button', name='采纳减量').count() == 1 and pg.get_by_role('button', name='这次不减').count() == 1, f'{tag} 减量：面板里有「采纳」和「这次不减」')
     ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} 减量面板：无横向溢出')
-    small = pg.evaluate(AUDIT)
+    small = audit(pg)
     ok(not small, f'{tag} 减量面板：命中区都 ≥ 48 {small[:3]}')
     click(pg, pg.get_by_role('button', name='采纳减量')); pg.wait_for_timeout(900)
     ok(pg.get_by_text('减量周 · 还剩').count() > 0 and pg.get_by_role('button', name='看看').count() == 0, f'{tag} 减量：采纳后首页变「减量周 · 还剩 N 天」')
@@ -208,7 +271,7 @@ def gains_checks(b, w, h):
     def at(sc, shot=None):
         pg.goto(f'{args.base}/gains?scenario={sc}'); pg.wait_for_selector('h1'); pg.wait_for_timeout(900)
         ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} 增量·{sc}：无横向溢出')
-        small = pg.evaluate(AUDIT)
+        small = audit(pg)
         ok(not small, f'{tag} 增量·{sc}：命中区都 ≥ 48 {small[:3]}')
         if shot and not args.no_shots: pg.screenshot(path=os.path.join(OUT, f'gains-{shot}.png'))
     at('plain-prescription', 'plain')
@@ -284,8 +347,8 @@ def gains_checks(b, w, h):
     pg.wait_for_timeout(900)
     ok(pg.locator('[role=option][style*="view-transition-name"]').count() == 0, f'{tag} 容量·M03：面板开着时胶囊不带共享名（同名不能有两份）')
     if not args.no_shots: pg.screenshot(path=os.path.join(OUT, 'volume-sheet.png'))
-    click(pg, pg.get_by_role('button', name='关闭')); pg.wait_for_timeout(1200)
-    ok(pg.locator('[role=dialog]').count() == 0 and pg.locator('[style*="view-transition-name"]').count() == 0, f'{tag} 容量·M03：关闭后缩回胶囊，转场放完不留共享名')
+    click(pg, pg.get_by_role('button', name='关闭'))
+    ok(until(pg, '() => !document.querySelector(\'[role=dialog]\') && !document.querySelector(\'[style*="view-transition-name"]\')'), f'{tag} 容量·M03：关闭后缩回胶囊，转场放完不留共享名')
     if not args.no_shots: pg.screenshot(path=os.path.join(OUT, 'volume.png'))
     # 对比度审查（2026-10-06 用户）：各页可见文字对它实际的底色，正文 ≥ 4.5、大字 ≥ 3（WCAG AA；画在 SVG / 画布里的字另有截图核对）
     for path in ('/today', '/body', '/gains', '/gains/barbell-bench-press-4', '/log', '/me', '/me/level', '/me/messages'):
@@ -298,11 +361,11 @@ def gains_checks(b, w, h):
     ok(btt.count() == 0, f'{tag} 回到顶端：在顶部时不出现（读屏也读不到）')
     pg.locator('[class*=_scroll_]').first.evaluate('e => e.scrollTo(0, e.scrollHeight)'); pg.wait_for_timeout(700)
     ok(btt.count() == 1 and float(btt.evaluate('e => getComputedStyle(e).opacity')) > 0.95, f'{tag} 回到顶端：滚过一屏出现')
-    bb = btt.bounding_box(); nav_top = pg.get_by_role('navigation', name='主导航').bounding_box()['y']
+    settle(pg); bb = btt.bounding_box(); nav_top = pg.get_by_role('navigation', name='主导航').bounding_box()['y']
     ok(round(bb['width']) >= 48 and round(bb['height']) >= 48 and bb['y'] + bb['height'] <= nav_top, f'{tag} 回到顶端：命中 48、在导航上方 {bb}')
     if not args.no_shots: pg.screenshot(path=os.path.join(OUT, 'back-to-top.png'))
-    click(pg, btt); pg.wait_for_timeout(1500)
-    ok(pg.locator('[class*=_scroll_]').first.evaluate('e => e.scrollTop') < 2, f'{tag} 回到顶端：点了滚回顶')
+    click(pg, btt)
+    ok(until(pg, '() => document.querySelector(\'[class*=_scroll_]\').scrollTop < 2'), f'{tag} 回到顶端：点了滚回顶')
     ok(pg.get_by_role('button', name='回到顶端').count() == 0, f'{tag} 回到顶端：回到顶后收起')
     # 曲线页（P10）：点一行进去，大数字和增量页那一行是同一个数；点明细的一行换成那天；返回后筛选和滚动位置还在
     pg.goto(f'{args.base}/gains?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(700)
@@ -317,7 +380,7 @@ def gains_checks(b, w, h):
     ok('/gains/' in pg.url and pg.get_by_role('heading', name=row_name).count() == 1, f'{tag} 曲线页：点增量页的一行进到这个动作（{row_name}）')
     ok(pg.get_by_text('和首页处方、增量页是同一个数').count() == 1 and pg.locator('[class*=_next_]').count() == 1, f'{tag} 曲线页：有下次目标')
     ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} 曲线页：无横向溢出')
-    small = pg.evaluate(AUDIT)
+    small = audit(pg)
     ok(not small, f'{tag} 曲线页：命中区都 ≥ 48 {small[:3]}')
     recs = pg.locator('[class*=_rec_]')
     # 钻入转场：返回时名称 / 最新值 / 小曲线作为共享元素飞回那一行，转场放完后列表里不留共享名
@@ -326,8 +389,7 @@ def gains_checks(b, w, h):
     click(pg, pg.get_by_role('button', name='返回')); pg.wait_for_selector('h1'); pg.wait_for_timeout(300)
     vt = pg.evaluate('window.__vt') or []
     ok(all(any(k in x for x in vt) for k in ('x-drill-name', 'x-drill-num', 'x-drill-line')), f'{tag} 曲线页：返回时名称、最新值、小曲线作为共享元素飞回那一行')
-    pg.wait_for_timeout(1800)
-    ok(pg.locator('[style*="x-drill"]').count() == 0, f'{tag} 曲线页：转场放完后列表里不留共享名（同名不能有两份）')
+    ok(until(pg, '() => !document.querySelector(\'[style*="x-drill"]\')'), f'{tag} 曲线页：转场放完后列表里不留共享名（同名不能有两份）')
     click(pg, row); pg.wait_for_selector('text=下次目标'); pg.wait_for_timeout(900)
     recs = pg.locator('[class*=_rec_]')
     ok(recs.count() >= 2, f'{tag} 曲线页：最近几次明细可点（{recs.count()} 行）')
@@ -418,7 +480,7 @@ def log_checks(b, w, h):
         pg.goto(f'{args.base}/log?scenario={sc}'); pg.wait_for_selector('h1'); pg.wait_for_timeout(900)
         ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} 记录·{sc}：无横向溢出')
         ok(pg.evaluate('(() => { const e = document.querySelector("[class*=_scroll_]"); return e.scrollWidth <= e.clientWidth; })()'), f'{tag} 记录·{sc}：滚动区里也没有横向滚动（漏光不能把它撑宽）')
-        small = pg.evaluate(AUDIT); ok(not small, f'{tag} 记录·{sc}：命中区都 ≥ 48 {small[:3]}')
+        small = audit(pg); ok(not small, f'{tag} 记录·{sc}：命中区都 ≥ 48 {small[:3]}')
         ok(not pg.evaluate(CRUSH), f'{tag} 记录·{sc}：滚动区里没有被压扁的块')
         if shot and not args.no_shots: pg.screenshot(path=os.path.join(OUT, f'log-{shot}.png'))
     open_log('plain-prescription', 'plain')
@@ -494,7 +556,7 @@ def log_checks(b, w, h):
     ok((pg.get_by_text('新纪录').count() == 1) == r_pr, f'{tag} 详情：有 PR 才有「新纪录」一行（行上{"有" if r_pr else "没有"} PR 标）')
     ok(pg.get_by_text('热身').count() >= 1 and pg.get_by_text('第 1 组').count() >= 1, f'{tag} 详情：热身组和工作组分开写')
     ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} 详情：无横向溢出')
-    small = pg.evaluate(AUDIT); ok(not small, f'{tag} 详情：命中区都 ≥ 48 {small[:3]}')
+    small = audit(pg); ok(not small, f'{tag} 详情：命中区都 ≥ 48 {small[:3]}')
     ok(pg.get_by_role('navigation', name='主导航').count() == 0, f'{tag} 详情：子页没有 Tab 导航')
     if not args.no_shots: pg.screenshot(path=os.path.join(OUT, 'log-detail.png'))
     # 点动作卡头 → 曲线页 → 返回回到这次训练（不是增量页）
@@ -510,7 +572,7 @@ def log_checks(b, w, h):
     pg.wait_for_timeout(1800)
     top_back = pg.evaluate('document.querySelector("[class*=_scroll_]").scrollTop')
     ok(abs(top_back - 420) <= 2, f'{tag} 详情：返回记录页后滚动位置还在（420 → {top_back:.0f}）')
-    ok(pg.locator('[style*="x-drill"]').count() == 0, f'{tag} 详情：转场放完后记录页里不留共享名（同名不能有两份）')
+    ok(until(pg, '() => !document.querySelector(\'[style*="x-drill"]\')'), f'{tag} 详情：转场放完后记录页里不留共享名（同名不能有两份）')
     # 删除训练（场景里：删掉的记在内存里，所有页面共用）：⋮ → 删除这次训练 → 二次确认；取消不变；确认后回记录页，行没了、周合计和钢板孔数同步变
     pg.goto(f'{args.base}/log?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(900)
     wk0 = pg.evaluate("[...document.querySelectorAll('section[class*=_week_]')].slice(0, 2).map((s) => s.querySelector('[class*=_totals_]').getAttribute('aria-label'))")
@@ -522,7 +584,7 @@ def log_checks(b, w, h):
     click(pg, pg.get_by_role('button', name='删除这次训练')); pg.wait_for_timeout(500)
     dlg = pg.get_by_role('alertdialog', name='删除这次训练？')
     ok(dlg.count() == 1 and '不能撤销' in dlg.inner_text(), f'{tag} 删除：二次确认对话框，写明重算和「不能撤销」')
-    small = pg.evaluate(AUDIT); ok(not small, f'{tag} 删除：对话框里命中区都 ≥ 48 {small[:3]}')
+    small = audit(pg); ok(not small, f'{tag} 删除：对话框里命中区都 ≥ 48 {small[:3]}')
     if not args.no_shots: pg.screenshot(path=os.path.join(OUT, 'log-delete-confirm.png'))
     click(pg, dlg.get_by_role('button', name='取消')); pg.wait_for_timeout(500)
     ok(pg.get_by_role('alertdialog').count() == 0 and '/log/' in pg.url, f'{tag} 删除：取消 = 什么都不变，留在详情')
@@ -574,7 +636,7 @@ def me_checks(b, w, h):
     pg.on('pageerror', lambda e: errors.append(f'{tag} me pageerror: {e}'))
     def page_ok(name):
         ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} {name}：无横向溢出')
-        small = pg.evaluate(AUDIT); ok(not small, f'{tag} {name}：命中区都 ≥ 48 {small[:3]}')
+        small = audit(pg); ok(not small, f'{tag} {name}：命中区都 ≥ 48 {small[:3]}')
         ok(not pg.evaluate(CRUSH), f'{tag} {name}：滚动区里没有被压扁的块')
     def open_me(path='/me?scenario=plain-prescription'):
         pg.goto(args.base + path); pg.wait_for_selector('h1, [class*=_scroll_]'); pg.wait_for_timeout(900)
@@ -630,7 +692,7 @@ def me_checks(b, w, h):
     click(pg, pg.get_by_role('button', name='取消')); pg.wait_for_timeout(300)
     tap(pg.get_by_role('button', name=re.compile('^清除全部数据'))); pg.wait_for_timeout(400)
     ok(pg.get_by_role('alertdialog', name='清除全部数据？').count() == 1 and pg.get_by_text('不能撤销').count() == 1, f'{tag} 数据：清除先二次确认，写明不能撤销')
-    small = pg.evaluate(AUDIT); ok(not small, f'{tag} 数据：确认对话框里命中区都 ≥ 48 {small[:3]}')
+    small = audit(pg); ok(not small, f'{tag} 数据：确认对话框里命中区都 ≥ 48 {small[:3]}')
     click(pg, pg.get_by_role('button', name='取消')); pg.wait_for_timeout(300)
     ok('/me' in pg.url, f'{tag} 数据：取消 = 留在「我的」')
     with pg.expect_download() as dl:
@@ -693,7 +755,7 @@ def shop_checks(b, w, h):
     def page_ok(name):
         pg.wait_for_timeout(300)
         ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} {name}：无横向溢出')
-        small = pg.evaluate(AUDIT); ok(not small, f'{tag} {name}：命中区都 ≥ 48 {small[:3]}')
+        small = audit(pg); ok(not small, f'{tag} {name}：命中区都 ≥ 48 {small[:3]}')
         ok(not pg.evaluate(CRUSH), f'{tag} {name}：滚动区里没有被压扁的块')
         ok(pg.get_by_role('navigation', name='主导航').count() == 0, f'{tag} {name}：子页没有 Tab 导航')
         if not args.no_shots and w == 360: pg.screenshot(path=os.path.join(OUT, f'shop-{name}.png'))
@@ -715,10 +777,10 @@ def shop_checks(b, w, h):
         ty = tip.bounding_box()['y'] if tip.bounding_box() else 0
         chips = pg.get_by_role('group', name='按部位筛选').bounding_box()
         ok(chips is not None and ty < chips['y'], f'{tag} 增量：横幅在部位筛选上面')
-    small = pg.evaluate(AUDIT); ok(not small, f'{tag} 增量·横幅：命中区都 ≥ 48 {small[:3]}')
+    small = audit(pg); ok(not small, f'{tag} 增量·横幅：命中区都 ≥ 48 {small[:3]}')
     if not args.no_shots and w == 360: pg.screenshot(path=os.path.join(OUT, 'shop-tip-gains.png'))
-    click(pg, pg.get_by_role('button', name='收起这条提示')); pg.wait_for_timeout(900)
-    ok(pg.get_by_role('button', name=re.compile('腰带：什么时候该系')).count() == 0, f'{tag} 增量：✕ 收起后横幅没了')
+    click(pg, pg.get_by_role('button', name='收起这条提示'))
+    ok(until(pg, '() => !document.querySelector(\'[aria-label="收起这条提示"]\')'), f'{tag} 增量：✕ 收起后横幅没了')
     pg.goto(args.base + '/body'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(1000)
     ok(pg.get_by_role('button', name='收起这条提示').count() <= 1, f'{tag} 容量：知识卡提示一屏最多一条')
     pg.goto(args.base + '/me'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)
@@ -799,25 +861,39 @@ def shop_checks(b, w, h):
     ok('scenario=plain-prescription' in pg.url and json.dumps(store()['wallet'], sort_keys=True) == snap, f'{tag} 场景：下单走完、带着场景参数，不写本机存储')
     pg.close()
 
-widths = [args.width] if args.width else list(SIZES)
+def guarded(name, fn, *a):
+    """一个类别中途抛错（等不到元素、超时）不拖垮后面的：记一条，写明卡在这个脚本的哪一行"""
+    try: fn(*a)
+    except Exception as e:
+        here = [f for f in traceback.extract_tb(e.__traceback__) if f.filename.endswith('shoot_6a.py')]
+        at = f'第 {here[-1].lineno} 行 {here[-1].line}' if here else ''
+        errors.append(f'{name} 中途出错：{str(e).splitlines()[0]}  @ {at}')
+
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path=args.chromium if os.path.exists(args.chromium) else None)
-    for w in widths:
+    _new_page = b.new_page
+    def new_page(**kw):
+        pg = _new_page(**kw); pg.set_default_timeout(args.timeout)
+        if args.pace != 1:
+            _wait = pg.wait_for_timeout
+            pg.wait_for_timeout = lambda ms: _wait(ms if ms < 200 else ms * args.pace)   # 短等待（按压、过渡中途取样）不缩
+        return pg
+    b.new_page = new_page
+    CHECKS = {'flow': lambda W, H, w: run(b, W, H, w == 360), 'story': lambda W, H, w: story_checks(b, W, H), 'deload': lambda W, H, w: deload_checks(b, W, H),
+              'gains': lambda W, H, w: gains_checks(b, W, H), 'log': lambda W, H, w: log_checks(b, W, H), 'me': lambda W, H, w: me_checks(b, W, H),
+              'shop': lambda W, H, w: shop_checks(b, W, H)}
+    for c, w in jobs:
         W, H = SIZES[w]
-        if 'flow' in only: run(b, W, H, w == 360)
-        if 'story' in only: story_checks(b, W, H)
-        if 'deload' in only: deload_checks(b, W, H)
-        if 'gains' in only: gains_checks(b, W, H)
-        if 'log' in only: log_checks(b, W, H)
-        if 'me' in only: me_checks(b, W, H)
-        if 'shop' in only: shop_checks(b, W, H)
+        if c in CHECKS: guarded(f'{c} · {w}', CHECKS[c], W, H, w)
     # /demo 电脑版（只和 360 宽的那一份一起跑，不分宽度）
-    if 'demo' in only and 360 in widths:
-        d = b.new_page(viewport={'width': 1440, 'height': 900})
-        d.on('pageerror', lambda e: errors.append(f'demo pageerror: {e}'))
-        d.goto(args.base + '/demo'); d.wait_for_selector('iframe'); d.wait_for_timeout(1500)
-        ok(d.locator('iframe').count() == 1, '/demo 电脑版：手机里是 App')
-        if not args.no_shots: d.screenshot(path=os.path.join(OUT, 'demo-desk.png'))
+    if ('demo', 360) in jobs:
+        def demo_desk():
+            d = b.new_page(viewport={'width': 1440, 'height': 900})
+            d.on('pageerror', lambda e: errors.append(f'demo pageerror: {e}'))
+            d.goto(args.base + '/demo'); d.wait_for_selector('iframe'); d.wait_for_timeout(1500)
+            ok(d.locator('iframe').count() == 1, '/demo 电脑版：手机里是 App')
+            if not args.no_shots: d.screenshot(path=os.path.join(OUT, 'demo-desk.png'))
+        guarded('demo', demo_desk)
     b.close()
 
 print(f'\n{"失败 " + str(len(errors)) + " 项" if errors else "全部通过"}')
