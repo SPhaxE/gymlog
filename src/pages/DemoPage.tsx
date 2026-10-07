@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router';
 import { Lockup } from '../components';
-import { DEFAULT_PROFILE, demoState, store, STORE_KEY } from '../data/store';
+import { DEFAULT_PROFILE, demoLegState, demoState, store, STORE_KEY } from '../data/store';
 import s from './DemoPage.module.css';
 
 type Step = { id: string; t: string; d: string; go?: { label: string; run: () => string } };
@@ -60,7 +60,7 @@ export function DemoPage() {
 
   const open = (path: string) => { const w = frame.current?.contentWindow; if (w) w.location.replace(path); };
   const reset = () => { store.clear(); return '/onboarding'; };
-  const withDemo = (path: string) => () => { store.clear(); store.update((x) => ({ ...x, ...demoState(Date.now()), draft: null })); return path; };
+  const withDemo = (path: string, make = demoState) => () => { store.clear(); store.update((x) => ({ ...x, ...make(Date.now()), draft: null })); return path; };
 
   const steps: Step[] = [
     { id: 'story', t: '初见引导 · 米洛（Milo）的故事', d: '8 幕动画讲清渐进超负荷与超量恢复；第 5 幕光点进荧光段时点「练」。', go: { label: '从头开始', run: reset } },
@@ -79,6 +79,7 @@ export function DemoPage() {
     { id: 'level', t: '牛龄', d: '5 段名字里当前一段加下划线，小牛站在一圈圈配重片里；离下一级用能照着做的说法（涨幅太大就写「再完成 N 个训练周期」）；连胜、本周、冻结卡三格，最近 12 周守约点阵，成长记录（连着破的几个 PR 合成一行）。删训练后牛龄或连胜回退，会在记录里写一行说明。', go: { label: '打开牛龄', run: withDemo('/me/level') } },
     { id: 'wallet', t: '钱包', d: '「我的 → 钱包 · 商城」：牛劲余额（≈ 多少元、本月进账）、我的卡券（可用的能「去用」）、最近明细；底部拇指区两个出口——「去商城抵扣」和「兑换卡券」（底部面板，牛劲不够的写还差多少）。', go: { label: '打开钱包', run: withDemo('/me/wallet') } },
     { id: 'shop', t: '商城与知识卡', d: '顶上「为你推荐」是被你的训练数据触发的知识卡（演示用户：硬拉预估 1RM 已到体重 1.62 倍 → 腰带）；点进去先看证据和怎么用，再看商品。商品五种状态：折扣、热销、新品、缺货（整卡变暗，详情页「到货提醒」，消息里来一条）、已下架（从助力带知识卡里的镁粉进）。', go: { label: '打开商城', run: withDemo('/shop') } },
+    { id: 'tipbody', t: '容量页的知识卡', d: '换一位近 4 周深蹲类练得多的用户（每周约 13 组）：容量页「近 7 天」下面出来一条护膝知识卡——点进去先看为什么、怎么用；对应的护膝正好缺货，可以「到货提醒」。✕ 只收起这一次，「不再提示这一类」在知识卡页底。主演示用户不会触发这一条。', go: { label: '换一位腿练得多的用户', run: withDemo('/body', demoLegState) } },
     { id: 'order', t: '演示下单', d: '腰带详情点「购买」：自动选好能用的满减券，牛劲按会员价的 20% 封顶抵扣（296 − 30 − 59 = ¥207）；不收集任何支付信息，提交即成功；订单完成页显示演示订单号和牛劲余额变化，返回回到商城。', go: { label: '打开腰带', run: withDemo('/shop/item/belt-10') } },
     { id: 'pro', t: '会员 Milo Pro', d: '「我的 → Milo Pro」：权益用你的账单讲——这 30 天会多拿多少牛劲、每月 2 张冻结卡保住你的连胜、你最该买的那件会员价省多少；「看完整对比」就地展开。选月度 / 年度 / 试用，不收集支付信息，开通即成功：小牛在同心环纹里庆祝。会员中心看有效期走到哪了（荧光刻度 = 今天）、这个月 Pro 给了你什么；「管理订阅」能切回免费，已得的不收回。', go: { label: '打开会员', run: withDemo('/pro') } },
   ];

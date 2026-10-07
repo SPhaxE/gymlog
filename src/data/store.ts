@@ -165,6 +165,20 @@ export function demoState(now: number, profile?: Profile, phase = DEMO_PHASE): P
     messagesSeenAt: startOfDay(now) - 5 * DAY, wallet: demoWallet(now) };
 }
 
+/** 「腿练得多」的演示用户（6f 容量页知识卡，/demo 单独一步；主演示数据不动——处方、增量、结算的演示数字都靠它）：
+ *  同一个演示用户，近 4 个整周每周一早上多一次腿日加练（哈克深蹲机 4 组 + 坐姿腿屈伸 3 组），深蹲类每周组数越过护膝门槛；
+ *  放在周一早上、离今天至少 7 天，不碰近 7 天的恢复（不然容量页先出的是「练太多 → 蛋白质与睡眠」）。 */
+export function demoLegState(now: number, profile?: Profile): ReturnType<typeof demoState> {
+  const d = demoState(now, profile);
+  const monday = startOfDay(now) - ((new Date(startOfDay(now)).getDay() + 6) % 7) * DAY;
+  const sets = (kg: number, reps: number, n: number) => Array.from({ length: n }, () => ({ type: 'work' as const, weightKg: kg, reps, rpe: 8 }));
+  const extra: Session[] = [1, 2, 3, 4].map((k) => ({
+    id: `demo-leg-${k}`, startMs: monday - k * 7 * DAY + 8 * 3600_000, durationMin: 35, exertion: 8,
+    exercises: [{ exerciseId: 'machine-hack-squat-1499', skipped: false, sets: sets(100, 10, 4) }, { exerciseId: 'machine-leg-extension-10', skipped: false, sets: sets(45, 12, 3) }],
+  }));
+  return { ...d, history: [...d.history, ...extra].sort((a, b) => a.startMs - b.startMs) };
+}
+
 /** 让演示用户的「下一步」有升有保有降（增量页分三组、首页处方都靠它），不动预估 1RM 的走向：
  *  - 主项（深蹲、卧推、硬拉）模拟里按 5 次编，而引擎对复合动作的次数区间是 6–8，「掉到下限以下」会让它们永远被判「该减重」→ 全部抬到 6 次；
  *  - 其余动作按名字散列分三种：多数维持原样（做到次数上限 → 该加重）、约 1/5 最近一次少做一次（保持，次数 +1）、

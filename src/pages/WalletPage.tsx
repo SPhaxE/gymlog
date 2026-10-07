@@ -2,7 +2,7 @@
  *  五层：
  *  - 战略：知道自己攒了多少牛劲、能换什么，并且把它用掉（T15 / T17）——钱包是增长闭环后半段的落点。
  *  - 范围：余额（≈ 元、本月进账）· 我的卡券（冻结卡 + 兑换来的券，可用 / 已用 / 过期）· 最近明细 5 条（「全部明细」就地展开）· 两个出口：去商城抵扣、兑换卡券。
- *    兑换列表：冻结卡 · 免邮券 · 商家满减券；Pro 体验 7 天等 6g 会员页有了再上（不放点了没去处的券）。
+ *    兑换列表：冻结卡 · 免邮券 · 商家满减券；Pro 体验 7 天（6g）只在「用过免费试用、现在是免费」时出现——还有免费试用时它没有意义（付费墙试用不花牛劲），已是会员时也用不上；兑换即开通 7 天体验，卡券里记一张「已用」。
  *  - 结构：子页，入口「我的 → 钱包 · 商城」；兑换走底部面板（可撤销的操作 → 面板，DESIGN §9.6 第 14 条），兑换成功轻提示；可用的券「去用」→ 商城。
  *  - 框架：第一优先 = 余额；主操作 = 底部拇指区两个出口（「去商城抵扣」荧光，「兑换卡券」描边）；返回左上。
  *  - 表现：余额码表大数 + 刻度尺分隔；支出骨白、获得荧光（流水行自带）；这一屏唯一的荧光块是「去商城抵扣」。 */
@@ -10,6 +10,7 @@ import { useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { BackToTop, Coupon, LedgerRow, NiujinBalance, Screen, SectionLabel, Sheet, StateView, TopBar, WalletExits, useToast } from '../components';
 import { COUPONS, dateOf, type CouponType } from '../data/growth';
+import { activate, proStatus, trialUsed, usePro } from '../data/pro';
 import { redeem } from '../data/wallet';
 import { DAY } from '../engine';
 import { useShop } from './useShop';
@@ -22,6 +23,8 @@ export function WalletPage({ scenario, now }: { scenario?: string; now: number }
   const nav = useNavigate(), loc = useLocation(), toast = useToast();
   const topRef = useRef<HTMLDivElement>(null);
   const { g, balance, coupons, update } = useShop(scenario, now);
+  const [pro, setPro] = usePro(scenario);
+  const redeemable: CouponType[] = proStatus(pro, now).kind === 'free' && trialUsed(pro) ? [...REDEEMABLE, 'trial'] : REDEEMABLE;
   const [all, setAll] = useState(false);
   const [sheet, setSheet] = useState(false);
   const ledger = useMemo(() => [...g.niujin.ledger].reverse(), [g]);
@@ -30,7 +33,11 @@ export function WalletPage({ scenario, now }: { scenario?: string; now: number }
   const usable = coupons.filter((c) => c.state === 'available').length + (freeze > 0 ? 1 : 0);
   const back = () => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav('/me' + loc.search, { replace: true }));
   const shop = () => nav('/shop' + loc.search);
-  const doRedeem = (t: CouponType) => { update((w) => redeem(w, t, Date.now())); setSheet(false); toast.show(`已兑换：${COUPONS[t].title}`); };
+  const doRedeem = (t: CouponType) => {
+    update((w) => redeem(w, t, Date.now())); setSheet(false);
+    if (t === 'trial') setPro((x) => activate(x, 'trial', now));
+    toast.show(t === 'trial' ? '已兑换：Milo Pro 体验 7 天，今天起生效' : `已兑换：${COUPONS[t].title}`);
+  };
 
   return (
     <Screen label="钱包">
@@ -45,7 +52,7 @@ export function WalletPage({ scenario, now }: { scenario?: string; now: number }
               ? <p className={`milo-text-caption ${s.note}`}>还没有卡券。用牛劲兑换一张，下单时能抵钱、断档时保住连胜。</p>
               : <div className={s.stack}>
                   {freeze > 0 && <Coupon type="freeze" title={`${COUPONS.freeze.title} ×${freeze}`} detail={COUPONS.freeze.detail} state="available" />}
-                  {coupons.map((c) => <Coupon key={c.id} type={c.type} title={c.title} detail={c.state === 'available' ? `${c.detail.split(' · ')[0]} · ${dateOf(c.expireAt)}前` : c.state === 'used' ? '已用在一笔演示订单' : `${dateOf(c.expireAt)}过期`}
+                  {coupons.map((c) => <Coupon key={c.id} type={c.type} title={c.title} detail={c.state === 'available' ? `${c.detail.split(' · ')[0]} · ${dateOf(c.expireAt)}前` : c.state === 'used' ? (c.type === 'trial' ? `已开通体验 · ${dateOf(c.expireAt)}到期` : '已用在一笔演示订单') : `${dateOf(c.expireAt)}过期`}
                     state={c.state} onUse={c.state === 'available' ? shop : undefined} />)}
                 </div>}
           </section>
@@ -66,7 +73,7 @@ export function WalletPage({ scenario, now }: { scenario?: string; now: number }
       {sheet && (
         <Sheet title="兑换卡券" meta={`牛劲余额 ${balance.toLocaleString('en-US')}`} onClose={() => setSheet(false)}>
           <div className={s.sheetBody}>
-            {REDEEMABLE.map((t) => <Coupon key={t} type={t} title={COUPONS[t].title} detail={COUPONS[t].detail} state="redeem" cost={COUPONS[t].cost} balance={balance} onRedeem={() => doRedeem(t)} />)}
+            {redeemable.map((t) => <Coupon key={t} type={t} title={COUPONS[t].title} detail={COUPONS[t].detail} state="redeem" cost={COUPONS[t].cost} balance={balance} onRedeem={() => doRedeem(t)} />)}
           </div>
         </Sheet>
       )}

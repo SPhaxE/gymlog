@@ -3,7 +3,7 @@ import { DAY } from '../engine';
 import { COUPONS, PRODUCTS, SHOP_PRODUCTS, productById } from './growth';
 import { knowledgeHits, recommendFor, tipFor } from './knowledge';
 import { growthOf } from './me';
-import { DEMO_WEIGHT, demoState, store } from './store';
+import { DEMO_WEIGHT, demoLegState, demoState, store } from './store';
 import { couponsOf, demoWallet, EMPTY_WALLET, mute, placeOrder, quote, redeem, remind, restockMessages, usableCoupons } from './wallet';
 
 const NOW = new Date(2026, 9, 7, 18, 0).getTime();
@@ -89,5 +89,27 @@ describe('知识卡触发（ia §1.16）', () => {
     expect(recommendFor([])).toEqual({ id: 'straps', why: null });
     expect(knowledgeHits({ history: [], profile: null }, NOW)).toEqual([]);
     expect(mute(mute(EMPTY_WALLET, 'belt'), 'belt').muted).toEqual(['belt']);
+  });
+});
+
+describe('Pro 体验 7 天券（6g）', () => {
+  it('兑换扣 2,000 牛劲；卡券里一出现就是「已用」，不能拿去下单', () => {
+    const d = demoState(NOW);
+    const w = redeem(EMPTY_WALLET, 'trial', NOW);
+    const before = growthOf({ ...d, wallet: EMPTY_WALLET }, NOW).niujin.balance;
+    expect(growthOf({ ...d, wallet: w }, NOW).niujin.balance).toBe(before - COUPONS.trial.cost);
+    const [c] = couponsOf(w, NOW);
+    expect(c).toMatchObject({ type: 'trial', state: 'used', expireAt: NOW + 7 * DAY });
+    expect(usableCoupons(couponsOf(w, NOW), productById('belt-10')!)).toEqual([]);
+  });
+});
+
+describe('「腿练得多」的演示用户（/demo 容量页知识卡那一步）', () => {
+  it('一周七天载入，容量页都是护膝那一条（不是练太多的蛋白质）；主演示用户不触发', () => {
+    for (let d = 0; d < 7; d++) {
+      const now = new Date(2026, 9, 5 + d, 18).getTime();
+      expect(tipFor('body', knowledgeHits(demoLegState(now), now), [])?.id).toBe('knee');
+      expect(tipFor('body', knowledgeHits(demoState(now), now), [])).toBeNull();
+    }
   });
 });

@@ -1082,6 +1082,50 @@
         <div class="t-s" style="margin-top:6px">其余入口：高级分析 Pro 标 · 冻结卡提示 · 会员价旁 Pro 小标</div></div>`,
     },
   };
+  // ---------- 6g 补：两处「Pro 入口」的落点（高级分析 Pro 标 · 连胜快断时的冻结卡提示）——先有真内容，再挂 Pro ----------
+  const proTag = (on) => `<span class="badge" data-hit style="${on ? 'background:#2b2b29;color:#FAFAF8' : ''}">Pro ›</span>`;
+  const bars8 = (vals, lo, hi) => `<div style="position:relative;height:84px;margin-top:6px"><div class="abs" style="left:0;right:0;bottom:${lo}px;height:${hi - lo}px;background:#EDEDE8;border-radius:4px"></div><div class="row" style="position:absolute;inset:0;align-items:flex-end;gap:6px">${vals.map((v, i) => `<i style="flex:1;height:${v}px;background:${i === vals.length - 1 ? '#2b2b29' : '#A9A9A5'};border-radius:3px 3px 0 0"></i>`).join('')}</div></div>`;
+  const panel = (inner) => `${status}<div class="pad" style="padding-top:10px;opacity:.35"><div class="t-title">容量</div><div class="fill" style="height:620px;margin-top:12px"></div></div><div class="abs" style="inset:0;background:rgba(0,0,0,.3)"></div>
+    <div class="abs box" style="left:0;right:0;bottom:0;border-radius:18px 18px 0 0;padding:14px 16px 24px" data-a="1">${inner}</div>`;
+  const riskRow = (body, acts = '') => `<div class="fill" style="padding:10px 12px" data-a="2"><div class="row" style="gap:8px"><span class="badge">!</span><span class="t-b" style="font-weight:700">这周快断了：还差 2 次，只剩 1 天</span></div><div class="t-s" style="margin-top:4px">${body}</div>${acts}</div>`;
+  const PROENTRY = {
+    W1: {
+      title: '高级分析 ① 肌群容量趋势：肌头面板里加「近 8 周」',
+      note: '<em>Pro 标挂在真内容上</em>：现在「高级分析」这项权益在 App 里没有对应的东西，Pro 标点了也没处可去。最小的真内容放在数据已经在的地方——容量页点一颗胶囊弹出的肌头面板，在「近 7 天容量」下面加一块「近 8 周 · 每周组数」（8 根柱 + 有效区间底带，本周深色）。块标题右边一个「Pro ›」：未开通进付费墙，已开通进会员中心（实底）。演示不拦截，所以图照常显示，Pro 标只是告诉你「这是 Pro 的」。会员中心「高级分析」那一行直接打开这里（练得最多的那块肌肉）。',
+      html: () => panel(`<div class="row"><span class="t-h">股四头肌 · 外侧头</span><div class="sp"></div><span class="t-s">下肢 · 达标</span></div>
+        <div class="t-s" style="margin-top:10px;font-weight:700">恢复</div><div class="bar" style="margin-top:6px"><i style="width:72%"></i></div>
+        <div class="t-s" style="margin-top:12px;font-weight:700">近 7 天容量</div><div class="t-b" style="margin-top:2px"><b class="t-num">11</b> 组 · 有效 8–16</div>
+        <div class="row" style="margin-top:14px"><span class="t-s" style="font-weight:700">近 8 周 · 每周组数</span><div class="sp"></div>${proTag(false)}</div>${bars8([30, 44, 52, 40, 58, 62, 22, 48], 26, 66)}
+        <div class="row t-s" style="justify-content:space-between;margin-top:4px"><span>8 周前</span><span>本周</span></div>
+        <div class="btn" style="margin-top:16px;background:#FAFAF8;color:#1d1d1b;box-shadow:inset 0 0 0 1.5px #2b2b29">找练这块的动作</div>`),
+    },
+    W2: {
+      title: '高级分析 ② 动作对比：进步曲线页叠一条',
+      note: '<em>第二个真内容</em>：进步曲线页（P10）在大数字下面一行「对比 ＋ 选一个动作」，点开底部面板列出同部位、练过的动作（可撤销 → 面板），选了就把它的曲线以虚线叠上来，图例两行；再点 ✕ 取消对比。行尾同样一个「Pro ›」。代价：比 W1 多一个面板和一条线的交互；曲线页本来就有拖动游标，叠线时游标同时读两条。',
+      html: () => `${status}${subTop('杠铃深蹲')}<div class="pad"><div class="t-xl">142.5<span class="t-b"> kg 预估 1RM</span></div>
+        <div class="row" style="margin-top:10px;gap:8px" data-a="1"><span class="chip" data-hit>对比 ＋ 选一个动作</span><div class="sp"></div>${proTag(false)}</div>
+        <div class="fill" style="height:220px;margin-top:10px;position:relative"><svg viewBox="0 0 320 220" style="position:absolute;inset:0;width:100%;height:100%"><polyline points="10,190 60,170 110,150 160,140 210,110 260,95 310,70" fill="none" stroke="#2b2b29" stroke-width="3"/><polyline points="10,200 60,185 110,180 160,160 210,150 260,140 310,120" fill="none" stroke="#7a7a76" stroke-width="2.5" stroke-dasharray="6 5"/></svg></div>
+        <div class="row t-s" style="gap:14px;margin-top:8px"><span>━ 杠铃深蹲</span><span>┅ 前蹲（对比）✕</span></div>
+        <div class="t-s" style="margin-top:14px;font-weight:700">最近 8 次</div><div class="box" style="height:200px;margin-top:6px"></div></div>`,
+    },
+    W3: {
+      title: '冻结卡提示 ① 牛龄页 · 快断了、手上没有冻结卡',
+      note: '<em>引擎已经会判「快断」</em>（这周还差的次数 > 剩下的天数），但 App 里没地方显示。落在牛龄页三格下面一行（它就是讲连胜的页）；手上没有冻结卡时给两个出口：「兑一张冻结卡 · 800 牛劲」直接打开钱包的兑换面板（只放这一种）；「Pro 每月送 2 张 ›」文字链进付费墙。「我的」成长卡上那句话这周换成「这周快断了 ›」，点卡照常进牛龄页。演示要看得到：/demo 加一步，把时间调到周六（还差 2 次）。',
+      html: () => `${status}${subTop('牛龄')}<div class="pad"><div class="fill" style="height:200px;display:flex;align-items:center;justify-content:center"><span class="t-s">小牛 · 段名小级 · 离下一级</span></div>
+        <div class="box" style="margin-top:12px;padding:12px">${statRow([[21, ' 周', '连胜'], ['1 / 3', ' 次', '本周'], [0, ' 张', '冻结卡']])}</div>
+        <div style="margin-top:10px">${riskRow('断了连胜从 0 开始。冻结卡会在没练够的那周自动用掉一张。', `<div class="row" style="gap:8px;margin-top:10px"><div class="btn" style="flex:1;height:48px;font-size:14px;background:#FAFAF8;color:#1d1d1b;box-shadow:inset 0 0 0 1.5px #2b2b29">兑一张冻结卡 · 800 牛劲</div></div><div class="t-s" data-hit style="display:flex;align-items:center;justify-content:center;height:48px;margin-top:8px">Pro 每月送 2 张 ›</div>`)}</div>
+        <div class="t-s" style="margin:14px 0 6px;font-weight:700">最近 12 周</div>${wkStrip()}</div>`,
+    },
+    W4: {
+      title: '冻结卡提示 ② 有冻结卡 / 已是会员',
+      note: '<em>有卡就不打扰</em>：手上有冻结卡时同一行只说结果——「有 1 张冻结卡，这周没练够会自动用掉，连胜保住」，没有按钮（没什么要做的）。已是 Pro、这个月的 2 张也用完了：只给「兑一张冻结卡」，不再推 Pro。三种情况都不进训练流程、不弹窗。',
+      html: () => `${status}${subTop('牛龄')}<div class="pad"><div class="fill" style="height:200px;display:flex;align-items:center;justify-content:center"><span class="t-s">小牛 · 段名小级 · 离下一级</span></div>
+        <div class="box" style="margin-top:12px;padding:12px">${statRow([[21, ' 周', '连胜'], ['1 / 3', ' 次', '本周'], [1, ' 张', '冻结卡']])}</div>
+        <div style="margin-top:10px">${riskRow('有 1 张冻结卡：这周没练够会自动用掉，连胜保住。')}</div>
+        <div class="t-s" style="margin:18px 0 6px;font-weight:700">会员、本月 2 张已用完</div>${riskRow('这个月 Pro 送的 2 张已经用了。', '<div class="btn" style="margin-top:10px;height:48px;font-size:14px;background:#FAFAF8;color:#1d1d1b;box-shadow:inset 0 0 0 1.5px #2b2b29">兑一张冻结卡 · 800 牛劲</div>')}</div>`,
+    },
+  };
+  LAYERS.proentry = ['战略：「Pro 标」和「冻结卡提示」是付费墙的入口，但入口要落在真东西上——标在哪，那项权益就在哪看得见；不为了导流造一个空页', '范围：高级分析 = 肌群容量趋势（肌头面板「近 8 周」）+ 动作对比（曲线页叠一条）；冻结卡提示 = 引擎「快断」（还差次数 > 剩下天数）时牛龄页一行，按有没有卡 / 是不是会员给不同出口', '结构：Pro 标 → 未开通 /pro、已开通 /me/pro；会员中心「高级分析」→ 容量页打开练得最多那块的面板；快断行「兑一张」→ 钱包兑换面板（只放冻结卡）、「Pro 每月送 2 张」→ /pro', '框架：Pro 标是块标题旁的小标，不是主操作；快断行是辅助信息，按钮最多一个（描边），Pro 是文字链；有卡时不放按钮', '表现：Pro 标描边 / 已开通骨白实底，不用荧光；快断行用「!」标 + 深灰底，不用危险红（不是错误）'];
   LAYERS.pro = ['战略：完整展示会员商业链路（作品集），但不误导、不拦截——演示模式下全部功能照常可用（T18）', '范围：免费 vs Pro 对比 · 月 ¥18 / 年 ¥128（默认）/ 试用 7 天 · 假成功开通 · 开通成功（Milo 庆祝）· 已开通转 P21；不收集任何支付信息', '结构：P20 /pro；入口 我的「会员」行、高级分析 Pro 标、冻结卡提示、会员价；开通成功 → 回来源页', '框架：第一优先 = 对我有什么用（W1 对比表 / W2 用我的数据）；主操作 = 拇指区「开始 7 天试用 / 开通」；方案选择紧贴主按钮上方', '表现：荧光只给主按钮；年度「省 40%」是骨白标；开通成功是品牌位置，放 Milo'];
   LAYERS.prohub = ['战略：开通以后看得见「值不值」，也能退得出去（切回免费不收回已得的东西）', '范围：会员卡（方案 · 到期 / 试用剩几天）· 本月 Pro 给了你什么（多拿的牛劲 · 冻结卡领 / 用 · 会员价省下）· 权益入口 · 管理订阅（演示切回免费，二次确认）', '结构：P21 /me/pro；入口 开通成功、我的「会员」行（已开通 / 试用中）', '框架：第一优先 = 到期日 + 本月得到的；没有主操作（不制造「再买点」的压力）；危险操作（切回免费）沉底、先确认', '表现：数字窄体；不放荧光块'];
   Object.assign(LAYERS, {
@@ -1117,6 +1161,7 @@
     tips: { title: '6f · 知识卡提示放在哪（容量 P06 / 增量 P09）', sub: '演示用户：胸部恢复慢 → 蛋白质与睡眠；深蹲 142 kg ÷ 93 kg = 1.52 → 腰带', v: TIPS, layers: LAYERS.tips },
     pro: { title: '6g · 会员 · 付费墙（P20）', sub: '演示用户：进阶、连胜 21 周、这 30 天拿了 1,050 牛劲 · 演示模式全部权益不拦截', v: PRO, layers: LAYERS.pro },
     prohub: { title: '6g · 会员中心（P21）与「我的」会员行', sub: '已开通 / 试用中 / 未开通三态', v: PROHUB, layers: LAYERS.prohub },
+    proentry: { title: '6g 补 · Pro 标与冻结卡提示的落点', sub: '演示用户：股四头肌外侧头近 7 天 11 组；连胜 21 周、本周 1 / 3、周六', v: PROENTRY, layers: LAYERS.proentry },
     pause: { title: '6e · 暂停训练确认', sub: '训练中在首页按系统返回 · 已记 6 / 13 组', v: PAUSE, layers: LAYERS.pause },
   };
 

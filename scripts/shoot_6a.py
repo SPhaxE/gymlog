@@ -935,9 +935,20 @@ def pro_checks(b, w, h):
     ok(sw.get_attribute('aria-checked') == 'true', f'{tag} 数据：试用中，会员开关是开的')
     sw.evaluate('e => e.scrollIntoView({ block: "center" })'); pg.wait_for_timeout(200); click(pg, sw); pg.wait_for_timeout(500)
     ok('月 ¥18 · 年 ¥128' in row().inner_text(), f'{tag} 数据：关掉 = 免费；用过试用，会员行写价格')
+    # 钱包：用过免费试用、现在免费 → 兑换列表多一张「Pro 体验 7 天」，兑换即开通体验
+    pg.wait_for_timeout(3000)
+    click(pg, pg.get_by_role('button', name=re.compile('^钱包 · 商城'))); pg.wait_for_url('**/me/wallet'); pg.wait_for_timeout(900)
+    click(pg, pg.get_by_role('button', name=re.compile('^兑换卡券'))); pg.wait_for_timeout(500)
+    sheet = pg.get_by_role('dialog', name='兑换卡券')
+    ok(sheet.get_by_role('button', name='兑换').count() == 4 and sheet.get_by_text('Milo Pro 体验 7 天').count() == 1, f'{tag} 钱包：用过试用后多一张 Pro 体验 7 天')
+    page_ok('wallet-trial')
+    click(pg, sheet.get_by_role('button', name='兑换').nth(3)); pg.wait_for_timeout(600)
+    ok(pg.get_by_text(re.compile('已兑换：Milo Pro 体验 7 天')).count() == 1 and pg.get_by_text(re.compile('^已开通体验 · ')).count() == 1, f'{tag} 钱包：兑换 Pro 体验 → 提示 + 卡券记已用')
+    ok(store()['pro'][-1]['plan'] == 'trial', f'{tag} 钱包：兑换 Pro 体验即开通 7 天体验')
     # 商品详情会员价旁的 Pro
     pg.goto(args.base + '/shop/item/belt-10'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)
-    click(pg, pg.get_by_role('button', name=re.compile('看看 Pro'))); pg.wait_for_url('**/pro'); pg.wait_for_timeout(500)
+    click(pg, pg.get_by_role('button', name=re.compile('查看会员中心'))); pg.wait_for_url('**/me/pro'); pg.wait_for_timeout(500)
+    ok(pg.get_by_role('region', name=re.compile('^Milo Pro 试用，试用中')).count() == 1, f'{tag} 详情：体验中，会员价旁的 Pro 进会员中心')
     # 演示场景不写存储
     snap = json.dumps(store()['pro'])
     pg.goto(args.base + '/pro?scenario=plain-prescription'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)
@@ -982,6 +993,10 @@ with sync_playwright() as p:
             d.goto(args.base + '/demo'); d.wait_for_selector('iframe'); d.wait_for_timeout(1500)
             ok(d.locator('iframe').count() == 1, '/demo 电脑版：手机里是 App')
             if not args.no_shots: d.screenshot(path=os.path.join(OUT, 'demo-desk.png'))
+            # 「容量页的知识卡」一步：换一位腿练得多的用户 → 手机里容量页出护膝提示（主演示用户不触发）
+            d.get_by_role('button', name='换一位腿练得多的用户').click(); d.wait_for_timeout(2500)
+            f = d.frame_locator('iframe')
+            ok(f.get_by_role('button', name=re.compile('护膝')).count() == 1, '/demo 电脑版：换一位腿练得多的用户 → 容量页出护膝知识卡')
         guarded('demo', demo_desk)
     b.close()
 

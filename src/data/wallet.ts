@@ -25,10 +25,15 @@ export const MERCHANT_COUPON = { merchant: '铁砧运动', min: 200, off: 30 };
 
 export interface OwnedCoupon { id: string; type: CouponType; title: string; detail: string; atMs: number; expireAt: number; state: 'available' | 'used' | 'expired'; orderId: string | null }
 
-/** 我的卡券：可用的在前（快过期的先），其后已用、已过期（新的在前）。冻结卡和 Pro 体验不在这里（冻结卡归连胜，Pro 体验等 6g） */
+/** 我的卡券：可用的在前（快过期的先），其后已用、已过期（新的在前）。冻结卡不在这里（归连胜）；
+ *  Pro 体验 7 天（6g）兑换的那一刻就开通了体验，所以一出现就是「已用」 */
 export function couponsOf(w: WalletState, now: number): OwnedCoupon[] {
   const out: OwnedCoupon[] = [];
   for (const a of w.actions) {
+    if (a.kind === 'redeem' && a.id && a.coupon === 'trial') {
+      out.push({ id: a.id, type: 'trial', title: COUPONS.trial.title, detail: COUPONS.trial.detail, atMs: a.atMs, expireAt: a.atMs + 7 * DAY, orderId: null, state: 'used' });
+      continue;
+    }
     if (a.kind !== 'redeem' || !a.id || (a.coupon !== 'merchant' && a.coupon !== 'shipping')) continue;
     const order = w.orders.find((o) => o.couponId === a.id);
     const expireAt = a.atMs + COUPON_DAYS * DAY, spec = COUPONS[a.coupon];
