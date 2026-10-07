@@ -15,12 +15,12 @@
 - **5 个 Tab 全是真页面**：首页、容量（原「身体」）、增量、记录（6c）、我的（6d：成长卡 + 档案四格 + 导航设置 + 数据 + 关于；子页牛龄 P13、消息）。6d 按我倾向的线框（me2 W2 + level W1）和 Stitch 第 1 轮做的，等用户对方案的意见再调。
 - **门禁全绿**：
   - `tsc`
-  - vitest 331 项
+  - vitest 391 项（2026-10-07）
   - 写死值检查
   - Token 校验
   - Figma 插件 62 项
   - 构建
-  - `shots:playground`（82 个组件、625 个变体）
+  - `shots:playground`（组件目录 99 个条目，每个导出都有，测试会查）
   - `shots:6a`（演示全流程，360 与 412 两种宽，每一步查命中区 ≥ 48、被压扁的块、横向溢出、页面错误；不依赖日期）
 - **生产环境已验证**：<https://gymlog-taupe.vercel.app/demo> 等路由 200、部署的是合并后的代码；同一份 `main` 的生产构建跑 `shots:6a` 全部通过（沙盒里的 Chromium 不信任代理证书，不关证书校验，所以用本地生产构建代替直连线上跑浏览器门禁）。
 
@@ -116,7 +116,7 @@ src/
 - React 19、react-router 8、Vite、TypeScript、vitest + jsdom；
 - Capacitor 8（Android）；
 - 字体：Noto Sans SC、Barlow Condensed（数字）、JetBrains Mono；
-- `zustand` 在依赖里但没用到，可以删。
+- ~~`zustand` 在依赖里但没用到~~：2026-10-07 已删。
 
 ## 4. 命令
 
@@ -209,7 +209,7 @@ python3 scripts/shoot_growth.py     # 奖励弹窗 GIF → screenshots/growth/
 - **演示数据的「首次」**：处方引擎会轮换动作。`store.ts` 的 `backfill` 会把当天处方里没有记录的动作补进 2–4 周前的训练，保证演示第一眼都有建议重量（`src/data/store.test.ts` 连续 7 天检查）；列表里偶尔仍可能有「首次」，那是真实状态。真实用户数据不走这里。
 - **新纪录在演示里不一定出现**：按建议重量打卡通常不破纪录。要演示新纪录：点第 1 组整行，把重量改大（例如 120），再打卡、结束。
 - **真机验证还没全做**：命中区、对齐、溢出已在 360 / 412 两种宽自动检查；还没验的是放大镜跟手的帧率、Android 返回键在训练中 / 改数面板里的行为、360 × 640 这类矮屏上训练中的一屏能放下几组。
-- **P04 动作要领**还没做，主角卡上暂时没有「要领」入口。
+- ~~P04 动作要领还没做~~：6e 已上线（入口：主角卡、处方行、记录详情、进步曲线）。
 - **`/demo` 的「重新开始」**：父页清空存储后刷新手机里的 iframe。如果手机里正在休息倒计时，极小概率会在刷新前写回一次，再点一次即可。
 - **故事动画**只在 Chromium 上做过逐帧检查；Safari 和 Android WebView 上的 `text-wrap: balance`、`color-mix` 需要看一眼。Capacitor 8 默认的 WebView 足够新。
 
@@ -225,8 +225,8 @@ python3 scripts/shoot_growth.py     # 奖励弹窗 GIF → screenshots/growth/
 | **第 7 轮 · 用户 9 条反馈**（2026-10-06，计划见本节下方） | ① 页头：删细标题栏与标题上方的小字，五个 Tab 大标题同一位置；所有长页加「回到顶端」✅ ② 曲线页拖动不跳 ✅ ③ 增量分组可收起 + 8motions ✅ ④ 选中图标描线从左到右、从下到上 ✅ ⑤ 身体页 → 容量页（半身版式不变、胶囊缩 1/3、浅荧光轮廓 + 扫描线动效、胶囊 M03、切换一律左→右）✅⑥ 钢板日历重做（固定光源 + 透孔光束 + 浮尘、可拖可点、读数码表）✅⑦ 整体审美加强 ✅（对比度审查进门禁、消息页按月分段 + 牛劲一列、0 组胶囊字提亮；中途两条追加：容量页恢复半身版式、钢板透光改柔加泛光、钢板月份字提对比度）| 页头 / `BackToTop` / 各页 |
 | **6e 首页补全** ✅（2026-10-07 收尾：上线 + 演示路线 + DESIGN §9.4 / §9.6 + 找动作入口图标〔`public/icons/finder-*`，原图与 IP 风格板在 `docs/sources/brand-refs/`〕） | **P04 动作要领**（示范视频、要领文案、目标肌头高亮；入口：主角卡、处方行、记录详情、进步曲线）+ **点选肌头检索动作**（2026-10-07 补：检索面板，入口 容量页肌头面板 / 首页「＋ 加一个动作」/ 替换动作）+ **替换动作**（检索面板锁定同肌头的预设）+ **热身组** + 暂停训练确认（返回键）。P02 保持底部面板，不做整页。线框：`design/wireframes/?board=p04 / find / swap / warm / pause` | 动作要领（P0）；加练 / 换练有路可走；训练流程更可信 |
 | **6f 钱包与商城** ✅ ④ 用户视觉审查通过（2026-10-07「视觉过关」） | ① 线框 `?board=wallet / shop / guide / item / order`（按我倾向）；② Stitch 11 张，用户授权按方法论定取舍（`docs/brief.md` 2026-10-07）；③ 数据层 `data/wallet.ts`（兑换 / 演示下单 / 到货提醒 / 静音，演示场景走模块内存）+ `data/knowledge.ts`（腰带 / 肌酸 / 蛋白质与睡眠 / 护膝触发，助力带通用）+ 商品状态（`data/growth.ts` 6 款，镁粉已下架只从知识卡进）；组件 `components/shop.tsx`；页面 P14 `/me/wallet`、P15 `/shop`、P16 `/shop/guide/:id`、P17 `/shop/item/:id`、P18 `/shop/checkout`、P19 `/shop/order/:id`；「我的」加「钱包 · 商城」行；门禁 `shoot_6a.py --only shop`。知识卡提示（用户定 `?board=tips` W1 + W3）：容量页「近 7 天」下、增量页页头下一条横幅（`pages/TipBanner.tsx`，✕ 本次收起、知识卡页底「不再提示这一类」）。演示用户只触发腰带（增量页）；容量页的护膝提示用单独的「腿练得多」演示用户（`store.ts` 的 `demoLegState`：同一演示用户近 4 个整周每周一多一次腿日加练），/demo「容量页的知识卡」一步载入，主演示数据不动 | 增长闭环后半段 |
-| **6g 会员** ③ 已上线，等 ④ 用户视觉审查（2026-10-07） | ① 线框 `?board=pro / prohub`（Claude 选，用户授权）；② Stitch 5 张，对比板 `screenshots/hifi/g6/g6-board.png`，取舍记在 `docs/brief.md`（Claude 选，用户授权）；③ 数据层 `data/pro.ts`（试用 / 月 / 年、切回免费不收回、`proFacts` / `proPitch` / `pitchProduct` / `proSaved`）；组件 `components/pro.tsx`（`PerkLedger`、`PlanPicker`、`PerkTable`、`ProCard` + `MonthStats`、`ProWelcome`，进 playground「会员」组）；页面 P20 `/pro`（付费墙 + 开通成功）、P21 `/me/pro`；入口 我的「Milo Pro」行三态、数据里「演示：会员状态」开关、商品详情会员价旁的「Pro ›」；DemoPage 一步；门禁 `shoot_6a.py --only pro`。没做的入口：高级分析 Pro 标、连胜快断时的冻结卡提示（演示不拦截，暂无落点）。钱包「Pro 体验 7 天」券已补：只在用过免费试用、现在免费时出现，兑换即开通 7 天体验（卡券里记已用）。两处入口已补（线框 `?board=proentry` 用户通过；Stitch `g6e` 对比板，按 Claude 倾向 trend V2 / compare V2 / risk V1）：高级分析 = 容量页肌头面板「近 8 周 · 每周组数」（`HeadWeeks`）+ 进步曲线页「对比另一个动作」（`TrendChart compare`、`data/gains.ts` 的 `compareCandidates`），块标题旁 `ProLink`；会员中心「高级分析」→ `/body?head=<近 7 天练得最多的肌头>`。冻结卡提示 = 牛龄页 `StreakRisk`（`data/me.ts` 的 `riskOf`；有卡 / 没卡 · 免费 / 没卡 · 会员三态）+「我的」成长卡那句话；「兑一张」→ `/me/wallet?redeem=freeze`（面板只放冻结卡，兑完回牛龄页）；/demo「连胜快断」一步（`store.ts` 的 `demoRiskState` + `riskDemoNow`，本周日上午、这周只留一次训练） | 商业链路 |
-| **6h 收尾** ✅（2026-10-07 收掉） | ~~作品集案例页~~ → 下一阶段（结构线框 `design/wireframes/case.html` 三种方案留着）· ~~触点静态稿（通知、桌面小组件、图标）~~ → 作品集阶段需要时再做 · ~~演示场景切换~~ → 已由 /demo 各步骤覆盖（腿练得多的用户、连胜快断、「我的 → 数据」会员开关）· ~~真机体检~~ → 省略（用户：App 观看率低于作品集，不是十分必要的省略；360 / 412 自动门禁在跑）。顺带做了：地址各司其职（/playground 组件 · /spec 规范 · /preview 方案台）、/demo 手机跟着滚动 | 收尾 |
+| **6g 会员** ✅ ④ 用户「通过」（2026-10-07） | ① 线框 `?board=pro / prohub`（Claude 选，用户授权）；② Stitch 5 张，对比板 `screenshots/hifi/g6/g6-board.png`，取舍记在 `docs/brief.md`（Claude 选，用户授权）；③ 数据层 `data/pro.ts`（试用 / 月 / 年、切回免费不收回、`proFacts` / `proPitch` / `pitchProduct` / `proSaved`）；组件 `components/pro.tsx`（`PerkLedger`、`PlanPicker`、`PerkTable`、`ProCard` + `MonthStats`、`ProWelcome`，进 playground「会员」组）；页面 P20 `/pro`（付费墙 + 开通成功）、P21 `/me/pro`；入口 我的「Milo Pro」行三态、数据里「演示：会员状态」开关、商品详情会员价旁的「Pro ›」；DemoPage 一步；门禁 `shoot_6a.py --only pro`。没做的入口：高级分析 Pro 标、连胜快断时的冻结卡提示（演示不拦截，暂无落点）。钱包「Pro 体验 7 天」券已补：只在用过免费试用、现在免费时出现，兑换即开通 7 天体验（卡券里记已用）。两处入口已补（线框 `?board=proentry` 用户通过；Stitch `g6e` 对比板，按 Claude 倾向 trend V2 / compare V2 / risk V1）：高级分析 = 容量页肌头面板「近 8 周 · 每周组数」（`HeadWeeks`）+ 进步曲线页「对比另一个动作」（`TrendChart compare`、`data/gains.ts` 的 `compareCandidates`），块标题旁 `ProLink`；会员中心「高级分析」→ `/body?head=<近 7 天练得最多的肌头>`。冻结卡提示 = 牛龄页 `StreakRisk`（`data/me.ts` 的 `riskOf`；有卡 / 没卡 · 免费 / 没卡 · 会员三态）+「我的」成长卡那句话；「兑一张」→ `/me/wallet?redeem=freeze`（面板只放冻结卡，兑完回牛龄页）；/demo「连胜快断」一步（`store.ts` 的 `demoRiskState` + `riskDemoNow`，本周日上午、这周只留一次训练） | 商业链路 |
+| **6h 收尾** ✅（2026-10-07 收掉） | ~~作品集案例页~~ → 下一阶段（结构线框 `design/wireframes/case.html` 三种方案留着）· ~~触点静态稿（通知、桌面小组件、图标）~~ → 作品集阶段需要时再做 · ~~演示场景切换~~ → 不需要（用户：往作品集里搬东西时，要什么数据或页面直接截图）· 真机体检 → **等用户最后审查一遍，再打包 APK 走查**（CI 在每次推 `main` 后自动打 debug APK 放进 `apk/milo-debug.apk`）。顺带做了：地址各司其职（/playground 组件 · /spec 规范 · /preview 方案台）、/demo 手机跟着滚动 | 收尾 |
 
 **商城的安排**（不新增 Tab）：入口三条——身体页、增量页顶部的知识卡提示（引擎数据触发，一屏一条，可关闭）→ 知识卡详情 → 商品详情 → 下单确认 → 订单完成；「我的 → 钱包 · 商城」；结算页奖励弹窗的「去钱包」。牛劲抵扣 ≤ 20%（100 牛劲 = 1 元）、兑换卡券；会员价与牛劲 ×1.5。训练流程里不出现。全部演示：商家虚构、支付假成功。
 - **知识卡**：首批 4 张按数据触发（腰带：深蹲 / 硬拉预估 1RM ≥ 体重 1.5 倍，需要档案里的可选体重；蛋白质与睡眠：恢复慢于预期；肌酸：近 4 周训练量上升；护膝：深蹲量高）。**助力带不做数据触发**（没有「握力先力竭」的数据，也不为它加输入），作为通用卡留在商城里；健身常识不需要学术级数据。

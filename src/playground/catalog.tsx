@@ -751,7 +751,7 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'Paywall', group: '增长',
-    desc: '会员付费墙（演示不拦截）：免费 vs Pro 对比 + 月度 / 年度（省 40%）/ 试用 7 天；已是会员显示到期与管理；开通成功是 Milo 庆祝。全程标「演示模式」，支付走假成功，不收集支付信息。',
+    desc: '【旧版，阶段 5.5c】会员付费墙的第一版（免费 vs Pro 对比表 + 三块方案卡）；2026-10-07 起 App 里用的是 6g 的会员三页（「会员」组：PerkLedger、PlanPicker、ProCard、ProWelcome），这一版留作过程对照。演示不拦截：免费 vs Pro 对比 + 月度 / 年度（省 40%）/ 试用 7 天；已是会员显示到期与管理；开通成功是 Milo 庆祝。全程标「演示模式」，支付走假成功，不收集支付信息。',
     axes: { state: ['w-month', 'w-year', 'w-trial', 'w-member', 'w-success'] }, size: 'screen',
     render: (p) => <Paywall plan={p.state === 'w-year' ? 'year' : p.state === 'w-trial' ? 'trial' : 'month'} member={p.state === 'w-member'} success={p.state === 'w-success'} />,
   },
