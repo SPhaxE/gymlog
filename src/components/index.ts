@@ -2,7 +2,7 @@
 import './interactive.css';
 
 export { FluidBackdrop, grainTile, installGrain } from './atmosphere';
-export { BodyFigure, ContourFx, FillFx, ScanFx, type Anchors, type ContourFxKind, type FillFxKind, type ScanFxKind } from './BodyFigure';
+export { BodyFigure, ContourFx, DEFAULT_LOOK, FillFx, ScanFx, type Anchors, type ContourFxKind, type FillFxKind, type ScanFxKind } from './BodyFigure';
 export { Button, IconButton, type ButtonKind } from './Button';
 export { Capsule, CapsuleRail } from './CapsuleRail';
 export { Sparkline, TrendChart, type Point } from './charts';

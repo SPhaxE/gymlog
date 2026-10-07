@@ -22,6 +22,7 @@ const load = (g: string) => {
 export type Anchors = Record<string, [number, number]>;
 
 /** 热力图扫描线的「逐层扫描」动效方案（2026-10-06 用户要几个方案看；/lab 里四个并排比较，选定后定为默认）：
+ *  band   扫描光带（第 7 轮的默认，2026-10-07 换下）：一条扫描光带周期性从脚扫到头；
  *  raster 逐行显影：扫描线先是一排暗栅，从脚到头一行行打开、露出底下的热力，停一会儿再从下往上一行行合上；
  *  slice  切片扫描：一条亮线一行一行往上跳（不是平滑滑动），走过的行留一段渐暗的余辉，像 CT 一层层切过去；
  *  wave   呼吸波：所有扫描线常亮很淡，一道亮度波逐行往上传，连续不断；
@@ -33,25 +34,30 @@ export type Anchors = Record<string, [number, number]>;
  *  beam   奥赛台顶光：呼应记录页钢板的丁达尔光束——斜光慢慢摆过人体、光里有浮尘；跟着光摆的点光源在肌肉上打高光和阴影，强化形体；
  *  molten 熔流（2026-10-07 用户：金属渐变留在 F，流动效果放 S）：只有「流」这一层——一道道亮带一直往上流，
  *         穿过固定的 Turbulent Displace 扭曲场被搅弯，裁在练过的肌肉里、screen 叠在 F 层上；越热越亮、流得越快。配 F1 就是流动的熔融金属。 */
-export type ScanFxKind = 'raster' | 'slice' | 'wave' | 'iso' | 'pump' | 'steam' | 'fiber' | 'beam' | 'molten';
+export type ScanFxKind = 'band' | 'raster' | 'slice' | 'wave' | 'iso' | 'pump' | 'steam' | 'fiber' | 'beam' | 'molten';
 export const ScanFx = createContext<ScanFxKind | null>(null);
 
 /** 描边方案（2026-10-06 用户：现在的描边太抢眼，要四个方案）：
+ *  glow 描出游光（第 7 轮的默认，2026-10-07 换下）：浅荧光实线，挂载时从下往上描出 + 细光沿轮廓游走；
  *  hair 发丝：极细、很淡的静态浅荧光线，没有描出和游光；
  *  soft 柔光：不画清晰的线，只有轮廓位置一圈很淡的模糊光；
  *  dot  点线：细点虚线，淡；
  *  rim  只描外缘：人体内部的肌肉分界线不画，只在剪影最外圈有一道淡淡的内缘光。 */
-export type ContourFxKind = 'hair' | 'soft' | 'dot' | 'rim';
+export type ContourFxKind = 'glow' | 'hair' | 'soft' | 'dot' | 'rim';
 export const ContourFx = createContext<ContourFxKind | null>(null);
 
 /** 肌头内部容量的显示方案（2026-10-06 用户要四个，其中一个是 Metallic Gradient）：
+ *  thermal  热成像（第 7 轮的默认，2026-10-07 换下）：逐肌径向渐变 + 扩散 + 渐变映射 + 扫描线与颗粒；
  *  metal    Metallic Gradient（按用户给的 AE 参考视频）：Gradient Ramp → Turbulent Displace + 模糊 → Colorama（暗 → 橄榄 → 荧光 → 骨白热）
  *           → 下缘白热亮边 + 细内缘高光 + 外发光 + 颗粒；静态。流动那一层在 S 层（ScanFxKind molten），两层叠起来就是流动的熔融金属；
  *  topo     等高线：热度量化成几档，只画档与档之间的细线（像地形图），档内很淡；
  *  halftone 半调点阵：同样大小的网格点，热度越高点越大（印刷网点）；
  *  liquid   液位：每块肌肉像一个容器，近 7 天组数 ÷ 最大可恢复量 = 液面高度，液面一道亮线。 */
-export type FillFxKind = 'metal' | 'topo' | 'halftone' | 'liquid';
+export type FillFxKind = 'thermal' | 'metal' | 'topo' | 'halftone' | 'liquid';
 export const FillFx = createContext<FillFxKind | null>(null);
+/** 容量人体的默认三层（2026-10-07 用户在 /preview 方案台选定：O2 柔光 + F1 金属渐变 + S9 熔流）。
+ *  三个 context 不给值（null）就用这里；原来的默认留成可选项：描边 glow（浅荧光描出 + 游光）、填充 thermal（热成像）、S 层 band（扫描光带）。 */
+export const DEFAULT_LOOK = { contour: 'soft', fill: 'metal', scan: 'molten' } as const satisfies { contour: ContourFxKind; fill: FillFxKind; scan: ScanFxKind };
 
 export function BodyFigure({ gender, view, stats, focus, height, onAnchors, relativeTo, onPick }: {
   gender: 'male' | 'female'; view: 'front' | 'back'; stats: Map<string, HeadStat>; focus: string | null; height: number;
@@ -130,7 +136,9 @@ function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pi
   const gray = (t: number) => `color-mix(in srgb, white ${Math.round(t * 100)}%, black)`;
   const heads = Object.keys(v).filter((k) => !NEUTRAL.includes(k) && k !== 'body');
   const fn = iso ? 'discrete' : 'table';
-  const fx = useContext(ScanFx), contourFx = useContext(ContourFx), fill = useContext(FillFx);
+  // 三层视效：context 没给就用默认（DEFAULT_LOOK）；旧默认（glow / thermal / band）在下面的渲染里就是「不套方案」的那条路
+  const scanK = useContext(ScanFx) ?? DEFAULT_LOOK.scan, contourK = useContext(ContourFx) ?? DEFAULT_LOOK.contour, fillK = useContext(FillFx) ?? DEFAULT_LOOK.fill;
+  const fx = scanK === 'band' ? null : scanK, contourFx = contourK === 'glow' ? null : contourK, fill = fillK === 'thermal' ? null : fillK;
   const w = (height * box[2]) / box[3];
   return (
     <span className={s.stack} style={{ width: w, height }}>
@@ -172,7 +180,7 @@ function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pi
       {/* 轮廓画在上面的光层里；这里留一份不上色的，只为量包围盒（头部只有轮廓，没有肌肉路径，不量它头会被裁掉） */}
       <g className={s.measureOnly}>{(v.body?.paths ?? []).map((p, i) => <path key={i} d={p.d} />)}</g>
     </svg>
-    {vb && <ThermalLight box={box} height={height} width={w} v={v} fid={fid} noBeam={!!fx || !!contourFx} contour={contourFx} />}
+    {vb && <ThermalLight box={box} height={height} width={w} v={v} fid={fid} noBeam={!!fx} contour={contourFx} />}
     {vb && fx && <ScanLines kind={fx} box={box} height={height} width={w} v={v} fid={fid} heat={(k) => heatOf(stats.get(k))} />}
     </span>
   );
@@ -183,7 +191,7 @@ function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pi
  *  - 游光：同一组轮廓的更亮一份，被一条横向光带遮着，光带每隔一阵从下往上扫过一次（像光沿着轮廓爬上去）；
  *  - 扫描光带：裁在人体剪影里的一条荧光带（带细扫描线），周期性从下往上扫过热力图；
  *  整层 mix-blend-mode: screen（只提亮、不盖住热像）、不接触摸；减少动态效果时只留静止的轮廓。 */
-function ThermalLight({ box, height, width, v, fid, noBeam, contour: kind }: { box: number[]; height: number; width: number; v: Record<string, Part>; fid: string; noBeam?: boolean; contour?: ContourFxKind | null }) {
+function ThermalLight({ box, height, width, v, fid, noBeam, contour: kind }: { box: number[]; height: number; width: number; v: Record<string, Part>; fid: string; noBeam?: boolean; contour?: Exclude<ContourFxKind, 'glow'> | null }) {
   const [x, y, bw, bh] = box, unit = bh / 100;
   const silhouette = Object.keys(v).filter((k) => k !== 'body').flatMap((k) => (v[k].paths ?? []).map((p, i) => <path key={k + i} d={p.d} />));
   const contour = (v.body?.paths ?? []).map((p, i) => <path key={i} d={p.d} />);
@@ -218,7 +226,7 @@ function ThermalLight({ box, height, width, v, fid, noBeam, contour: kind }: { b
 /** 扫描线逐层动效（方案见上面 ScanFxKind）：扫描线一行一个矩形（约 110 行，间距 0.9% 人体高），裁在人体剪影里；
  *  每行的动画一样、只差起始时间（从脚往头按行错开），所以看起来是一层层推上去的；只动 opacity。
  *  raster 用 multiply（暗栅盖在热力上，打开才露出来），其余用 screen（只提亮）；iso 不按行、按肌肉热度排先后。 */
-function ScanLines({ kind, box, height, width, v, fid, heat }: { kind: ScanFxKind; box: number[]; height: number; width: number; v: Record<string, Part>; fid: string; heat: (k: string) => number }) {
+function ScanLines({ kind, box, height, width, v, fid, heat }: { kind: Exclude<ScanFxKind, 'band'>; box: number[]; height: number; width: number; v: Record<string, Part>; fid: string; heat: (k: string) => number }) {
   if (kind === 'pump' || kind === 'steam' || kind === 'fiber' || kind === 'beam' || kind === 'molten') return <ThemeFx kind={kind} box={box} height={height} width={width} v={v} fid={fid} heat={heat} />;
   const [x, y, bw, bh] = box, unit = bh / 100, pitch = unit * 0.9, n = Math.floor(bh / pitch);
   const heads = Object.keys(v).filter((k) => !NEUTRAL.includes(k) && k !== 'body');
@@ -277,6 +285,24 @@ function ThemeFx({ kind, box, height, width, v, fid, heat }: { kind: 'pump' | 's
     });
     setBoxes(out);
   }, [kind, v]);
+  // 熔流每帧都要重算整条滤镜（湍流 + 置换 + 模糊），而它流得很慢：SMIL 不让它自己跑，改成每秒约 15 次手动步进
+  // （setCurrentTime），整页帧率不被拖累；滚出屏幕、页面切到后台时停步进（省电，手机上不白跑）
+  const flowSvg = useRef<SVGSVGElement>(null);
+  useEffect(() => {
+    const el = flowSvg.current;
+    if (kind !== 'molten' || !el || typeof el.pauseAnimations !== 'function') return;
+    el.pauseAnimations();
+    let seen = true, t = el.getCurrentTime(), last = performance.now();
+    const step = T['motion/slow'] / 5;   // 70：约 14 帧 / 秒
+    const timer = window.setInterval(() => {
+      const now = performance.now();
+      if (seen && !document.hidden) { t += (now - last) / 1000; el.setCurrentTime(t); }
+      last = now;
+    }, step);
+    const io = typeof IntersectionObserver === 'function' ? new IntersectionObserver(([e]) => { seen = e.isIntersecting; }) : null;
+    io?.observe(el);
+    return () => { window.clearInterval(timer); io?.disconnect(); };
+  }, [kind]);
   const svgProps = { className: `${s.fx} ${s.fxScreen} ${s.lightHalf}`, viewBox: box.join(' '), width, height, preserveAspectRatio: 'xMinYMin meet', 'aria-hidden': true } as const;
 
   if (kind === 'molten') {
@@ -284,7 +310,7 @@ function ThemeFx({ kind, box, height, width, v, fid, heat }: { kind: 'pump' | 's
     // 滤镜和渐变的属性 CSS 动不了，用 SMIL；减少动态效果时不挂动画（只剩静止的一层淡流纹）
     const still = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     return (
-      <svg {...svgProps}>
+      <svg {...svgProps} ref={flowSvg} data-flow="molten">
         <defs>
           {hot.map(([k, h]) => (
             <linearGradient key={k} id={`mo${fid}${k}`} x1="0" y1="0" x2="0" y2="0.45" spreadMethod="reflect">
@@ -416,7 +442,7 @@ function ThemeFx({ kind, box, height, width, v, fid, heat }: { kind: 'pump' | 's
 }
 
 /** 描边的四个方案（ContourFxKind）：都是静态的，只换线的样子，不再描出 / 游光 */
-function ContourVariant({ kind, contour, silhouette, fid, unit }: { kind: ContourFxKind; contour: ReactNode; silhouette: ReactNode; fid: string; unit: number }) {
+function ContourVariant({ kind, contour, silhouette, fid, unit }: { kind: Exclude<ContourFxKind, 'glow'>; contour: ReactNode; silhouette: ReactNode; fid: string; unit: number }) {
   if (kind === 'hair') return <g className={s.cHair}>{contour}</g>;
   if (kind === 'dot') return <g className={s.cDot}>{contour}</g>;
   if (kind === 'soft') return (
@@ -446,7 +472,7 @@ function ContourVariant({ kind, contour, silhouette, fid, unit }: { kind: Contou
 }
 
 /** 肌头内部容量的四个方案（FillFxKind）。每块肌肉仍是 g[data-head]（锚点、轻点要用） */
-function FillLayer({ kind, v, heads, stats, fid, unit, gray }: { kind: FillFxKind; v: Record<string, Part>; heads: string[]; stats: Map<string, HeadStat>; fid: string; unit: number; gray: (t: number) => string }) {
+function FillLayer({ kind, v, heads, stats, fid, unit, gray }: { kind: Exclude<FillFxKind, 'thermal'>; v: Record<string, Part>; heads: string[]; stats: Map<string, HeadStat>; fid: string; unit: number; gray: (t: number) => string }) {
   const neutral = NEUTRAL.flatMap((k) => (v[k]?.paths ?? []).map((p, i) => <path key={k + i} d={p.d} style={{ fill: gray(0.06) }} />));
   const H = (k: string) => heatOf(stats.get(k));
   if (kind === 'metal') {

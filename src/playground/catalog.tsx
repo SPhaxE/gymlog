@@ -486,7 +486,7 @@ export const CATALOG: Entry[] = [
     },
   },
   {
-    name: 'BodyFigure', group: '容量', desc: 'MuscleWiki 真实路径的人体，热成像（逐肌径向渐变 + 扩散 + 渐变映射 + 扫描线与颗粒）。半身：从左裁掉 ratio/figure-crop、左缘渐隐（容量页与故事动画同一个版式）。上面叠一层「光」（screen 混合，只有它在动）：浅荧光轮廓从下往上描出、一道细光沿轮廓游走、扫描光带周期性从脚扫到头；减少动态效果时只留静止轮廓。',
+    name: 'BodyFigure', group: '容量', desc: 'MuscleWiki 真实路径的人体。半身：从左裁掉 ratio/figure-crop、左缘渐隐（容量页与故事动画同一个版式）。三层视效（2026-10-07 方案台选定，DEFAULT_LOOK）：O2 柔光描边（轮廓一圈模糊淡光）+ F1 金属渐变（灰阶 → 湍流扭曲 + 模糊 → 暗 / 橄榄 / 荧光 / 骨白热色带，下缘白热亮边 + 外发光 + 颗粒，越热越亮）+ S9 熔流（亮带往上流过湍流扭曲场，越热越快；滚出屏幕暂停）。减少动态效果时全静止。其余方案与旧默认见 /preview 方案台。',
     axes: { view: ['front', 'back'], sex: ['male', 'female'] }, rows: ['sex'], cols: 'view', size: 'm',
     render: (p, f) => <FigureCell view={p.view as 'front'} sex={p.sex as 'male'} f={f} />,
   },

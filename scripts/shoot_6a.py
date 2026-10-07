@@ -256,8 +256,13 @@ def gains_checks(b, w, h):
     caps_h = pg.evaluate("[...document.querySelectorAll('[role=option]')].map((e) => e.getBoundingClientRect().height)")
     ok(max(caps_h) <= 20.5, f'{tag} 容量：常态胶囊高 ≤ 20（缩了 1/3）{max(caps_h):.1f}')
     ok(pg.get_by_role('heading', level=1, name='容量').count() == 1 and pg.get_by_role('link', name='容量').count() == 1, f'{tag} 容量：页标题和导航都叫「容量」')
-    light = pg.evaluate("""() => { const l = document.querySelector('svg[class*=_light_]'); return l ? { blend: getComputedStyle(l).mixBlendMode, anims: l.getAnimations({ subtree: true }).length, contour: l.querySelectorAll('[class*=_contourLime_] path').length } : null; }""")
-    ok(light and light['blend'] == 'screen' and light['anims'] >= 3 and light['contour'] > 20, f'{tag} 容量：浅荧光轮廓 + 游光 + 扫描光带在动（screen 混合，只提亮）{light}')
+    # 三层视效（2026-10-07 方案台选定）：O2 柔光描边（screen 光层里）+ F1 金属渐变滤镜 + S9 熔流（SMIL 在跑、没被暂停）
+    look = pg.evaluate("""() => { const l = document.querySelector('svg[class*=_light_]'), fl = document.querySelector('svg[data-flow=molten]');
+      return { blend: l && getComputedStyle(l).mixBlendMode, soft: l ? l.querySelectorAll('[class*=_cSoft_] path').length : 0,
+        metal: !!document.querySelector('svg[class*=_thermal_] filter[id^=mf] feDisplacementMap'),
+        flow: fl ? fl.querySelectorAll('animate, animateTransform').length : 0, t0: fl ? fl.getCurrentTime() : null }; }""")
+    pg.wait_for_timeout(400); look['t1'] = pg.evaluate("() => document.querySelector('svg[data-flow=molten]')?.getCurrentTime() ?? null")
+    ok(look['blend'] == 'screen' and look['soft'] > 20 and look['metal'] and look['flow'] > 3 and look['t1'] is not None and look['t1'] > look['t0'], f'{tag} 容量：O2 柔光描边 + F1 金属渐变 + S9 熔流在流（步进时钟在走）{look}')
     cdp = pg.context.new_cdp_session(pg); cdp.send('Animation.enable'); cdp.send('Animation.setPlaybackRate', {'playbackRate': 0.2})
     pg.get_by_role('radio', name='背面').click(); pg.wait_for_timeout(250)
     xs = pg.evaluate("""() => Object.fromEntries([...document.querySelectorAll('[class*=_cardIn_],[class*=_cardOut_]')].map((e) => [e.className.includes('cardIn') ? 'in' : 'out', new DOMMatrix(getComputedStyle(e).transform).e]))""")
