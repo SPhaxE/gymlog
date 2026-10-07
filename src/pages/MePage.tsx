@@ -17,6 +17,7 @@ import { growthOf, messagesOf, unreadOf } from '../data/me';
 import { mergeProfile, profileError, profileFacts, updateProfile } from '../data/profile';
 import { setSettings } from '../data/settings';
 import { DEFAULT_PROFILE, demoState, store, useStore } from '../data/store';
+import { proPeriods, usePro } from '../data/pro';
 import { useSource } from '../data/useSource';
 import { couponsOf, restockMessages, useWallet } from '../data/wallet';
 import { weeklyTarget } from '../engine';
@@ -38,7 +39,8 @@ export function MePage({ scenario, now, onTab }: { scenario?: string; now: numbe
   const [local, setLocal] = useState<Profile | null>(null);
   const profile = local ?? src.profile ?? DEFAULT_PROFILE;
   const [wallet] = useWallet(scenario, now);
-  const g = useMemo(() => growthOf({ ...src, profile, wallet }, now), [src, profile, wallet, now]);
+  const [pro] = usePro(scenario);
+  const g = useMemo(() => growthOf({ ...src, profile, wallet, pro: proPeriods(pro) }, now), [src, profile, wallet, pro, now]);
   // 演示场景不标已读（消息页同样不显示未读点），这里也不显示未读数，免得「N 条新」点进去清不掉
   const unread = useMemo(() => (scenario ? 0 : unreadOf([...messagesOf(g), ...restockMessages(wallet)], st.messagesSeenAt)), [scenario, g, wallet, st.messagesSeenAt]);
   const facts = profileFacts(profile);

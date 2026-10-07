@@ -17,8 +17,8 @@ export const LIFT_MAX = 10;
 export const deloadsOf = (deload: DeloadState, stored?: number[]): number[] => stored ?? (deload.status === 'adopted' ? [deload.atMs] : []);
 
 /** wallet：用户兑换卡券、下单抵扣花掉的牛劲（6f，data/wallet.ts）；不传 = 没花过 */
-export function growthOf(src: Pick<Source, 'history' | 'profile'> & { deloads?: number[]; deload?: DeloadState; wallet?: Pick<WalletState, 'actions'> }, now: number): GrowthState {
-  return growth(env, { history: src.history, profile: src.profile, now, deloads: src.deloads ?? (src.deload ? deloadsOf(src.deload) : []), wallet: src.wallet?.actions });
+export function growthOf(src: Pick<Source, 'history' | 'profile'> & { deloads?: number[]; deload?: DeloadState; wallet?: Pick<WalletState, 'actions'>; pro?: { fromMs: number; toMs: number }[] }, now: number): GrowthState {
+  return growth(env, { history: src.history, profile: src.profile, now, deloads: src.deloads ?? (src.deload ? deloadsOf(src.deload) : []), wallet: src.wallet?.actions, pro: src.pro });
 }
 
 /** 「壮牛 · 2 级」 */

@@ -12,6 +12,7 @@ import { dateOf } from '../data/growth';
 import { markMessagesSeen } from '../data/inbox';
 import { growthOf, messagesOf, type Message } from '../data/me';
 import { useStore } from '../data/store';
+import { proPeriods, usePro } from '../data/pro';
 import { useSource } from '../data/useSource';
 import { restockMessages, useWallet } from '../data/wallet';
 import s from './MessagesPage.module.css';
@@ -30,8 +31,9 @@ export function MessagesPage({ scenario, now }: { scenario?: string; now: number
   const topRef = useRef<HTMLDivElement>(null);
   const { src } = useSource(scenario, now);
   const [wallet] = useWallet(scenario, now);
+  const [pro] = usePro(scenario);
   // 到货提醒（6f）：演示里设了就来一条「已到货」
-  const all = useMemo(() => [...messagesOf(growthOf({ ...src, wallet }, now)), ...restockMessages(wallet)].sort((a, b) => b.atMs - a.atMs), [src, wallet, now]);
+  const all = useMemo(() => [...messagesOf(growthOf({ ...src, wallet, pro: proPeriods(pro) }, now)), ...restockMessages(wallet)].sort((a, b) => b.atMs - a.atMs), [src, wallet, pro, now]);
   const [seenAt] = useState(st.messagesSeenAt);   // 进来时「看过的时刻」：这一次的未读小点照常显示
   useEffect(() => { if (!scenario) markMessagesSeen(); }, [scenario]);
   const back = () => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav('/me' + loc.search, { replace: true }));

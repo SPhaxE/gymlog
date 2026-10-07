@@ -54,6 +54,9 @@ export interface Restock { productId: string; atMs: number }
 export interface WalletState { actions: WalletAction[]; orders: Order[]; restock: Restock[]; muted: KnowledgeId[] }
 export const EMPTY_WALLET: WalletState = { actions: [], orders: [], restock: [], muted: [] };
 
+/** 会员（6g，data/pro.ts）：每一段有效期（试用 / 月 / 年）；切回免费 = 当前一段在那一刻结束，已得的不收回 */
+export interface ProPeriod { plan: 'trial' | 'month' | 'year'; fromMs: number; toMs: number }
+
 export interface AppState {
   v: 1;
   profile: Profile | null;
@@ -74,12 +77,13 @@ export interface AppState {
   /** 看过消息的时刻（毫秒）：比它新的消息算未读 */
   messagesSeenAt: number;
   wallet: WalletState;
+  pro: ProPeriod[];
   /** 最后一次写入失败的原因（只在内存里） */
   saveError?: string;
 }
 
 export const DEFAULT_PROFILE: Profile = { experience: 'intermediate', equipment: ['barbell', 'dumbbell', 'machine', 'cable', 'smith', 'bodyweight'], minutes: 60, gender: 'male' };
-const EMPTY: AppState = { v: 1, profile: null, draft: null, history: [], deload: { status: 'none', atMs: 0 }, deloads: [], active: null, rest: null, demo: false, settings: DEFAULT_SETTINGS, notes: [], messagesSeenAt: 0, extras: null, wallet: EMPTY_WALLET };
+const EMPTY: AppState = { v: 1, profile: null, draft: null, history: [], deload: { status: 'none', atMs: 0 }, deloads: [], active: null, rest: null, demo: false, settings: DEFAULT_SETTINGS, notes: [], messagesSeenAt: 0, extras: null, wallet: EMPTY_WALLET, pro: [] };
 
 function read(): AppState {
   try {
@@ -88,7 +92,7 @@ function read(): AppState {
     const s = JSON.parse(raw) as AppState;
     // settings 逐项补默认：旧存档没有这个字段，以后新加的设置项也不用迁移
     // 「看过消息的时刻」：升级前的旧存档没有这个字段，从这一刻起算新消息，否则有历史的人一打开「我的」就是几十条「新」
-    return s && s.v === 1 ? { ...EMPTY, ...s, settings: { ...DEFAULT_SETTINGS, ...s.settings }, wallet: { ...EMPTY_WALLET, ...s.wallet }, messagesSeenAt: s.messagesSeenAt ?? Date.now(), saveError: undefined } : { ...EMPTY };
+    return s && s.v === 1 ? { ...EMPTY, ...s, settings: { ...DEFAULT_SETTINGS, ...s.settings }, wallet: { ...EMPTY_WALLET, ...s.wallet }, pro: s.pro ?? [], messagesSeenAt: s.messagesSeenAt ?? Date.now(), saveError: undefined } : { ...EMPTY };
   } catch {
     return { ...EMPTY };
   }

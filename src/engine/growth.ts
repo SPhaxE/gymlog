@@ -53,8 +53,8 @@ export interface GrowthInput {
   /** 采纳减量周的时间（ms），每个代表一周减量 */
   deloads?: number[];
   wallet?: WalletAction[];
-  /** 会员有效期 */
-  pro?: { fromMs: number; toMs: number } | null;
+  /** 会员有效期；可以是几段（切回免费再开通，6g）：已得的牛劲与卡券不收回 */
+  pro?: { fromMs: number; toMs: number } | { fromMs: number; toMs: number }[] | null;
   cfg?: GrowthConfig;
 }
 
@@ -139,7 +139,8 @@ export function growth(env: Env, input: GrowthInput): GrowthState {
   const cfg = input.cfg ?? GROWTH_CONFIG;
   const { profile, now } = input;
   const history = input.history.filter((s) => s.startMs <= now).sort((a, b) => a.startMs - b.startMs);
-  const isPro = (ms: number) => !!input.pro && ms >= input.pro.fromMs && ms <= input.pro.toMs;
+  const periods = input.pro ? (Array.isArray(input.pro) ? input.pro : [input.pro]) : [];
+  const isPro = (ms: number) => periods.some((p) => ms >= p.fromMs && ms <= p.toMs);
   const rate = (ms: number) => (isPro(ms) ? cfg.niujin.proRate : 1);
   const events: GrowthEvent[] = [];
   const ledger: LedgerRow[] = [];

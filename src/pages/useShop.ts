@@ -3,12 +3,14 @@ import { useMemo } from 'react';
 import { knowledgeHits } from '../data/knowledge';
 import { growthOf } from '../data/me';
 import { useSource } from '../data/useSource';
+import { proPeriods, usePro } from '../data/pro';
 import { couponsOf, useWallet } from '../data/wallet';
 
 export function useShop(scenario: string | undefined, now: number) {
   const { src } = useSource(scenario, now);
   const [wallet, update] = useWallet(scenario, now);
-  const g = useMemo(() => growthOf({ ...src, wallet }, now), [src, wallet, now]);
+  const [pro] = usePro(scenario);
+  const g = useMemo(() => growthOf({ ...src, wallet, pro: proPeriods(pro) }, now), [src, wallet, pro, now]);
   const coupons = useMemo(() => couponsOf(wallet, now), [wallet, now]);
   const hits = useMemo(() => knowledgeHits(src, now), [src, now]);
   return { src, wallet, update, g, balance: g.niujin.balance, coupons, hits };

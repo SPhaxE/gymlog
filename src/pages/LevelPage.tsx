@@ -13,6 +13,7 @@ import { BackToTop, Banner, Button, GrowthBar, LedgerRow, MessageRow, Num, Scree
 import { dateOf } from '../data/growth';
 import { growthLog, growthOf, nextGoal } from '../data/me';
 import { useStore } from '../data/store';
+import { proPeriods, usePro } from '../data/pro';
 import { useSource } from '../data/useSource';
 import { useWallet } from '../data/wallet';
 import { weeklyTarget } from '../engine';
@@ -28,7 +29,8 @@ export function LevelPage({ scenario, now }: { scenario?: string; now: number })
   const topRef = useRef<HTMLDivElement>(null);
   const { src } = useSource(scenario, now);
   const [wallet] = useWallet(scenario, now);
-  const g = useMemo(() => growthOf({ ...src, wallet }, now), [src, wallet, now]);
+  const [pro] = usePro(scenario);
+  const g = useMemo(() => growthOf({ ...src, wallet, pro: proPeriods(pro) }, now), [src, wallet, pro, now]);
   const log = useMemo(() => growthLog(g, scenario ? [] : st.notes), [g, scenario, st.notes]);
   const [shown, setShown] = useState(CHUNK);
   const cur = g.streak.current, empty = src.history.length === 0, goal = nextGoal(g);
