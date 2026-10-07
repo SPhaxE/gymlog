@@ -145,7 +145,7 @@ python3 scripts/shoot_growth.py     # 奖励弹窗 GIF → screenshots/growth/
 
 - `main` 自动部署生产；PR 有预览部署；
 - SPA 改写规则见 `vercel.json`，静态文件优先；
-- 只改了 `apk/` 的提交不触发构建（`ignoreCommand`）。
+- 只改了 `apk/` 的提交、以及 `main` 以外的分支都不触发构建（`ignoreCommand`）。2026-10-07：工作分支每次同步推送都会多一次预览部署，一天推得多会撞上 Vercel 免费版每天的部署次数上限，所以分支一律跳过。
 
 **上线流程**（用户 2026-10-06 改，原来的「PR → 等 CI → 合并」太拖开发）：
 
