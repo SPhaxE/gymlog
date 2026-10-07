@@ -11,6 +11,7 @@
 - 交互：命中区 ≥ 48；一屏一个主操作、放拇指区；不给死路按钮；提示不位移；滚动 grid 写 `grid-auto-rows: max-content`；键盘按需出现；临时面板点别处就收；转场不吞点击；同一个东西屏上只出现一次（休息计时：首页胶囊 ↔ 导航滑块是同一个元素）。
 - 组件或规范有更新，`/playground`（`src/playground/catalog.tsx`）和 `/demo`（`DemoPage` 路线）必须同步改；不要把密钥建议「作废」挂在嘴边——后面还要继续用 Stitch（用户 2026-10-06）。
 - `.claude/skills/` 里装了第三方 taste-skill（反模板化设计指南，面向着陆页）：当参考用，**与 `docs/DESIGN.md` 冲突时以 DESIGN.md 为准**，详见 `.claude/skills/README-taste-skill.md`。
+- `.claude/skills/` 里还装了第三方 ponytail（写代码前先找现成的、少写新代码；另有过度设计审查 `/ponytail-review`、整库审计 `/ponytail-audit`）：只装了技能、没装钩子，要用时说 `/ponytail`；**与本项目规则冲突时以本项目为准**（门禁、/playground、/demo 同步、视觉完整度都照做），详见 `.claude/skills/README-ponytail.md`（用户 2026-10-07）。
 - 需要用户拍板的图像、方案、对比图，一律用 `SendUserFile` 直接推到窗口，不要只写文件路径（用户 2026-10-06）。
 - 每页 / 每块新功能五步（用户 2026-10-07，详见 `docs/workflow.md` §A）：**① 五层分析 + 手指热区低保真线框 → ② Stitch 视觉参考 → ③ 高保真搭建 → ④ 用户视觉审查微调 → ⑤ 定稿植入**；①②④ 都要用户选或点头，五层分析写在页面文件头注释里。
 - 视效 / 组件的待选方案一律上 `/preview` 方案台（`src/pages/OptionsBoard.tsx`）：逐组对照 + 自由组合（组合写进地址栏），实时渲染不放截图；用户选定后定为默认，**旧默认和落选方案留在方案台不删**——作品集要展示这个过程（用户 2026-10-07）。
