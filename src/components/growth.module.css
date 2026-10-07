@@ -112,6 +112,7 @@
 .balance { display: grid; gap: var(--milo-space-xs); padding: var(--milo-space-l); border-radius: var(--milo-radius-l); color: var(--milo-color-text-primary); position: relative; overflow: hidden; isolation: isolate;
   background: radial-gradient(110% 95% at 95% 0%, color-mix(in srgb, var(--milo-color-accent-default) 30%, transparent), transparent 62%), var(--milo-color-bg-raised); }
 .balance > span { color: var(--milo-color-text-secondary); }
+.balanceHead { display: flex; justify-content: space-between; align-items: baseline; }
 .balanceNum { display: flex; align-items: center; gap: var(--milo-space-s); }
 .ledger { display: flex; align-items: center; gap: var(--milo-space-m); padding: var(--milo-space-s) 0; border-bottom: var(--milo-stroke-hairline) solid var(--milo-color-line-default); color: var(--milo-color-text-primary); }
 .ledgerText { display: grid; flex: 1; }
@@ -129,6 +130,7 @@
 .couponBody { display: grid; gap: var(--milo-space-2xs); flex: 1; }
 .couponBody > span:not(.plus) { color: var(--milo-color-text-secondary); }
 .couponState { color: var(--milo-color-accent-default); }
+.couponUse { position: relative; display: inline-flex; align-items: center; gap: var(--milo-space-2xs); min-height: var(--milo-size-hit-min); padding: 0 var(--milo-space-xs); border: 0; background: none; color: var(--milo-color-text-primary); font-weight: 700; }
 .cp_used, .cp_expired { color: var(--milo-color-text-disabled); }
 .cp_used .stub, .cp_expired .stub { background: var(--milo-color-data-track); color: var(--milo-color-text-disabled); }
 .cp_used .couponState, .cp_expired .couponState { color: var(--milo-color-text-disabled); }

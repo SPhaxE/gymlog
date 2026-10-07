@@ -1,7 +1,7 @@
 /** 增长层组件（阶段 5.5c，brief「增长与商业化层」，ia §1.14–§1.17）。
  *  品牌位置（牛龄徽章、付费墙、开通成功）放 IP 小牛，功能位置（连胜、流水、卡券、商品）不放，遵守「语气分工」。
  *  数字全部由调用方从引擎（growth.ts）算好传进来；这里只管怎么显示和各个状态。 */
-import { useState, type CSSProperties, type ReactNode } from 'react';
+import { type CSSProperties, type ReactNode } from 'react';
 import { Button } from './Button';
 import { Icon } from './Icon';
 import { Odometer } from './dataviz';
@@ -175,12 +175,13 @@ export function FreezeCard({ count, state, cost, onRedeem }: { count: number; st
 
 /* ---------------- 牛劲与卡券 ---------------- */
 
-/** 牛劲余额：大号码表 + 本月进账；会员显示 ×1.5 */
+/** 牛劲余额（钱包 V1 的大数 + ≈¥，V2 的刻度尺分隔）：大号码表 + 约合多少元 + 本月进账；会员显示 ×1.5 */
 export function NiujinBalance({ balance, month, pro }: { balance: number; month: number; pro?: boolean }) {
   return (
     <div className={s.balance}>
-      <span className={cx('milo-text-label', s.muted)}>牛劲余额</span>
-      <div className={s.balanceNum}><Odometer value={String(balance)} size="xl" />{pro && <span className={s.pro}>Pro ×1.5</span>}</div>
+      <span className={s.balanceHead}><span className={cx('milo-text-label', s.muted)}>牛劲余额</span><span className={cx('milo-text-number-s', s.muted)}>≈ ¥{Math.floor(balance / 100).toLocaleString('en-US')}</span></span>
+      <div className={s.balanceNum}><Odometer value={balance.toLocaleString('en-US')} size="xl" />{pro && <span className={s.pro}>Pro ×1.5</span>}</div>
+      <Ticks />
       <span className="milo-text-caption">本月 <b className={s.plus}>+{month}</b> · 100 牛劲抵 1 元，单笔最多抵 20%</span>
     </div>
   );
@@ -199,8 +200,9 @@ export function LedgerRow({ label, amount, date, pro, detail, plain }: { label: 
 const COUPON_MARK: Record<'merchant' | 'shipping' | 'trial' | 'freeze', string> = { merchant: '¥30', shipping: '免邮', trial: '7天', freeze: '冻结' };
 const COUPON_PROP: Record<'merchant' | 'shipping' | 'trial' | 'freeze', PropKind> = { merchant: 'merchant', shipping: 'shipping', trial: 'trial', freeze: 'freeze' };
 /** 卡券：票根造型（两侧缺口 + 虚线）。可用 / 已用 / 过期；兑换态显示所需牛劲，余额不够时按钮不可用并写明还差多少 */
-export function Coupon({ type, title, detail, state, cost, balance, onRedeem }: {
-  type: 'merchant' | 'shipping' | 'trial' | 'freeze'; title: string; detail: string; state: 'redeem' | 'available' | 'used' | 'expired'; cost?: number; balance?: number; onRedeem?: () => void;
+/** onUse：可用的券点「去用」（钱包 → 商城）；冻结卡这类自动使用的不给 onUse，只写「可用」 */
+export function Coupon({ type, title, detail, state, cost, balance, onRedeem, onUse }: {
+  type: 'merchant' | 'shipping' | 'trial' | 'freeze'; title: string; detail: string; state: 'redeem' | 'available' | 'used' | 'expired'; cost?: number; balance?: number; onRedeem?: () => void; onUse?: () => void;
 }) {
   const short = state === 'redeem' && cost != null && balance != null && balance < cost;
   return (
@@ -212,7 +214,8 @@ export function Coupon({ type, title, detail, state, cost, balance, onRedeem }: 
         {state === 'redeem' && <span className={cx('milo-text-caption', short ? s.muted : s.plus)}>{cost} 牛劲{short ? ` · 还差 ${cost! - balance!}` : ''}</span>}
       </span>
       {state === 'redeem' && <Button kind="neutral" size="s" disabled={short} onClick={onRedeem}>兑换</Button>}
-      {state !== 'redeem' && <span className={cx('milo-text-label', s.couponState)}>{state === 'available' ? '可用' : state === 'used' ? '已用' : '已过期'}</span>}
+      {state === 'available' && onUse && <button type="button" className={cx('milo-text-label milo-focus', s.couponUse)} onClick={onUse}>去用<Icon name="chevron" small /></button>}
+      {state !== 'redeem' && !(state === 'available' && onUse) && <span className={cx('milo-text-label', s.couponState)}>{state === 'available' ? '可用' : state === 'used' ? '已用' : '已过期'}</span>}
     </div>
   );
 }
@@ -244,37 +247,6 @@ export function KnowledgeTip({ title, why, when, how, supplement, variant, onOpe
       {how && <ol className={s.how}>{how.map((h, i) => <li key={i} className="milo-text-body"><b className="milo-text-number-s">{i + 1}</b>{h}</li>)}</ol>}
       <p className={cx('milo-text-micro', s.muted)}>{supplement ? '补剂说明不构成医疗建议，有基础疾病请先咨询医生。' : '护具只辅助，不代替力量与动作质量。'}</p>
     </header>
-  );
-}
-
-/** 商品卡：普通 / 会员价 / 牛劲抵扣 / 已下架。商品图用几何品类图标代替（不放真实商品图） */
-/** 商品卡。商品图：public/shop/<id>.webp（用户按 design/brand/prompts/nanobanana-shop.md 出图、scripts/shop_png.py 抠图）；
- *  图加载好之前 / 没有图时显示占位（护具 = 横条、补给 = 罐子），不出现破图 */
-export function ProductCard({ id, name, merchant, spec, price, member, category, state, off, onClick }: {
-  id?: string; name: string; merchant: string; spec: string; price: number; member: number; category: '护具' | '补给'; state: 'normal' | 'member' | 'niujin' | 'off'; off?: number; onClick?: () => void;
-}) {
-  const final = state === 'member' ? member : state === 'niujin' ? price - (off ?? 0) : price;
-  const [img, setImg] = useState(false);
-  return (
-    <button type="button" className={cx(s.product, state === 'off' && s.productOff, 'milo-press milo-focus')} onClick={onClick} disabled={state === 'off'}>
-      <span className={cx(s.pic, !img && (category === '补给' ? s.picSupp : s.picGear))} aria-hidden="true">
-        {!img && <i />}
-        {id && <img className={cx(s.picImg, !img && s.picImgWait)} src={`${import.meta.env.BASE_URL}shop/${id}.webp`} alt="" draggable={false} onLoad={() => setImg(true)} onError={() => setImg(false)} />}
-      </span>
-      <span className={s.productText}>
-        <span className={cx('milo-text-caption', s.muted)}>{merchant} · {category}</span>
-        <b className="milo-text-body-strong">{name}</b>
-        <span className={cx('milo-text-caption', s.muted)}>{spec}</span>
-        <span className={s.priceRow}>
-          {state === 'off' ? <span className="milo-text-label">已下架</span> : <>
-            <b className="milo-text-number-m">¥{final}</b>
-            {state !== 'normal' && <s className={cx('milo-text-caption', s.muted)}>¥{price}</s>}
-            {state === 'member' && <span className={s.pro}>Pro 价</span>}
-            {state === 'niujin' && <span className={s.chip}>牛劲抵 ¥{off}</span>}
-          </>}
-        </span>
-      </span>
-    </button>
   );
 }
 

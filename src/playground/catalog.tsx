@@ -8,13 +8,13 @@ import {
   BodyPicker, PickRow, SwapRow, WarmupStrip,
   ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProfileTile, ProgressSteps, RestBar, SectionLabel, Segmented,
   SessionRow, SetEditor, SetLine, SetRow, NumPad, Sheet, Tilt, SheetBlock, Skeleton, Sparkline, StateView, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
-  AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, PropGlyph, type PropKind, RewardCard, AgeBadge, Coupon, FreezeCard, GrowthBar, GrowthCard, StageHero, StreakWeeks, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, ProductCard, StreakBar,
+  AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, PropGlyph, type PropKind, RewardCard, AgeBadge, Coupon, FreezeCard, GrowthBar, GrowthCard, StageHero, StreakWeeks, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, ProductCard, StreakBar, Breakdown, DemoBanner, EvidencePanel, NiujinLine, OrderLine, PriceBlock, ProductGrid, RecommendCard, WalletExits,
   type LogoState, type MascotMood, type MascotStage, type StreakStatus, type StreakWeekStatus,
   type Forced, type IconName, type NumSize, type SkeletonShape, type Tab, type TagTone,
 } from '../components';
 import type { DeltaDir } from '../components';
 import { REGION_NAME, fmt } from '../data/demo';
-import { COUPONS, KNOWLEDGE, PRODUCTS, dateOf, growthSample, niujinOff, sampleRewards, type KnowledgeId } from '../data/growth';
+import { COUPONS, KNOWLEDGE, PRODUCTS, dateOf, growthSample, sampleRewards, type KnowledgeId } from '../data/growth';
 import { GROWTH_CONFIG } from '../engine';
 import { T } from '../styles/tokens.gen';
 import type { Fixtures } from './fixtures';
@@ -39,7 +39,7 @@ export interface Entry {
   render: (p: Props, f: Fixtures) => ReactNode;
 }
 
-export const GROUPS = ['基础', '表单', '反馈与悬浮层', '列表与页头', '训练与记录', '数据图形', '容量', '导航', '品牌', '增长'] as const;
+export const GROUPS = ['基础', '表单', '反馈与悬浮层', '列表与页头', '训练与记录', '数据图形', '容量', '导航', '品牌', '增长', '商城'] as const;
 
 /** 只在交互演示或页面里出现、不进矩阵的导出（catalog.test 读这张表） */
 export const NOT_IN_MATRIX: Record<string, string> = {
@@ -622,7 +622,7 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'NiujinBalance', group: '增长', covers: ['LedgerRow'],
-    desc: '牛劲余额（码表数字 + 本月进账，主角卡光）与流水：获得是荧光 +，花出是骨白 −，会员期间标「×1.5」。数字是演示用户练到第 30 周的引擎实算（第 20 周兑换过一张冻结卡）。',
+    desc: '牛劲余额（码表数字 + ≈¥ + 刻度尺分隔 + 本月进账，钱包 Stitch V1 + V2 刻度尺）与流水：获得是荧光 +，花出是骨白 −，会员期间标「×1.5」。数字是演示用户练到第 30 周的引擎实算（第 20 周兑换过一张冻结卡）。',
     axes: { member: ['free', 'pro'] }, size: 'card',
     render: (p) => {
       const g = growthSample(), rows = g.niujin.ledger.slice(-5).reverse(), pro = p.member === 'pro';
@@ -634,11 +634,11 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'Coupon', group: '增长',
-    desc: '卡券（票根：左侧深色存根放道具图标 PropGlyph + 面额，两侧缺口 + 虚线）：商家券 / 免邮券 / 会员体验 / 冻结卡 × 可兑换 / 牛劲不够（按钮不可用、写明还差多少）/ 可用 / 已用 / 已过期。',
-    axes: { type: ['c-merchant', 'c-shipping', 'c-trial', 'c-freeze'], state: ['c-redeem', 'c-short', 'c-available', 'c-used', 'c-expired'] }, rows: ['type'], cols: 'state', size: 'card',
+    desc: '卡券（票根：左侧深色存根放道具图标 PropGlyph + 面额，两侧缺口 + 虚线）：商家券 / 免邮券 / 会员体验 / 冻结卡 × 可兑换 / 牛劲不够（按钮不可用、写明还差多少）/ 可用 / 可用且能「去用」（钱包 → 商城，命中区 48）/ 已用 / 已过期。',
+    axes: { type: ['c-merchant', 'c-shipping', 'c-trial', 'c-freeze'], state: ['c-redeem', 'c-short', 'c-available', 'c-use', 'c-used', 'c-expired'] }, rows: ['type'], cols: 'state', size: 'card',
     render: (p) => {
       const c = COUPONS[p.type.slice(2) as keyof typeof COUPONS], st = p.state.slice(2);
-      return <Coupon type={c.type} title={c.title} detail={c.detail} state={st === 'short' ? 'redeem' : st as 'redeem' | 'available' | 'used' | 'expired'} cost={c.cost} balance={st === 'short' ? Math.round(c.cost * 0.6) : c.cost * 3} />;
+      return <Coupon type={c.type} title={c.title} detail={c.detail} state={st === 'short' ? 'redeem' : st === 'use' ? 'available' : st as 'redeem' | 'available' | 'used' | 'expired'} cost={c.cost} balance={st === 'short' ? Math.round(c.cost * 0.6) : c.cost * 3} onUse={st === 'use' ? () => {} : undefined} />;
     },
   },
   {
@@ -648,10 +648,49 @@ export const CATALOG: Entry[] = [
     render: (p) => { const k = KNOWLEDGE[p.card as KnowledgeId]; return <KnowledgeTip {...k} variant={p.variant === 'k-tip' ? 'tip' : 'header'} />; },
   },
   {
-    name: 'ProductCard', group: '增长',
-    desc: '商品卡：商家、品类、规格、价格；会员价（划掉原价 + Pro 价）；牛劲抵扣（100 牛劲抵 1 元，单笔最多 20%）；已下架不可点。商家与品牌全部虚构，价格为示例；商品图是用户按提示词出的实物图（品红底抠图，public/shop/<id>.webp），没有图时显示几何品类占位。',
-    axes: { product: PRODUCTS.map((x) => x.id), state: ['p-normal', 'p-member', 'p-niujin', 'p-off'] }, rows: ['product'], cols: 'state', size: 'card',
-    render: (p) => { const x = PRODUCTS.find((y) => y.id === p.product)!; return <ProductCard {...x} state={p.state.slice(2) as 'normal' | 'member' | 'niujin' | 'off'} off={niujinOff(x.price, growthSample().niujin.balance)} />; },
+    name: 'ProductCard', group: '商城', covers: ['StatusTag', 'ProductGrid'],
+    desc: '商品卡（6f，商城 Stitch V2 排法 + V1 缺货整卡变暗）：grid = 商城两列（图左上状态标 → 商家 → 名字 → 价格 + 划线价 → 会员价 · 牛劲抵）；row = 知识卡里的相关商品行。状态：热销 / 折扣 / 新品（实心标）、缺货（虚线标、整卡变暗，仍可点进详情设到货提醒）、已下架（灰字，不在商城列表）。商家与品牌全部虚构，价格为示例；没有商品图时显示品类占位。',
+    axes: { product: PRODUCTS.map((x) => x.id), variant: ['v-grid', 'v-row'] }, rows: ['product'], cols: 'variant', size: 'card',
+    render: (p) => { const x = PRODUCTS.find((y) => y.id === p.product)!; const off = Math.min(Math.floor(x.member * 0.2), Math.floor(growthSample().niujin.balance / 100));
+      return p.variant === 'v-grid' ? <ProductGrid><ProductCard {...x} off={off} /></ProductGrid> : <ProductCard {...x} off={off} variant="row" />; },
+  },
+  {
+    name: 'RecommendCard', group: '商城',
+    desc: '商城顶部「为你推荐」：知识卡的理由（按你的训练数据）+ 相关商品一行，背景是配重片同心槽纹；没有被数据触发时是通用入门卡（标签换「入门」，没有理由行）。整张点进知识卡。',
+    axes: { state: ['r-hit', 'r-general'] }, size: 'card',
+    render: (p) => p.state === 'r-hit'
+      ? <RecommendCard title={KNOWLEDGE.belt.title} why="你的杠铃硬拉预估 1RM 已到体重的 1.62 倍" product={{ name: '杠铃腰带 10 毫米', price: 329 }} />
+      : <RecommendCard title={KNOWLEDGE.straps.title} why={null} product={{ name: '8 字助力带', price: 69 }} />,
+  },
+  {
+    name: 'PriceBlock', group: '商城', covers: ['NiujinLine'],
+    desc: '商品详情的价格区（详情 Stitch V1）：现价大字 + 划线价 + 会员价标一行读完；下面牛劲能抵多少（余额 · 每单最多 20%），一元都抵不了时写还差多少牛劲。',
+    axes: { state: ['pb-sale', 'pb-normal', 'pb-short'] }, size: 'card',
+    render: (p) => <div className={s.growCol}>{p.state === 'pb-sale' ? <PriceBlock price={329} was={399} member={296} /> : <PriceBlock price={69} member={62} />}
+      <NiujinLine off={p.state === 'pb-short' ? 0 : p.state === 'pb-sale' ? 59 : 12} balance={p.state === 'pb-short' ? 40 : 6060} short={60} /></div>,
+  },
+  {
+    name: 'EvidencePanel', group: '商城',
+    desc: '知识卡的证据面板（知识卡 Stitch V1 证据图 + 大数，借 V2 的结论句）：走势线 + 门槛虚线，越过门槛写「已越过推荐门槛」（短竖条骨白），没越过写「还没到」（灰）。数字来自引擎（预估 1RM ÷ 档案体重），不写功效数字。',
+    axes: { state: ['e-over', 'e-under'] }, size: 'card',
+    render: (p) => <EvidencePanel label="杠铃硬拉预估 1RM ÷ 体重" value={p.state === 'e-over' ? '1.62' : '1.38'} unit="× 体重" threshold={1.5}
+      series={p.state === 'e-over' ? [1.31, 1.36, 1.4, 1.44, 1.47, 1.52, 1.55, 1.62] : [1.21, 1.25, 1.28, 1.3, 1.34, 1.38]} detail={p.state === 'e-over' ? '150.5 kg ÷ 93 kg' : '128.3 kg ÷ 93 kg'} />,
+  },
+  {
+    name: 'WalletExits', group: '商城',
+    desc: '钱包底部两个出口（钱包线框 W2 / Stitch V1，拇指区）：「去商城抵扣」是这一屏唯一的荧光，「兑换卡券」描边；各带一行说明，高 64（命中区 ≥ 48）。',
+    axes: { state: ['default', 'pressed'] }, size: 'card',
+    render: (p) => <WalletExits redeemFrom={COUPONS.shipping.cost} state={p.state === 'pressed' ? 'pressed' : undefined} />,
+  },
+  {
+    name: 'OrderLine', group: '商城', covers: ['Breakdown', 'DemoBanner'],
+    desc: '下单确认 / 订单完成：演示模式横幅（不收集任何支付信息）→ 商品行（图、名字、规格 · 商家、会员价）→ 金额明细（减项写 −¥）+ 合计大字。',
+    axes: { state: ['o-belt', 'o-straps'] }, size: 'card',
+    render: (p) => p.state === 'o-belt'
+      ? <div className={s.growCol}><DemoBanner /><OrderLine id="belt-10" name="杠铃腰带 10 毫米" size="M" merchant="铁砧运动" category="护具" member={296} />
+          <Breakdown rows={[['商品', 329], ['会员价', 33, 'minus'], ['铁砧运动 满 200 减 30', 30, 'minus'], ['牛劲 5,900', 59, 'minus']]} total={207} /></div>
+      : <div className={s.growCol}><DemoBanner /><OrderLine id="straps" name="8 字助力带" size={null} merchant="铁砧运动" category="护具" member={62} />
+          <Breakdown rows={[['商品', 69], ['会员价', 7, 'minus'], ['运费', 10], ['免邮券', 10, 'minus']]} total={62} /></div>,
   },
   {
     name: 'Paywall', group: '增长',
@@ -673,11 +712,11 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'MessageRow', group: '增长',
-    desc: '「我的」→ 消息：同时达成多项时没弹出来的奖励、冻结卡已自动使用、删除训练后的降级说明（不弹窗，只写在这里）。入账的牛劲单独一列右对齐（amount），日期在它下面；消息页按月分段。',
-    axes: { kind: ['reward', 'freeze', 'demote'], unread: ['true', 'false'] }, rows: ['kind'], cols: 'unread', size: 'card',
+    desc: '「我的」→ 消息：同时达成多项时没弹出来的奖励、冻结卡已自动使用、删除训练后的降级说明（不弹窗，只写在这里）、到货提醒（6f，演示里设了就来一条「已到货」）。入账的牛劲单独一列右对齐（amount），日期在它下面；消息页按月分段。',
+    axes: { kind: ['reward', 'freeze', 'demote', 'restock'], unread: ['true', 'false'] }, rows: ['kind'], cols: 'unread', size: 'card',
     render: (p) => {
-      const v = { reward: ['同时达成 2 项', '升级：壮牛 2 级 · PR 杠铃卧推'], freeze: ['冻结卡已自动使用', '上周练了 1 / 4 次，连胜 7 周保住了'], demote: ['牛龄回到 壮牛 1 级', '你删除了 9 月 12 日的训练，成长值已重算'] }[p.kind] as [string, string];
-      return <MessageRow kind={p.kind as 'reward' | 'freeze' | 'demote'} title={v[0]} detail={v[1]} amount={p.kind === 'reward' ? 130 : undefined} date="今天" unread={p.unread === 'true'} />;
+      const v = { reward: ['同时达成 2 项', '升级：壮牛 2 级 · PR 杠铃卧推'], freeze: ['冻结卡已自动使用', '上周练了 1 / 4 次，连胜 7 周保住了'], demote: ['牛龄回到 壮牛 1 级', '你删除了 9 月 12 日的训练，成长值已重算'], restock: ['7 毫米护膝 已到货', '演示：你设的到货提醒。真实上线后，到货时才会发这条'] }[p.kind] as [string, string];
+      return <MessageRow kind={p.kind as 'reward' | 'freeze' | 'demote' | 'restock'} title={v[0]} detail={v[1]} amount={p.kind === 'reward' ? 130 : undefined} date="今天" unread={p.unread === 'true'} />;
     },
   },
   {

@@ -1,0 +1,83 @@
+/* 钱包与商城组件（6f）。荧光只给每屏唯一焦点（钱包的「去商城抵扣」、各页底部主按钮）；标、价格、证据都用骨白与灰 */
+.muted { color: var(--milo-color-text-secondary); }
+
+/* ---------- 状态标 ---------- */
+.tag { display: inline-flex; align-items: center; flex: none; padding: var(--milo-space-2xs) var(--milo-space-xs); border-radius: var(--milo-radius-xs); font-weight: 700; line-height: 1.2; }
+.tag_hot, .tag_sale, .tag_new { color: var(--milo-color-control-selected-ink); background: var(--milo-color-control-selected); }
+.tag_oos { color: var(--milo-color-text-secondary); box-shadow: none; outline: var(--milo-stroke-hairline) dashed var(--milo-color-line-strong); outline-offset: calc(var(--milo-stroke-hairline) * -1); }
+.tag_off { color: var(--milo-color-text-disabled); background: var(--milo-color-data-track); }
+
+/* ---------- 商品图 ---------- */
+.pic { position: relative; display: grid; place-items: center; width: 100%; aspect-ratio: 1; border-radius: var(--milo-radius-m); overflow: clip;
+  background: radial-gradient(circle at 30% 20%, var(--milo-prim-lime-500-a13), transparent 60%), var(--milo-color-bg-raised-2); }
+.pic i { display: block; background: var(--milo-prim-bone-100); }
+.picImg { position: absolute; inset: 8%; width: 84%; height: 84%; object-fit: contain; filter: drop-shadow(0 var(--milo-space-2xs) var(--milo-space-s) var(--milo-color-shadow-float)); }
+.picWait { visibility: hidden; }
+.picGear i { width: 60%; height: 30%; border-radius: var(--milo-radius-s); background: repeating-linear-gradient(90deg, var(--milo-prim-bone-100) 0 18%, var(--milo-prim-bone-500) 18% 22%); }
+.picSupp i { width: 40%; height: 54%; border-radius: var(--milo-radius-m) var(--milo-radius-m) var(--milo-radius-s) var(--milo-radius-s); background: linear-gradient(var(--milo-prim-bone-500) 0 22%, var(--milo-prim-bone-100) 22%); }
+.picRow { width: var(--milo-size-hit-min); flex: none; border-radius: var(--milo-radius-s); }
+
+/* ---------- 商品卡（两列） ---------- */
+.grid { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: max-content; gap: var(--milo-space-s); }
+.card { display: grid; grid-auto-rows: max-content; gap: var(--milo-space-2xs); min-width: 0; padding: var(--milo-space-s); border: 0; border-radius: var(--milo-radius-l);
+  background: var(--milo-color-bg-raised); color: var(--milo-color-text-primary); font: inherit; text-align: left; }
+.picBox { position: relative; display: block; margin-bottom: var(--milo-space-xs); }
+.tagAt { position: absolute; left: var(--milo-space-xs); top: var(--milo-space-xs); }
+.name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: clip; }
+.priceLine { display: flex; align-items: baseline; gap: var(--milo-space-xs); }
+/* 缺货 / 已下架：整卡变暗（商城 V1），仍可点进详情 */
+.dim { opacity: var(--milo-opacity-done-row); }
+.dim .pic { filter: grayscale(1); }
+
+/* ---------- 商品行（知识卡里的相关商品） ---------- */
+.row { display: flex; align-items: center; gap: var(--milo-space-m); width: 100%; min-height: calc(var(--milo-size-hit-min) + var(--milo-space-l)); padding: var(--milo-space-s) var(--milo-space-m);
+  border: 0; border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised); color: var(--milo-color-text-primary); font: inherit; text-align: left; }
+.rowText { display: grid; gap: var(--milo-space-2xs); flex: 1; min-width: 0; }
+.nameLine { display: flex; align-items: center; gap: var(--milo-space-xs); min-width: 0; }
+.nameLine b { overflow: clip; white-space: nowrap; text-overflow: ellipsis; }
+.rowPrice { display: grid; justify-items: end; }
+
+/* ---------- 为你推荐 ---------- */
+.rec { position: relative; display: grid; gap: var(--milo-space-xs); width: 100%; padding: var(--milo-space-l); border: 0; border-radius: var(--milo-radius-l); overflow: clip; isolation: isolate;
+  background: var(--milo-color-bg-raised); color: var(--milo-color-text-primary); font: inherit; text-align: left; }
+/* 配重片同心槽纹（商城 V2 推荐卡背景，品牌语言） */
+.rec::before { content: ''; position: absolute; z-index: -1; right: calc(var(--milo-space-5xl) * -1); top: calc(var(--milo-space-3xl) * -1); width: calc(var(--milo-space-5xl) * 3); aspect-ratio: 1; border-radius: 50%;
+  background: repeating-radial-gradient(circle, transparent 0 var(--milo-space-s), var(--milo-color-line-default) var(--milo-space-s) calc(var(--milo-space-s) + var(--milo-stroke-hairline))); opacity: var(--milo-opacity-figure); }
+.recHead { display: flex; align-items: center; justify-content: space-between; color: var(--milo-color-text-secondary); }
+.recLabel { padding: var(--milo-space-2xs) var(--milo-space-xs); border-radius: var(--milo-radius-xs); color: var(--milo-color-control-selected-ink); background: var(--milo-color-control-selected); font-weight: 700; }
+.recProduct { margin-top: var(--milo-space-xs); padding-top: var(--milo-space-s); border-top: var(--milo-stroke-hairline) solid var(--milo-color-line-default); color: var(--milo-color-text-secondary); }
+.recProduct b { color: var(--milo-color-text-primary); }
+
+/* ---------- 价格区 · 牛劲 ---------- */
+.priceBlock { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--milo-space-s); color: var(--milo-color-text-primary); }
+.member { padding: var(--milo-space-2xs) var(--milo-space-s); border-radius: var(--milo-radius-xs); color: var(--milo-color-control-selected-ink); background: var(--milo-color-control-selected); }
+.niujin { display: flex; align-items: center; justify-content: space-between; gap: var(--milo-space-s); min-height: var(--milo-size-hit-min); padding: var(--milo-space-s) var(--milo-space-m);
+  border-radius: var(--milo-radius-m); background: var(--milo-color-bg-raised); color: var(--milo-color-text-primary); }
+.niujinNone b { color: var(--milo-color-text-secondary); }
+
+/* ---------- 证据面板 ---------- */
+.evidence { display: grid; gap: var(--milo-space-s); margin: 0; padding: var(--milo-space-l); border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised); color: var(--milo-color-text-primary); }
+.evBody { display: flex; align-items: flex-end; gap: var(--milo-space-l); }
+.evNum { display: grid; flex: none; }
+.evChart { flex: 1; height: var(--milo-size-chart-h); min-width: 0; overflow: visible; }
+.evGate { stroke: var(--milo-color-line-strong); stroke-width: var(--milo-stroke-hairline); stroke-dasharray: var(--milo-space-xs) var(--milo-space-xs); }
+.evLine { fill: none; stroke: var(--milo-color-text-primary); stroke-width: var(--milo-stroke-ring-progress); stroke-linecap: round; stroke-linejoin: round; }
+.evFoot { display: flex; align-items: center; flex-wrap: wrap; gap: var(--milo-space-xs); margin: 0; }
+.evMark { width: var(--milo-space-xs); height: var(--milo-space-l); border-radius: var(--milo-radius-xs); background: var(--milo-color-line-strong); }
+.evOver { background: var(--milo-color-control-selected); }
+
+/* ---------- 钱包出口 ---------- */
+.exits { display: grid; grid-template-columns: 1fr 1fr; gap: var(--milo-space-s); }
+.exit { display: grid; place-content: center; gap: var(--milo-space-2xs); min-height: calc(var(--milo-size-hit-min) + var(--milo-space-l)); padding: var(--milo-space-s); border: 0; border-radius: var(--milo-radius-l);
+  font: inherit; text-align: center; color: var(--milo-color-text-primary); background: transparent; box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); }
+.exit b { font-size: var(--milo-font-size-heading); font-weight: 900; }
+.exitMain { color: var(--milo-color-text-on-accent); background: var(--milo-color-accent-default); box-shadow: 0 0 var(--milo-space-2xl) var(--milo-color-accent-glow); }
+
+/* ---------- 下单 ---------- */
+.orderLine { display: flex; align-items: center; gap: var(--milo-space-m); color: var(--milo-color-text-primary); }
+.breakdown { display: grid; gap: var(--milo-space-xs); color: var(--milo-color-text-primary); }
+.bRow { display: flex; justify-content: space-between; align-items: baseline; }
+.bTotal { display: flex; justify-content: space-between; align-items: baseline; margin-top: var(--milo-space-xs); padding-top: var(--milo-space-s); border-top: var(--milo-stroke-hairline) solid var(--milo-color-line-strong); }
+.demo { display: flex; align-items: center; gap: var(--milo-space-s); margin: 0; padding: var(--milo-space-s) var(--milo-space-m); border-radius: var(--milo-radius-m);
+  background: var(--milo-color-bg-raised); color: var(--milo-color-text-secondary); }
+.demo i { width: var(--milo-space-xs); aspect-ratio: 1; flex: none; border-radius: 50%; background: var(--milo-color-text-secondary); }
