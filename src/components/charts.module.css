@@ -34,3 +34,7 @@
 @keyframes drawLine { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 @keyframes areaFade { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .trendDraw, .areaIn { animation: none; } }
+/* 6g 补：对比动作的虚线（叠在主线下面，不画面积；换一个动作时淡入） */
+.cmp { fill: none; stroke: var(--milo-color-text-secondary); stroke-width: var(--milo-stroke-ring-progress); stroke-linejoin: round; stroke-dasharray: var(--milo-space-xs) var(--milo-space-xs); animation: areaFade var(--milo-motion-slow) var(--milo-motion-ease-standard) both; }
+.cmpDot { fill: var(--milo-color-bg-base); stroke: var(--milo-color-text-secondary); stroke-width: var(--milo-stroke-focus); }
+@media (prefers-reduced-motion: reduce) { .cmp { animation: none; } }

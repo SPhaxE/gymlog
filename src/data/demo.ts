@@ -1,6 +1,6 @@
 /** 演示数据：全部来自 TS 引擎在演示场景（mock/）上的实算值，不手填数字。页面与预览页共用。 */
 import { buildScenario, demoEnv } from '../engine/demo';
-import { DAY, deloadSignal, deloadView, exerciseRecords, growth, headStats, prescribe, sessionStats, startOfDay } from '../engine';
+import { DAY, deloadSignal, deloadView, exerciseRecords, growth, headStats, prescribe, sessionHeadSets, sessionStats, startOfDay } from '../engine';
 import type { DeloadView, HeadStat, Prescription, Stage } from '../engine';
 import type { DeloadState, Profile, Region, Session } from '../engine/types';
 
@@ -62,4 +62,15 @@ export function homeData(scenario: string | Source, now: number): HomeData {
     done = { session: last, sets, load, heads, stage: growth(env, { history, profile, now }).stage };
   }
   return { rx, dv, hits: sig.hits.length, sig, now, lastWeight, done };
+}
+
+/** 肌头近 n 周每周组数（6g 补「高级分析 · 肌群容量趋势」，容量页肌头面板）：周一起算，最后一项是本周（还没过完）；
+ *  组数口径同 sets7d（主练 1 组算 1、协同算 0.5）；deloads = 减量周开始的时间（那一周画斜纹） */
+export function headWeeks(history: Session[], headId: string, now: number, deloads: number[], n = 8): { value: number; deload: boolean }[] {
+  const monday = startOfDay(now) - ((new Date(startOfDay(now)).getDay() + 6) % 7) * DAY;
+  return Array.from({ length: n }, (_, i) => {
+    const from = monday - (n - 1 - i) * 7 * DAY, to = from + 7 * DAY;
+    const value = history.filter((s) => s.startMs >= from && s.startMs < to && s.startMs <= now).reduce((a, s) => a + (sessionHeadSets(env, s).get(headId) ?? 0), 0);
+    return { value: Math.round(value * 2) / 2, deload: deloads.some((ms) => ms >= from && ms < to) };
+  });
 }

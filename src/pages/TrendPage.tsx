@@ -5,12 +5,15 @@
  *  - 结构：子页（没有导航），来自增量页；返回回到增量页原来的筛选和滚动位置，直接打开链接时返回去增量页。
  *  - 框架：整页一个滚动区，页头首屏（大数字）跟着内容滑走；曲线 → 选中那天 → 下次目标 → 最近 8 次。整页只有曲线的荧光渐隐面积是荧光。
  *  - 表现：大数字按位滚动（M04）；按住曲线横向拖，游标吸到最近一次训练（吸附轻振）；点明细的一行也能选中那天；PR 点是菱形，涨跌用 ▲▼= 形状 + 文字。
- *  （Stitch g9 三种结构的取舍见 design/hifi/gains/decision.md） */
+ *  （Stitch g9 三种结构的取舍见 design/hifi/gains/decision.md）
+ *  6g 补「高级分析 · 动作对比」（线框 proentry W2、Stitch compare V2）：曲线上方一行「对比 ＋ 选一个动作」+ 右边「Pro ›」；点开底部面板（可撤销 → 面板）列出同部位、同口径、练过 2 次以上的动作，
+ *  选了就把它的曲线以虚线叠上来，图下一行图例同时读两条（游标那天 + 对比动作那天及以前最近的一次）；✕ 取消对比。演示不拦截，Pro 只是标明这是 Pro 的权益。 */
 import { useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router';
-import { BackToTop, Banner, Delta, Odometer, Screen, SectionLabel, StateView, Tag, TopBar, TrendChart, drillName, drillTransition } from '../components';
+import { BackToTop, Banner, Chip, Delta, Icon, List, ListRow, Odometer, ProLink, Screen, SectionLabel, Sheet, StateView, Tag, TopBar, TrendChart, drillName, drillTransition } from '../components';
 import { env, fmt, REGION_NAME } from '../data/demo';
-import { exerciseTrend } from '../data/gains';
+import { compareCandidates, exerciseTrend } from '../data/gains';
+import { proStatus, usePro } from '../data/pro';
 import { useSource } from '../data/useSource';
 import { guideQuery } from './FinderSheet';
 import s from './TrendPage.module.css';
@@ -24,6 +27,12 @@ export function TrendPage({ scenario, now }: { scenario?: string; now: number })
   const { src } = useSource(scenario, now);
   const d = useMemo(() => exerciseTrend(src, exerciseId, now), [src, exerciseId, now]);
   const [sel, setSel] = useState<number | null>(null);   // 选中的是曲线上第几次；null = 最新一次
+  const [cmpId, setCmpId] = useState<string | null>(null);
+  const [picking, setPicking] = useState(false);
+  const cands = useMemo(() => (picking || cmpId ? compareCandidates(src, exerciseId, now) : []), [picking, cmpId, src, exerciseId, now]);
+  const cmp = cands.find((c) => c.id === cmpId) ?? null;
+  const [pro] = usePro(scenario);
+  const proOn = proStatus(pro, now).kind !== 'free';
   // 从增量页来的就退回增量页（回到原来的筛选和滚动位置）；直接打开的链接替换成增量页
   // 目标页可能是增量页，也可能是训练详情（从详情点动作进来的）：等「不是曲线页的那个」挂好
   const back = () => drillTransition(
@@ -67,7 +76,19 @@ export function TrendPage({ scenario, now }: { scenario?: string; now: number })
 
         <div className={s.body}>
           {sessions.length < 2 && <Banner quiet detail="只有 1 次记录，再练一次就能看到趋势。" />}
-          <div style={drillName('line', exerciseId)}><TrendChart draw points={sessions.map((x) => ({ t: x.t, v: x.v, pr: x.pr, label: x.label }))} selected={i} onSelect={setSel} unit={row.unit} readout={false} /></div>
+          {sessions.length >= 2 && <div className={s.cmpRow}>
+            {cmp
+              ? <span className={s.cmpOn}><Chip selected onClick={() => setPicking(true)}>对比 · {cmp.name}</Chip><button type="button" className={`milo-focus ${s.cmpX}`} aria-label="取消对比" onClick={() => setCmpId(null)}><Icon name="close" small /></button></span>
+              : <Chip onClick={() => setPicking(true)}>对比 ＋ 选一个动作</Chip>}
+            <ProLink active={proOn} onClick={() => nav((proOn ? '/me/pro' : '/pro') + loc.search)} />
+          </div>}
+          <div style={drillName('line', exerciseId)}><TrendChart draw points={sessions.map((x) => ({ t: x.t, v: x.v, pr: x.pr, label: x.label }))} selected={i} onSelect={setSel} unit={row.unit} readout={false}
+            compare={cmp ? { name: cmp.name, points: cmp.points } : undefined} /></div>
+          {cmp && (() => { const c = [...cmp.points].reverse().find((p) => p.t <= cur.t) ?? cmp.points[0]; return (
+            <p className={`milo-text-caption ${s.legend}`} aria-live="polite">
+              <span><i className={s.keySolid} aria-hidden="true" />{row.name} <b className="milo-text-number-s">{fmt(cur.v)}</b> {row.unit}</span>
+              <span><i className={s.keyDash} aria-hidden="true" />{cmp.name} <b className="milo-text-number-s">{fmt(c.v)}</b> {row.unit} · {c.label}</span>
+            </p>); })()}
 
           <section className={s.day} aria-label={`${dayText(cur.t)}的每一组`}>
             <SectionLabel>{dayText(cur.t)} · {cur.sets.length} 组</SectionLabel>
@@ -109,6 +130,15 @@ export function TrendPage({ scenario, now }: { scenario?: string; now: number })
           </section>
         </div>
       </div>
+      {picking && (
+        <Sheet title="对比另一个动作" meta={`${REGION_NAME[row.region]} · 练过 2 次以上`} onClose={() => setPicking(false)}>
+          {cands.length
+            ? <div className={s.cmpList}><List label="可以对比的动作">{cands.map((c) => (
+                <ListRow key={c.id} kind="nav" title={c.name} detail={`最近 ${fmt(c.last)} ${c.unit}`} trailing={c.id === cmpId ? <Tag tone="strong">对比中</Tag> : undefined}
+                  onClick={() => { setCmpId(c.id); setPicking(false); }} />))}</List></div>
+            : <StateView kind="empty" title="还没有能对比的动作" detail="同部位的其它动作练满 2 次，就能叠上来比一比。" />}
+        </Sheet>
+      )}
       <BackToTop target={topRef} />
     </Screen>
   );

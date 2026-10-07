@@ -1,6 +1,6 @@
 /* /demo：左讲解 + 右手机（iframe 里是 App 本体）。深色舞台、两团慢慢呼吸的荧光余晖、米洛站在手机后面 */
 .page { position: relative; isolation: isolate; min-height: 100vh; display: grid; grid-template-columns: minmax(26rem, 34rem) auto; justify-content: center; align-items: center;
-  gap: calc(var(--milo-space-4xl) * 1.5); padding: var(--milo-space-2xl) var(--milo-space-4xl); overflow: hidden; background: var(--milo-color-bg-base); color: var(--milo-color-text-primary); }
+  gap: calc(var(--milo-space-4xl) * 1.5); padding: var(--milo-space-2xl) var(--milo-space-4xl); overflow: clip; background: var(--milo-color-bg-base); color: var(--milo-color-text-primary); }
 .aura { position: absolute; z-index: -1; inset: 0; pointer-events: none;
   background:
     radial-gradient(40% 50% at 78% 45%, color-mix(in srgb, var(--milo-prim-lime-500) 14%, transparent), transparent 70%),
@@ -43,7 +43,8 @@
 .foot a { color: var(--milo-color-text-primary); text-underline-offset: var(--milo-space-2xs); }
 
 /* ---------- 右：手机 ---------- */
-.stage { position: relative; display: grid; grid-template-columns: auto auto; align-items: end; justify-items: center; column-gap: 0; row-gap: var(--milo-space-m); }
+/* 右边的手机跟着滚动、始终停在屏幕中间（2026-10-07：左栏演示步骤变多后比一屏高很多，手机原来在长栏里居中，一打开在第一屏下面、往下滚又滚走） */
+.stage { position: sticky; top: calc((100vh - var(--milo-size-screen-h) * 0.84 - var(--milo-space-5xl)) / 2); align-self: start; display: grid; grid-template-columns: auto auto; align-items: end; justify-items: center; column-gap: 0; row-gap: var(--milo-space-m); }
 .stage > .phoneWrap { grid-column: 2; grid-row: 1; }
 .stage > .reset { grid-column: 2; }
 .phoneWrap { --bezel: var(--milo-space-s); --pw: calc(var(--milo-size-screen-w) + var(--bezel) * 2); --ph: calc(var(--milo-size-screen-h) + var(--bezel) * 2);

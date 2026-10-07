@@ -72,6 +72,6 @@ export function Sheet({ title, meta, onClose, children, docked, sharedId, tall }
 }
 
 /** 面板里的一块：标题（Label）+ 内容，bg/raised、radius/m */
-export function SheetBlock({ label, children }: { label: string; children: ReactNode }) {
-  return <div className={s.block}><div className="milo-text-label">{label}</div>{children}</div>;
+export function SheetBlock({ label, trailing, children }: { label: string; /** 标题行右边（如「Pro ›」） */ trailing?: ReactNode; children: ReactNode }) {
+  return <div className={s.block}>{trailing ? <div className={s.blockHead}><span className="milo-text-label">{label}</span>{trailing}</div> : <div className="milo-text-label">{label}</div>}{children}</div>;
 }

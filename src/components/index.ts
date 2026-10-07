@@ -10,7 +10,7 @@ export { Sparkline, TrendChart, type Point } from './charts';
 export { FinderBody, PickRow, SwapRow, type EquipFilter } from './finder';
 export { GuideDrawer } from './guide';
 export { GainGroupHead, GainRow, GainSummary, type GroupKind as GainGroupKind } from './gains';
-export { DotCalendar, GiantNumber, Odometer, StepRing, WeekBars, dotDays, dotMonths, type DotCell, type DotMonth } from './dataviz';
+export { DotCalendar, GiantNumber, Odometer, HeadWeeks, StepRing, WeekBars, dotDays, dotMonths, type DotCell, type DotMonth } from './dataviz';
 export { SteelPlate } from './plate';
 export { Cascade, Collapsible, RestDock, SharedDetail, Tilt, drillName, drillTransition, guardTransitionTaps, sharedName, sharedTransition } from './motion';
 export { Chip, NumberField, OptionCard, OptionGroup, ProgressSteps, Stepper, Switch } from './controls';
@@ -35,6 +35,6 @@ export {
 export { BackToTop } from './BackToTop';
 export { Banner, Card, Delta, List, ListRow, Num, PageHeader, ProfileTile, SectionLabel, StatusStrip, Tag, TierLegend, TopBar, type DeltaDir, type NumSize, type TagTone } from './ui';
 export { RewardCard, RewardModal, REWARD_NAME, type Reward, type RewardKind } from './Reward';
-export { AgeBadge, Coupon, FreezeCard, GrowthBar, GrowthCard, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, StageHero, StreakBar, StreakWeeks, type StreakStatus, type StreakWeekStatus } from './growth';
+export { AgeBadge, Coupon, FreezeCard, GrowthBar, GrowthCard, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, StageHero, StreakBar, StreakRisk, StreakWeeks, type StreakStatus, type StreakWeekStatus } from './growth';
 export { Breakdown, DemoBanner, EvidencePanel, NiujinLine, OrderLine, PriceBlock, ProductCard, ProductGrid, ProductImage, RecommendCard, StatusTag, WalletExits, type ProductCardProps, type ProductStatus } from './shop';
-export { MonthStats, PerkLedger, PerkTable, PlanPicker, ProCard, ProWelcome, type PerkItem, type PlanOption } from './pro';
+export { MonthStats, PerkLedger, PerkTable, PlanPicker, ProCard, ProLink, ProWelcome, type PerkItem, type PlanOption } from './pro';

@@ -2,18 +2,19 @@
  *  五层：
  *  - 战略：用户看到自己长到哪一段、离下一级还差什么（能照着做的说法）、这个月守约得怎么样；也是删训练后「可能降级」落地的地方。
  *  - 范围：页头（5 段名字 + 小牛 + 段名小级）、离下一级的进度与那句话、三个数（连胜 · 本周 · 冻结卡）、最近 12 周守约点阵、成长记录（里程碑，一次 6 条、再点展开）、降级说明；
- *    没有历史时是「牛犊 1 级 · 连胜 0」+「完成第一次训练开始长大」；这周快断了有一行提示。
+ *    没有历史时是「牛犊 1 级 · 连胜 0」+「完成第一次训练开始长大」；这周快断了有一行提示（6g 补，线框 proentry W3 / W4、Stitch risk V1）：
+ *    有冻结卡只说结果；没卡给「兑一张冻结卡」（钱包兑换面板只放冻结卡）+ 免费时「Pro 每月送 2 张」（→ 付费墙）。
  *  - 结构：子页（没有 Tab，导航不出现），从「我的」顶部的成长卡进入，返回回到「我的」；整页一个滚动区。
  *  - 框架：顶栏（返回 + 牛龄）→ 页头 → 离下一级 → 三格 → 最近 12 周 → 成长记录 → 一行小字（删训练会重算、可能降级）。没有主操作按钮（浏览页）。
  *  - 表现：荧光只有进度条一处；小牛是品牌位置，可以用 IP 小牛；功能位置（连胜、记录）不放小牛（语气分工）；守约点阵的每种状态形状 / 纹理都不同，不只靠颜色。
  *  设计过程见 design/hifi/me/（线框 level W1 小牛为主角；Stitch 第 1 轮 m6）。 */
 import { useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { BackToTop, Banner, Button, GrowthBar, LedgerRow, MessageRow, Num, Screen, SectionLabel, StageHero, StreakWeeks, TopBar, type StreakWeekStatus } from '../components';
-import { dateOf } from '../data/growth';
-import { growthLog, growthOf, nextGoal } from '../data/me';
+import { BackToTop, Button, GrowthBar, LedgerRow, MessageRow, Num, Screen, SectionLabel, StageHero, StreakRisk, StreakWeeks, TopBar, type StreakWeekStatus } from '../components';
+import { COUPONS, dateOf } from '../data/growth';
+import { growthLog, growthOf, nextGoal, riskOf } from '../data/me';
 import { useStore } from '../data/store';
-import { proPeriods, usePro } from '../data/pro';
+import { proPeriods, proStatus, usePro } from '../data/pro';
 import { useSource } from '../data/useSource';
 import { useWallet } from '../data/wallet';
 import { weeklyTarget } from '../engine';
@@ -33,7 +34,7 @@ export function LevelPage({ scenario, now }: { scenario?: string; now: number })
   const g = useMemo(() => growthOf({ ...src, wallet, pro: proPeriods(pro) }, now), [src, wallet, pro, now]);
   const log = useMemo(() => growthLog(g, scenario ? [] : st.notes), [g, scenario, st.notes]);
   const [shown, setShown] = useState(CHUNK);
-  const cur = g.streak.current, empty = src.history.length === 0, goal = nextGoal(g);
+  const cur = g.streak.current, empty = src.history.length === 0, goal = nextGoal(g), risk = riskOf(g, now);
   const weeks = g.streak.history.slice(-12).map((w): StreakWeekStatus => (w.status === 'risk' ? 'open' : w.status));
   const back = () => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav('/me' + loc.search, { replace: true }));
 
@@ -50,7 +51,8 @@ export function LevelPage({ scenario, now }: { scenario?: string; now: number })
             <div className={s.stat}><Num size="l" value={`${cur?.done ?? 0} / ${cur?.target ?? weeklyTarget(src.profile)}`} unit="次" /><i className="milo-text-caption">本周</i></div>
             <div className={s.stat}><Num size="l" value={g.streak.freezeCards} unit="张" /><i className="milo-text-caption">冻结卡</i></div>
           </div>
-          {cur?.status === 'risk' && <Banner tone="error" detail="这周快断了：剩下的天数不够练完目标次数。" />}
+          {risk && <StreakRisk need={risk.need} daysLeft={risk.daysLeft} freeze={g.streak.freezeCards} pro={proStatus(pro, now).kind !== 'free'} cost={COUPONS.freeze.cost}
+            onRedeem={() => { const q = new URLSearchParams(loc.search); q.set('redeem', 'freeze'); nav(`/me/wallet?${q}`); }} onPro={() => nav('/pro' + loc.search)} />}
 
           {weeks.length > 0 && (
             <section className={s.sec} aria-label="最近 12 周"><SectionLabel>最近 12 周</SectionLabel><StreakWeeks weeks={weeks} /></section>

@@ -6,6 +6,7 @@
  *    数据里「演示：会员状态」开关（ia §1.17：会员 / 非会员两种状态在这里切换展示；打开 = 开通年度，关掉 = 切回免费，已得的不收回）。
  *  - 结构：Tab 根页（导航「我的」选中）；整页一个滚动区；子页：牛龄 /me/level、钱包 /me/wallet（→ 商城 /shop）、消息 /me/messages；改档案走底部面板（点哪格改哪项）。
  *  - 框架：页头（跟着滑走）→ 成长卡（第一屏主角）→ 档案四格 → 消息 → 导航 → 数据 → 关于。没有主操作按钮（设置页）；面板里的「保存」在拇指区。
+ *  - 成长卡那句话：连胜快断的这周换成「这周快断了：还差 N 次，只剩 M 天」（6g 补），点卡照常进牛龄页，那里给出口。
  *  - 表现：荧光只有成长卡的进度条一处；危险操作（清除）用危险色，载入 / 清除都先二次确认；设置的开关立即生效、不需要保存。
  *  设计过程见 design/hifi/me/（线框 me2 W2 成长卡做主角；Stitch 第 1 轮 m6）。 */
 import { useMemo, useRef, useState } from 'react';
@@ -14,7 +15,7 @@ import { BackToTop, Dialog, GrowthCard, List, ListRow, OptionCard, OptionGroup, 
 import { env } from '../data/demo';
 import { csvFileName, csvSetCount, historyCsv } from '../data/exportCsv';
 import { saveTextFile } from '../data/exportFile';
-import { growthOf, messagesOf, unreadOf } from '../data/me';
+import { growthOf, messagesOf, riskOf, unreadOf } from '../data/me';
 import { mergeProfile, profileError, profileFacts, updateProfile } from '../data/profile';
 import { setSettings } from '../data/settings';
 import { DEFAULT_PROFILE, demoState, store, useStore } from '../data/store';
@@ -51,7 +52,7 @@ export function MePage({ scenario, now, onTab }: { scenario?: string; now: numbe
   const [edit, setEdit] = useState<ProfileField | null>(null);
   const [restSheet, setRestSheet] = useState(false);
   const [confirm, setConfirm] = useState<'load' | 'clear' | null>(null);
-  const cur = g.streak.current, empty = src.history.length === 0, sets = csvSetCount(src.history);
+  const cur = g.streak.current, empty = src.history.length === 0, sets = csvSetCount(src.history), risk = riskOf(g, now);
 
   const save = (patch: Partial<Profile>): string | null => {
     if (scenario) { const next = mergeProfile(profile, patch), e = profileError(next); if (!e) setLocal(next); return e; }
@@ -81,7 +82,7 @@ export function MePage({ scenario, now, onTab }: { scenario?: string; now: numbe
       <div ref={topRef} className={s.scroll}>
         <PageHeader title="我的" />
         <div className={s.body}>
-          <GrowthCard stage={g.stage} sub={g.sub} progress={g.next?.progress ?? 1} hint={<GoalHint g={g} empty={empty} />} streak={g.streak.weeks}
+          <GrowthCard stage={g.stage} sub={g.sub} progress={g.next?.progress ?? 1} hint={risk ? <><b>这周快断了</b>：还差 {risk.need} 次，只剩 {risk.daysLeft} 天</> : <GoalHint g={g} empty={empty} />} streak={g.streak.weeks}
             done={cur?.done ?? 0} target={cur?.target ?? weeklyTarget(profile)} niujin={g.niujin.balance.toLocaleString('en-US')} onClick={() => nav(`/me/level${loc.search}`)} />
 
           <section className={s.group} aria-label="档案">

@@ -4,7 +4,7 @@
  *    直接写「再涨 47.5 kg」没有可行动的意义（ia §1.14 要的是照着做得到的说法）；
  *  - 成长记录 = 引擎事件（升级、PR、连胜里程碑、训练周期、守约周、冻结卡）+ 删训练后的降级说明（降级发生在删的那一刻，事后算不出来，所以存了一条）；
  *  - 消息 = 同时达成多项时没弹出的其余奖励（一次训练只弹一个，其余合并成一条）+ 周结算里的奖励 / 冻结卡自动使用；未读 = 比「看过消息的时刻」新。 */
-import { growth, GROWTH_CONFIG, levelInfo, REWARD_PRIORITY, STAGE_LABEL, type GrowthEvent, type GrowthState } from '../engine';
+import { DAY, growth, GROWTH_CONFIG, levelInfo, REWARD_PRIORITY, STAGE_LABEL, type GrowthEvent, type GrowthState } from '../engine';
 import type { DeloadState, Profile, Session } from '../engine/types';
 import { env, fmt, type Source } from './demo';
 import type { GrowthNote, WalletState } from './store';
@@ -134,3 +134,11 @@ export const unreadOf = (messages: Message[], seenAt: number) => messages.filter
 
 /** 引擎常数（页面上不写死：每次 PR 加几点成长值等要用时从这里取） */
 export const GROWTH = GROWTH_CONFIG;
+
+/** 这周快断了吗（6g 补，牛龄页 StreakRisk / 「我的」成长卡）：引擎判 risk 时给「还差几次、还剩几天（含今天）」，否则 null */
+export function riskOf(g: GrowthState, now: number): { need: number; daysLeft: number } | null {
+  const cur = g.streak.current;
+  if (!cur || cur.status !== 'risk') return null;
+  const end = cur.start + 7 * DAY - 1;
+  return { need: cur.target - cur.done, daysLeft: Math.floor((end - now) / DAY) + 1 };
+}

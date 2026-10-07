@@ -11,8 +11,11 @@
  *  页面可以竖向滚动：胶囊列至少保留每颗 capsule-rest-max-h 的高度，放不下就滚；胶囊列上竖向短滑也是滚动，按住才进放大镜。 */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { BackToTop, Banner, BodyFigure, Button, CapsuleRail, LandmarkRuler, Nav, Num, PageHeader, PhaseSegments, Screen, Segmented, Sheet, SheetBlock, Ticks, TierLegend, sharedTransition, type Anchors, type Tab } from '../components';
-import { ago, bodyData, fmt, REGION_NAME } from '../data/demo';
+import { useLocation, useNavigate } from 'react-router';
+import { BackToTop, Banner, BodyFigure, Button, CapsuleRail, HeadWeeks, LandmarkRuler, Nav, Num, PageHeader, PhaseSegments, ProLink, Screen, Segmented, Sheet, SheetBlock, Ticks, TierLegend, sharedTransition, type Anchors, type Tab } from '../components';
+import { ago, bodyData, fmt, headWeeks, REGION_NAME } from '../data/demo';
+import { deloadsOf } from '../data/me';
+import { proStatus, usePro } from '../data/pro';
 import { useStore } from '../data/store';
 import { useTrainingNav } from '../data/useTrainingNav';
 import type { HeadStat } from '../engine';
@@ -36,6 +39,9 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
   const topRef = useRef<HTMLDivElement>(null);
   const { src } = useSource(scenario, now);
   const finder = useFinderParam();
+  const nav = useNavigate(), loc = useLocation();
+  const [pro] = usePro(scenario);
+  const proOn = proStatus(pro, now).kind !== 'free';
   const data = useMemo(() => bodyData(scenario ?? st, now), [scenario, st.history, st.profile, now]); // eslint-disable-line react-hooks/exhaustive-deps
   // 训练中切过来也看得到今日进度和休息（ia §1.12）
   const navState = useTrainingNav(scenario, data.trainedToday ? 1 : 0, now);
@@ -59,6 +65,8 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
     setCards((cs) => cs.map((c, i) => (i === cs.length - 1 && c.st === 'wait' ? { ...c, st: 'in' } : c)));
   }, []);
   const ids = useMemo(() => Object.keys(anchors).filter((id) => data.stats.has(id)).sort((a, b) => anchors[a][1] - anchors[b][1] || anchors[a][0] - anchors[b][0]), [anchors, data]);
+  // ?head=<肌头>：直接打开这块的详情面板（会员中心「高级分析」进来，6g 补）
+  useEffect(() => { const id = new URLSearchParams(loc.search).get('head'); if (id && data.stats.has(id)) setSheet(id); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // 截图 / 首次打开停在指定肌头被按住的状态，方便和设计稿对照
   useEffect(() => {
     if (initialFocus && ids.length && mag == null) { const i = ids.indexOf(initialFocus); if (i >= 0) setMag(i); }
@@ -129,6 +137,7 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
       </div>
 
       {sheet && <HeadSheet h={data.stats.get(sheet)!} shared={shared === sheet} onClose={closeSheet}
+        weeks={headWeeks(src.history, sheet, now, src.deloads ?? deloadsOf(src.deload))} proActive={proOn} onPro={() => nav((proOn ? '/me/pro' : '/pro') + loc.search)}
         onFind={FAMILY_OF[sheet] ? () => { const id = sheet; setSheet(null); setShared(null); finder.open(FAMILY_OF[id], id); } : undefined} />}
       {finder.find && <FinderSheet src={src} caption="加的动作排在今天处方后面" onClose={finder.close} />}
       <Nav selected="body" {...navState} onSelect={onTab} />
@@ -138,8 +147,9 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
 }
 
 /** 肌头详情（线框 sheet W1：恢复在上、容量在下，阅读顺序同处方逻辑） */
-function HeadSheet({ h, shared, onClose, onFind }: { h: HeadStat; shared: boolean; onClose: () => void;
-  /** 6e：找练这块的动作（打开找动作面板，选中这块肌肉、细分落在这个肌头） */ onFind?: () => void }) {
+function HeadSheet({ h, shared, onClose, onFind, weeks, proActive, onPro }: { h: HeadStat; shared: boolean; onClose: () => void;
+  /** 6e：找练这块的动作（打开找动作面板，选中这块肌肉、细分落在这个肌头） */ onFind?: () => void;
+  /** 6g 补「高级分析 · 肌群容量趋势」：近 8 周每周组数（Pro 的权益，演示不拦截，块标题旁挂「Pro ›」） */ weeks: { value: number; deload: boolean }[]; proActive: boolean; onPro: () => void }) {
   return (
     <Sheet title={h.name} meta={`${REGION_NAME[h.region]} · ${TIER_NAME[h.tier]}`} onClose={onClose} sharedId={shared ? h.id : undefined}>
       <SheetBlock label="恢复">
@@ -153,6 +163,9 @@ function HeadSheet({ h, shared, onClose, onFind }: { h: HeadStat; shared: boolea
         <Num size="xl" value={fmt(h.sets7d)} unit="组" />
         <LandmarkRuler value={h.sets7d} mev={h.mev} mav={h.mav} mrv={h.mrv} />
         {h.hoursSince != null && <div className="milo-text-caption">最近一次：{ago(h.hoursSince)} · {fmt(h.lastSets)} 组</div>}
+      </SheetBlock>
+      <SheetBlock label="近 8 周 · 每周组数" trailing={<ProLink active={proActive} onClick={onPro} />}>
+        <HeadWeeks weeks={weeks} mev={h.mev} mrv={h.mrv} />
       </SheetBlock>
       {onFind && <Button kind="ghost" icon="plus" onClick={onFind}>找练这块的动作</Button>}
     </Sheet>

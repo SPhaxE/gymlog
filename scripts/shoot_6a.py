@@ -913,6 +913,11 @@ def pro_checks(b, w, h):
     ok(pg.get_by_role('region', name=re.compile('^Milo Pro 年度，已开通')).count() == 1, f'{tag} 会员中心：会员卡 已开通 + 到期')
     ok(pg.get_by_role('list', name='权益').get_by_role('button').count() == 4, f'{tag} 会员中心：四个权益入口都能点')
     ok(pg.locator('[class*=_glow_]').count() == 0, f'{tag} 会员中心：没有荧光主按钮（不制造再买点的压力）')
+    # 高级分析 → 容量页直接打开练得最多那块的面板，「近 8 周 · 每周组数」块标题旁的 Pro（已开通 → 会员中心）
+    click(pg, pg.get_by_role('button', name=re.compile('^高级分析'))); pg.wait_for_url('**/body?head=**'); pg.wait_for_timeout(1500)
+    dlg = pg.get_by_role('dialog')
+    ok(dlg.count() == 1 and dlg.get_by_text('近 8 周 · 每周组数').count() == 1 and dlg.get_by_role('img', name=re.compile('^近 8 周每周组数')).count() == 1, f'{tag} 高级分析：容量页打开肌头面板，有「近 8 周」')
+    pg.go_back(); pg.wait_for_url('**/me/pro'); pg.wait_for_timeout(1200)
     click(pg, pg.get_by_role('button', name='管理订阅（演示：切回免费）')); pg.wait_for_timeout(500)
     ok(pg.get_by_role('alertdialog', name='切回免费？').count() == 1 and pg.get_by_text(re.compile('不收回')).count() == 1, f'{tag} 会员中心：切回免费先确认，写明已得的不收回')
     click(pg, pg.get_by_role('alertdialog').get_by_role('button', name='切回免费')); pg.wait_for_url('**/me'); pg.wait_for_timeout(700)
@@ -954,6 +959,18 @@ def pro_checks(b, w, h):
     pg.goto(args.base + '/pro?scenario=plain-prescription'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)
     click(pg, pg.get_by_role('button', name='开通年度（演示，不扣费）')); pg.wait_for_timeout(900)
     ok(pg.get_by_role('heading', name='欢迎加入 Milo Pro').count() == 1 and json.dumps(store()['pro']) == snap, f'{tag} 场景：开通走完，不写本机存储')
+    # 高级分析 · 动作对比：曲线页「对比 ＋ 选一个动作」→ 面板选同部位的动作 → 虚线叠上来、图下图例读两条；✕ 取消
+    pg.goto(args.base + '/gains/barbell-squat-8?scenario=plain-prescription'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(1200)
+    ok(pg.get_by_role('button', name=re.compile('Pro 的权益')).count() == 1, f'{tag} 动作对比：对比那一行右边有 Pro 标')
+    click(pg, pg.get_by_role('button', name='对比 ＋ 选一个动作')); pg.wait_for_timeout(700)
+    cmp_sheet = pg.get_by_role('dialog', name='对比另一个动作')
+    ok(cmp_sheet.get_by_role('list', name='可以对比的动作').get_by_role('button').count() >= 1, f'{tag} 动作对比：面板列出同部位练过 2 次以上的动作')
+    page_ok('compare-sheet')
+    click(pg, cmp_sheet.get_by_role('list', name='可以对比的动作').get_by_role('button').first); pg.wait_for_timeout(900)
+    ok(pg.get_by_role('img', name=re.compile('；对比.+（虚线）')).count() == 1 and pg.get_by_role('button', name='取消对比').count() == 1, f'{tag} 动作对比：选了以后虚线叠上来，图例读两条，能取消')
+    page_ok('compare')
+    click(pg, pg.get_by_role('button', name='取消对比')); pg.wait_for_timeout(400)
+    ok(pg.get_by_role('button', name='对比 ＋ 选一个动作').count() == 1, f'{tag} 动作对比：✕ 取消后回到「选一个动作」')
     # 没有进账的新用户：通用对比表
     pg.goto(args.base + '/pro?scenario=cold-start'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)
     ok(pg.get_by_role('heading', name='练得更聪明一点').count() == 1 and pg.get_by_role('table', name='免费与 Pro 对比').count() == 1, f'{tag} 新用户：讲不出「你的」，退回通用对比表')
@@ -997,6 +1014,15 @@ with sync_playwright() as p:
             d.get_by_role('button', name='换一位腿练得多的用户').click(); d.wait_for_timeout(2500)
             f = d.frame_locator('iframe')
             ok(f.get_by_role('button', name=re.compile('护膝')).count() == 1, '/demo 电脑版：换一位腿练得多的用户 → 容量页出护膝知识卡')
+            # 「连胜快断」一步：牛龄页出快断一行（没卡 → 兑一张 + Pro 每月送 2 张）；兑一张 → 钱包面板只放冻结卡 → 兑完回牛龄页，变成「有 1 张冻结卡」
+            d.get_by_role('button', name='看连胜快断').click(); d.wait_for_timeout(2500)
+            ok(f.get_by_role('region', name='连胜快断了').count() == 1 and f.get_by_role('button', name=re.compile('^Pro 每月送 2 张')).count() == 1, '/demo 电脑版：连胜快断 → 牛龄页出快断一行，两个出口')
+            # 把手机里的按钮滚到手机屏幕中间再点（手机本身跟着页面滚动、停在屏幕里）
+            d.evaluate('scrollTo(0, 0)'); f.get_by_role('button', name='兑一张冻结卡 · 800 牛劲').evaluate('e => e.scrollIntoView({ block: "center" })'); d.wait_for_timeout(300)
+            f.get_by_role('button', name='兑一张冻结卡 · 800 牛劲').click(); d.wait_for_timeout(1000)
+            ok(f.get_by_role('dialog', name='兑一张冻结卡').get_by_role('button', name='兑换').count() == 1, '/demo 电脑版：兑一张 → 钱包兑换面板只放冻结卡')
+            d.evaluate('scrollTo(0, 0)'); f.get_by_role('dialog').get_by_role('button', name='兑换').click(); d.wait_for_timeout(1500)
+            ok(f.get_by_text(re.compile('^有 1 张冻结卡')).count() == 1, '/demo 电脑版：兑完回牛龄页，快断一行变成「有 1 张冻结卡，连胜保住」')
         guarded('demo', demo_desk)
     b.close()
 

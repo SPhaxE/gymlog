@@ -142,6 +142,26 @@ export function StreakBar({ weeks, done, target, status, freeze = 0 }: { weeks: 
   );
 }
 
+/** 连胜快断的一行（6g 补，线框 ?board=proentry W3 / W4，Stitch risk V1）：引擎判「快断」（这周还差的次数 > 剩下的天数）时，牛龄页三格下面出现。
+ *  按手上有没有冻结卡、是不是会员给出口——有卡：只说结果，不放按钮；没卡 · 免费：描边「兑一张冻结卡」+ 文字链「Pro 每月送 2 张」；没卡 · 会员（本月 2 张已用完）：只给「兑一张」。
+ *  「!」标 + 深灰底，不用危险红（不是错误），不用荧光；按钮与文字链的命中区各 ≥ 48、互不重叠。 */
+export function StreakRisk({ need, daysLeft, freeze, pro, cost, onRedeem, onPro, state }: {
+  need: number; daysLeft: number; freeze: number; pro: boolean; cost: number; onRedeem?: () => void; onPro?: () => void; state?: Forced;
+}) {
+  const line = freeze > 0 ? `有 ${freeze} 张冻结卡：这周没练够会自动用掉一张，连胜保住。`
+    : pro ? '这个月 Pro 送的 2 张已经用了。没练够的那周会断。' : '断了连胜从 0 开始。冻结卡会在没练够的那周自动用掉一张。';
+  return (
+    <section className={s.risk} aria-label="连胜快断了">
+      <div className={s.riskHead}><span className={s.riskMark} aria-hidden="true">!</span><b className="milo-text-body-strong">这周快断了：还差 {need} 次，只剩 {daysLeft} 天</b></div>
+      <p className={cx('milo-text-caption', s.muted, s.riskLine)}>{line}</p>
+      {freeze === 0 && <div className={s.riskActs}>
+        <Button kind="ghost" onClick={onRedeem} state={state}>兑一张冻结卡 · {cost.toLocaleString('en-US')} 牛劲</Button>
+        {!pro && <button type="button" className={cx('milo-text-caption milo-focus', s.riskLink)} onClick={onPro}>Pro 每月送 2 张<Icon name="chevron" small /></button>}
+      </div>}
+    </section>
+  );
+}
+
 /** 最近若干周的守约状态点阵（牛龄页）：实心骨白 = 守约，暗 = 减量周（按计划减量也算守约），斜纹 = 冻结卡抵掉，虚线 = 没守约，粗框 = 本周；下面一行图例。
  *  不只靠颜色：每种状态的形状 / 纹理都不同；整条是一张图，读屏读汇总。 */
 export type StreakWeekStatus = 'kept' | 'deload' | 'frozen' | 'missed' | 'open';

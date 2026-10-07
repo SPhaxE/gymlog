@@ -129,3 +129,13 @@ export function ProWelcome({ stage, title, line, children }: { stage: MascotStag
     </div>
   );
 }
+
+/** 「Pro ›」小入口（6g 补，Stitch trend / compare V2）：挂在权益真内容的块标题旁（肌头面板「近 8 周」、曲线页「对比」）和商品详情的会员价旁。
+ *  未开通 = 描边，进付费墙；已开通 = 骨白实底，进会员中心。不是主操作，不用荧光；视觉小、命中区外扩到 48 */
+export function ProLink({ active, onClick, label, state }: { active?: boolean; onClick?: () => void; label?: string; state?: Forced }) {
+  return (
+    <button type="button" className={cx('milo-focus', s.proLink)} onClick={onClick} aria-label={label ?? (active ? '这是 Pro 的权益，已开通，查看会员中心' : '这是 Pro 的权益，看看 Pro')} {...forced(state)}>
+      <span className={cx(s.proMark, active && s.proMarkOn)}>Pro</span><Icon name="chevron" small />
+    </button>
+  );
+}

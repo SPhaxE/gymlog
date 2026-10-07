@@ -196,3 +196,13 @@ export function exerciseTrend(scenario: string | Source, exerciseId: string, now
   });
   return { now, row: b.row, sessions, recent: [...sessions].reverse().slice(0, 8) };
 }
+
+/** 「对比另一个动作」的候选（6g 补「高级分析 · 动作对比」，进步曲线页）：同部位、同一种口径（预估 1RM / 次数）、至少练过 2 次的其它动作，最近练过的在前 */
+export function compareCandidates(src: Source, exerciseId: string, now: number): { id: string; name: string; last: number; unit: string; points: { t: number; v: number; label: string }[] }[] {
+  const self = exerciseTrend(src, exerciseId, now);
+  if (!self) return [];
+  const ids = [...new Set(src.history.flatMap((s) => s.exercises.filter((e) => !e.skipped).map((e) => e.exerciseId)))].filter((id) => id !== exerciseId);
+  return ids.map((id) => exerciseTrend(src, id, now)).filter((d): d is TrendData => !!d && d.row.region === self.row.region && d.row.metric === self.row.metric && d.sessions.length >= 2)
+    .sort((a, b) => b.sessions.at(-1)!.t - a.sessions.at(-1)!.t)
+    .map((d) => ({ id: d.row.exerciseId, name: d.row.name, last: d.sessions.at(-1)!.v, unit: d.row.unit, points: d.sessions.map((x) => ({ t: x.t, v: x.v, label: x.label })) }));
+}

@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { GrowthEvent, GrowthState } from '../engine';
 import { deleteSession } from './session';
-import { demoteNote, deloadsOf, eventTitle, growthLog, growthOf, levelLabel, LIFT_MAX, messagesOf, nextGoal, unreadOf } from './me';
-import { demoState, store } from './store';
+import { demoteNote, deloadsOf, eventTitle, growthLog, growthOf, levelLabel, LIFT_MAX, messagesOf, nextGoal, riskOf, unreadOf } from './me';
+import { demoRiskState, demoState, riskDemoNow, store } from './store';
 
 const NOW = new Date(2026, 9, 6, 18, 0).getTime();
 const at = (d: number, h = 18) => new Date(2026, 8, d, h).getTime();
@@ -128,5 +128,19 @@ describe('消息（ia §1.15）', () => {
     expect(all.length).toBeGreaterThan(3);
     expect(n).toBeGreaterThan(0);
     expect(n).toBeLessThan(all.length);
+  });
+});
+
+describe('连胜快断（6g 补，牛龄页 StreakRisk）', () => {
+  it('演示「快断」：本周日上午、这周只留一次训练 → 引擎判 risk，还差的次数 > 剩下 1 天，手上没有冻结卡；平时的演示用户不快断', () => {
+    for (let d = 0; d < 7; d++) {
+      const now = new Date(2026, 9, 5 + d, 18).getTime(), at = riskDemoNow(now);
+      const g = growthOf(demoRiskState(now), at);
+      const r = riskOf(g, at);
+      expect(r?.daysLeft).toBe(1);
+      expect(r!.need).toBeGreaterThan(1);
+      expect(g.streak.freezeCards).toBe(0);
+      expect(riskOf(growthOf(demoState(now), now), now)).toBeNull();
+    }
   });
 });

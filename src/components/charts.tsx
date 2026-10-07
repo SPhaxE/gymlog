@@ -44,7 +44,9 @@ function smooth(xy: [number, number][]) {
 /** 动作进步曲线（P10；2026-10-04 用户选定 E5 + M04）：预估 1RM 对日期，时间按正序画。
  *  圆滑曲线 + 下方荧光渐隐面积；按住横向拖，竖向游标吸到最近一次训练（吸附时轻振），顶部读数按位滚动（Odometer）；
  *  选中点有一圈呼吸光晕。也可以点、或聚焦后用 ← → 逐次看。PR 点是菱形。少于 2 次不画线。 */
-export function TrendChart({ points, selected, onSelect, unit = 'kg', readout = true, draw }: { points: Point[]; selected?: number | null; onSelect?: (i: number) => void; unit?: string;
+export function TrendChart({ points, selected, onSelect, unit = 'kg', readout = true, draw, compare }: { points: Point[]; selected?: number | null; onSelect?: (i: number) => void; unit?: string;
+  /** 6g 补「动作对比」：另一个动作的曲线，虚线叠在同一坐标里（不画面积、不画点，游标所在那天给它一个小圆点）；读数由页面在图下写 */
+  compare?: { name: string; points: Point[] };
   /** 进场时曲线从左到右画出来、面积随后淡入（从列表钻进来的转场里，小曲线展开成这条真曲线） */ draw?: boolean;
   /** 图上方那一行读数。页面自己有大数字（曲线页）时关掉，同一个数屏上只出现一次 */ readout?: boolean }) {
   const box = useRef<HTMLDivElement>(null), drag = useRef(false), gid = useId().replace(/[^a-zA-Z0-9-]/g, '');
@@ -59,8 +61,9 @@ export function TrendChart({ points, selected, onSelect, unit = 'kg', readout = 
   const ps = asc(points), h = T['size/chart-h'], r = T['size/chart-dot'], pad = T['space/l'];
   if (!ps.length) return <div className={s.empty}>还没有这个动作的记录</div>;
   // 右侧留一条刻度标注栏（space/3xl），数据点不和标注重叠
-  const gut = T['space/3xl'], at = scale(ps, w - gut, h, pad), xy = ps.map(at) as [number, number][];
-  const vs = ps.map((p) => p.v), lo = Math.min(...vs), hi = Math.max(...vs);
+  const cps = compare ? asc(compare.points) : [], both = cps.length ? asc([...ps, ...cps]) : ps;
+  const gut = T['space/3xl'], at = scale(both, w - gut, h, pad), xy = ps.map(at) as [number, number][], cxy = cps.map(at) as [number, number][];
+  const vs = both.map((p) => p.v), lo = Math.min(...vs), hi = Math.max(...vs);
   const grid = ps.length > 1 && hi > lo ? [hi, (hi + lo) / 2, lo] : [ps[0].v];
   const sel = selected != null && ps[selected] ? selected : null;
   const pick = (clientX: number, el: SVGSVGElement) => {
@@ -75,7 +78,9 @@ export function TrendChart({ points, selected, onSelect, unit = 'kg', readout = 
     if (e.key === 'ArrowRight') { e.preventDefault(); onSelect(Math.min(ps.length - 1, (sel ?? -1) + 1)); }
     if (e.key === 'ArrowLeft') { e.preventDefault(); onSelect(Math.max(0, (sel ?? ps.length) - 1)); }
   };
-  const line = ps.length > 1 ? smooth(xy) : '';
+  const line = ps.length > 1 ? smooth(xy) : '', cline = cxy.length > 1 ? smooth(cxy) : '';
+  // 游标那天，对比动作取「那天及以前最近的一次」
+  const cAt = sel != null && cps.length ? cps.reduce((k, p, j) => (p.t <= ps[sel].t ? j : k), 0) : null;
   return (
     <div ref={box} className={s.chart}>
       {readout && <div className={s.readout} aria-live="polite">
@@ -83,18 +88,20 @@ export function TrendChart({ points, selected, onSelect, unit = 'kg', readout = 
           : <span className="milo-text-caption">{ps.length > 1 ? '按住横向拖，或点一个点查看当次' : '再练一次就能看到趋势'}</span>}
       </div>}
       <svg className={cx('milo-focus', s.plot)} width={w} height={h} tabIndex={onSelect ? 0 : -1} onKeyDown={key} role="img"
-        aria-label={`预估 1RM，共 ${ps.length} 次：${fmt(ps[0].v)} 到 ${fmt(ps.at(-1)!.v)} ${unit}`}
+        aria-label={`预估 1RM，共 ${ps.length} 次：${fmt(ps[0].v)} 到 ${fmt(ps.at(-1)!.v)} ${unit}${cps.length ? `；对比${compare!.name}：${fmt(cps[0].v)} 到 ${fmt(cps.at(-1)!.v)} ${unit}（虚线）` : ''}`}
         onPointerDown={(e) => { if (!onSelect) return; e.currentTarget.setPointerCapture(e.pointerId); drag.current = true; pick(e.clientX, e.currentTarget); }}
         onPointerMove={(e) => drag.current && pick(e.clientX, e.currentTarget)} onPointerUp={() => { drag.current = false; }} onPointerCancel={() => { drag.current = false; }}>
         <defs><linearGradient id={`a${gid}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" className={s.areaTop} /><stop offset="1" className={s.areaBottom} /></linearGradient></defs>
         {grid.map((v) => { const y = at({ t: ps[0].t, v })[1]; return <g key={v}><line className={s.grid} x1={0} x2={w - gut + T['space/xs']} y1={y} y2={y} /><text className={s.axis} x={w} y={y + T['space/xs']}>{fmt(v)}</text></g>; })}
         {line && <path className={cx(draw && s.areaIn)} d={`${line} L${xy.at(-1)![0]},${h} L${xy[0][0]},${h} Z`} fill={`url(#a${gid})`} />}
         {sel != null && <line className={s.rule} x1={xy[sel][0]} x2={xy[sel][0]} y1={0} y2={h} />}
+        {cline && <path key={compare!.name} className={s.cmp} d={cline} />}
+        {cAt != null && <circle className={s.cmpDot} cx={cxy[cAt][0]} cy={cxy[cAt][1]} r={r * 0.8} />}
         {line && <path className={cx(s.trend, draw && s.trendDraw)} d={line} pathLength={draw ? 1 : undefined} />}
         {ps.map((p, i) => p.pr ? <path key={i} className={cx(s.prDot, i === sel && s.on)} d={diamond(...xy[i], r)} /> : <circle key={i} className={cx(s.dot, i === sel && s.on)} cx={xy[i][0]} cy={xy[i][1]} r={r} />)}
         {sel != null && <circle className={s.halo} cx={xy[sel][0]} cy={xy[sel][1]} r={r * 3} />}
       </svg>
-      <div className={cx('milo-text-micro', s.dates)}><span>{ps[0].label}</span>{ps.length > 1 && <span>{ps.at(-1)!.label}</span>}</div>
+      <div className={cx('milo-text-micro', s.dates)}><span>{both[0].label}</span>{both.length > 1 && <span>{both.at(-1)!.label}</span>}</div>
     </div>
   );
 }

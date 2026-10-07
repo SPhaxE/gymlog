@@ -8,7 +8,7 @@ import {
   BodyPicker, PickRow, SwapRow, WarmupStrip,
   ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProfileTile, ProgressSteps, RestBar, SectionLabel, Segmented,
   SessionRow, SetEditor, SetLine, SetRow, NumPad, Sheet, Tilt, SheetBlock, Skeleton, Sparkline, StateView, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
-  AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, PropGlyph, type PropKind, RewardCard, AgeBadge, Coupon, FreezeCard, GrowthBar, GrowthCard, StageHero, StreakWeeks, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, ProductCard, StreakBar, Breakdown, DemoBanner, EvidencePanel, NiujinLine, OrderLine, PriceBlock, ProductGrid, RecommendCard, WalletExits, MonthStats, PerkLedger, PerkTable, PlanPicker, ProCard, ProWelcome,
+  AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, PropGlyph, type PropKind, RewardCard, AgeBadge, Coupon, FreezeCard, GrowthBar, GrowthCard, StageHero, StreakWeeks, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, StreakRisk, ProductCard, StreakBar, Breakdown, DemoBanner, EvidencePanel, NiujinLine, OrderLine, PriceBlock, ProductGrid, RecommendCard, WalletExits, MonthStats, PerkLedger, PerkTable, PlanPicker, ProCard, ProLink, ProWelcome, HeadWeeks,
   type LogoState, type MascotMood, type MascotStage, type StreakStatus, type StreakWeekStatus,
   type Forced, type IconName, type NumSize, type SkeletonShape, type Tab, type TagTone,
 } from '../components';
@@ -74,7 +74,7 @@ export const CN: Record<string, string> = {
   sub: '标题下带日期与附件', fold: '收起', closed: '已收起', pill: '小胶囊', open: '展开', loadingState: '加载中', shown: '已出现', lifted: '抬到主按钮上面', 'today-done': '今天练过',
   experience: '训练经验', minutes: '单次时长', equipment: '可用器械', 'w-steady': '稳定守约', 'w-mixed': '有减量也有冻结', 'w-cold': '刚起步',
   'k-value': '付费墙 · 按你的数据', 'k-link': '会员中心 · 权益入口', 'k-pair': '开通成功 · 刚到手的', 'plan-year': '选中年度', 'plan-month': '选中月度', 'plan-trial': '选中试用', 'plan-two': '试用用过了',
-  'pb-pro': '已开通 · Pro 实底', 'pc-pro': '已开通', 'pc-trial': '试用中', 'pc-expired': '已到期',
+  'pb-pro': '已开通 · Pro 实底', compare: '叠一条对比', 'pl-free': '未开通 · 描边', 'pl-active': '已开通 · 实底', 'hw-normal': '在区间里 · 有减量周', 'hw-low': '一直不够', 'sr-free': '没卡 · 免费', 'sr-card': '有冻结卡', 'sr-pro': '没卡 · 会员（本月用完）', 'pc-pro': '已开通', 'pc-trial': '试用中', 'pc-expired': '已到期',
   'g-cycles': '涨幅太大 · 只写周期', 'g-bare': '牛龄页（不重复段名）',
   newborn: '牛犊', young: '小牛', sturdy: '壮牛', bull: '公牛', milo: 'Milo', 'm-idle': '平常', 'm-focused': '专注', 'm-happy': '开心', 'm-rest': '恢复日', 'm-pr': '破纪录', 'm-deload': '减量周', idle: '平常', training: '训练中',
   'r-stage': '升段', 'r-milo': '升段 · Milo', 'r-pr': '破纪录', 'r-streak': '连胜里程碑', 'r-level': '升小级', 'r-cycle': '周期完成', free: '免费', pro: 'Pro 会员',
@@ -501,10 +501,11 @@ export const CATALOG: Entry[] = [
     render: (p, f) => <Sparkline label="预估 1RM" points={p.trend === 'up' ? f.trends.normal : p.trend === 'down' ? f.trends.falling : f.trends.one} />,
   },
   {
-    name: 'TrendChart', group: '数据图形', desc: '动作进步曲线（P10）：预估 1RM 对日期，时间按正序画；PR 点菱形；点一下或方向键选中一次。少于 2 次不画线。曲线页自己有大数字时关掉图上的读数（without），同一个数屏上只出现一次。',
-    axes: { points: ['many', 'many-selected', 'one', 'empty_pts'], head: ['with', 'without'] }, rows: ['points'], cols: 'head', size: 'card',
+    name: 'TrendChart', group: '数据图形', desc: '动作进步曲线（P10）：预估 1RM 对日期，时间按正序画；PR 点菱形；点一下或方向键选中一次。少于 2 次不画线。曲线页自己有大数字时关掉图上的读数（without），同一个数屏上只出现一次。compare（6g 补「动作对比」）：另一个动作的曲线以虚线叠在同一坐标里，不画面积和点，游标那天给它一个小圆点；读数由页面在图下的图例里写。',
+    axes: { points: ['many', 'many-selected', 'one', 'empty_pts', 'compare'], head: ['with', 'without'] }, rows: ['points'], cols: 'head', size: 'card',
     render: (p, f) => <TrendChart readout={p.head === 'with'} points={p.points === 'one' ? f.trends.one : p.points === 'empty_pts' ? [] : f.trends.normal}
-      selected={p.points === 'many-selected' ? f.trends.normal.length - 1 : null} onSelect={noop} />,
+      selected={p.points === 'many-selected' || p.points === 'compare' ? f.trends.normal.length - 1 : null} onSelect={noop}
+      compare={p.points === 'compare' ? { name: '对比动作', points: f.trends.normal.map((x) => ({ ...x, v: x.v * 0.8, pr: false })) } : undefined} />,
   },
   {
     name: 'IncrementRuler', group: '数据图形', desc: '增量尺：上次 → 这次建议重量，之间那段骨白；刻度 = 加重步进。',
@@ -696,6 +697,12 @@ export const CATALOG: Entry[] = [
           <Breakdown rows={[['商品', 69], ['会员价', 7, 'minus'], ['运费', 10], ['免邮券', 10, 'minus']]} total={62} /></div>,
   },
   {
+    name: 'ProLink', group: '会员',
+    desc: '「Pro ›」小入口（6g 补）：挂在 Pro 权益真内容的块标题旁——容量页肌头面板「近 8 周」、进步曲线页「对比」，以及商品详情的会员价旁。未开通描边 → 付费墙；已开通骨白实底 → 会员中心。不是主操作、不用荧光；视觉小、命中区外扩到 48。',
+    axes: { state: ['pl-free', 'pl-active', 'pressed'] }, size: 'auto',
+    render: (p) => <ProLink active={p.state === 'pl-active'} onClick={noop} state={p.state === 'pressed' ? 'pressed' : undefined} />,
+  },
+  {
     name: 'PerkLedger', group: '会员',
     desc: '权益账单（6g，Stitch 付费墙 V2 的单卡 + 刻度尺分隔）：value = 付费墙「这 30 天，Pro 会多给你」四条——窄体大数 + 单位在上、按你的数据的一句理由在下（不折行）；link = 会员中心的权益入口（名称 / 说明 + ›，整行可点 ≥ 48）；pair = 开通成功「刚到手的」三条（左名右注一行）。入场：行按 M07 交错弹入，行间刻度尺从左往右画出来。',
     axes: { kind: ['k-value', 'k-link', 'k-pair'] }, size: 'card',
@@ -735,6 +742,14 @@ export const CATALOG: Entry[] = [
       <PerkLedger kind="pair" label="刚到手的" items={[{ value: '冻结卡', unit: '×2', reason: '已放进钱包' }, { value: '牛劲', unit: '×1.5', reason: '从下一次训练起' }, { value: '会员价', reason: '商城已生效' }]} /></ProWelcome>,
   },
   {
+    name: 'HeadWeeks', group: '数据图形',
+    desc: '肌头近 8 周每周组数（6g 补「高级分析 · 肌群容量趋势」，Stitch trend V2）：有效区间 MEV–MRV 是底带 + 两条虚线，本周骨白实心、之前的暗、减量周斜纹（形状不只靠颜色）；只在本周柱头标数。挂载时柱子从左到右依次长出来（M07）。用在容量页肌头面板，块标题旁挂「Pro ›」。',
+    axes: { state: ['hw-normal', 'hw-low'] }, size: 'card',
+    render: (p) => p.state === 'hw-low'
+      ? <HeadWeeks weeks={[{ value: 4 }, { value: 6 }, { value: 3 }, { value: 0 }, { value: 5 }, { value: 2, deload: true }, { value: 6 }, { value: 3 }]} mev={8} mrv={22} />
+      : <HeadWeeks weeks={[{ value: 7 }, { value: 10 }, { value: 12 }, { value: 9 }, { value: 13 }, { value: 14 }, { value: 5, deload: true }, { value: 11 }]} mev={8} mrv={16} />,
+  },
+  {
     name: 'Paywall', group: '增长',
     desc: '会员付费墙（演示不拦截）：免费 vs Pro 对比 + 月度 / 年度（省 40%）/ 试用 7 天；已是会员显示到期与管理；开通成功是 Milo 庆祝。全程标「演示模式」，支付走假成功，不收集支付信息。',
     axes: { state: ['w-month', 'w-year', 'w-trial', 'w-member', 'w-success'] }, size: 'screen',
@@ -745,6 +760,12 @@ export const CATALOG: Entry[] = [
     desc: '道具图标（标志「递增条牛头」的变体）：冻结卡 = 牛头冻在冰块里（用掉时化开一角、荧光漫进来）；牛劲 = 荧光硬币压印牛头；Pro 体验 = 通行证；免邮 = 印着牛头的纸箱 + 荧光封箱带；商家券 = 吊牌 + 荧光折角。已用 / 过期整体降为禁用色。用在冻结卡、卡券票根、消息。',
     axes: { kind: ['pk-freeze', 'pk-niujin', 'pk-trial', 'pk-shipping', 'pk-merchant'], state: ['ps-normal', 'ps-used', 'ps-dim'] }, size: 'auto', covers: ['PROP_NAME'],
     render: (p) => <PropGlyph kind={p.kind.slice(3) as PropKind} used={p.state === 'ps-used'} dim={p.state === 'ps-dim'} className={s.propGlyph} />,
+  },
+  {
+    name: 'StreakRisk', group: '增长',
+    desc: '连胜快断的一行（6g 补，线框 proentry W3 / W4、Stitch risk V1）：引擎判「快断」（这周还差的次数 > 剩下的天数）时出现在牛龄页三格下面。有冻结卡：只说结果、不放按钮；没卡 · 免费：描边「兑一张冻结卡 · 800 牛劲」（→ 钱包兑换面板，只放冻结卡）+ 文字链「Pro 每月送 2 张」（→ 付费墙）；没卡 · 会员（本月 2 张用完）：只给「兑一张」。「!」标 + 深灰底，不用危险红、不用荧光；进场软弹簧升起。',
+    axes: { state: ['sr-free', 'sr-card', 'sr-pro', 'pressed'] }, size: 'card',
+    render: (p) => <StreakRisk need={p.state === 'sr-card' ? 2 : 3} daysLeft={1} freeze={p.state === 'sr-card' ? 1 : 0} pro={p.state === 'sr-pro'} cost={COUPONS.freeze.cost} onRedeem={noop} onPro={noop} state={p.state === 'pressed' ? 'pressed' : undefined} />,
   },
   {
     name: 'ProBadge', group: '增长',

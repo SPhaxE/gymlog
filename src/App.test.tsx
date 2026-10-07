@@ -114,7 +114,8 @@ describe('动作进步曲线页（/gains/:exerciseId）', () => {
     render(<App />);
     expect(await screen.findByRole('heading', { name: '上斜哑铃卧推' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: '下次目标' })).toBeInTheDocument();
-    const rows = screen.getAllByRole('button', { pressed: undefined }).filter((b) => b.getAttribute('aria-pressed') != null);
+    // 只取「最近 N 次」的明细行（曲线上方的「对比」也是带 aria-pressed 的按钮，6g 补）
+    const rows = within(screen.getByRole('region', { name: '最近 8 次' })).getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') != null);
     expect(rows.length).toBeGreaterThanOrEqual(2);
     expect(rows[0].getAttribute('aria-pressed')).toBe('true');
     rows[1].click();

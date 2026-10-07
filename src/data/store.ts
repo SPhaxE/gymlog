@@ -179,6 +179,17 @@ export function demoLegState(now: number, profile?: Profile): ReturnType<typeof 
   return { ...d, history: [...d.history, ...extra].sort((a, b) => a.startMs - b.startMs) };
 }
 
+/** 「连胜快断」的演示（6g 补，牛龄页 StreakRisk；/demo 单独一步，主演示数据不动）：同一个演示用户，这周只留第一次训练；
+ *  配合 riskDemoNow（本周日上午）打开——这周还差的次数 > 剩下的天数，引擎判「快断」。演示用户手上没有冻结卡，看到的是「兑一张 / Pro 每月送 2 张」那一种。 */
+export function demoRiskState(now: number, profile?: Profile): ReturnType<typeof demoState> {
+  const d = demoState(now, profile);
+  const monday = startOfDay(now) - ((new Date(startOfDay(now)).getDay() + 6) % 7) * DAY;
+  const first = d.history.find((s) => s.startMs >= monday);
+  return { ...d, history: d.history.filter((s) => s.startMs < monday || s === first) };
+}
+/** 本周日上午 10 点（演示「连胜快断」时用 ?now= 固定到这一刻） */
+export const riskDemoNow = (now: number) => startOfDay(now) - ((new Date(startOfDay(now)).getDay() + 6) % 7) * DAY + 6 * DAY + 10 * 3600_000;
+
 /** 让演示用户的「下一步」有升有保有降（增量页分三组、首页处方都靠它），不动预估 1RM 的走向：
  *  - 主项（深蹲、卧推、硬拉）模拟里按 5 次编，而引擎对复合动作的次数区间是 6–8，「掉到下限以下」会让它们永远被判「该减重」→ 全部抬到 6 次；
  *  - 其余动作按名字散列分三种：多数维持原样（做到次数上限 → 该加重）、约 1/5 最近一次少做一次（保持，次数 +1）、

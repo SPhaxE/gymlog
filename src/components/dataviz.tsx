@@ -1,6 +1,6 @@
 /** 版式元素（2026-10-04 用户选定 E1–E4，E5 并入 TrendChart）：
  *  DotCalendar 点阵日历（ref1）· StepRing 环中数字（ref1）· WeekBars 竖向胶囊量表（ref3）· GiantNumber 超大渐变数字（ref5）· Odometer 滚动码表（8motions 04）。 */
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { DAY, startOfDay } from '../engine';
 import { T } from '../styles/tokens.gen';
 import { cx } from './state';
@@ -80,6 +80,31 @@ export function WeekBars({ weeks, unit = '组' }: { weeks: { label: string; valu
         </div>
       ))}
     </div>
+  );
+}
+
+/* ---------- 肌头近 8 周（6g 补：高级分析 · 肌群容量趋势，Stitch trend V2） ---------- */
+/** 每周组数柱：最低（MEV）到上限（MRV）是一条底带 + 两条虚线（和面板上的刻度尺同一套说法），本周骨白实心、之前的暗、减量周斜纹（形状不只靠颜色）；只在本周柱头标数（每根都标太碎）。
+ *  挂载时柱子按 M07 从左到右依次长出来；减少动态效果时直接到位。 */
+export function HeadWeeks({ weeks, mev, mrv, unit = '组' }: { weeks: { value: number; deload?: boolean }[]; mev: number; mrv: number; unit?: string }) {
+  const top = Math.max(mrv * 1.15, ...weeks.map((w) => w.value), 1);
+  const pct = (v: number) => `${(v / top) * 100}%`;
+  const last = weeks.length - 1;
+  return (
+    <figure className={s.hw} role="img" aria-label={`近 ${weeks.length} 周每周组数：${weeks.map((w, i) => `${i === last ? '本周' : `${last - i} 周前`} ${w.value}${w.deload ? '（减量周）' : ''}`).join('，')}；最低 ${mev}、上限 ${mrv} ${unit}`}>
+      <div className={s.hwPlot} style={{ '--lo': pct(mev), '--hi': pct(mrv) } as CSSProperties}>
+        <i className={s.hwBand} aria-hidden="true" /><span className={cx('milo-text-micro', s.hwBandLabel)} aria-hidden="true">最低 {mev} – 上限 {mrv}</span>
+        <div className={s.hwBars} style={{ gridTemplateColumns: `repeat(${weeks.length}, 1fr)` }} aria-hidden="true">
+          {weeks.map((w, i) => (
+            <span key={i} className={s.hwCol}>
+              {i === last && <b className={cx('milo-text-number-s', s.hwVal)} style={{ bottom: pct(w.value) }}>{w.value}</b>}
+              <i className={cx(s.hwBar, i === last && s.hwNow, w.deload && s.hwDeload)} style={{ height: pct(w.value), '--d': i } as CSSProperties} />
+            </span>
+          ))}
+        </div>
+      </div>
+      <figcaption className={cx('milo-text-micro', s.hwAxis)} aria-hidden="true"><span>{weeks.length} 周前</span>{weeks.some((w) => w.deload) && <span className={s.hwKey}><i />减量周</span>}<span>本周</span></figcaption>
+    </figure>
   );
 }
 

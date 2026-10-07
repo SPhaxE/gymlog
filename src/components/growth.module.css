@@ -210,3 +210,16 @@
 .unread { width: var(--milo-space-xs); aspect-ratio: 1; border-radius: 50%; background: var(--milo-color-accent-default); }
 
 @media (prefers-reduced-motion: reduce) { .pro, .near .fill::after { animation: none; } .fill { transition: none; } }
+
+/* ---------- 连胜快断（6g 补）：深灰底 + 「!」标，不用危险红、不用荧光 ---------- */
+.risk { display: grid; gap: var(--milo-space-xs); padding: var(--milo-space-l); border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised); color: var(--milo-color-text-primary);
+  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); animation: riskIn var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring-soft) both; }
+.riskHead { display: flex; align-items: center; gap: var(--milo-space-s); }
+.riskMark { display: grid; place-items: center; width: var(--milo-space-xl); aspect-ratio: 1; flex: none; border-radius: 50%; font: 900 var(--milo-font-size-caption) / 1 var(--milo-font-number);
+  box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-text-primary); }
+.riskLine { margin: 0 0 0 calc(var(--milo-space-xl) + var(--milo-space-s)); text-wrap: pretty; }
+.riskActs { display: grid; gap: var(--milo-space-xs); margin-top: var(--milo-space-s); }
+.riskLink { display: inline-flex; align-items: center; justify-content: center; gap: var(--milo-space-2xs); justify-self: center; min-height: var(--milo-size-hit-min); padding: 0 var(--milo-space-m);
+  border: 0; background: none; color: var(--milo-color-text-secondary); font: inherit; }
+@keyframes riskIn { from { opacity: 0; transform: translateY(var(--milo-space-l)); } }
+@media (prefers-reduced-motion: reduce) { .risk { animation: none; } }

@@ -43,3 +43,23 @@
 .odoStrip i { font-style: normal; height: 1em; line-height: 1; }
 
 @media (prefers-reduced-motion: reduce) { .odoStrip, .ringProg, .barFill, .barNow { transition: none; } }
+
+/* ---------- 肌头近 8 周（6g 补） ---------- */
+.hw { margin: 0; display: grid; gap: var(--milo-space-xs); }
+.hwPlot { position: relative; height: calc(var(--milo-size-chart-h) * 0.8); }
+.hwBand { position: absolute; left: 0; right: 0; bottom: var(--lo); height: calc(var(--hi) - var(--lo)); background: color-mix(in srgb, var(--milo-color-data-track) 45%, transparent);
+  border-top: var(--milo-stroke-hairline) dashed var(--milo-color-line-strong); border-bottom: var(--milo-stroke-hairline) dashed var(--milo-color-line-strong); }
+.hwBandLabel { position: absolute; right: 0; bottom: var(--hi); padding-bottom: var(--milo-space-2xs); color: var(--milo-color-text-secondary); }
+.hwBars { position: absolute; inset: 0; display: grid; gap: var(--milo-space-s); align-items: end; }
+.hwCol { position: relative; height: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.hwBar { display: block; width: 62%; min-height: var(--milo-stroke-focus); border-radius: var(--milo-radius-xs) var(--milo-radius-xs) 0 0; background: var(--milo-color-text-disabled); transform-origin: bottom;
+  animation: hwGrow var(--milo-motion-spring-ms) var(--milo-motion-ease-spring) both; animation-delay: calc(var(--d) * var(--milo-motion-stagger) * 0.5 + var(--milo-motion-fast)); }
+.hwNow { background: var(--milo-color-control-selected); }
+.hwDeload { background: repeating-linear-gradient(135deg, var(--milo-color-text-disabled) 0 var(--milo-space-2xs), transparent var(--milo-space-2xs) var(--milo-space-xs)); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); }
+.hwVal { position: absolute; left: 0; right: 0; text-align: center; padding-bottom: var(--milo-space-2xs); color: var(--milo-color-text-primary); animation: hwFade var(--milo-motion-base) var(--milo-motion-ease-standard) both; animation-delay: var(--milo-motion-slow); }
+.hwAxis { display: flex; justify-content: space-between; align-items: center; color: var(--milo-color-text-secondary); }
+.hwKey { display: inline-flex; align-items: center; gap: var(--milo-space-xs); }
+.hwKey i { width: var(--milo-space-s); height: var(--milo-space-s); background: repeating-linear-gradient(135deg, var(--milo-color-text-disabled) 0 var(--milo-space-2xs), transparent var(--milo-space-2xs) var(--milo-space-xs)); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); }
+@keyframes hwGrow { from { transform: scaleY(0); } }
+@keyframes hwFade { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .hwBar, .hwVal { animation: none; } }

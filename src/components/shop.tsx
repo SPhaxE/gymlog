@@ -5,6 +5,7 @@
  *  - 数字全部由调用方算好传进来（data/wallet.ts 的 quote）。不写功效数字。 */
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import { Icon } from './Icon';
+import { ProLink } from './pro';
 import { cx, forced, type Forced } from './state';
 import s from './shop.module.css';
 
@@ -88,8 +89,7 @@ export function PriceBlock({ price, was, member, onPro, proActive }: { price: nu
       <b className="milo-text-number-xl">{yuan(price)}</b>
       {was && <s className={cx('milo-text-caption', s.muted)}>{yuan(was)}</s>}
       <span className={cx('milo-text-label', s.member)}>会员 {yuan(member)}</span>
-      {onPro && <button type="button" className={cx('milo-focus', s.proLink)} onClick={onPro} aria-label={proActive ? '会员价已生效，查看会员中心' : '会员价是 Milo Pro 的权益，看看 Pro'}>
-        <span className={cx(s.proMark, proActive && s.proMarkOn)}>Pro</span><Icon name="chevron" small /></button>}
+      {onPro && <span className={s.proAt}><ProLink active={proActive} onClick={onPro} label={proActive ? '会员价已生效，查看会员中心' : '会员价是 Milo Pro 的权益，看看 Pro'} /></span>}
     </div>
   );
 }
