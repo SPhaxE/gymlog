@@ -31,16 +31,12 @@ import { SummaryPage } from '../pages/SummaryPage';
 import { store, useStore } from '../data/store';
 import { useRestEndBuzz } from '../data/useRestEndBuzz';
 import { backAction } from './back';
-import { Pattern } from './Patterns';
 import s from './Shell.module.css';
 
 // 规范页与检查页按需加载，不进 App 主包
 const Playground = lazy(() => import('../pages/Playground').then((m) => ({ default: m.Playground })));
 const Preview = lazy(() => import('../pages/Preview').then((m) => ({ default: m.Preview })));
-const Lab = lazy(() => import('../lab/Lab').then((m) => ({ default: m.Lab })));
 const OptionsBoard = lazy(() => import('../pages/OptionsBoard').then((m) => ({ default: m.OptionsBoard })));
-const Brand = lazy(() => import('../lab/Brand').then((m) => ({ default: m.Brand })));
-const TokenCheck = lazy(() => import('../pages/TokenCheck').then((m) => ({ default: m.TokenCheck })));
 
 function useBackButton() {
   const nav = useNavigate(), loc = useLocation();
@@ -99,8 +95,6 @@ function Routed() {
       <Route path="/" element={<Navigate to={'/today' + loc.search} replace />} />
       <Route path="/demo" element={<DemoPage />} />
       <Route path="/onboarding" element={st.profile ? <Navigate to="/today" replace /> : <OnboardingPage now={now} />} />
-      {/* 训练在首页打卡（2026-10-06 取消独立训练页）；旧地址回首页 */}
-      <Route path="/session" element={<Navigate to="/today" replace />} />
       <Route path="/summary/:id" element={<SummaryPage />} />
       <Route path="/today" element={needProfile ?? tab(<HomePage scenario={scenario} now={now} onTab={onTab} />)} />
       <Route path="/body" element={needProfile ?? tab(<BodyPage key={scenario} scenario={scenario} now={now} onTab={onTab}
@@ -121,26 +115,18 @@ function Routed() {
       <Route path="/shop/item/:id" element={needProfile ?? <ItemPage key={loc.pathname} scenario={scenario} now={now} />} />
       <Route path="/shop/checkout" element={needProfile ?? <CheckoutPage key={loc.search} scenario={scenario} now={now} />} />
       <Route path="/shop/order/:id" element={needProfile ?? <OrderPage key={loc.pathname} scenario={scenario} now={now} />} />
-      <Route path="/patterns/:kind" element={tab(<PatternRoute onTab={onTab} />)} />
       <Route path="/playground" element={<Playground now={now} />} />
       {/* /preview = 方案台（2026-10-06 用户）；原来的基础规范页挪到 /spec */}
       <Route path="/preview" element={<OptionsBoard now={now} />} />
       <Route path="/spec" element={<Preview />} />
-      <Route path="/lab" element={<Lab now={now} />} />
-      <Route path="/brand" element={<Brand />} />
-      <Route path="/check" element={<TokenCheck />} />
-      {/* 旧地址（阶段 3 的高保真探索）：/explore/home → /today，其余 → /body；保留 focus 默认值以便对照旧截图 */}
-      <Route path="/explore/home" element={<Navigate to={'/today' + loc.search} replace />} />
-      <Route path="/explore/*" element={<Navigate to={'/body' + (loc.search || '?focus=mid-lower-pectoralis')} replace />} />
+      {/* 2026-10-07 地址各司其职：/brand 并进 /spec 第 6 章；/check 的构建信息在 /spec 页头；/lab 的内容全在 /playground 与 App 里 */}
+      <Route path="/brand" element={<Navigate to="/spec#brand" replace />} />
+      <Route path="/check" element={<Navigate to="/spec" replace />} />
+      <Route path="/lab" element={<Navigate to="/playground" replace />} />
       <Route path="*" element={<Navigate to="/today" replace />} />
     </Routes>
     </Suspense>
   );
-}
-
-function PatternRoute({ onTab }: { onTab: (t: Tab, path: string) => void }) {
-  const kind = useLocation().pathname.split('/').pop() ?? 'loading';
-  return <Pattern kind={kind} onTab={onTab} />;
 }
 
 /** 休息结束振动：单独一个空组件，倒计时每次刷新只重渲染它，不牵动整个路由树 */

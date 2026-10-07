@@ -3,7 +3,7 @@
  *   每一笔画出来，已画出的那段沿笔画由暗到亮（尾部几乎透明、笔头实色圆头），画满后整枚提亮定格（导航选中、选项打勾时用）。
  *   方向（2026-10-06 用户）：横向为主的笔从左往右、竖向为主的从下往上，各笔按左下 → 右上依次起笔（iconTrace.ts）。
  *  装饰性，含义由文字或 aria-label 给出。
- *  PATHS 是旧的实心一套，只在 /lab 对照（IconStyleCtx = 'current'）时用。 */
+ *  PATHS 是旧的实心一套，只在 /preview 方案台对照（IconStyleCtx = 'current'）时用。 */
 import { useContext, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { T } from '../styles/tokens.gen';
 import { CUT, GEO, IconStyleCtx, SLANT } from './iconSets';

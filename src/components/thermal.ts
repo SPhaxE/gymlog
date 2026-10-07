@@ -1,4 +1,4 @@
-/** 热成像渲染（/lab 预览中，用户选定前默认不开）：把肌头「近 7 天组数」按三条地标映射成热度 t ∈ [0, 1]，
+/** 热成像渲染（BodyRender 上下文，给了值才开；原来在 /lab 对照，2026-10-07 /lab 撤掉）：把肌头「近 7 天组数」按三条地标映射成热度 t ∈ [0, 1]，
  *  再用渐变映射（SVG feComponentTransfer）上色。色板只取主题色：
  *  - lime：暗 → 橄榄 → 黄绿 → 荧光 → 浅荧光（热成像感最强，但荧光会铺满人体，违反「每屏一处荧光」）；
  *  - bone：暗 → 暗骨 → 中骨 → 骨白，只有超过最大可恢复量才到荧光（荧光仍只标异常热点）。
@@ -10,7 +10,7 @@ import type { HeadStat } from '../engine';
 export type ThermalPalette = 'lime' | 'bone';
 export type ThermalStyle = 'bloom' | 'iso' | 'scan';
 export interface Thermal { palette: ThermalPalette; style: ThermalStyle }
-/** 2026-10-04 用户选定：T4 的扫描线质感 + 荧光热色板。null = 旧的四档明暗 + 纹理（只在 /lab 对照用） */
+/** 2026-10-04 用户选定：T4 的扫描线质感 + 荧光热色板。null = 旧的四档明暗 + 纹理（已不在任何页面展示） */
 export const THERMAL_DEFAULT: Thermal = { palette: 'lime', style: 'scan' };
 export const BodyRender = createContext<Thermal | null>(THERMAL_DEFAULT);
 

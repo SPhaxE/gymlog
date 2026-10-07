@@ -1,7 +1,7 @@
 /** 氛围（2026-10-04 用户选定 A4 + 底层流体背景）：
  *  - 颗粒：canvas 生成一块中灰噪声贴图（只生成一次），挂到 :root 的 --grain，用 overlay 叠加——暗处几乎不见，只在有光处显出质感；
  *  - FluidBackdrop：Tab 根页最底层的流体噪点渐变。几团主题色光斑在低分辨率 canvas 上缓慢漂移，CSS 放大 + 模糊得到流体感，上面再叠颗粒。
- *    level()（0–1）可选：传入音频电平时光斑随之涨落（/lab 用麦克风演示；系统音乐的限制见 docs/refs-elements.md）。
+ *    level()（0–1）可选：传入音频电平时光斑随之涨落（原 /lab 用麦克风演示过，2026-10-07 /lab 撤掉后没有页面用；系统音乐的限制见 docs/refs-elements.md）。
  *    页面隐藏时停；减少动态效果时只画一帧静止的。训练中的页面不用（DESIGN §7）。 */
 import { useEffect, useRef } from 'react';
 import s from './atmosphere.module.css';

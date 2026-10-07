@@ -91,7 +91,6 @@ src/
 | `/onboarding` | 故事引导 → 建档 3 步 |
 | `/today` | 首页：今日处方 / 训练中（打卡）/ 今天已练完 |
 | `/body` | 容量（原「身体」，2026-10-06 改名，路由不变） |
-| `/session` | 旧地址，重定向到 `/today` |
 | `/summary/:id` | 训练结算 |
 | `/gains` | 增量总览 P09（`pages/GainsPage.*`） |
 | `/gains/:exerciseId` | 动作进步曲线 P10（`pages/TrendPage.*`，子页没有导航；返回回到增量页原来的筛选和滚动位置，直接打开的链接返回去增量页） |
@@ -103,7 +102,7 @@ src/
 | `/me/wallet` · `/shop/*` | 6f 钱包与商城（`pages/WalletPage.tsx`、`ShopPage.tsx` 等） |
 | `/pro` · `/me/pro` | 6g 付费墙 + 开通成功（`pages/ProPage.tsx`）· 会员中心（`pages/ProHubPage.tsx`） |
 | `/demo` | 实机演示 |
-| `/playground` · `/spec` · `/preview` · `/brand` · `/lab` | 组件目录 · 基础规范 · 方案台（待选视觉方案 + 自由组合）· IP 与 Logo · 参考要素实验 |
+| `/playground` · `/spec` · `/preview` | 组件库（每个组件 × 交互态 + 动效演示）· 规范（Token、版式、品牌 IP 与 Logo、构建信息）· 方案台（待选与落选方案 + 自由组合）；2026-10-07 地址各司其职：`/brand` 并进 `/spec` 第 6 章、`/check` 并进 `/spec` 页头、`/lab` 和 `/patterns/*` 撤掉（内容都在 `/playground`），旧地址转过去 |
 
 调试参数：
 

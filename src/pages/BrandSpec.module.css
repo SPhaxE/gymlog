@@ -1,5 +1,4 @@
-.page { min-height: 100dvh; background: var(--milo-color-bg-base); color: var(--milo-color-text-primary); padding: var(--milo-space-3xl) var(--milo-size-gutter) var(--milo-space-5xl); display: grid; gap: var(--milo-space-4xl); max-width: calc(var(--milo-size-content-max-w) * 3); margin: 0 auto; }
-.hero { display: grid; gap: var(--milo-space-s); max-width: calc(var(--milo-size-content-max-w) * 1.6); }
+.page { display: grid; gap: var(--milo-space-4xl); color: var(--milo-color-text-primary); }
 .muted { color: var(--milo-color-text-secondary); }
 .lime { color: var(--milo-color-accent-default); }
 .section { display: grid; gap: var(--milo-space-l); }

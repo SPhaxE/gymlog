@@ -4,11 +4,13 @@ import tokens from '../design/tokens/tokens.json';
 import { App } from './App';
 import { DEFAULT_PROFILE, demoState, store } from './data/store';
 
-describe('M1 管线检查页（/check）', () => {
-  it('渲染标题、每个语义色和每个文字样式', async () => {
+describe('规范页（/spec；原 /check 并进来）', () => {
+  it('旧地址 /check 转到 /spec；页头有构建信息，列出每个语义色和每个文字样式', async () => {
     window.history.pushState({}, '', '/check');
     render(<App />);
-    expect(await screen.findByRole('heading', { name: '慢牛 Milo · 管线检查' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: '慢牛 Milo · 规范 v2' })).toBeInTheDocument();
+    expect(window.location.pathname).toBe('/spec');
+    expect(screen.getByText(/提交 .+ · 构建于/)).toBeInTheDocument();
     for (const k of Object.keys(tokens.semantic.color)) expect(screen.getByText(k)).toBeInTheDocument();
     for (const t of tokens.textStyles) expect(screen.getByText(t.name)).toBeInTheDocument();
   });

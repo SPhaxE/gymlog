@@ -1,11 +1,11 @@
-/** /brand：阶段 5.5b · IP 小牛与 Logo（2026-10-05）。
+/** /spec 第 6 章「品牌」（原 /brand，2026-10-07 并进规范页：组件本身在 /playground，这里讲用法）：IP 小牛与 Logo（阶段 5.5b，2026-10-05）。
  *  IP：用户用 Nano Banana 按意向图 3_27AM 高清重制的 PNG（docs/sources/mascot/A.jpg、B1–B5.jpg），scripts/mascot_png.py 切图、超分、抠图后进 public/mascot/；
  *  5 种牛龄 × 6 种状态。Logo 为 B 递增条牛头（3_44AM）。
- *  这一页只给用户评审用：同一组件在不同尺寸、状态下的样子，以及放进启动页和奖励弹窗的样子。 */
+ *  讲的是规则：每种牛龄长什么样、头像小尺寸认不认得出、Logo 的尺寸阶梯与 6 种状态各用在哪、放进启动页和奖励弹窗是否一家人。 */
 import { Fragment } from 'react';
 import { AppIcon, Lockup, LogoGlyph, LOGO_STATE_NAME, type LogoState } from '../components/Logo';
 import { MASCOT_MOODS, MASCOT_STAGES, Mascot, MascotHead, MOOD_NAME, STAGE_NAME, type MascotMood } from '../components/Mascot';
-import s from './brand.module.css';
+import s from './BrandSpec.module.css';
 
 const STATES: LogoState[] = ['idle', 'loading', 'training', 'pr', 'rest', 'deload'];
 const STATE_WHERE: Record<LogoState, string> = {
@@ -33,14 +33,9 @@ function Section({ id, title, sub, children }: { id: string; title: string; sub:
   );
 }
 
-export function Brand() {
+export function BrandSpec() {
   return (
     <div className={s.page}>
-      <header className={s.hero}>
-        <p className={`milo-text-label ${s.muted}`}>阶段 5.5b · 2026-10-05</p>
-        <h1 className="milo-text-title-l">IP 小牛与 Logo</h1>
-        <p className={`milo-text-body ${s.muted}`}>IP 改用 PNG：用户按意向图 3_27AM 用 Nano Banana 高清重制了 5 种牛龄 × 6 种状态，这里是切图、4 倍超分、抠图之后的素材，图里只有牛本身，特效由代码生成。前四种牛龄单眼，Milo 双眼发光。Logo 为 B 递增条牛头，破纪录与减量周状态已重做。</p>
-      </header>
 
       <Section id="ip-stages" title="IP · 五种牛龄" sub="牛犊 → 小牛 → 壮牛 → 公牛 → 米洛（Milo），大小按总览图 A 的相对身高。Milo 是最高等级：全身荧光、双眼发光；泛光、四角星和扫光由代码生成。">
         <div className={s.stageRow}>

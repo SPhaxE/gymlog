@@ -1,10 +1,10 @@
-/** 图标风格候选（/lab 预览中，用户选定前 Icon 仍用现行一套）：
+/** 图标风格候选（2026-10-04 选定 slant；落选的在 /preview 方案台「导航图标」一组对照）：
  *  geo  = iconref1 实心几何：只用三角、圆、方拼形，没有描边；
  *  cut  = iconref2 断笔线性：2 号圆头描边，故意留缺口、斜切；
  *  trace = iconmotionref1 运动轨迹：同 cut 的线稿，描边从透明渐变到实色，选中时沿路径画出来。 */
 import { createContext } from 'react';
 
-/** slant = 2026-10-04 用户选定的正式风格：cut 的线稿 + iconref2 的倾斜（skewX）；其余三种只在 /lab 对照里用 */
+/** slant = 2026-10-04 用户选定的正式风格：cut 的线稿 + iconref2 的倾斜（skewX）；其余只在 /preview 方案台对照里用 */
 export type IconStyle = 'slant' | 'current' | 'geo' | 'cut' | 'trace';
 export const IconStyleCtx = createContext<IconStyle>('slant');
 

@@ -103,7 +103,7 @@ export function DemoPage() {
           ))}
         </ol>
         <p className={s.foot}>
-          手机打开本页会全屏进入 App（每次从故事开始）。规范与组件：<a href="/playground">组件库</a> · <a href="/brand">品牌</a> · <a href="/lab">实验室</a>
+          手机打开本页会全屏进入 App（每次从故事开始）。规范与组件：<a href="/spec">规范</a> · <a href="/playground">组件库</a> · <a href="/preview">方案台</a>
         </p>
       </section>
       <section className={s.stage}>

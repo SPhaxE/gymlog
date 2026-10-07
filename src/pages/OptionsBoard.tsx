@@ -7,7 +7,8 @@
  *  组合写在地址里（?o=hair&f=metal&s=molten），复制链接就能把这个组合发给别人。 */
 import { useMemo, useRef, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
-import { BodyFigure, Chip, ContourFx, DEFAULT_LOOK, FillFx, ScanFx, type ContourFxKind, type FillFxKind, type ScanFxKind } from '../components';
+import { BodyFigure, Chip, ContourFx, DEFAULT_LOOK, FillFx, Icon, ScanFx, type ContourFxKind, type FillFxKind, type ScanFxKind } from '../components';
+import { IconStyleCtx, type IconStyle } from '../components/iconSets';
 import { bodyData } from '../data/demo';
 import { BodyPage } from './BodyPage';
 import { Stage } from '../playground/Stage';
@@ -21,6 +22,15 @@ const CONTOUR: [ContourFxKind, string, string][] = [
   ['dot', 'O3 点线', '细点虚线，淡'],
   ['rim', 'O4 只描外缘', '人体内部的肌肉分界线不画，只在剪影最外圈一道内缘光'],
 ];
+/** 导航图标风格（2026-10-04 用户选定 slant；原来在 /lab 对照，2026-10-07 地址各司其职后落选的放到这里） */
+const ICON_STYLES: [IconStyle, string, string][] = [
+  ['slant', '倾斜断笔 · 默认', 'iconref2 的断笔线稿 + 倾斜（skewX），选中时笔画从起点画到终点（iconmotionref1）'],
+  ['cut', '断笔线性', '2 号圆头描边，故意留缺口、斜切；不倾斜'],
+  ['trace', '运动轨迹', '同断笔线稿，描边从透明渐变到实色'],
+  ['geo', '实心几何', 'iconref1：只用三角、圆、方拼形，没有描边'],
+  ['current', '旧的实心一套', '阶段 5 之前的图标，留着对照'],
+];
+const ICON_NAMES = ['home', 'body', 'gains', 'log', 'me', 'check', 'timer', 'back'] as const;
 const FILL: [FillFxKind, string, string][] = [
   ['thermal', 'F0 热成像', '第 7 轮旧默认：每块肌肉径向渐变 + 扩散 + 荧光渐变映射'],
   ['metal', 'F1 金属渐变', '参考 AE 演示：Gradient Ramp → Turbulent Displace + 模糊 → Colorama → 下缘白热亮边 + 外发光 + 颗粒；静态，配 S9 熔流就会流动'],
@@ -94,7 +104,7 @@ export function OptionsBoard({ now }: { now: number }) {
     <div className={s.page}>
       <header className={s.head}>
         <h1 className="milo-text-title-l">方案台</h1>
-        <p className="milo-text-caption">同一个人、同一份演示数据，待选方案并排实时渲染。选定后定为默认；基础规范在 /spec，组件在 /playground。</p>
+        <p className="milo-text-caption">同一个人、同一份演示数据，待选方案并排实时渲染。选定后定为默认，旧默认和落选的留在这里；规范在 /spec，组件在 /playground。</p>
       </header>
       <Composer now={now} />
       <h2 className={`milo-text-heading ${s.sub}`}>逐组对照</h2>
@@ -110,6 +120,15 @@ export function OptionsBoard({ now }: { now: number }) {
       <section className={s.group} aria-label="S 层动效">
         <h2 className="milo-text-heading">S 层动效 · S</h2>
         <div className={s.grid}>{SCAN.map(([k, t, n]) => <Cell key={t} id={`scan-${k}`} title={t} note={n}><ScanFx.Provider value={k}><Figure now={now} /></ScanFx.Provider></Cell>)}</div>
+      </section>
+      <section className={s.group} aria-label="导航图标">
+        <h2 className="milo-text-heading">导航图标 · I（2026-10-04 选定倾斜断笔）</h2>
+        <div className={s.iconGrid}>{ICON_STYLES.map(([k, title, note]) => (
+          <figure key={k} className={s.cell} data-option={`icon-${k}`}>
+            <IconStyleCtx.Provider value={k}><div className={s.icons}>{ICON_NAMES.map((n) => <Icon key={n} name={n} />)}</div></IconStyleCtx.Provider>
+            <figcaption><b className="milo-text-body-strong">{title}</b><span className="milo-text-caption">{note}</span></figcaption>
+          </figure>
+        ))}</div>
       </section>
     </div>
   );

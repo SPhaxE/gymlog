@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""阶段 5.5b 品牌评审截图：/brand 各节 → screenshots/brand/，状态 Logo 录成 GIF
+"""阶段 5.5b 品牌评审截图：/spec 第 6 章（原 /brand）各节 → screenshots/brand/，状态 Logo 录成 GIF
 用法：先 npx vite --port 5199，再 python3 scripts/shoot_brand.py"""
 import argparse, io, os, sys
 from playwright.sync_api import sync_playwright
@@ -16,7 +16,7 @@ with sync_playwright() as p:
     b = p.chromium.launch(executable_path=args.chromium if os.path.exists(args.chromium) else None)
     pg = b.new_page(viewport={'width': 1280, 'height': 900}, device_scale_factor=1.5)
     pg.on('pageerror', lambda e: errors.append(str(e)))
-    pg.goto(f'{args.base}/brand'); pg.wait_for_timeout(2500)
+    pg.goto(f'{args.base}/spec'); pg.wait_for_timeout(2500)
     for sec in ['ip-stages', 'ip-moods', 'ip-small', 'logo', 'states', 'inuse']:
         el = pg.locator(f'#{sec}'); el.scroll_into_view_if_needed(); pg.wait_for_timeout(300)
         el.screenshot(path=os.path.join(OUT, f'{sec}.png')); print('saved', f'screenshots/brand/{sec}.png')

@@ -2,7 +2,7 @@
 """阶段 5 门禁（运行时）：/playground 全部组件 × 全部交互态 + App 壳 5 个 Tab。
 - 变体数：页面上的 [data-variant] 个数 = 目录总数（data-total），且键不重复
 - 交互：记组 → 自动开始休息；导航点「身体」→ 当前页移动；删除训练 → 对话框，Esc 关闭且焦点回到触发按钮
-- App：/today /body /gains /log /me /patterns/* 在 360 宽下无横向溢出、无页面错误
+- App：/today /body /gains /log /me 在 360 宽下无横向溢出、无页面错误
 - 截图：screenshots/stage5/components/<组件>.png（每个组件一张）、screenshots/stage5/app/<路由>.png、report.json
 用法：先 npx vite --port 5199，再 python3 scripts/shoot_playground.py"""
 import argparse, json, os, re, sys
@@ -91,8 +91,7 @@ with sync_playwright() as p:
 
     # ---------- App 壳 ----------
     # 首页、容量页带演示场景（不带时读本机存储，没建档会进故事引导）
-    routes = [('today', '/today?scenario=plain-prescription'), ('body', '/body?scenario=done-today'), ('gains', '/gains?scenario=plain-prescription'), ('log', '/log?scenario=plain-prescription'), ('me', '/me?scenario=plain-prescription'),
-              ('patterns-loading', '/patterns/loading'), ('patterns-empty', '/patterns/empty'), ('patterns-error', '/patterns/error')]
+    routes = [('today', '/today?scenario=plain-prescription'), ('body', '/body?scenario=done-today'), ('gains', '/gains?scenario=plain-prescription'), ('log', '/log?scenario=plain-prescription'), ('me', '/me?scenario=plain-prescription')]
     os.makedirs(os.path.join(OUT, 'app'), exist_ok=True)
     for name, url in routes:
         ap_ = b.new_page(viewport={'width': 360, 'height': 800}, device_scale_factor=2)
