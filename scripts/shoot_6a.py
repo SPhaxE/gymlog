@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """阶段 6a 门禁（运行时）：演示里展示的全部交互，一路真点，每一步都查。
-流程：故事 8 幕 → 建档 3 步 → 载入演示数据 → 首页处方（含「为什么是这些」）→ 开始训练（就在首页打卡）→ 打卡 → 休息胶囊展开
+流程：故事 8 幕 → 建档 3 步 → 载入演示数据 → 首页处方（含「为什么是这些」）→ 开始训练（就在首页打卡）→ 打卡 → 休息胶囊（只是计时）
       → 点组行改数（键盘面板）→ 换动作 → 清空重量 →「填重量」→ 键盘输入 → 打卡 → 容量页（训练中）→ 结束 → 结算 → 今天已练完 → 再练一次；外加 /demo 电脑版。
 每一步检查：地址；360 宽无横向溢出；滚动区里没有被压扁的块；命中区（scripts/lib/hit_audit.js，看得见、能点的都 ≥ 48 × 48）；无页面错误。
 两种尺寸：360 × 800（设计基准，出截图）和 412 × 915（常见安卓真机，只查不截）。
@@ -133,6 +133,8 @@ def run(b, w, h, shots):
         ok(not crushed, f'{tag} {name}：滚动区里没有被压扁的块 {crushed[:3]}')
         small = audit(pg)
         ok(not small, f'{tag} {name}：命中区都 ≥ 48 {small[:3]}')
+        # 走查 1（2026-10-08，DESIGN §9.6 第 17 条）：App 里不出现「演示」
+        ok(not pg.evaluate('document.body.innerText.includes("演示")'), f'{tag} {name}：页面上没有「演示」字样')
         if shots and not args.no_shots: pg.screenshot(path=os.path.join(OUT, f'{n[0]:02d}-{name}.png'))
         n[0] += 1
 
@@ -148,7 +150,7 @@ def run(b, w, h, shots):
     click(pg, pg.get_by_role('button', name='跳过')); step('setup-1')
     click(pg, pg.get_by_role('button', name='下一步')); step('setup-2')
     click(pg, pg.get_by_role('button', name='下一步')); step('setup-3')
-    click(pg, pg.get_by_role('button', name='载入演示数据 · 练了 30 周的进阶用户')); step('today', '/today', 2000)
+    click(pg, pg.get_by_role('button', name='载入示例数据 · 练了 30 周的进阶用户')); step('today', '/today', 2000)
     # 2026-10-06 用户：滑走后不再出小页头（细标题栏整套删了）
     ok(pg.locator('[class*=_slim_]').count() == 0, f'{tag} 首页：没有细标题栏')
     home_h1 = pg.locator('h1').first.bounding_box()['y']
@@ -160,13 +162,18 @@ def run(b, w, h, shots):
     click(pg, pg.get_by_role('button', name='打卡 · 第 1 组')); step('train-rest', None, 900)
     navlabel = lambda: pg.get_by_role('navigation', name='主导航').locator('[aria-current=page]').get_attribute('aria-label') or ''
     ok('休息剩余' not in navlabel() and pg.locator('[style*="x-rest-timer"]').count() == 1, f'{tag} 首页休息中只有一个计时器（主按钮旁的胶囊，导航不重复）')
-    click(pg, pg.get_by_role('button', name='组间休息剩余')); step('train-rest-open', None, 900)
+    # 走查 1（2026-10-08）：休息只保留小胶囊——是计时状态（role=timer），不是按钮，点它不展开面板
+    ok(pg.get_by_role('timer', name=re.compile('^组间休息剩余')).count() == 1 and pg.get_by_role('button', name=re.compile('^组间休息剩余')).count() == 0, f'{tag} 休息胶囊只是计时状态，不可点、不展开')
     # 失败时要看得出发生了什么：记下点击、面板出现 / 消失的时间线
     pg.evaluate('''() => { window.__trace = []; const t0 = performance.now(), log = (m) => window.__trace.push(Math.round(performance.now() - t0) + 'ms ' + m);
       document.addEventListener('click', (e) => { const who = e.target.closest('[aria-label]')?.getAttribute('aria-label') || e.target.className || e.target.tagName;
         log('click ' + who + ' 转场中=' + document.documentElement.matches(':active-view-transition') + ' 坐标处=' + document.elementFromPoint(e.clientX, e.clientY)?.tagName); }, true);
       new MutationObserver((ms) => ms.forEach((m) => { m.addedNodes.forEach((n) => n.nodeType === 1 && n.matches?.('[role=dialog],[class*=scrim]') && log('出现 ' + n.className)); m.removedNodes.forEach((n) => n.nodeType === 1 && n.matches?.('[role=dialog],[class*=scrim]') && log('消失 ' + n.className)); })).observe(document.body, { childList: true, subtree: true }); }''')
     click(pg, pg.get_by_role('button', name='第 2 组')); step('editor', None, 1000)
+    # 走查 1（DESIGN §9.6 第 15 条）：键盘面板按内容高打开，面板里不出滚动；标题只放动作名，「第 N 组」在说明行
+    sc = pg.evaluate('(() => { const d = document.querySelector("section[role=dialog]"); return [d.scrollHeight, d.clientHeight]; })()')
+    ok(sc[0] <= sc[1] + 1, f'{tag} 改数面板：不出滚动（{sc[0]} / {sc[1]}）')
+    ok('组' not in pg.locator('section[role=dialog] h2').inner_text(), f'{tag} 改数面板：标题只放动作名')
     try: kg0 = float(pg.locator('[aria-pressed=true]').get_attribute('aria-label', timeout=5000).split()[1])
     except Exception:
         pg.screenshot(path=f'/tmp/fail-editor-{w}.png'); print('  时间线：', pg.evaluate('window.__trace')); raise
@@ -192,7 +199,7 @@ def run(b, w, h, shots):
     ok(any('x-rest-ring' in x for x in fly), f'{tag} 切 Tab：只有进度条（x-rest-ring）作为共享元素飞进导航滑块')
     ok(pg.locator('nav [style*="x-rest-timer"]').count() == 0, f'{tag} 切 Tab：导航滑块不带整颗胶囊的共享名（不会盖住图标和文字）')
     step('body-training', '/body', 2500)
-    ok('休息剩余' in navlabel() or pg.get_by_role('button', name='组间休息剩余').count() == 0, f'{tag} 容量页：休息计时在导航滑块上')
+    ok('休息剩余' in navlabel() or pg.get_by_role('timer', name=re.compile('^组间休息剩余')).count() == 0, f'{tag} 容量页：休息计时在导航滑块上')
     pg.goto(args.base + '/today'); pg.wait_for_timeout(1200)
     # 6e：页头「暂停」→ 暂停面板（暂停 / 结束并结算）→ 还有没打的组再确认一次
     click(pg, pg.get_by_role('button', name='暂停', exact=True)); pg.wait_for_selector('[role=dialog][aria-label="暂停训练？"]'); step('pause-sheet')
@@ -291,6 +298,11 @@ def gains_checks(b, w, h):
     heads.nth(0).evaluate('e => e.scrollIntoView({ block: "center" })'); pg.wait_for_timeout(300)
     click(pg, heads.nth(0)); pg.wait_for_timeout(900)
     ok(heads.nth(0).get_attribute('aria-expanded') == 'false' and body_h(0) < 1, f'{tag} 增量·分组：再点组头收起')
+    # 走查 1（DESIGN §9.6 第 15 条）：分组都收起、内容不足一屏时页面不能滚（不为了贴顶把滚动区撑高）
+    click(pg, heads.nth(1)); pg.wait_for_timeout(900)
+    roll = pg.locator('[class*=_scroll_]').first.evaluate('e => { e.scrollTo(0, 0); const c = e.firstElementChild ? [...e.children].reduce((m, x) => Math.max(m, x.getBoundingClientRect().bottom), 0) - e.getBoundingClientRect().top : 0; return [e.scrollHeight, e.clientHeight, Math.round(c)]; }')
+    ok(roll[2] > roll[1] or roll[0] <= roll[1] + 1, f'{tag} 增量·分组全收起：内容不足一屏就不能滚（滚动高 {roll[0]} / 可见 {roll[1]} / 内容 {roll[2]}）')
+    click(pg, heads.nth(1)); pg.wait_for_timeout(900)   # 还原：第 2 组展开，后面的断言照旧
     click(pg, heads.nth(0)); pg.wait_for_timeout(900)
     pg.locator('[class*=_scroll_]').first.evaluate('e => e.scrollTo(0, 0)'); pg.wait_for_timeout(400)
     ok(pg.get_by_text('近 4 周练了').count() == 1 and pg.get_by_text('个在涨').count() == 1 and pg.get_by_text('次破纪录').count() == 1, f'{tag} 增量：摘要每个数都带单位（个动作 / 个在涨 / 次破纪录）')
@@ -605,19 +617,18 @@ def log_checks(b, w, h):
     ok(pg.get_by_text('这次训练已经不在了').count() == 1 and pg.get_by_role('button', name='回到记录').count() == 1, f'{tag} 详情：训练不存在时有回记录的出口')
     click(pg, pg.get_by_role('button', name='回到记录')); pg.wait_for_timeout(700)
     ok(pg.url.split('?')[0].endswith('/log'), f'{tag} 详情：出口回到记录页（{pg.url.split("5199")[-1]}）')
-    # 更早的训练：用「载入演示数据」的真用户（30 周）走真实存储——一次渲染 8 周，点了再展开 8 周
+    # 分段加载（走查 1：滑到底自动加载）：用「载入示例数据」的真用户（30 周）走真实存储——一次渲染 8 周，滑到底自动再接 8 周
     lp = b.new_page(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True)
     lp.on('pageerror', lambda e: errors.append(f'{tag} log(live) pageerror: {e}'))
     lp.goto(args.base + '/onboarding'); lp.wait_for_selector('button:has-text("跳过")'); lp.wait_for_timeout(600)
     click(lp, lp.get_by_role('button', name='跳过')); click(lp, lp.get_by_role('button', name='下一步')); click(lp, lp.get_by_role('button', name='下一步'))
-    click(lp, lp.get_by_role('button', name='载入演示数据 · 练了 30 周的进阶用户')); lp.wait_for_url('**/today**'); lp.wait_for_timeout(900)
+    click(lp, lp.get_by_role('button', name='载入示例数据 · 练了 30 周的进阶用户')); lp.wait_for_url('**/today**'); lp.wait_for_timeout(900)
     click(lp, lp.get_by_role('link', name='记录')); lp.wait_for_url('**/log**'); lp.wait_for_selector('section[class*=_week_]'); lp.wait_for_timeout(700)
-    n0 = lp.locator('section[class*=_week_]').count(); more = lp.get_by_role('button', name=re.compile(r'^更早的训练'))
-    ok(n0 == 8 and more.count() == 1, f'{tag} 记录（真存储，30 周）：一次渲染 8 周，底部有「更早的训练」（{n0} 周）')
-    lp.evaluate('document.querySelector("[class*=_scroll_]").scrollTo(0, 1e6)'); lp.wait_for_timeout(400)  # 到底：按钮在底部留白里、导航上面
-    click(lp, more.first); lp.wait_for_timeout(500)
+    n0 = lp.locator('section[class*=_week_]').count()
+    ok(n0 == 8 and lp.get_by_text(re.compile('^更早的训练')).count() == 0 and lp.locator('[role=status]:has-text("加载更多")').count() == 1, f'{tag} 记录（真存储，30 周）：一次渲染 8 周，底部是「加载更多」，不写「还有 N 周」（{n0} 周）')
+    lp.evaluate('document.querySelector("[class*=_scroll_]").scrollTo(0, 1e6)'); lp.wait_for_timeout(1500)  # 到底：露出加载态、停一下再接上
     n1 = lp.locator('section[class*=_week_]').count()
-    ok(n1 == 16, f'{tag} 记录：点「更早的训练」再展开 8 周（{n0} → {n1}）')
+    ok(n1 == 16, f'{tag} 记录：滑到底自动再加载 8 周（{n0} → {n1}）')
     ok(lp.get_by_role('slider', name=re.compile(r'练了 \d+ 天')).count() == 1 and len(lp.evaluate(PLATE_HOLES)) > 0, f'{tag} 记录（真存储）：钢板有孔')
     lp.close()
     # 空态：钢板没有孔、板后不点灯，唯一出路是回今日处方
@@ -719,7 +730,7 @@ def me_checks(b, w, h):
     # ---- 真存储（载入演示数据）：连胜不是 0、有未读、打开消息后清零、降级说明写进成长记录
     pg.evaluate('localStorage.clear()'); pg.goto(args.base + '/onboarding'); pg.wait_for_selector('button:has-text("跳过")'); pg.wait_for_timeout(600)
     click(pg, pg.get_by_role('button', name='跳过')); click(pg, pg.get_by_role('button', name='下一步')); click(pg, pg.get_by_role('button', name='下一步'))
-    click(pg, pg.get_by_role('button', name='载入演示数据 · 练了 30 周的进阶用户')); pg.wait_for_url('**/today**'); pg.wait_for_timeout(900)
+    click(pg, pg.get_by_role('button', name='载入示例数据 · 练了 30 周的进阶用户')); pg.wait_for_url('**/today**'); pg.wait_for_timeout(900)
     click(pg, pg.get_by_role('link', name='我的')); pg.wait_for_url('**/me'); pg.wait_for_timeout(1000)
     page_ok('我的·真存储')
     card = pg.get_by_role('button', name=re.compile('^牛龄 ')).get_attribute('aria-label')
@@ -768,7 +779,7 @@ def shop_checks(b, w, h):
     # 真存储：建档最后一步载入演示数据
     pg.goto(args.base + '/onboarding'); pg.evaluate('localStorage.clear()'); pg.goto(args.base + '/onboarding'); pg.wait_for_selector('button:has-text("跳过")'); pg.wait_for_timeout(600)
     click(pg, pg.get_by_role('button', name='跳过')); click(pg, pg.get_by_role('button', name='下一步')); click(pg, pg.get_by_role('button', name='下一步'))
-    click(pg, pg.get_by_role('button', name='载入演示数据 · 练了 30 周的进阶用户')); pg.wait_for_url('**/today**'); pg.wait_for_timeout(900)
+    click(pg, pg.get_by_role('button', name='载入示例数据 · 练了 30 周的进阶用户')); pg.wait_for_url('**/today**'); pg.wait_for_timeout(900)
     # 增量页的知识卡横幅（线框 tips W3）：页头下、筛选上；✕ 这次收起；静音后不再出现；容量页一屏最多一条
     pg.goto(args.base + '/gains'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(1200)
     tip = pg.get_by_role('button', name=re.compile('腰带：什么时候该系'))
@@ -804,8 +815,8 @@ def shop_checks(b, w, h):
     ok(pg.get_by_text('知识卡 · 按你的训练数据').count() == 1 and pg.get_by_text(re.compile('硬拉预估 1RM 已到体重的 1\\.\\d+ 倍')).count() >= 1, f'{tag} 商城：为你推荐是数据触发的腰带知识卡')
     for t in ('折扣', '热销', '新品', '缺货'): ok(pg.get_by_text(t, exact=True).count() >= 1, f'{tag} 商城：有「{t}」标')
     ok(pg.get_by_text('液体镁粉 50 毫升').count() == 0, f'{tag} 商城：已下架的不在列表里')
-    click(pg, pg.get_by_role('radio', name='补给')); pg.wait_for_timeout(400)
-    ok(pg.get_by_role('button', name=re.compile('^杠铃腰带 10 毫米，')).count() == 0 and pg.get_by_role('button', name=re.compile('^乳清蛋白')).count() == 1, f'{tag} 商城：品类「补给」只剩补给')
+    click(pg, pg.get_by_role('radio', name='补剂')); pg.wait_for_timeout(400)
+    ok(pg.get_by_role('button', name=re.compile('^杠铃腰带 10 毫米，')).count() == 0 and pg.get_by_role('button', name=re.compile('^乳清蛋白')).count() == 1, f'{tag} 商城：品类「补剂」只剩补剂')
     click(pg, pg.get_by_role('radio', name='全部')); pg.wait_for_timeout(300)
     # 知识卡
     click(pg, pg.get_by_role('button', name=re.compile('^知识卡 · 按你的训练数据'))); pg.wait_for_url('**/shop/guide/belt'); pg.wait_for_timeout(900)
@@ -825,7 +836,7 @@ def shop_checks(b, w, h):
     ok(pg.get_by_role('radio', name='M').get_attribute('aria-checked') == 'true', f'{tag} 详情：规格默认选中间一档 M')
     click(pg, pg.get_by_role('button', name='购买 · 会员价 ¥296')); pg.wait_for_url('**/shop/checkout**'); pg.wait_for_timeout(900)
     page_ok('checkout')
-    ok(pg.get_by_text(re.compile('演示模式')).count() >= 1 and pg.locator('input').count() == 0, f'{tag} 确认订单：演示模式横幅，没有任何输入框')
+    ok(pg.get_by_text(re.compile('演示')).count() == 0 and pg.locator('input').count() == 0, f'{tag} 确认订单：没有任何输入框，也不写「演示」（走查 1）')
     ok(pg.get_by_role('button', name='提交订单 · ¥207').count() == 1, f'{tag} 确认订单：满减券 + 牛劲 = ¥207')
     sw = pg.get_by_role('switch', name='牛劲抵扣'); sw.click(); pg.wait_for_timeout(300)
     ok(pg.get_by_role('button', name='提交订单 · ¥266').count() == 1, f'{tag} 确认订单：关掉牛劲抵扣 = ¥266')
@@ -834,7 +845,7 @@ def shop_checks(b, w, h):
     ok(pg.locator('button[aria-busy=true]').count() == 1, f'{tag} 确认订单：提交中按钮禁用（不会重复下单）')
     pg.wait_for_url('**/shop/order/**'); pg.wait_for_timeout(1000)
     page_ok('order')
-    ok(pg.get_by_text('下单成功').count() == 1 and pg.get_by_text(re.compile(r'演示订单 MILO-\d{8}-\d{4}')).count() == 1, f'{tag} 订单完成：下单成功 + 演示订单号')
+    ok(pg.get_by_text('下单成功').count() == 1 and pg.get_by_text(re.compile(r'订单号 MILO-\d{8}-\d{4}')).count() == 1, f'{tag} 订单完成：下单成功 + 订单号')
     ok(len(store()['wallet']['orders']) == 1, f'{tag} 订单完成：只下了一单')
     pg.go_back(); pg.wait_for_timeout(800)
     ok('/shop/checkout' not in pg.url, f'{tag} 订单完成：浏览器返回不回到确认订单（{pg.url.split("5199")[-1]}）')
@@ -882,16 +893,16 @@ def pro_checks(b, w, h):
         pg.goto(args.base + '/me'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)
     pg.goto(args.base + '/onboarding'); pg.evaluate('localStorage.clear()'); pg.goto(args.base + '/onboarding'); pg.wait_for_selector('button:has-text("跳过")'); pg.wait_for_timeout(600)
     click(pg, pg.get_by_role('button', name='跳过')); click(pg, pg.get_by_role('button', name='下一步')); click(pg, pg.get_by_role('button', name='下一步'))
-    click(pg, pg.get_by_role('button', name='载入演示数据 · 练了 30 周的进阶用户')); pg.wait_for_url('**/today**'); pg.wait_for_timeout(900)
+    click(pg, pg.get_by_role('button', name='载入示例数据 · 练了 30 周的进阶用户')); pg.wait_for_url('**/today**'); pg.wait_for_timeout(900)
     open_me()
     ok(row().count() == 1 and '7 天免费试用' in row().inner_text(), f'{tag} 我的：未开通的会员行写「7 天免费试用」')
     click(pg, row()); pg.wait_for_url('**/pro'); pg.wait_for_timeout(1600)
     page_ok('paywall')
     ok(pg.get_by_role('heading', name='这 30 天，Pro 会多给你').count() == 1 and pg.get_by_role('list', name='Pro 会多给你').get_by_role('listitem').count() == 4, f'{tag} 付费墙：按你的数据，四条权益')
     ok(pg.get_by_text(re.compile(r'^你这 30 天拿了 [\d,]+，Pro ×1\.5$')).count() == 1 and pg.get_by_text('杠铃腰带 10 毫米 ¥329 → ¥296').count() == 1, f'{tag} 付费墙：牛劲按近 30 天进账算、会员价举被触发的腰带')
-    ok(pg.get_by_text(re.compile('演示模式')).count() >= 1 and pg.locator('input').count() == 0, f'{tag} 付费墙：演示模式，没有任何输入框')
+    ok(pg.get_by_text(re.compile('演示')).count() == 0 and pg.locator('input').count() == 0, f'{tag} 付费墙：没有任何输入框，也不写「演示」（走查 1）')
     ok(pg.get_by_role('radio').count() == 3 and pg.get_by_role('radio', name=re.compile('^年度')).get_attribute('aria-checked') == 'true', f'{tag} 付费墙：三个方案，默认年度')
-    cta = pg.get_by_role('button', name='开通年度（演示，不扣费）')
+    cta = pg.get_by_role('button', name='开通年度', exact=True)
     bb = cta.bounding_box()
     ok(bb is not None and bb['y'] > h * 0.75, f'{tag} 付费墙：主按钮在拇指区')
     click(pg, pg.get_by_role('button', name='看完整对比')); pg.wait_for_timeout(1300)
@@ -899,9 +910,9 @@ def pro_checks(b, w, h):
     ok(tb is not None and tb['y'] < h * 0.7, f'{tag} 付费墙：看完整对比 → 表就地展开并滚进视野')
     page_ok('paywall-table')
     click(pg, pg.get_by_role('radio', name=re.compile('^月度'))); pg.wait_for_timeout(300)
-    ok(pg.get_by_role('button', name='开通月度（演示，不扣费）').count() == 1, f'{tag} 付费墙：选月度，主按钮跟着改')
+    ok(pg.get_by_role('button', name='开通月度', exact=True).count() == 1, f'{tag} 付费墙：选月度，主按钮跟着改')
     click(pg, pg.get_by_role('radio', name=re.compile('^年度'))); pg.wait_for_timeout(300)
-    click(pg, pg.get_by_role('button', name='开通年度（演示，不扣费）')); pg.wait_for_timeout(1800)
+    click(pg, pg.get_by_role('button', name='开通年度', exact=True)); pg.wait_for_timeout(1800)
     ok(pg.get_by_role('heading', name='欢迎加入 Milo Pro').count() == 1 and pg.get_by_text(re.compile(r'^年度会员 · \d{4} 年')).count() == 1, f'{tag} 开通成功：欢迎 + 到期日')
     pro = store()['pro']
     ok(len(pro) == 1 and pro[0]['plan'] == 'year', f'{tag} 开通成功：年度写进存储')
@@ -918,7 +929,7 @@ def pro_checks(b, w, h):
     dlg = pg.get_by_role('dialog')
     ok(dlg.count() == 1 and dlg.get_by_text('近 8 周 · 每周组数').count() == 1 and dlg.get_by_role('img', name=re.compile('^近 8 周每周组数')).count() == 1, f'{tag} 高级分析：容量页打开肌头面板，有「近 8 周」')
     pg.go_back(); pg.wait_for_url('**/me/pro'); pg.wait_for_timeout(1200)
-    click(pg, pg.get_by_role('button', name='管理订阅（演示：切回免费）')); pg.wait_for_timeout(500)
+    click(pg, pg.get_by_role('button', name='管理订阅', exact=True)); pg.wait_for_timeout(500)
     ok(pg.get_by_role('alertdialog', name='切回免费？').count() == 1 and pg.get_by_text(re.compile('不收回')).count() == 1, f'{tag} 会员中心：切回免费先确认，写明已得的不收回')
     click(pg, pg.get_by_role('alertdialog').get_by_role('button', name='切回免费')); pg.wait_for_url('**/me'); pg.wait_for_timeout(700)
     ok(pg.get_by_text(re.compile('已切回免费')).count() == 1 and '7 天免费试用' in row().inner_text(), f'{tag} 切回免费：回我的 + 提示，会员行回到未开通')
@@ -926,7 +937,7 @@ def pro_checks(b, w, h):
     pg.wait_for_timeout(3200)
     click(pg, row()); pg.wait_for_url('**/pro'); pg.wait_for_timeout(900)
     click(pg, pg.get_by_role('radio', name=re.compile('^试用'))); pg.wait_for_timeout(300)
-    click(pg, pg.get_by_role('button', name='开始 7 天试用（演示）')); pg.wait_for_timeout(1200)
+    click(pg, pg.get_by_role('button', name='开始 7 天试用', exact=True)); pg.wait_for_timeout(1200)
     ok(pg.get_by_text(re.compile('试用会员 · .+不自动扣费')).count() == 1, f'{tag} 试用：开通成功写不自动扣费')
     click(pg, pg.get_by_role('button', name='开始用')); pg.wait_for_url('**/me'); pg.wait_for_timeout(800)
     ok('试用中 · 还剩 7 天' in row().inner_text(), f'{tag} 试用：会员行写「试用中 · 还剩 7 天」')
@@ -936,7 +947,7 @@ def pro_checks(b, w, h):
     ok(pg.get_by_role('radio').count() == 2 and pg.get_by_text(re.compile('^试用还剩 \\d+ 天')).count() == 1, f'{tag} 试用中的付费墙：只剩月 / 年，写试用还剩几天')
     # 数据里的演示开关
     open_me()
-    sw = pg.get_by_role('switch', name='演示：会员状态')
+    sw = pg.get_by_role('switch', name='会员状态')
     ok(sw.get_attribute('aria-checked') == 'true', f'{tag} 数据：试用中，会员开关是开的')
     sw.evaluate('e => e.scrollIntoView({ block: "center" })'); pg.wait_for_timeout(200); click(pg, sw); pg.wait_for_timeout(500)
     ok('月 ¥18 · 年 ¥128' in row().inner_text(), f'{tag} 数据：关掉 = 免费；用过试用，会员行写价格')
@@ -957,7 +968,7 @@ def pro_checks(b, w, h):
     # 演示场景不写存储
     snap = json.dumps(store()['pro'])
     pg.goto(args.base + '/pro?scenario=plain-prescription'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)
-    click(pg, pg.get_by_role('button', name='开通年度（演示，不扣费）')); pg.wait_for_timeout(900)
+    click(pg, pg.get_by_role('button', name='开通年度', exact=True)); pg.wait_for_timeout(900)
     ok(pg.get_by_role('heading', name='欢迎加入 Milo Pro').count() == 1 and json.dumps(store()['pro']) == snap, f'{tag} 场景：开通走完，不写本机存储')
     # 高级分析 · 动作对比：曲线页「对比 ＋ 选一个动作」→ 面板选同部位的动作 → 虚线叠上来、图下图例读两条；✕ 取消
     pg.goto(args.base + '/gains/barbell-squat-8?scenario=plain-prescription'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(1200)

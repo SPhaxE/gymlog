@@ -1,8 +1,10 @@
 /* 初见引导（故事 8 幕）：上 60% 是舞台（三层场景 + 人物 + 代码生成的图），下面是文字；顶部 Stories 进度条，右上「跳过」 */
-.story { position: relative; flex: 1; min-height: 0; overflow: hidden; background: var(--milo-color-bg-base); color: var(--milo-color-text-primary); --stage-h: 60%; }
+.story { position: relative; flex: 1; min-height: 0; background: var(--milo-color-bg-base); color: var(--milo-color-text-primary); --stage-h: 60%;
+  /* 沉浸式全屏：场景往上伸到状态栏下面，只裁左右和下边（clip-path 的上边留出状态栏高） */
+  clip-path: inset(calc(var(--safe-top) * -1) 0 0 0); }
 
 /* ---------- 场景三层：object-position 跟着镜头 --cam 平移；远景平移得少，近景放大一点平移得多 = 视差 ---------- */
-.backdrop { position: absolute; left: 0; right: 0; top: 0; height: var(--stage-h); overflow: hidden; }
+.backdrop { position: absolute; left: 0; right: 0; top: calc(var(--safe-top) * -1); height: calc(var(--stage-h) + var(--safe-top)); overflow: hidden; }
 .layer { position: absolute; left: 0; bottom: 0; width: 100%; height: 100%; object-fit: cover; user-select: none;
   transition: object-position calc(var(--milo-motion-slow) * 5) var(--milo-motion-ease-standard); }
 .far { object-position: calc((0.3 + var(--cam) * 0.4) * 100%) 0; }
@@ -98,6 +100,9 @@
 /* 黄金窗互动 */
 .dot { fill: var(--milo-prim-lime-500); filter: drop-shadow(0 0 var(--milo-space-2xs) var(--milo-prim-lime-500)); }
 .dotStop { fill: var(--milo-color-feedback-danger); filter: none; }
+/* 峰顶之后的回落：练对了就不会落回去，压暗成背景；下一轮从峰顶接着画 */
+.curveTail { fill: none; stroke: var(--milo-prim-bone-100); stroke-width: 3; stroke-linecap: round; opacity: var(--milo-opacity-disabled); animation: tailDim calc(var(--milo-motion-slow) * 2) var(--milo-motion-ease-standard); }
+@keyframes tailDim { from { opacity: 1; } }
 .nextCycle { fill: none; stroke: var(--milo-prim-lime-500); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw calc(var(--milo-motion-slow) * 6) var(--milo-motion-ease-standard) forwards; }
 .base2 { stroke: color-mix(in srgb, var(--milo-prim-lime-500) 55%, transparent); stroke-width: 1; stroke-dasharray: 3 4; }
 /* 曲线卡 + 提示一组，垂直居中在舞台里（顶部让出进度条和「跳过」）；提示预留两行高度，换行不会把曲线顶歪 */

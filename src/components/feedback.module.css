@@ -54,3 +54,8 @@
   .sk { animation: none; }
   .toastIn, .scrim, .scrim > * { animation: none; }
 }
+
+/* 分段加载：底部一行，Logo 加载态 + 小字；到底了只剩小字 */
+.loadMore { display: flex; align-items: center; justify-content: center; gap: var(--milo-space-xs); min-height: var(--milo-size-hit-min); color: var(--milo-color-text-secondary); }
+.loadGlyph { width: var(--milo-size-icon); height: var(--milo-size-icon); }
+.loadEnd { margin: 0; display: grid; place-items: center; min-height: var(--milo-size-hit-min); color: var(--milo-color-text-secondary); }

@@ -4,7 +4,7 @@ import { goesRightOrUp, parseStroke, reverseStroke, strokeToD, strokeWindow, tra
 
 const s = (d: string) => parseStroke(d)!;
 
-describe('选中图标描线：从左到右、从下到上（2026-10-06 用户）', () => {
+describe('选中图标描线：从下到上优先，再从左到右（2026-10-06 / 2026-10-08 用户）', () => {
   it('解析 M / L / H / V / A（大小写），相对坐标转成绝对坐标', () => {
     const p = s('M4 11l8-7h3v2A2 2 0 0 1 17 9');
     expect(p.start).toEqual([4, 11]);
@@ -18,11 +18,29 @@ describe('选中图标描线：从左到右、从下到上（2026-10-06 用户�
     expect(r.segs).toEqual([{ k: 'A', to: [10, 2], rx: 4, ry: 4, rot: 0, large: 0, sweep: 0 }, { k: 'L', to: [2, 2] }]);
     expect(strokeToD(reverseStroke(r))).toBe(strokeToD(p));
   });
-  it('方向：横向为主要往右，竖向为主要往上（y 向下）', () => {
+  it('方向：横笔往右，竖笔往上（y 向下）', () => {
     expect(goesRightOrUp(s('M2 12H20'))).toBe(true);
     expect(goesRightOrUp(s('M20 12H2'))).toBe(false);
     expect(goesRightOrUp(s('M12 20V4'))).toBe(true);
     expect(goesRightOrUp(s('M12 4V20'))).toBe(false);
+  });
+  it('从下到上优先于从左到右（2026-10-08 用户）：斜笔只要偏离水平超过 15° 就往上画，哪怕横向走得更多', () => {
+    expect(goesRightOrUp(s('M2 4L20 12'))).toBe(false);   // 往右下：横向为主，但有明显下行 → 要反过来从右下往左上画
+    expect(goesRightOrUp(s('M20 12L2 4'))).toBe(true);
+    expect(goesRightOrUp(s('M2 12L20 13'))).toBe(true);   // 几乎水平：还是从左往右
+    const [p] = tracePlan(['M2 4L20 12']);
+    expect(parseStroke(p.d)!.start).toEqual([20, 12]);
+  });
+  it('起笔顺序：先下后上，一样高再先左后右', () => {
+    // 右边偏低的一笔（y = 18）比左边偏高的一笔（y = 14）先画；旧规则（x − y）会先画左边那笔
+    expect(tracePlan(['M2 14H6', 'M16 18H22']).map((x) => x.order)).toEqual([1, 0]);
+    expect(tracePlan(['M12 20H18', 'M2 21H8']).map((x) => x.order)).toEqual([1, 0]);   // 差不到 1.5：一样高，左边先
+  });
+  it('闭合折线：从最下面的顶点起笔、先往上走', () => {
+    const [p] = tracePlan(['M4 4H20V20H4Z']);
+    const q = parseStroke(p.d)!;
+    expect(q.start).toEqual([4, 20]);
+    expect(q.segs[0].to[1]).toBeLessThan(20);
   });
   it('图标集里每一笔定好方向后都是往右或往上', () => {
     for (const [name, d] of Object.entries(CUT)) {

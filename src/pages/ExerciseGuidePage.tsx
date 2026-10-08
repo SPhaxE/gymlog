@@ -58,7 +58,8 @@ export function ExerciseGuidePage({ scenario, now }: { scenario?: string; now: n
         <div className={s.video}><MediaFrame fill src={g.media[view]} label={`${ex.name} ${view === 'front' ? '正面' : '侧面'}示范`} /></div>
         <div className={s.top}>
           <TopBar title={ex.name} onBack={back} trailing={<Segmented label="示范角度" items={[['front', '正面'], ['side', '侧面']] as const} value={view} onChange={setView} />} />
-          {st.rest && !scenario && <div className={s.rest} aria-live="polite"><Icon name="timer" small /><span className="milo-text-caption">组间休息还在走</span><Num size="s" value={clock(left)} /></div>}
+          {/* 「在走」以剩余时间为准：休息结束就收起这一行（走查 1 #22） */}
+          {st.rest && left > 0 && !scenario && <div className={s.rest} aria-live="polite"><Icon name="timer" small /><span className="milo-text-caption">组间休息还在走</span><Num size="s" value={clock(left)} /></div>}
         </div>
         <GuideDrawer open={open} onOpen={setOpen} cue={g.cue?.summary ?? '要领还没写好，先看示范'} steps={steps}
           more={(

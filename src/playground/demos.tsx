@@ -100,7 +100,7 @@ function SessionInner({ f }: { f: Fixtures }) {
   const w0 = it?.suggestion.weightKg != null ? String(it.suggestion.weightKg) : '';
   const [sets, setSets] = useState<SetState[]>(() => Array.from({ length: it?.sets ?? 3 }, () => ({ weight: w0, reps: String(it?.repRange[1] ?? 8), done: false })));
   const [editing, setEditing] = useState<number | null>(null);
-  const [end, setEnd] = useState<number | null>(null), [dockOpen, setDockOpen] = useState(true);
+  const [end, setEnd] = useState<number | null>(null);
   const left = useCountdown(end);
   const cur = sets.findIndex((x) => !x.done);
   const err = (x: SetState): { msg: string; field: 'weight' | 'reps' } | undefined => {
@@ -114,7 +114,7 @@ function SessionInner({ f }: { f: Fixtures }) {
     setEditing(null);
     if (editing === i) { toast.show(`已修改第 ${i + 1} 组`); return; }
     const last = sets.filter((x) => !x.done).length === 1;
-    if (last) { setEnd(null); toast.show('这个动作练完了'); } else { setEnd(Date.now() + rest * 1000); setDockOpen(true); }
+    if (last) { setEnd(null); toast.show('这个动作练完了'); } else setEnd(Date.now() + rest * 1000);
   };
   return (
     <Screen label="训练中">
@@ -129,8 +129,7 @@ function SessionInner({ f }: { f: Fixtures }) {
         ))}
         <button type="button" className={s.reset} onClick={() => { setSets((xs) => xs.map((x) => ({ ...x, done: false }))); setEnd(null); }}>重来</button>
       </div>
-      {end != null && <div className={s.restDock}><RestDock remaining={left} total={rest} open={dockOpen} onToggle={setDockOpen}
-        onAdjust={(d) => setEnd((e) => Math.max(Date.now(), (e ?? Date.now()) + d * 1000))} onSkip={() => { setEnd(null); setDockOpen(false); }} /></div>}
+      {end != null && <div className={s.restDock}><RestDock remaining={left} total={rest} endAt={end} /></div>}
     </Screen>
   );
 }

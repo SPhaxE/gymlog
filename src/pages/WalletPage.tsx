@@ -54,7 +54,7 @@ export function WalletPage({ scenario, now }: { scenario?: string; now: number }
               ? <p className={`milo-text-caption ${s.note}`}>还没有卡券。用牛劲兑换一张，下单时能抵钱、断档时保住连胜。</p>
               : <div className={s.stack}>
                   {freeze > 0 && <Coupon type="freeze" title={`${COUPONS.freeze.title} ×${freeze}`} detail={COUPONS.freeze.detail} state="available" />}
-                  {coupons.map((c) => <Coupon key={c.id} type={c.type} title={c.title} detail={c.state === 'available' ? `${c.detail.split(' · ')[0]} · ${dateOf(c.expireAt)}前` : c.state === 'used' ? (c.type === 'trial' ? `已开通体验 · ${dateOf(c.expireAt)}到期` : '已用在一笔演示订单') : `${dateOf(c.expireAt)}过期`}
+                  {coupons.map((c) => <Coupon key={c.id} type={c.type} title={c.title} detail={c.state === 'available' ? `${c.detail.split(' · ')[0]} · ${dateOf(c.expireAt)}前` : c.state === 'used' ? (c.type === 'trial' ? `已开通体验 · ${dateOf(c.expireAt)}到期` : '已用在一笔订单') : `${dateOf(c.expireAt)}过期`}
                     state={c.state} onUse={c.state === 'available' ? shop : undefined} />)}
                 </div>}
           </section>

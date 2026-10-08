@@ -116,8 +116,6 @@ export const resumeSession = (now = Date.now()) => store.update((s) => {
 });
 
 export const toggleSkip = (e: number) => patchActive((a) => ({ ...a, entries: a.entries.map((en, i) => (i === e ? { ...en, skipped: !en.skipped } : en)) }));
-export const adjustRest = (d: number) => store.update((s) => (s.rest ? { ...s, rest: { endAt: Math.max(Date.now(), s.rest.endAt + d * 1000), totalMs: s.rest.totalMs } } : s));
-export const skipRest = () => store.update((s) => ({ ...s, rest: null }));
 
 /** 草稿 → 引擎的 Session（只收已完成的组；没做的动作 skipped） */
 export function toSession(a: ActiveSession, now: number, exertion: number | null): Session {

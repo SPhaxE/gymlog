@@ -1,8 +1,8 @@
-/** 选中图标的描线方向（2026-10-06 用户：导航图标以及所有选中图标的线条加载动画，都从左到右、从下到上）。
- *  纯函数，给 Icon 的 runTrace 用：
- *  - 每一笔（M 开头的子路径）先定方向：横向为主的从左往右画，竖向为主的从下往上画；方向不对就把这一笔反过来写；
- *    首尾几乎重合的闭合笔画（圆、方框）按第一段的走向判断；
- *  - 各笔按「左下 → 右上」的顺序依次起笔（不再全部同时画）。
+/** 选中图标的描线方向（2026-10-06 用户：导航图标以及所有选中图标的线条加载动画，都从左到右、从下到上；
+ *  2026-10-08 用户补：**从下到上优先于从左到右**）。纯函数，给 Icon 的 runTrace 用：
+ *  - 每一笔（M 开头的子路径）先定方向：只要有明显的竖向走势（偏离水平超过 15°）就从下往上画；接近水平的才从左往右画；方向不对就把这一笔反过来写；
+ *    闭合笔画从最下面的顶点起笔（一样低取最左），第一段能往上走就往上走；首尾几乎重合的带弧线笔画按第一段的走向判断；
+ *  - 各笔的起笔顺序：先比高低（下面的先画），差不多高（相差 1.5 个单位以内）再比左右（左边的先画）。
  *  路径命令只支持图标集里出现的 M / L / H / V / A / Z（大小写都行），其余原样不动（不反转）。 */
 
 type Pt = [number, number];
@@ -62,36 +62,43 @@ function heading(s: Stroke): Pt {
   return [f[0] - s.start[0], f[1] - s.start[1]];
 }
 
-/** 方向对吗：横向为主要往右（dx > 0），竖向为主要往上（dy < 0） */
+const FLAT = Math.tan(Math.PI / 12);   // 15°：偏离水平不超过它才算「横笔」
+/** 方向对吗（从下到上优先）：有竖向走势的要往上（dy < 0，y 向下）；接近水平的横笔要往右（dx > 0） */
 export function goesRightOrUp(s: Stroke): boolean {
   const [dx, dy] = heading(s);
-  return Math.abs(dx) >= Math.abs(dy) ? dx >= 0 : dy <= 0;
+  return Math.abs(dy) > Math.abs(dx) * FLAT ? dy < 0 : dx >= 0;
 }
 
-/** 闭合的折线（星形、方框）：起点挪到最左下的那个顶点（x − y 最小），描线从那里起笔；带弧线的闭合笔画不动 */
+const isLoop = (s: Stroke) => { const e = end(s); return s.segs.length > 2 && Math.hypot(e[0] - s.start[0], e[1] - s.start[1]) < 0.01 && s.segs.every((g) => g.k === 'L'); };
+const SAME_ROW = 1.5;   // 起笔高低相差这么多以内算「一样高」，再比左右
+/** 闭合的折线（星形、方框）：起点挪到最下面的顶点（一样低取最左），描线从那里起笔；带弧线的闭合笔画不动 */
 export function startAtBottomLeft(s: Stroke): Stroke {
-  const e = end(s);
-  const closedLoop = s.segs.length > 2 && Math.hypot(e[0] - s.start[0], e[1] - s.start[1]) < 0.01 && s.segs.every((g) => g.k === 'L');
-  if (!closedLoop) return s;
+  if (!isLoop(s)) return s;
   const pts = [s.start, ...s.segs.slice(0, -1).map((g) => g.to)];
   let best = 0;
-  pts.forEach((p, i) => { if (p[0] - p[1] < pts[best][0] - pts[best][1]) best = i; });
+  pts.forEach((p, i) => { const q = pts[best]; if (p[1] > q[1] + SAME_ROW || (Math.abs(p[1] - q[1]) <= SAME_ROW && p[0] < q[0])) best = i; });
   const ring = [...pts.slice(best), ...pts.slice(0, best)];
   return { start: ring[0], segs: [...ring.slice(1), ring[0]].map((to) => ({ k: 'L' as const, to })), closed: s.closed };
 }
 
 export interface TracePlan { d: string; order: number }
 
-/** 一枚图标的所有笔画 → 定好方向的路径 + 起笔顺序（0 起，左下先画） */
+/** 闭合折线的第一段往上走吗 */
+const firstUp = (s: Stroke) => s.segs.length > 0 && s.segs[0].to[1] < s.start[1] - 0.01;
+
+/** 一枚图标的所有笔画 → 定好方向的路径 + 起笔顺序（0 起：下面的先画，一样高左边的先画） */
 export function tracePlan(strokes: string[]): TracePlan[] {
   const oriented = strokes.map((d) => {
     const s = parseStroke(d);
-    if (!s) return { d, key: 0 };
-    const b = startAtBottomLeft(s), o = goesRightOrUp(b) ? b : reverseStroke(b);
-    // 起笔顺序：起点越靠左、越靠下越先（x − y 越小越先；y 向下，所以下面的 y 大）
-    return { d: strokeToD(o), key: o.start[0] - o.start[1] };
+    if (!s) return { d, at: [0, 0] as Pt };
+    const b = startAtBottomLeft(s);
+    // 闭合折线：两个绕向里挑第一段往上走的那个（从下到上优先）；都不往上才按横笔规则
+    const o = isLoop(b) && (firstUp(b) || firstUp(reverseStroke(b))) ? (firstUp(b) ? b : reverseStroke(b)) : goesRightOrUp(b) ? b : reverseStroke(b);
+    return { d: strokeToD(o), at: o.start };
   });
-  const rank = oriented.map((x, i) => [x.key, i] as const).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  // 起笔顺序：先比高低（y 向下，y 大 = 在下面 = 先画），差不多高再比左右
+  const cmp = (a: Pt, b: Pt) => (Math.abs(a[1] - b[1]) > SAME_ROW ? b[1] - a[1] : a[0] - b[0]);
+  const rank = oriented.map((x, i) => [x.at, i] as const).sort((a, b) => cmp(a[0], b[0]) || a[1] - b[1]);
   const order = new Array<number>(strokes.length);
   rank.forEach(([, i], r) => { order[i] = r; });
   return oriented.map((x, i) => ({ d: x.d, order: order[i] }));

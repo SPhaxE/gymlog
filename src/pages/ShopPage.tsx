@@ -1,7 +1,7 @@
 /** 商城（P15，/shop；ia §1.16）。线框 ?board=shop W1，Stitch 商城 V2 的卡片排法 + V1 的缺货整卡变暗（docs/brief.md 2026-10-07）。
  *  五层：
- *  - 战略：在训练数据说明「需要」的时候，弄懂补给 / 护具该不该用，并能直接买到（T16）；不做成一般电商，先讲为什么再卖。
- *  - 范围：为你推荐（第一张被数据触发的知识卡；没有触发时是通用入门卡：助力带）· 品类 全部 / 护具 / 补给 · 5 款商品 × 状态（热销 / 折扣 / 新品 / 缺货）；
+ *  - 战略：在训练数据说明「需要」的时候，弄懂补剂 / 护具该不该用，并能直接买到（T16）；不做成一般电商，先讲为什么再卖。
+ *  - 范围：为你推荐（第一张被数据触发的知识卡；没有触发时是通用入门卡：助力带）· 品类 全部 / 护具 / 补剂 · 5 款商品 × 状态（热销 / 折扣 / 新品 / 缺货）；
  *    已下架的不在列表里（从知识卡进详情时提示）；商家与品牌全部虚构，价格为示例。
  *  - 结构：子页，入口 钱包「去商城抵扣」、卡券「去用」；→ 知识卡 P16、商品 P17；右上牛劲余额点进钱包。
  *  - 框架：第一优先 = 为你推荐的理由；主操作 = 点商品（两列卡片，滑一下就到拇指区）；没有固定主按钮。
@@ -14,8 +14,8 @@ import { recommendFor } from '../data/knowledge';
 import { offOf, useShop } from './useShop';
 import s from './ShopPages.module.css';
 
-type Cat = 'all' | '护具' | '补给';
-const CATS = [['all', '全部'], ['护具', '护具'], ['补给', '补给']] as const;
+type Cat = 'all' | '护具' | '补剂';
+const CATS = [['all', '全部'], ['护具', '护具'], ['补剂', '补剂']] as const;
 
 export function ShopPage({ scenario, now }: { scenario?: string; now: number }) {
   const nav = useNavigate(), loc = useLocation();
@@ -41,7 +41,6 @@ export function ShopPage({ scenario, now }: { scenario?: string; now: number }) 
           <ProductGrid>
             {list.map((p) => <ProductCard key={p.id} {...p} off={offOf(p.member, balance)} onClick={() => go(`/shop/item/${p.id}`)} />)}
           </ProductGrid>
-          <p className={`milo-text-micro ${s.foot}`}>演示商城：商家与品牌为虚构，价格为示例，下单不会真的发货。</p>
         </div>
       </div>
       <BackToTop target={topRef} />

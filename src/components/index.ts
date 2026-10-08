@@ -14,7 +14,7 @@ export { DotCalendar, GiantNumber, Odometer, HeadWeeks, StepRing, WeekBars, dotD
 export { SteelPlate } from './plate';
 export { Cascade, Collapsible, RestDock, SharedDetail, Tilt, drillName, drillTransition, guardTransitionTaps, sharedName, sharedTransition } from './motion';
 export { Chip, NumberField, OptionCard, OptionGroup, ProgressSteps, Stepper, Switch } from './controls';
-export { Dialog, DialogCard, Skeleton, StateView, Toast, ToastViewport, type SkeletonShape, type StateKind } from './feedback';
+export { Dialog, DialogCard, LoadMore, Skeleton, StateView, Toast, ToastViewport, type SkeletonShape, type StateKind } from './feedback';
 export { IncrementRuler, LandmarkRuler, PhaseSegments } from './Gauges';
 export { Icon, ICONS, type IconName } from './Icon';
 export { AppIcon, Lockup, LogoGlyph, LOGO_STATE_NAME, type LogoMark, type LogoState } from './Logo';
@@ -29,12 +29,12 @@ export { Sheet, SheetBlock } from './Sheet';
 export { forced, type Forced } from './state';
 export { Ticks } from './Ticks';
 export {
-  DayCell, ExerciseRow, MediaFrame, PrescriptionHero, RestBar, SessionRow, SetEditor, SetLine, SetRow, NumPad, WarmupStrip, WeekStrip, clock, useCountdown,
+  DayCell, ExerciseRow, MediaFrame, PrescriptionHero, SessionRow, SetEditor, SetLine, SetRow, NumPad, WarmupStrip, WeekStrip, clock, useCountdown,
   type DayProps, type DayStatus, type ExerciseStatus, type MediaState, type SetStatus, type SetType,
 } from './training';
 export { BackToTop } from './BackToTop';
 export { Banner, Card, Delta, List, ListRow, Num, PageHeader, ProfileTile, SectionLabel, StatusStrip, Tag, TierLegend, TopBar, type DeltaDir, type NumSize, type TagTone } from './ui';
 export { RewardCard, RewardModal, REWARD_NAME, type Reward, type RewardKind } from './Reward';
 export { AgeBadge, Coupon, FreezeCard, GrowthBar, GrowthCard, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, StageHero, StreakBar, StreakRisk, StreakWeeks, type StreakStatus, type StreakWeekStatus } from './growth';
-export { Breakdown, DemoBanner, EvidencePanel, NiujinLine, OrderLine, PriceBlock, ProductCard, ProductGrid, ProductImage, RecommendCard, StatusTag, WalletExits, type ProductCardProps, type ProductStatus } from './shop';
+export { Breakdown, EvidencePanel, NiujinLine, OrderLine, PriceBlock, ProductCard, ProductGrid, ProductImage, RecommendCard, StatusTag, WalletExits, type ProductCardProps, type ProductStatus } from './shop';
 export { MonthStats, PerkLedger, PerkTable, PlanPicker, ProCard, ProLink, ProWelcome, type PerkItem, type PlanOption } from './pro';

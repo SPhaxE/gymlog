@@ -9,7 +9,7 @@
  *  - 表现：数字窄体（码表）；整页唯一的荧光是会员卡尺子上的「今天」；权益行 M07 交错弹入 + 刻度尺画出，卡上的走过段与今天刻度从开通那头滑到今天。 */
 import { useMemo, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
-import { BackToTop, DemoBanner, Dialog, MonthStats, PerkLedger, ProCard, Screen, SectionLabel, TopBar, useToast } from '../components';
+import { BackToTop, Dialog, MonthStats, PerkLedger, ProCard, Screen, SectionLabel, TopBar, useToast } from '../components';
 import { bodyData } from '../data/demo';
 import { PLAN_NAME, cancel, monthStart, proSaved, proStatus, proThisMonth, usePro } from '../data/pro';
 import { keepQuery, useShop } from './useShop';
@@ -40,7 +40,6 @@ export function ProHubPage({ scenario, now }: { scenario?: string; now: number }
       <TopBar title="会员中心" onBack={back} />
       <div ref={topRef} className={s.scroll}>
         <div className={`${s.body} ${p.hubBody}`}>
-          <DemoBanner>演示模式 · 不收集支付信息，不扣费</DemoBanner>
           <ProCard plan={PLAN_NAME[last.plan]} status={status} fromMs={last.fromMs} toMs={last.toMs} now={now} />
           {status === 'expired'
             ? <button type="button" className={`milo-text-body milo-focus ${s.link}`} onClick={go('/pro')}>重新开通</button>
@@ -63,12 +62,12 @@ export function ProHubPage({ scenario, now }: { scenario?: string; now: number }
                   ]} />
                 </section>
                 {status === 'trial' && <button type="button" className={`milo-text-body milo-focus ${s.link}`} onClick={go('/pro')}>开通正式会员</button>}
-                <button type="button" className={`milo-text-caption milo-focus ${s.link} ${p.manage}`} onClick={() => setAsk(true)}>管理订阅（演示：切回免费）</button>
+                <button type="button" className={`milo-text-caption milo-focus ${s.link} ${p.manage}`} onClick={() => setAsk(true)}>管理订阅</button>
               </>}
         </div>
       </div>
       <Dialog open={ask} onClose={() => setAsk(false)} icon="refresh" title="切回免费？" confirm="切回免费" onConfirm={off}>
-        <p className={p.dlgNote}>演示：这一段{st.kind === 'trial' ? '试用' : '会员'}现在结束。之前多拿的牛劲、领到的冻结卡都不收回；以后随时可以再开通。</p>
+        <p className={p.dlgNote}>这一段{st.kind === 'trial' ? '试用' : '会员'}现在结束。之前多拿的牛劲、领到的冻结卡都不收回；以后随时可以再开通。</p>
       </Dialog>
       <BackToTop target={topRef} />
     </Screen>

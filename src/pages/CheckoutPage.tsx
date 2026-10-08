@@ -8,7 +8,7 @@
  *  - 表现：整页唯一荧光 = 提交按钮；「最大比例」是灰标；没有任何支付输入。 */
 import { useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { BackToTop, Breakdown, Button, DemoBanner, List, ListRow, OptionCard, OptionGroup, OrderLine, Screen, Sheet, StateView, Switch, TopBar } from '../components';
+import { BackToTop, Breakdown, Button, List, ListRow, OptionCard, OptionGroup, OrderLine, Screen, Sheet, StateView, Switch, TopBar } from '../components';
 import { productById } from '../data/growth';
 import { couponOff, placeOrder, quote, usableCoupons } from '../data/wallet';
 import { keepQuery, useShop } from './useShop';
@@ -57,7 +57,6 @@ export function CheckoutPage({ scenario, now }: { scenario?: string; now: number
       <TopBar title="确认订单" onBack={back} />
       <div ref={topRef} className={s.scroll}>
         <div className={`${s.body} ${s.withCta}`}>
-          <DemoBanner />
           <OrderLine id={p.id} name={p.name} size={size} merchant={p.merchant} category={p.category} member={p.member} />
           <div className={s.card}><List>
             <ListRow kind="nav" title="卡券" disabled={usable.length === 0} onClick={() => setPick(true)}
@@ -72,7 +71,7 @@ export function CheckoutPage({ scenario, now }: { scenario?: string; now: number
             </div>
           </div>
           <Breakdown rows={rows} total={q.pay} />
-          <p className={`milo-text-micro ${s.note}`}>演示订单：提交即成功，不会真的发货；牛劲和卡券会照常扣掉，可以在钱包里看到。</p>
+          <p className={`milo-text-micro ${s.note}`}>提交后，用掉的牛劲和卡券可以在钱包里看到。</p>
         </div>
       </div>
       <div className={s.cta}><Button kind="primary" glow loading={busy} disabled={busy} onClick={submit}>提交订单 · {yuan(q.pay)}</Button></div>

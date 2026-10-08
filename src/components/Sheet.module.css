@@ -1,7 +1,9 @@
 .scrim { position: absolute; inset: 0; z-index: 20; display: flex; align-items: flex-end; background: var(--milo-color-bg-scrim);
+  /* 沉浸式全屏：页面里的面板以 Screen 的 frame 为框，遮罩往外伸到状态栏和手势条下面，面板底色也铺到手势条下 */
+  top: calc(var(--safe-top) * -1); bottom: calc(var(--safe-bottom) * -1); padding-top: var(--safe-top);
   animation: fade var(--milo-motion-fast) var(--milo-motion-ease-standard); }
 @keyframes fade { from { opacity: 0; } }
-.sheet { width: 100%; max-height: 100%; overflow-y: auto; display: grid; align-content: start; grid-auto-rows: max-content; gap: var(--milo-space-l); padding: 0 var(--milo-size-gutter) var(--milo-space-3xl);
+.sheet { width: 100%; max-height: 100%; overflow-y: auto; display: grid; align-content: start; grid-auto-rows: max-content; gap: var(--milo-space-l); padding: 0 var(--milo-size-gutter) calc(var(--milo-space-3xl) + var(--safe-bottom));
   transition: height var(--milo-motion-spring-ms) var(--milo-motion-ease-spring);
   background: var(--milo-color-bg-sheet); border-radius: var(--milo-radius-xl) var(--milo-radius-xl) 0 0; outline: none;
   box-shadow: 0 calc(var(--milo-space-s) * -1) var(--milo-space-3xl) var(--milo-color-shadow-float);

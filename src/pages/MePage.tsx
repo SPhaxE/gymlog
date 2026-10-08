@@ -45,7 +45,7 @@ export function MePage({ scenario, now, onTab }: { scenario?: string; now: numbe
   const g = useMemo(() => growthOf({ ...src, profile, wallet, pro: proPeriods(pro) }, now), [src, profile, wallet, pro, now]);
   const ps = proStatus(pro, now);
   const proDetail = ps.kind === 'trial' ? `试用中 · 还剩 ${ps.daysLeft} 天` : ps.kind === 'pro' ? `${dayText(ps.period!.toMs)}到期` : trialUsed(pro) ? '月 ¥18 · 年 ¥128' : '7 天免费试用';
-  const toggleDemoPro = (on: boolean) => { setPro((x) => (on ? activate(x, 'year', now) : cancel(x, now))); toast.show(on ? '演示：已开通年度会员' : '演示：已切回免费，已得的牛劲和卡券不收回'); };
+  const toggleDemoPro = (on: boolean) => { setPro((x) => (on ? activate(x, 'year', now) : cancel(x, now))); toast.show(on ? '已开通年度会员' : '已切回免费，已得的牛劲和卡券不收回'); };
   // 演示场景不标已读（消息页同样不显示未读点），这里也不显示未读数，免得「N 条新」点进去清不掉
   const unread = useMemo(() => (scenario ? 0 : unreadOf([...messagesOf(g), ...restockMessages(wallet)], st.messagesSeenAt)), [scenario, g, wallet, st.messagesSeenAt]);
   const facts = profileFacts(profile);
@@ -116,7 +116,7 @@ export function MePage({ scenario, now, onTab }: { scenario?: string; now: numbe
             <SectionLabel>数据</SectionLabel>
             <div className={s.card}><List>
               <ListRow kind="nav" title="载入示例数据" detail="练了 30 周的进阶用户，各页都有内容" onClick={() => setConfirm('load')} />
-              <ListRow kind="toggle" title="演示：会员状态" detail="打开 = 年度会员，关掉 = 免费；各页一起变" trailing={<Switch checked={ps.kind !== 'free'} label="演示：会员状态" onChange={toggleDemoPro} />} />
+              <ListRow kind="toggle" title="会员状态" detail="打开 = 年度会员，关掉 = 免费；各页一起变" trailing={<Switch checked={ps.kind !== 'free'} label="会员状态" onChange={toggleDemoPro} />} />
               <ListRow kind="nav" title="导出 CSV" detail={empty ? '还没有训练记录' : `${src.history.length} 次训练 · ${sets} 组，用表格软件打开`} disabled={empty} onClick={exportCsv} />
               <ListRow kind="danger" title="清除全部数据" onClick={() => setConfirm('clear')} />
             </List></div>

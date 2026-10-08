@@ -66,7 +66,7 @@ export function OnboardingPage({ now }: { now: number }) {
         {step < 3 ? <Button disabled={step === 2 && noEquip} onClick={() => set({}, (step + 1) as 2 | 3)}>下一步</Button> : (
           <>
             <Button glow disabled={weightBad} onClick={() => finish(false)}>生成第一份处方</Button>
-            <Button kind="ghost" disabled={weightBad} onClick={() => finish(true)}>载入演示数据 · 练了 30 周的进阶用户</Button>
+            <Button kind="ghost" disabled={weightBad} onClick={() => finish(true)}>载入示例数据 · 练了 30 周的进阶用户</Button>
           </>
         )}
       </div>

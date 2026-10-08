@@ -281,11 +281,10 @@ const PERKS: [string, string, string][] = [
 ];
 const PLANS: Record<'month' | 'year' | 'trial', [string, string, string]> = { month: ['月度', '¥18', '/ 月'], year: ['年度', '¥128', '/ 年 · 约 ¥10.7 / 月'], trial: ['试用', '7 天', '到期前提醒，不自动扣费'] };
 
-/** 付费墙：免费 vs Pro 对比 + 方案（月度 / 年度 / 试用 7 天）；会员态显示到期与管理；success = 开通成功（Milo 庆祝）。全程标「演示模式」，支付走假成功 */
+/** 付费墙：免费 vs Pro 对比 + 方案（月度 / 年度 / 试用 7 天）；会员态显示到期与管理；success = 开通成功（Milo 庆祝）。支付走假成功（App 里不写「演示」，2026-10-08） */
 export function Paywall({ plan, member, success, onPlan, onBuy }: { plan: 'month' | 'year' | 'trial'; member?: boolean; success?: boolean; onPlan?: (p: 'month' | 'year' | 'trial') => void; onBuy?: () => void }) {
   if (success) return (
     <div className={cx(s.paywall, s.paySuccess)}>
-      <span className={s.demo}>演示模式</span>
       <div className={s.payHero}><Mascot stage="milo" mood="pr" animate /></div>
       <h2 className="milo-text-title-m">欢迎加入 Milo Pro</h2>
       <p className={cx('milo-text-body', s.muted)}>全部权益已解锁。牛劲 ×1.5 从下一次训练开始算，本月 2 张冻结卡已放进钱包。</p>
@@ -294,7 +293,6 @@ export function Paywall({ plan, member, success, onPlan, onBuy }: { plan: 'month
   );
   return (
     <div className={s.paywall}>
-      <span className={s.demo}>演示模式</span>
       <header className={s.payHead}><span className={cx('milo-text-label', s.plus)}>Milo Pro</span><h2 className="milo-text-title-m">{member ? '你是 Pro 会员' : '练得更聪明一点'}</h2>
         {member && <p className={cx('milo-text-caption', s.muted)}>年度会员 · 2027 年 10 月 5 日到期 · 本月冻结卡已领 2 张</p>}</header>
       <div className={s.perks} role="table" aria-label="免费与 Pro 对比">
@@ -310,7 +308,7 @@ export function Paywall({ plan, member, success, onPlan, onBuy }: { plan: 'month
             </button>
           ))}
         </div>
-        <div className={s.payCta}><Button kind="primary" glow onClick={onBuy}>{plan === 'trial' ? '开始 7 天试用' : '开通（演示，不扣费）'}</Button></div>
+        <div className={s.payCta}><Button kind="primary" glow onClick={onBuy}>{plan === 'trial' ? '开始 7 天试用' : '开通'}</Button></div>
       </>}
       {member && <div className={s.payCta}><Button kind="ghost" onClick={onBuy}>管理订阅</Button></div>}
     </div>

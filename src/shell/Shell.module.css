@@ -1,8 +1,8 @@
-/* 悬浮层宿主：和 Screen 同一个框（内容最宽 content-max-w，居中，避开系统栏） */
-.layer { position: fixed; z-index: 50; left: 0; right: 0; margin: 0 auto; max-width: var(--milo-size-content-max-w); pointer-events: none;
-  top: var(--safe-area-inset-top, env(safe-area-inset-top)); bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom));
-  --nav-clear: calc(var(--milo-size-nav-bar-h) + var(--milo-size-nav-bottom) + var(--milo-space-s)); }
+/* 悬浮层宿主：和 Screen 同一个框（内容最宽 content-max-w，居中）；沉浸式全屏：铺满整块屏幕，遮罩盖到系统栏下面，
+   贴底的东西（轻提示）自己加上手势条的高度（--nav-clear 里含 --safe-bottom） */
+.layer { position: fixed; z-index: 50; left: 0; right: 0; top: 0; bottom: 0; margin: 0 auto; max-width: var(--milo-size-content-max-w); pointer-events: none;
+  --nav-clear: calc(var(--milo-size-nav-bar-h) + var(--milo-size-nav-bottom) + var(--milo-space-s) + var(--safe-bottom)); }
 .layer > :not([aria-live]) { pointer-events: auto; }
 
 /* 存储写入失败的提示：压在所有页面最上方 */
-.saveError { position: fixed; z-index: 60; top: var(--milo-space-s); left: var(--milo-size-gutter); right: var(--milo-size-gutter); }
+.saveError { position: fixed; z-index: 60; top: calc(var(--safe-top) + var(--milo-space-s)); left: var(--milo-size-gutter); right: var(--milo-size-gutter); }

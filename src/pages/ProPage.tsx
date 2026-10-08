@@ -10,7 +10,7 @@
  *  - 表现：荧光只给主按钮（M06 光晕边框）；分段滑块骨白、「省 40%」骨白小标；权益行 M07 交错弹入 + 刻度尺画出；开通成功：同心环纹荡开 + 小牛软弹簧弹出（减少动态效果时定格）。 */
 import { useMemo, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
-import { BackToTop, Button, Collapsible, DemoBanner, PerkLedger, PerkTable, PlanPicker, ProWelcome, Screen, TopBar, useBackHandler, type PlanOption } from '../components';
+import { BackToTop, Button, Collapsible, PerkLedger, PerkTable, PlanPicker, ProWelcome, Screen, TopBar, useBackHandler, type PlanOption } from '../components';
 import { DAY, GROWTH_CONFIG } from '../engine';
 import { T } from '../styles/tokens.gen';
 import { PLAN_DAYS, PLAN_NAME, PLAN_PRICE, PRO_PERKS, activate, dayText, pitchProduct, proFacts, proPitch, proStatus, trialUsed, usePro, type Plan } from '../data/pro';
@@ -18,7 +18,6 @@ import { keepQuery, useShop } from './useShop';
 import s from './ShopPages.module.css';
 import p from './ProPages.module.css';
 
-const DEMO = '演示模式 · 不收集支付信息，不扣费';
 
 export function ProPage({ scenario, now }: { scenario?: string; now: number }) {
   const nav = useNavigate(), loc = useLocation();
@@ -44,7 +43,6 @@ export function ProPage({ scenario, now }: { scenario?: string; now: number }) {
     <Screen label="开通成功">
       <div className={s.scroll}>
         <div className={`${s.body} ${s.withCta} ${p.welcomeBody}`}>
-          <DemoBanner>{DEMO}</DemoBanner>
           <ProWelcome stage={g.stage} title="欢迎加入 Milo Pro" line={`${PLAN_NAME[done.plan]}会员 · ${dayText(done.toMs)}到期${done.plan === 'trial' ? ' · 不自动扣费' : ''}`}>
             <PerkLedger kind="pair" label="刚到手的" items={[
               { value: '冻结卡', unit: `×${GROWTH_CONFIG.proFreezePerMonth}`, reason: '本月的已放进钱包' },
@@ -62,13 +60,12 @@ export function ProPage({ scenario, now }: { scenario?: string; now: number }) {
   // 展开对比后把表滚进视野（不然它藏在拇指区的方案和按钮后面）：等高度弹簧走完再滚
   const openTable = () => { const next = !table; setTable(next); if (next) window.setTimeout(() => document.getElementById('pro-table')?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' }), T['motion/spring-ms']); };
   const buy = () => { update((x) => activate(x, pick, now)); setDone({ plan: pick, toMs: now + PLAN_DAYS[pick] * DAY }); };
-  const cta = pick === 'trial' ? '开始 7 天试用（演示）' : `开通${PLAN_NAME[pick]}（演示，不扣费）`;
+  const cta = pick === 'trial' ? '开始 7 天试用' : `开通${PLAN_NAME[pick]}`;
   return (
     <Screen label="Milo Pro">
       <TopBar title="Milo Pro" onBack={back} />
       <div ref={topRef} className={s.scroll}>
         <div className={`${s.body} ${p.payBody}`}>
-          <DemoBanner>{DEMO}</DemoBanner>
           {facts.hasHistory ? <>
             <header className={p.head}>
               <h2 className={`milo-text-title-l ${p.title}`}>这 30 天，Pro 会多给你</h2>

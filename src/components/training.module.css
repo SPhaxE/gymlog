@@ -52,21 +52,6 @@
 .hint { color: var(--milo-color-text-secondary); }
 
 /* 组间休息条 */
-.rest { position: relative; overflow: hidden; display: flex; align-items: center; gap: var(--milo-space-m); padding: var(--milo-space-m) var(--milo-space-m) var(--milo-space-m) var(--milo-space-l);
-  border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised-2); color: var(--milo-color-text-primary);
-  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong), 0 var(--milo-space-s) var(--milo-space-2xl) var(--milo-color-shadow-float); }
-.restIcon { display: grid; place-items: center; color: var(--milo-color-text-secondary); }
-.restText { flex: 1; display: grid; color: var(--milo-color-text-secondary); }
-.restBtns { display: flex; gap: var(--milo-space-xs); }
-.restBtn { position: relative; display: grid; place-items: center; min-width: var(--milo-size-hit-min); height: var(--milo-size-hit-min); padding: 0 var(--milo-space-s);
-  border: 0; border-radius: var(--milo-radius-pill); font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-body);
-  background-color: var(--milo-color-bg-raised); color: var(--milo-color-text-primary); }
-.restTrack { position: absolute; left: 0; right: 0; bottom: 0; height: var(--milo-space-xs); background: var(--milo-color-data-track); }
-.restTrack i { display: block; height: 100%; background: var(--milo-color-control-selected); transition: width var(--milo-motion-base) linear; }
-.rest_ending .restIcon, .rest_ending .restText { color: var(--milo-color-text-primary); }
-.rest_ending .restTrack i { background: repeating-linear-gradient(90deg, var(--milo-color-control-selected) 0 var(--milo-stroke-ring-rest-dash), transparent var(--milo-stroke-ring-rest-dash) calc(var(--milo-stroke-ring-rest-dash) + var(--milo-stroke-ring-rest-gapdash))); }
-.rest_done { background: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); box-shadow: 0 var(--milo-space-s) var(--milo-space-2xl) var(--milo-color-shadow-float); }
-.rest_done .restIcon, .rest_done .restText, .rest_done button { color: var(--milo-color-control-selected-ink); }
 
 /* 训练记录行：票根（实底卡 + 发丝描边），左边日期块和中间内容之间一道虚线（撕口） */
 .session { display: flex; align-items: center; gap: var(--milo-space-m); width: 100%; min-height: calc(var(--milo-size-hit-min) + var(--milo-space-xl)); padding: var(--milo-space-s) var(--milo-space-m);
@@ -119,7 +104,7 @@
 .mediaFill .mediaBox { height: 100%; aspect-ratio: auto; border-radius: 0; box-shadow: none; }
 .mediaFill .credit { position: absolute; top: var(--milo-space-s); right: var(--milo-space-m); z-index: 1; }
 
-@media (prefers-reduced-motion: reduce) { .mediaLoading { animation: none; } .restTrack i { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .mediaLoading { animation: none; } }
 
 /* 训练页自带数字键盘：深色圆角键、等宽数字；步进键略暗；「下一组」骨白实心（这一屏的主操作） */
 .pad { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--milo-space-xs); padding: var(--milo-space-s) var(--milo-size-gutter) var(--milo-space-m);
@@ -161,7 +146,10 @@
 .tileNum > i { font-style: normal; font-size: var(--milo-font-size-caption); color: var(--milo-color-text-secondary); }
 .tileEmpty { font-family: var(--milo-font-number); font-size: var(--milo-font-size-l); color: var(--milo-color-text-disabled); }
 .editorNote { margin: 0; min-height: 1lh; padding: 0 var(--milo-size-gutter); }
-.editor .pad { border-top: 0; padding-bottom: 0; }
+/* 在面板里（走查 1 #19）：面板自己已经留了页边距，输入格、提示行、键盘不再各加一层——和面板标题左右对齐；
+   键盘不再垫一块方角深底（面板里套面板），键直接排在面板上 */
+.editor .tiles, .editor .editorNote { padding-left: 0; padding-right: 0; }
+.editor .pad { border-top: 0; padding: 0; background: none; }
 
 /* 热身条（6e）：卡片顶部一条小胶囊，做完的骨白打勾；每颗命中区 ≥ 48 */
 .warm { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: var(--milo-space-s); row-gap: var(--milo-space-2xs); padding: var(--milo-space-s) 0;

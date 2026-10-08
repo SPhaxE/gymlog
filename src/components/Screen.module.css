@@ -1,8 +1,10 @@
+/* 沉浸式全屏（2026-10-08 走查 1 #03）：外框铺满整块屏幕（状态栏、手势条下面也是底色和氛围层），
+   里面的 .frame 才避让安全区——页头、内容、导航、主按钮都在 frame 里，绝对定位的东西以 frame 为准。
+   frame 不裁切：底部面板的遮罩要往外伸到系统栏下面；外框负责裁 */
 .screen {
-  position: fixed; left: 0; right: 0; margin: 0 auto; max-width: var(--milo-size-content-max-w);
-  top: var(--safe-area-inset-top, env(safe-area-inset-top)); bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom));
-  display: flex; flex-direction: column; overflow: hidden; background: var(--milo-color-bg-base);
+  position: fixed; left: 0; right: 0; top: 0; bottom: 0; margin: 0 auto; max-width: var(--milo-size-content-max-w);
+  overflow: clip; background: var(--milo-color-bg-base); isolation: isolate;
   --nav-clear: calc(var(--milo-size-nav-bar-h) + var(--milo-size-nav-bottom) + var(--milo-space-s));
 }
-.screen { isolation: isolate; }
+.frame { position: absolute; left: 0; right: 0; top: var(--safe-top); bottom: var(--safe-bottom); display: flex; flex-direction: column; }
 .atm { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }

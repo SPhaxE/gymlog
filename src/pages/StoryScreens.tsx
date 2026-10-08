@@ -175,15 +175,21 @@ function Progression({ onFull }: { onFull: () => void }) {
 /* ---------------- 第 4 幕：超量恢复曲线 ---------------- */
 // 曲线（viewBox 320 × 170，基线 y = 110）：训练 → 下凹（修复期）→ 回升（恢复中）→ 冲过基线（黄金窗）→ 回落（已回落）
 const BASE = 110;
-const CURVE = `M0 ${BASE} L36 ${BASE} C48 ${BASE} 52 156 82 156 C112 156 118 ${BASE} 130 ${BASE - 6} C150 62 176 60 192 66 C220 78 260 100 320 106`;
+// 第三段在峰顶（178.4, 63.5）一分为二（同一条曲线，形状不变）：黄金窗里练对了，峰顶之后的「回落」压暗，下一轮从峰顶接出去（走查 1 #04）
+const PEAK = { x: 178.4, y: 63.5 };
+const HEAD = `M0 ${BASE} L36 ${BASE} C48 ${BASE} 52 156 82 156 C112 156 118 ${BASE} 130 ${BASE - 6} C145 72.5 163.4 ${PEAK.y} ${PEAK.x} ${PEAK.y}`;
+const TAIL = `C183.4 ${PEAK.y} 188 64.5 192 66 C220 78 260 100 320 106`;
+const CURVE = `${HEAD} ${TAIL}`;
+// 下一轮 = 第一轮（从「练」那一刻起）原样缩小（横 0.5、竖 0.6）贴到峰顶：起笔切线水平，和峰顶的切线一致，接得上（C1 连续）；新的基线就是峰顶的高度
+const NEXT = `M${PEAK.x} ${PEAK.y} C184.4 ${PEAK.y} 186.4 91.1 201.3 91.1 C216.3 91.1 219.3 ${PEAK.y} 225.3 59.9 C235.2 34.7 248.2 33.5 256.2 37.1 C270.1 44.3 290.1 57.5 320 61.1`;
 const PHASES: [string, number, number, boolean][] = [['修复期', 40, 96, false], ['恢复中', 96, 132, false], ['黄金窗', 132, 204, true], ['已回落', 204, 320, false]];
-function Curve({ children, lit = true, instant }: { children?: ReactNode; lit?: boolean; instant?: boolean }) {
+function Curve({ children, lit = true, instant, fadeTail }: { children?: ReactNode; lit?: boolean; instant?: boolean; /** 峰顶之后压暗（下一轮从峰顶接出时） */ fadeTail?: boolean }) {
   return (
     <svg viewBox="0 0 320 170" className={`${s.curve} ${instant ? s.instant : ''}`} aria-label="超量恢复曲线：训练后先下降，恢复后超过原来的水平，再慢慢回落">
       <line className={s.base} x1={0} x2={320} y1={BASE} y2={BASE} />
       <text className={s.baseLabel} x={316} y={BASE + 14} fontSize="10" textAnchor="end">原来的水平</text>
       {lit && <rect className={s.golden} x={132} y={20} width={72} height={140} rx={6} />}
-      <path className={s.curvePath} d={CURVE} pathLength={1} />
+      {fadeTail ? <><path className={s.curvePath} d={HEAD} pathLength={1} /><path className={s.curveTail} d={`M${PEAK.x} ${PEAK.y} ${TAIL}`} /></> : <path className={s.curvePath} d={CURVE} pathLength={1} />}
       {PHASES.map(([n, a, b, g], k) => <text key={n} className={`${s.phase} ${g ? s.phaseLit : ''}`} style={{ '--k': k } as CSSProperties} x={(a + b) / 2} y={168} fontSize="10" textAnchor="middle">{n}</text>)}
       <text className={s.trainMark} x={36} y={BASE - 12} fontSize="10" textAnchor="middle">练</text>
       {children}
@@ -223,10 +229,10 @@ function GoldenWindow({ host, onSuccess }: { host: HTMLElement | null; onSuccess
   return (
     <>
       <div className={s.gwStack}>
-      <Curve instant>
+      <Curve instant fadeTail={st === 'ok'}>
         <path ref={path} d={CURVE} fill="none" stroke="none" />
-        {st === 'ok' && <path className={s.nextCycle} d={`M168 62 C176 62 180 108 200 108 C220 108 226 62 238 50 C254 32 274 30 288 36 C300 42 310 50 320 54`} pathLength={1} />}
-        {st === 'ok' && <line className={s.base2} x1={168} x2={320} y1={62} y2={62} />}
+        {st === 'ok' && <line className={s.base2} x1={PEAK.x} x2={320} y1={PEAK.y} y2={PEAK.y} />}
+        {st === 'ok' && <path className={s.nextCycle} d={NEXT} pathLength={1} />}
         {pt && st !== 'ok' && <circle className={`${s.dot} ${st !== 'run' ? s.dotStop : ''}`} cx={pt.x} cy={pt.y} r={6} />}
       </Curve>
       <p className={`milo-text-body-strong ${s.gwMsg} ${st === 'ok' ? s.gwOk : st !== 'run' ? s.gwBad : ''}`} role="status">{msg}</p>

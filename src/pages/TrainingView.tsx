@@ -1,18 +1,18 @@
 /** 首页即打卡（2026-10-06 用户：取消独立训练页，首页本身就是打卡载体；线框 design/wireframes ?board=checkin，选 W1 + W2 的组点）。
  *  五层：
  *  - 战略：在器械旁、单手、两组之间的几十秒里，用最少的注意力记下这一组，同时不丢掉「今天整体练到哪」。
- *  - 范围：打卡、改数、加组、跳过、换动作、休息（±15 / 跳过）、结束 → 结算。
- *  - 结构：留在首页（P01），导航始终在：外圈 = 今日进度，选中胶囊 = 休息（ia §1.12）。
+ *  - 范围：打卡、改数、加组、跳过、换动作、休息（只显示倒计时；2026-10-08 走查 1 去掉 ±15 / 跳过，打下一组就是结束休息）、结束 → 结算。
+ *  - 结构：留在首页（P01），导航始终在：外圈 = 今日进度，选中胶囊 = 休息（ia §1.12）；页头随内容滚走（2026-10-08 走查 1：训练中也不贴顶）。
  *  - 框架：当前动作做主角卡（组行就地展开）；其余动作是列表，每行一排组点；唯一主操作在拇指区（打卡第 N 组）；
  *    键盘平时不出现，点组行或「填重量」才从底部拉出改数面板（M05）。
- *  - 表现：主角卡与列表行之间换动作用共享元素（M03）；休息胶囊点开流体形变成面板（M02）；组数滚动码表（M04）；列表交错弹入（M07）；按压微缩（M08）。 */
+ *  - 表现：主角卡与列表行之间换动作用共享元素（M03）；休息只是主按钮旁一颗不可点的计时小胶囊；组数滚动码表（M04）；列表交错弹入（M07）；按压微缩（M08）。 */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { T } from '../styles/tokens.gen';
 import { flushSync } from 'react-dom';
 import { useNavigate } from 'react-router';
 import { BackToTop, Button, Card, Cascade, Dialog, ExerciseRow, Odometer, PageHeader, RestDock, SectionLabel, SetEditor, SetLine, Sheet, SwapRow, WarmupStrip, sharedName, sharedTransition, useBackHandler, useCountdown, useToast } from '../components';
 import { dateLabel, env, REGION_NAME } from '../data/demo';
-import { addSet, adjustRest, completeSet, discardSession, finishSession, focusExercise, hasWork, isWork, pauseSession, setError, setField, skipRest, toggleSkip, toggleWarmup, workDone, MAX_SETS } from '../data/session';
+import { addSet, completeSet, discardSession, finishSession, focusExercise, hasWork, isWork, pauseSession, setError, setField, toggleSkip, toggleWarmup, workDone, MAX_SETS } from '../data/session';
 import { EQUIP_NAME, swapCandidates, swapTo } from '../data/finder';
 import muscles from '../../mock/muscles.json';
 import { FinderGlyph } from './FinderSheet';
@@ -36,16 +36,12 @@ export function TrainingView({ a, now, onFind, onGuide }: { a: ActiveSession; no
   const [swapOpen, setSwapOpen] = useState(false);
   const [pick, setPick] = useState<string | null>(null);
   useBackHandler(true, () => setPause(true));
-  const [dock, setDock] = useState(false);
   const [swap, setSwap] = useState<string[]>([]);  // 正在换位的两个动作（只给它们起共享名，见 motion.tsx 的遮挡说明）
   const hero = useRef<HTMLDivElement>(null), topRef = useRef<HTMLDivElement>(null);
   const left = useCountdown(st.rest?.endAt ?? null);
   const [tick, setTick] = useState(now);
   useEffect(() => { const id = window.setInterval(() => setTick(Date.now()), 15e3); return () => clearInterval(id); }, []);
   const mins = Math.max(0, Math.floor((tick - a.startMs) / 60e3));
-  useEffect(() => { if (st.rest) setDock(false); }, [st.rest?.endAt]); // eslint-disable-line react-hooks/exhaustive-deps
-  // 休息面板是临时的：点面板以外的任何地方就缩回小胶囊（共享元素反向），不挡列表；听 click 而不是 pointerdown：先让这一下点到的东西生效，再开始收起转场（转场中途抬手会丢掉这次点击）
-  const dockRef = useRef<HTMLDivElement>(null);
   // 休息胶囊和导航选中滑块一样宽（量导航当前项），切 Tab 时才能「原地」飞进滑块
   const [pillW, setPillW] = useState(0);
   // 刚挂载时胶囊宽度还没量到：主按钮的 left 过渡先关着，否则从别的 Tab 回来时按钮会从整宽「挤」到胶囊右边（2026-10-06 逐帧看到）
@@ -55,12 +51,6 @@ export function TrainingView({ a, now, onFind, onGuide }: { a: ActiveSession; no
     const m = () => setPillW(document.querySelector('nav[aria-label="主导航"] [aria-current="page"]')?.getBoundingClientRect().width ?? 0);
     m(); window.addEventListener('resize', m); return () => window.removeEventListener('resize', m);
   }, []);
-  useEffect(() => {
-    if (!dock) return;
-    const away = (e: MouseEvent) => { if (!dockRef.current?.contains(e.target as Node)) sharedTransition(() => setDock(false)); };
-    document.addEventListener('click', away, true);
-    return () => document.removeEventListener('click', away, true);
-  }, [dock]);
 
   const en = a.entries[a.cur];
   // 热身组（6e）不计数、不占序号：下面的数都只数正式组；cur 是 rows 里的下标
@@ -133,11 +123,13 @@ export function TrainingView({ a, now, onFind, onGuide }: { a: ActiveSession; no
 
   return (
     <>
+      {/* 页头和内容在同一个滚动区里，随内容滚走（走查 1 #20：训练中也不贴顶；固定的只有导航和拇指区主按钮） */}
+      <div ref={topRef} className={s.scroll}>
       <PageHeader title="今日处方"
         trailing={<Button kind="ghost" size="s" onClick={() => (hasWork(a) && pending === 0 ? end() : setPause(true))}>{hasWork(a) && pending === 0 ? '结束' : '暂停'}</Button>}>
         <p className={`milo-text-caption ${s.date}`}>{dateLabel(now)} · 训练中 {mins} 分钟</p>
       </PageHeader>
-      <div ref={topRef} className={s.body} data-training>
+      <div className={s.body} data-training>
         <div className={s.progress} aria-label={`已打卡 ${doneSets} / ${total} 组`}>
           <Odometer value={String(doneSets)} size="l" /><span className="milo-text-body">/ {total} 组</span>
           <span className={`milo-text-caption ${s.grow}`}>{[...new Set(a.entries.map((x) => regionName(x.exerciseId)))].join(' · ')}</span>
@@ -179,15 +171,16 @@ export function TrainingView({ a, now, onFind, onGuide }: { a: ActiveSession; no
           {onFind && <button type="button" className={`milo-press milo-focus ${s.addEx}`} onClick={onFind}><FinderGlyph gender={st.profile?.gender ?? 'male'} className={s.addGlyph} />加一个动作</button>}
         </div>
       </div>
+      </div>
 
       <div className={s.scrim} aria-hidden="true" />
       {/* 首页训练中唯一的计时器：和导航选中滑块同形（导航上不再显示），切 Tab 时胶囊下滑消失、里面的进度条飞进导航滑块（Nav.tsx 的 REST_RING_VT） */}
-      {st.rest && <div ref={dockRef} className={`${s.restDock} ${dock ? s.restDockOpen : ''}`}><RestDock remaining={left} total={st.rest.totalMs / 1000} open={dock} onToggle={setDock} onAdjust={adjustRest} onSkip={skipRest}
-        ring={pillW ? { width: pillW, endAt: st.rest.endAt } : undefined} /></div>}
-      <div className={s.cta} style={{ ...(st.rest && !dock && pillW ? { left: T['size/gutter'] + pillW + T['space/s'] } : {}), ...(armed ? {} : { transition: 'none' }) }}><Button onClick={primary.run}>{primary.label}</Button></div>
+      {st.rest && <div className={s.restDock}><RestDock remaining={left} total={st.rest.totalMs / 1000} endAt={st.rest.endAt} width={pillW || undefined} /></div>}
+      <div className={s.cta} style={{ ...(st.rest && pillW ? { left: T['size/gutter'] + pillW + T['space/s'] } : {}), ...(armed ? {} : { transition: 'none' }) }}><Button onClick={primary.run}>{primary.label}</Button></div>
 
       {edit && er && (
-        <Sheet title={`${en.name} · ${isWork(en.rows[edit.row]) ? `第 ${work.findIndex(([, j]) => j === edit.row) + 1} 组` : '热身'}`} meta={er.done ? '已打卡 · 改完点「好了」' : undefined} onClose={() => setEdit(null)}>
+        // 标题只放动作名，「第 N 组」放说明行：长动作名不会在「第」字后面断行（走查 1 #19）
+        <Sheet title={en.name} meta={`${isWork(en.rows[edit.row]) ? `第 ${work.findIndex(([, j]) => j === edit.row) + 1} 组` : '热身'}${er.done ? ' · 已打卡，改完点「好了」' : ''}`} onClose={() => setEdit(null)}>
           <SetEditor weight={er.weight} reps={er.reps} field={edit.field} onField={(f) => setEdit({ ...edit, field: f, fresh: true })} onKey={key} onStep={stepBy} step={env.cfg.loadStep}
             hint={hint} error={err?.field === edit.field ? err.msg : err?.msg} onDone={editDone} doneLabel={edit.checkin ? '打卡' : '好了'} doneDisabled={!er.weight.trim() || !er.reps.trim() || !!err} />
         </Sheet>

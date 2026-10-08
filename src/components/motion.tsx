@@ -1,6 +1,6 @@
 /** 动效组件（2026-10-04 用户选定 8motions 的 02 / 03 / 07）：
  *  Cascade  — M07 弹簧交错流：子项依次从下方弹入，错开 motion/stagger，总窗口不超过 motion/list-max；
- *  RestDock — M02 流体胶囊形变：组间休息平时是底部一颗小胶囊，点开原地长成休息面板（尺寸与圆角一起按软弹簧过渡）；
+ *  RestDock — 组间休息计时小胶囊（2026-10-08 走查 1：只保留小的，不再点开长成面板）；
  *  SharedDetail / sharedTransition / sharedName — M03 共享元素展开：列表行的卡片、名称、数字原地变形成整屏详情（View Transitions），返回时变回去；
  *    首页「开始训练」时主角卡原地展开成组行、训练中点列表行换动作，也是它。
  *  Tilt — M01 3D 倾斜光影（2026-10-06 加）：按住核心卡片移动时随触点微倾、高光跟手，松手弹簧回正。只给「这一刻的主角」（结算页新纪录卡）。
@@ -13,7 +13,7 @@ import { IconButton } from './Button';
 import { Icon } from './Icon';
 import { useBackHandler } from './overlay';
 import { cx } from './state';
-import { RestBar, clock } from './training';
+import { clock } from './training';
 import s from './motion.module.css';
 
 export function Cascade({ children, replayKey, still }: { children: ReactNode; replayKey?: string | number; /** 不播入场（从曲线页返回、共享元素转场要拍到完整的列表行时） */ still?: boolean }) {
@@ -35,37 +35,12 @@ export function Collapsible({ open, id, children }: { open: boolean; id?: string
   );
 }
 
-export function RestDock({ remaining, total, open, onToggle, onAdjust, onSkip, ring }: {
-  remaining: number; total: number; open: boolean; onToggle: (open: boolean) => void; onAdjust?: (d: number) => void; onSkip?: () => void;
-  /** 「导航滑块」形态（2026-10-06，首页训练中）：和导航选中滑块一模一样——骨白胶囊、图标在上时间在下、里面一道按剩余比例收短的实线；
-   *  width = 导航一项的宽度，endAt 让描边按帧走；收起时带共享名 REST_VT（切 Tab 时胶囊下滑消失），里面的进度条带 REST_RING_VT（飞进导航滑块） */
-  ring?: { width: number; endAt: number };
-}) {
-  const ratio = Math.max(0, Math.min(1, remaining / total));
-  // 导航滑块形态：胶囊 ↔ 面板也走共享元素（同名 REST_VT），胶囊原地长成面板、面板缩回胶囊
-  const toggle = ring ? (v: boolean) => sharedTransition(() => onToggle(v)) : onToggle;
-  if (ring && !open) return <RingPill remaining={remaining} total={total} width={ring.width} endAt={ring.endAt} onOpen={() => toggle(true)} />;
-  return (
-    <div className={cx(s.dock, open && s.dockOpen)} style={{ ['--rest' as string]: `${ratio * 100}%`, ...(ring ? REST_VT : {}) }}>
-      {open ? (
-        <div className={s.dockBody}>
-          <RestBar remaining={remaining} total={total} onAdjust={onAdjust} onSkip={onSkip} onDismiss={() => toggle(false)} />
-          {remaining > 0 && <button type="button" className={cx('milo-focus', s.collapse)} onClick={() => toggle(false)}>收起</button>}
-        </div>
-      ) : (
-        <button type="button" className={cx('milo-press milo-focus', s.pill)} onClick={() => onToggle(true)} aria-label={remaining > 0 ? `组间休息剩余 ${clock(remaining)}，展开` : '休息结束，展开'}>
-          <Icon name={remaining > 0 ? 'timer' : 'check'} small />
-          <span>{remaining > 0 ? '休息' : '休息结束'}</span>
-          {remaining > 0 && <b>{clock(remaining)}</b>}
-        </button>
-      )}
-    </div>
-  );
-}
-
-/** 休息胶囊的「导航滑块」形态：尺寸和内描边的几何与导航选中滑块一致（进度条才能原样飞过去），配色跟页面组件（凹底 + 细线），进度条到了滑块上才换成滑块的深色 */
-function RingPill({ remaining, total, width, endAt, onOpen }: { remaining: number; total: number; width: number; endAt: number; onOpen: () => void }) {
-  const ref = useRef<HTMLButtonElement>(null);
+/** 组间休息计时（2026-10-08 走查 1 #21 #27：只保留小胶囊，不再点开长成面板——±15 / 跳过一起去掉，打下一组就是结束休息）。
+ *  和导航选中滑块同形：尺寸和内描边几何一致（进度条才能原样飞过去），配色跟页面组件（凹底 + 细线），进度条到了滑块上才换成滑块的深色；
+ *  只是状态，不可点（role=timer）；整颗胶囊带共享名 REST_VT（切 Tab 时胶囊下滑消失），里面的进度条带 REST_RING_VT（飞进导航滑块）；
+ *  休息结束换成对勾 +「好了」，直到打下一组。width 不给时按内容宽（Playground）。 */
+export function RestDock({ remaining, total, endAt, width }: { remaining: number; total: number; endAt: number; /** 导航一项的宽度 */ width?: number }) {
+  const ref = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState<[number, number] | null>(null);
   useLayoutEffect(() => {
     const el = ref.current!; const m = () => setBox([el.offsetWidth, el.offsetHeight]);
@@ -74,12 +49,12 @@ function RingPill({ remaining, total, width, endAt, onOpen }: { remaining: numbe
   const rr = useRestRatio(endAt, total * 1000);
   const inset = T['stroke/ring-rest'] / 2 + T['space/2xs'];
   return (
-    <button ref={ref} type="button" className={cx('milo-press milo-focus', s.ringPill, remaining <= 0 && s.ringDone)} style={{ width, ...REST_VT }} onClick={onOpen}
-      aria-label={remaining > 0 ? `组间休息剩余 ${clock(remaining)}，展开` : '休息结束，展开'}>
+    <div ref={ref} role="timer" className={cx(s.ringPill, remaining <= 0 && s.ringDone)} style={{ ...(width ? { width } : {}), ...REST_VT }}
+      aria-label={remaining > 0 ? `组间休息剩余 ${clock(remaining)}` : '休息结束'}>
       {box && remaining > 0 && <svg className={s.ringLayer} style={REST_RING_VT} aria-hidden="true"><path className={s.ringRest} d={pillPath(inset, inset, box[0] - inset * 2, box[1] - inset * 2)} pathLength={1} style={{ strokeDasharray: `${rr} 1` }} /></svg>}
       <Icon name={remaining > 0 ? 'timer' : 'check'} small />
       <b>{remaining > 0 ? clock(remaining) : '好了'}</b>
-    </button>
+    </div>
   );
 }
 

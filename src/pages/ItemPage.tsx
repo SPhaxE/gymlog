@@ -33,7 +33,7 @@ export function ItemPage({ scenario, now }: { scenario?: string; now: number }) 
   const q = quote(p, balance, null, true);
   const reminded = wallet.restock.some((r) => r.productId === p.id);
   const off = p.status === 'off', oos = p.status === 'oos';
-  const setRemind = () => { update((w) => remind(w, p.id, Date.now())); toast.show('到货提醒已设：演示里「我的 · 消息」马上会来一条'); };
+  const setRemind = () => { update((w) => remind(w, p.id, Date.now())); toast.show('到货提醒已设：到了会在「我的 · 消息」告诉你'); };
 
   return (
     <Screen label="商品详情">

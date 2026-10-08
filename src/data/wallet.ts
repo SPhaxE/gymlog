@@ -101,7 +101,7 @@ export const mute = (w: WalletState, id: KnowledgeId): WalletState => (w.muted.i
 /** 到货提醒的消息（演示：设了就当已到货，ia F6 用户 2026-10-07 选「本机 + 消息」） */
 export function restockMessages(w: WalletState): Message[] {
   return w.restock.map((r) => ({ id: `m-restock-${r.productId}-${r.atMs}`, atMs: r.atMs, kind: 'restock' as const, niujin: 0,
-    title: `${productById(r.productId)?.name ?? '商品'} 已到货`, detail: '演示：你设的到货提醒。真实上线后，到货时才会发这条' }));
+    title: `${productById(r.productId)?.name ?? '商品'} 已到货`, detail: '你设的到货提醒：数量有限，想要就早点下单' }));
 }
 
 /** 演示用户的钱包：兑换过一张免邮券（12 天前）和一张铁砧运动满减券（3 天前），都还没用 */

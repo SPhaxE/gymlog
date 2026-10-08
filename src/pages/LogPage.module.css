@@ -12,4 +12,3 @@
 .weekTitle span { color: var(--milo-color-text-secondary); }
 .totals { display: inline-flex; align-items: baseline; gap: var(--milo-space-m); flex: none; }
 .rows { display: grid; gap: var(--milo-space-s); }
-.more { display: grid; justify-items: center; padding-top: var(--milo-space-s); }

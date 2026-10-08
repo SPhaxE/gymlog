@@ -8,9 +8,9 @@
  *  - 框架：顶栏（返回 + 牛龄）→ 页头 → 离下一级 → 三格 → 最近 12 周 → 成长记录 → 一行小字（删训练会重算、可能降级）。没有主操作按钮（浏览页）。
  *  - 表现：荧光只有进度条一处；小牛是品牌位置，可以用 IP 小牛；功能位置（连胜、记录）不放小牛（语气分工）；守约点阵的每种状态形状 / 纹理都不同，不只靠颜色。
  *  设计过程见 design/hifi/me/（线框 level W1 小牛为主角；Stitch 第 1 轮 m6）。 */
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { BackToTop, Button, GrowthBar, LedgerRow, MessageRow, Num, Screen, SectionLabel, StageHero, StreakRisk, StreakWeeks, TopBar, type StreakWeekStatus } from '../components';
+import { BackToTop, GrowthBar, LoadMore, LedgerRow, MessageRow, Num, Screen, SectionLabel, StageHero, StreakRisk, StreakWeeks, TopBar, type StreakWeekStatus } from '../components';
 import { COUPONS, dateOf } from '../data/growth';
 import { growthLog, growthOf, nextGoal, riskOf } from '../data/me';
 import { useStore } from '../data/store';
@@ -34,6 +34,7 @@ export function LevelPage({ scenario, now }: { scenario?: string; now: number })
   const g = useMemo(() => growthOf({ ...src, wallet, pro: proPeriods(pro) }, now), [src, wallet, pro, now]);
   const log = useMemo(() => growthLog(g, scenario ? [] : st.notes), [g, scenario, st.notes]);
   const [shown, setShown] = useState(CHUNK);
+  const loadMore = useCallback(() => setShown((n) => n + CHUNK), []);
   const cur = g.streak.current, empty = src.history.length === 0, goal = nextGoal(g), risk = riskOf(g, now);
   const weeks = g.streak.history.slice(-12).map((w): StreakWeekStatus => (w.status === 'risk' ? 'open' : w.status));
   const back = () => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav('/me' + loc.search, { replace: true }));
@@ -65,7 +66,7 @@ export function LevelPage({ scenario, now }: { scenario?: string; now: number })
               : <div>{log.slice(0, shown).map((r) => (r.niujin != null
                 ? <LedgerRow key={r.id} plain label={r.title} amount={r.niujin} date={dateOf(r.atMs)} detail={r.detail} />
                 : <MessageRow key={r.id} kind={r.kind === 'freeze' ? 'freeze' : 'demote'} title={r.title} detail={r.detail ?? ''} date={dateOf(r.atMs)} />))}</div>}
-            {log.length > shown && <div className={s.more}><Button kind="ghost" size="s" onClick={() => setShown((n) => n + CHUNK)}>更早的记录 · 还有 {log.length - shown} 条</Button></div>}
+            {log.length > CHUNK && <LoadMore left={Math.max(0, log.length - shown)} onMore={loadMore} />}
           </section>
 
           <p className={`milo-text-caption ${s.note}`}>删除训练后，成长值和连胜会重新计算，可能降级；降级不弹窗，只在这里写明。</p>

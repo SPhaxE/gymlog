@@ -178,8 +178,6 @@
   background: radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--milo-color-accent-default) 28%, transparent), transparent 65%), var(--milo-color-bg-sheet); }
 .payCta { width: 100%; }
 .payCta > *, .payCta > * > * { width: 100%; }
-.demo { position: absolute; top: var(--milo-space-m); right: var(--milo-space-m); padding: var(--milo-space-2xs) var(--milo-space-xs); border-radius: var(--milo-radius-s);
-  font: 700 var(--milo-font-size-min) / 1.2 var(--milo-font-ui); color: var(--milo-color-text-secondary); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); }
 .payHead { display: grid; gap: var(--milo-space-2xs); }
 .payHead h2, .payHead p { margin: 0; }
 .perks { display: grid; }

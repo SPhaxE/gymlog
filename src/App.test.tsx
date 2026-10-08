@@ -52,14 +52,14 @@ describe('首页即打卡（2026-10-06：取消独立训练页）', () => {
     expect(store.get().active?.entries[0].rows.find((r) => r.type === 'work')?.done).toBe(true);   // 前面可能有热身组（6e），热身不占序号
     expect(store.get().rest).not.toBeNull();
     // 首页只有一个计时器：主按钮旁的胶囊；导航上不重复显示
-    expect(screen.getByRole('button', { name: /组间休息剩余/ })).toBeInTheDocument();
+    expect(screen.getByRole('timer', { name: /组间休息剩余/ })).toBeInTheDocument();   // 走查 1：只是计时状态，不可点
     expect(screen.getByRole('navigation', { name: '主导航' }).querySelector('[aria-current="page"]')?.getAttribute('aria-label') ?? '').not.toMatch(/休息剩余/);
     // 切到增量页：计时到了导航滑块上
     screen.getByRole('link', { name: /增量/ }).click();
     // 换 Tab 要重新渲染整页（CI 机器上可能超过默认 1 秒），放宽等待
     await screen.findByRole('link', { name: /增量，休息剩余/ }, { timeout: 5000 });
     screen.getByRole('link', { name: /首页/ }).click();
-    await screen.findByRole('button', { name: /组间休息剩余/ }, { timeout: 5000 });
+    await screen.findByRole('timer', { name: /组间休息剩余/ }, { timeout: 5000 });
     // 6e：页头「暂停」打开暂停面板（暂停 / 结束并结算）；还有没打的组 → 再确认一次
     screen.getByRole('button', { name: '暂停' }).click();
     (await screen.findByRole('button', { name: '结束并结算' })).click();

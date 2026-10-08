@@ -15,6 +15,7 @@
   font-family: var(--milo-font-number); font-weight: 900; font-size: var(--milo-font-size-caption); }
 .prev { margin-left: auto; white-space: nowrap; padding: var(--milo-space-2xs) var(--milo-space-s); border-radius: var(--milo-radius-pill); background: color-mix(in srgb, var(--milo-color-text-on-accent) 12%, transparent);
   font-size: var(--milo-font-size-caption); font-weight: 700; }
+.heroName { margin-top: calc(var(--milo-space-xs) * -1); text-wrap: balance; }
 .heroNum { display: flex; align-items: baseline; gap: var(--milo-space-s); }
 .plus { margin-left: auto; white-space: nowrap; padding: var(--milo-space-2xs) var(--milo-space-s); border-radius: var(--milo-radius-s); background: var(--milo-color-text-on-accent); color: var(--milo-color-accent-default) !important;
   font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-m); }

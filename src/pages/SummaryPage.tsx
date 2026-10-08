@@ -52,8 +52,10 @@ export function SummaryPage() {
       <div className={s.body}>
         {best ? (
           <Tilt><div className={s.hero}>
-            <div className={s.heroTop}><span className={s.pr}>PR</span><span className="milo-text-label">新纪录 · {name(best.exerciseId)}</span>
+            {/* 一行只放一件事（走查 1 #24）：标签行 PR · 新纪录 · 之前最好；动作名单独一行，再长也不挤着标签折行 */}
+            <div className={s.heroTop}><span className={s.pr}>PR</span><span className="milo-text-label">新纪录</span>
               {best.prevBest != null && <span className={s.prev}>之前最好 {fmt(best.prevBest)} kg</span>}</div>
+            <div className={`milo-text-heading ${s.heroName}`}>{name(best.exerciseId)}</div>
             <div className={s.heroNum}><span className="milo-text-caption">预估 1RM</span><Num size="hero" value={fmt(best.e1rm ?? 0)} unit="kg" />{gain(best) != null && <span className={s.plus}>+{fmt(gain(best)!)} kg</span>}</div>
             <HeroTicks />
           </div></Tilt>

@@ -19,11 +19,11 @@ export function StatusTag({ status }: { status: ProductStatus }) {
   return <span className={cx('milo-text-micro', s.tag, s[`tag_${status}`])}>{STATUS[status]}</span>;
 }
 
-/** 商品图：public/shop/<id>.webp；加载好之前 / 没有图时显示品类占位（护具 = 横条、补给 = 罐子），不出现破图 */
-function Pic({ id, category, className }: { id?: string; category: '护具' | '补给'; className?: string }) {
+/** 商品图：public/shop/<id>.webp；加载好之前 / 没有图时显示品类占位（护具 = 横条、补剂 = 罐子），不出现破图 */
+function Pic({ id, category, className }: { id?: string; category: '护具' | '补剂'; className?: string }) {
   const [img, setImg] = useState(false);
   return (
-    <span className={cx(s.pic, !img && (category === '补给' ? s.picSupp : s.picGear), className)} aria-hidden="true">
+    <span className={cx(s.pic, !img && (category === '补剂' ? s.picSupp : s.picGear), className)} aria-hidden="true">
       {!img && <i />}
       {id && <img className={cx(s.picImg, !img && s.picWait)} src={`${import.meta.env.BASE_URL}shop/${id}.webp`} alt="" draggable={false} onLoad={() => setImg(true)} onError={() => setImg(false)} />}
     </span>
@@ -31,12 +31,12 @@ function Pic({ id, category, className }: { id?: string; category: '护具' | '�
 }
 
 /** 商品详情的大图（同一张商品图，占满宽度；缺货 / 已下架变灰） */
-export function ProductImage({ id, category, dim }: { id?: string; category: '护具' | '补给'; dim?: boolean }) {
+export function ProductImage({ id, category, dim }: { id?: string; category: '护具' | '补剂'; dim?: boolean }) {
   return <span className={cx(s.hero, dim && s.dim)}><Pic id={id} category={category} /></span>;
 }
 
 export interface ProductCardProps {
-  id?: string; name: string; merchant: string; spec?: string; price: number; member: number; category: '护具' | '补给'; status: ProductStatus; was?: number;
+  id?: string; name: string; merchant: string; spec?: string; price: number; member: number; category: '护具' | '补剂'; status: ProductStatus; was?: number;
   /** 牛劲最多能抵多少元（会员价 × 20% 与余额取小） */
   off: number;
   variant?: 'grid' | 'row';
@@ -138,7 +138,7 @@ export function WalletExits({ onShop, onRedeem, redeemFrom, state }: { onShop?: 
 }
 
 /** 下单 / 订单里的商品行：图 + 名字 + 规格 · 商家 + 会员价 */
-export function OrderLine({ id, name, size, merchant, category, member, qty = 1 }: { id?: string; name: string; size: string | null; merchant: string; category: '护具' | '补给'; member: number; qty?: number }) {
+export function OrderLine({ id, name, size, merchant, category, member, qty = 1 }: { id?: string; name: string; size: string | null; merchant: string; category: '护具' | '补剂'; member: number; qty?: number }) {
   return (
     <div className={s.orderLine}>
       <Pic id={id} category={category} className={s.picRow} />
@@ -158,11 +158,6 @@ export function Breakdown({ rows, total, totalLabel = '合计' }: { rows: [strin
       <div className={s.bTotal}><span className="milo-text-heading">{totalLabel}</span><b className="milo-text-number-xl">{yuan(total)}</b></div>
     </div>
   );
-}
-
-/** 演示模式横幅：不收集任何支付信息，提交即成功 */
-export function DemoBanner({ children = '演示模式 · 不收集任何支付信息，提交即成功' }: { children?: ReactNode }) {
-  return <p className={cx('milo-text-caption', s.demo)}><i aria-hidden="true" />{children}</p>;
 }
 
 /** 商城卡片网格：两列，行高按内容（grid-auto-rows: max-content，DESIGN §9.6） */

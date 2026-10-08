@@ -9,10 +9,10 @@
  *  - 表现：钢板是这一页唯一的荧光（孔 + 透孔光束；光源固定在屏幕上，滚动时光影真实变化，见 components/plate.*）；PR 标用骨白；周合计的数字用压缩粗体。
  *  - 钢板可交互（M04）：拖 / 点选中某一天，读数行写那天的部位、组数、总负荷（码表），「查看」钻进那次训练（和点列表行同一个转场）。
  *  设计过程与取舍见 design/hifi/log/（Stitch l6 的 C 票根行、钢板方案 plate-plan.md）。 */
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router';
-import { BackToTop, Button, Num, PageHeader, Screen, SessionRow, StateView, SteelPlate, dotDays, dotMonths, drillTransition, type Tab } from '../components';
+import { BackToTop, LoadMore, Num, PageHeader, Screen, SessionRow, StateView, SteelPlate, dotDays, dotMonths, drillTransition, type Tab } from '../components';
 import { fmt } from '../data/demo';
 import { logData, weekTotals } from '../data/log';
 import { useSource } from '../data/useSource';
@@ -39,6 +39,7 @@ export function LogPage({ scenario, now, onTab }: { scenario?: string; now: numb
   const info = selDay != null ? d.byDay.get(selDay)! : null;
   const plateDay = info ? { t: info.t, title: info.date, sub: `${info.regions} · ${info.sets} 组${info.prs ? ` · ${info.prs} 个新纪录` : ''}`, value: fmt(info.load), unit: 'kg' } : null;
   const [shown, setShown] = useState(() => memo.get(key)?.shown ?? CHUNK);
+  const loadMore = useCallback(() => setShown((n) => n + CHUNK), []);
   const weeks = d.weeks.slice(0, shown), more = d.weeks.length - weeks.length;
   useLayoutEffect(() => { const m = memo.get(key); if (m && scroll.current) scroll.current.scrollTop = m.top; }, [key]);
   // 钻入转场：被点的那一行带共享名；从详情返回时，落回的那一行（memo.from）也带名，转场放完后撤掉
@@ -78,7 +79,8 @@ export function LogPage({ scenario, now, onTab }: { scenario?: string; now: numb
                   </div>
                 </section>
               ))}
-              {more > 0 && <div className={s.more}><Button kind="ghost" size="s" onClick={() => setShown((n) => n + CHUNK)}>更早的训练 · 还有 {more} 周</Button></div>}
+              {/* 分段加载：滑到底自动接上下一段，全部加载完写「到底了」（走查 1 #17）；一段就放得下的不出现 */}
+              {(more > 0 || shown > CHUNK) && <LoadMore left={more} onMore={loadMore} />}
             </>
           )}
         </div>

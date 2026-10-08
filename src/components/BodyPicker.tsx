@@ -1,5 +1,6 @@
 /** 点人体选肌肉（6e 找动作，线框 ?board=finder；用户 2026-10-07：只是检索器，可读性优先，不用容量页视效）。
  *  - 平涂高对比：没选的中灰、选中的骨白、同一块肌肉里没选到的肌头浅灰；肌肉之间留一道底色缝；手、脚、脖子更暗；不发光、不扫描。
+ *    素材里的 body 是只描边的轮廓线（头、头发、关节），按线画、不填色。
  *  - 半身，版式同容量页（从左裁 ratio/figure-crop、左缘渐隐），但放在面板右栏（拇指区）。
  *  - 命中区：按「组」点（组 = 调用方给的 groupOf，找动作里是整块肌肉）；点在缝里或剪影边上 24 px 以内都算离得最近的那组（最近吸附）——
  *    挂载后按 3 px 网格用真实路径采样一遍、多源 BFS 往外扩 8 格，得到每组的实际命中区；skip 里的肌头在这一面不当目标（它的地方归给邻居）。
@@ -9,7 +10,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { T } from '../styles/tokens.gen';
 import s from './BodyPicker.module.css';
 
-type Part = { paths?: { d: string }[] };
+type Part = { paths?: { d: string }[]; lines?: { x1: number; y1: number; x2: number; y2: number }[] };
 type BodyMap = { viewBox?: string; front: Record<string, Part>; back: Record<string, Part> };
 const NEUTRAL = ['neck', 'feet', 'hands', 'groin'];
 const cache = new Map<string, Promise<BodyMap>>();
@@ -100,7 +101,8 @@ export function BodyPicker({ gender, view, height, groupOf, groupName, skip = []
       <svg ref={svg} className={`${vb ? s.figure : s.measuring} ${onPick ? '' : s.still}`} viewBox={box.join(' ')} height={height} width={(height * box[2]) / box[3]} preserveAspectRatio="xMinYMin meet" aria-hidden="true"
         onPointerDown={onPick && ((e) => setPressed(groupAt(e)))} onPointerLeave={() => setPressed(null)} onPointerCancel={() => setPressed(null)}
         onPointerUp={onPick && ((e) => { const g = groupAt(e); setPressed(null); if (g) onPick(g); })}>
-        <g className={s.base}>{(v.body?.paths ?? []).map((p, i) => <path key={i} d={p.d} />)}</g>
+        {/* body 是素材里只描边的轮廓线（头发、关节、肌肉走向），不是剪影：按线画，不能填色（走查 1 #11：填了会在头上长出尖刺、脖子边多一块三角） */}
+        <g className={s.base}>{(v.body?.paths ?? []).map((p, i) => <path key={i} d={p.d} />)}{(v.body?.lines ?? []).map((l, i) => <line key={'l' + i} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} />)}</g>
         <g className={s.neutral}>{NEUTRAL.flatMap((k) => (v[k]?.paths ?? []).map((p, i) => <path key={k + i} d={p.d} />))}</g>
         {heads.map((h) => {
           const g = skip.includes(h) ? null : groupOf(h);

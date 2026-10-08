@@ -187,31 +187,6 @@ export function useCountdown(endAt: number | null) {
   return endAt == null ? 0 : Math.max(0, Math.ceil((endAt - now) / 1000));
 }
 
-export type RestState = 'running' | 'ending' | 'done';
-/** 剩余 ≤ 10 秒为 ending：倒计时前加「即将结束」，进度条变虚线；结束为 done：换成对勾 + 「开始下一组」 */
-export function RestBar({ remaining, total, onAdjust, onSkip, onDismiss }: {
-  remaining: number; total: number; onAdjust?: (d: number) => void; onSkip?: () => void; onDismiss?: () => void;
-}) {
-  const st: RestState = remaining <= 0 ? 'done' : remaining <= 10 ? 'ending' : 'running';
-  return (
-    <div className={cx(s.rest, s[`rest_${st}`])} role="timer" aria-label={st === 'done' ? '休息结束' : `组间休息剩余 ${clock(remaining)}`}>
-      <span className={s.restIcon}><Icon name={st === 'done' ? 'check' : 'timer'} /></span>
-      <span className={s.restText}>
-        <span className="milo-text-caption">{st === 'done' ? '休息结束' : st === 'ending' ? '即将结束' : '组间休息'}</span>
-        {st === 'done' ? <b className="milo-text-body-strong">开始下一组</b> : <Num size="l" value={clock(remaining)} />}
-      </span>
-      {st === 'done' ? <IconButton kind="plain" icon="close" label="关闭休息提示" onClick={onDismiss} /> : (
-        <span className={s.restBtns}>
-          <button type="button" className={cx('milo-press milo-focus', s.restBtn)} onClick={() => onAdjust?.(-15)} aria-label="少休息 15 秒">−15</button>
-          <button type="button" className={cx('milo-press milo-focus', s.restBtn)} onClick={() => onAdjust?.(15)} aria-label="多休息 15 秒">+15</button>
-          <button type="button" className={cx('milo-press milo-focus', s.restBtn)} onClick={onSkip} aria-label="跳过休息"><Icon name="skip" small /></button>
-        </span>
-      )}
-      {st !== 'done' && <i className={s.restTrack}><i style={{ width: `${Math.min(1, remaining / total) * 100}%` }} /></i>}
-    </div>
-  );
-}
-
 /* ---------- 训练记录行（P07） ---------- */
 /** 票根行（6c，Stitch l6 C 的取舍）：左边大号日期（10/6）+ 周几，虚线（撕口），中间主要部位和动作 / 组 / 分钟，右边骨白 PR 标；
  *  没有 onClick 是静态行（不画箭头、没有按下反馈）；有 onClick 整行可点（≥ 48）。date 传数字（只有「日」）或「10/6」；year 只有不在今年时才传 */

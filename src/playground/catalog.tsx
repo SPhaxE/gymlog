@@ -6,9 +6,9 @@ import { useRef, type ReactNode } from 'react';
 import {
   BackToTop, Banner, BodyFigure, DotCalendar, SteelPlate, GainGroupHead, GainRow, GainSummary, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
   BodyPicker, PickRow, SwapRow, WarmupStrip,
-  ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProfileTile, ProgressSteps, RestBar, SectionLabel, Segmented,
-  SessionRow, SetEditor, SetLine, SetRow, NumPad, Sheet, Tilt, SheetBlock, Skeleton, Sparkline, StateView, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
-  AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, PropGlyph, type PropKind, RewardCard, AgeBadge, Coupon, FreezeCard, GrowthBar, GrowthCard, StageHero, StreakWeeks, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, StreakRisk, ProductCard, StreakBar, Breakdown, DemoBanner, EvidencePanel, NiujinLine, OrderLine, PriceBlock, ProductGrid, RecommendCard, WalletExits, MonthStats, PerkLedger, PerkTable, PlanPicker, ProCard, ProLink, ProWelcome, HeadWeeks,
+  ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProfileTile, ProgressSteps, SectionLabel, Segmented,
+  SessionRow, SetEditor, SetLine, SetRow, NumPad, Sheet, Tilt, SheetBlock, Skeleton, Sparkline, StateView, LoadMore, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
+  AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, PropGlyph, type PropKind, RewardCard, AgeBadge, Coupon, FreezeCard, GrowthBar, GrowthCard, StageHero, StreakWeeks, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, StreakRisk, ProductCard, StreakBar, Breakdown, EvidencePanel, NiujinLine, OrderLine, PriceBlock, ProductGrid, RecommendCard, WalletExits, MonthStats, PerkLedger, PerkTable, PlanPicker, ProCard, ProLink, ProWelcome, HeadWeeks,
   type LogoState, type MascotMood, type MascotStage, type StreakStatus, type StreakWeekStatus,
   type Forced, type IconName, type NumSize, type SkeletonShape, type Tab, type TagTone,
 } from '../components';
@@ -229,6 +229,11 @@ export const CATALOG: Entry[] = [
       : p.kind === 'empty' ? <StateView kind="empty" title="还没有训练记录" detail="练完第一次，这里会按时间列出来" action="去看今日处方" />
       : <StateView kind="error" title="历史没读出来" detail="本地存储读取失败，数据没有被改动" action="重试" />,
   },
+  {
+    name: 'LoadMore', group: '反馈与悬浮层', desc: '分段加载（2026-10-08 走查 1）：长列表滑到底自动加载下一段——底部露出 Logo 加载态（条一根根长出来）+「加载中」，停 motion/slow 再接上；全部加载完写「到底了」。不写「还有 N 周」按钮。用在记录页按周列表、牛龄页成长记录。',
+    axes: { state: ['more', 'end'] }, size: 'card',
+    render: (p) => <LoadMore left={p.state === 'end' ? 0 : 8} onMore={noop} />,
+  },
   /* ---------------- 列表与页头 ---------------- */
   {
     name: 'ListRow', group: '列表与页头', desc: '行高不小于 hit-min，行间刻度分隔线。static 只读；nav 进入子页；toggle 整行是开关的 label（按下 / 聚焦落在开关上）；danger 危险操作。',
@@ -366,11 +371,6 @@ export const CATALOG: Entry[] = [
     },
   },
   {
-    name: 'RestBar', group: '训练与记录', desc: '组间休息悬浮条。按结束时间戳计算；±15 秒、跳过；≤ 10 秒「即将结束」进度条变虚线；结束换对勾 + 骨白底（形状变化，不只靠颜色）。',
-    axes: { state: ['running', 'ending', 'done'] }, size: 'card',
-    render: (p) => <RestBar total={180} remaining={p.state === 'running' ? 95 : p.state === 'ending' ? 7 : 0} />,
-  },
-  {
     name: 'SessionRow', group: '训练与记录', desc: '训练记录票根行（P07，Stitch l6 C）：左边大号日期 + 周几，虚线撕口，中间主要部位和动作 / 组数 / 时长，右边骨白 PR 标；不在今年的带年份；没有 onClick（static）是静态行，不画箭头也没有按下反馈。',
     axes: { kind: ['normal', 'pr', 'deload', 'static'], state: ['default', 'pressed', 'focused'] }, rows: ['kind'], cols: 'state', size: 'card',
     skip: (p) => p.kind === 'static' && p.state !== 'default',
@@ -441,10 +441,9 @@ export const CATALOG: Entry[] = [
   },
   /* ---------------- 数据图形 ---------------- */
   {
-    name: 'RestDock', group: '训练与记录', desc: 'M02 流体胶囊形变：组间休息平时是一颗小胶囊（底边一道骨白细线 = 剩余比例），点开原地长成休息面板（±15、跳过），尺寸与圆角按软弹簧一起过渡。ring（首页训练中，2026-10-06）：胶囊与导航一项同宽、页面配色（凹底 + 细线，图标在上时间在下，内描边骨白、按剩余比例收短），首页导航不再重复显示休息；切 Tab 时胶囊往下滑着淡出，只有进度条借共享元素飞进被点的导航滑块并换成深色（navHandoff 让目标页滑块先停好），胶囊 ↔ 面板也是共享元素。',
-    axes: { state: ['pill', 'open', 'done', 'ring', 'ring-done'] }, size: 'card', covers: ['navHandoff'],
-    render: (p) => <RestDock remaining={p.state === 'done' || p.state === 'ring-done' ? 0 : 95} total={180} open={p.state === 'open'} onToggle={noop}
-      ring={p.state.startsWith('ring') ? { width: 64, endAt: Date.now() + 95e3 } : undefined} />,
+    name: 'RestDock', group: '训练与记录', desc: '组间休息计时小胶囊（2026-10-08 走查 1：只保留小的，不再点开长成面板，±15 / 跳过去掉，打下一组就是结束休息）：只是状态（role=timer），不可点。和导航选中滑块同形——与导航一项同宽、页面配色（凹底 + 细线，图标在上时间在下，内描边骨白、按剩余比例收短），首页导航不再重复显示休息；休息结束换对勾 +「好了」直到打下一组。切 Tab 时胶囊往下滑着淡出，只有进度条借共享元素飞进被点的导航滑块并换成深色（navHandoff 让目标页滑块先停好）。',
+    axes: { state: ['running', 'done'] }, size: 'card', covers: ['navHandoff'],
+    render: (p) => <RestDock remaining={p.state === 'done' ? 0 : 95} total={180} endAt={Date.now() + (p.state === 'done' ? 0 : 95e3)} width={64} />,
   },
   {
     name: 'SharedDetail', group: '训练与记录', desc: 'M03 共享元素展开（View Transitions）：列表行（ExerciseRow sharedId）的卡片底、名称、重量与详情同名，点开时原地变形成整屏详情——卡片长满屏、名称与数字飞到新位置并放大，正文随后淡入；返回时变回去。真实动画见下方交互演示。转场进行中 Chrome 会把点按落在 <html> 上（点不到页面元素）：`guardTransitionTaps`（App 启动时装一次）在按下时打断转场，并把那一下点击改投给坐标处的真元素，所以转场期间点按不丢。M09 钻入转场（`drillTransition` / `drillName`，增量页的一行 ↔ 动作曲线页）：名称、最新值、小曲线分别飞成详情页的标题、大数字、整张曲线，整页只做很快的淡出 / 淡入；真实动画在 /gains → 点任意一行。',
@@ -687,13 +686,13 @@ export const CATALOG: Entry[] = [
     render: (p) => <WalletExits redeemFrom={COUPONS.shipping.cost} state={p.state === 'pressed' ? 'pressed' : undefined} />,
   },
   {
-    name: 'OrderLine', group: '商城', covers: ['Breakdown', 'DemoBanner'],
-    desc: '下单确认 / 订单完成：演示模式横幅（不收集任何支付信息）→ 商品行（图、名字、规格 · 商家、会员价）→ 金额明细（减项写 −¥）+ 合计大字。',
+    name: 'OrderLine', group: '商城', covers: ['Breakdown'],
+    desc: '下单确认 / 订单完成：商品行（图、名字、规格 · 商家、会员价）→ 金额明细（减项写 −¥）+ 合计大字。',
     axes: { state: ['o-belt', 'o-straps'] }, size: 'card',
     render: (p) => p.state === 'o-belt'
-      ? <div className={s.growCol}><DemoBanner /><OrderLine id="belt-10" name="杠铃腰带 10 毫米" size="M" merchant="铁砧运动" category="护具" member={296} />
+      ? <div className={s.growCol}><OrderLine id="belt-10" name="杠铃腰带 10 毫米" size="M" merchant="铁砧运动" category="护具" member={296} />
           <Breakdown rows={[['商品', 329], ['会员价', 33, 'minus'], ['铁砧运动 满 200 减 30', 30, 'minus'], ['牛劲 5,900', 59, 'minus']]} total={207} /></div>
-      : <div className={s.growCol}><DemoBanner /><OrderLine id="straps" name="8 字助力带" size={null} merchant="铁砧运动" category="护具" member={62} />
+      : <div className={s.growCol}><OrderLine id="straps" name="8 字助力带" size={null} merchant="铁砧运动" category="护具" member={62} />
           <Breakdown rows={[['商品', 69], ['会员价', 7, 'minus'], ['运费', 10], ['免邮券', 10, 'minus']]} total={62} /></div>,
   },
   {

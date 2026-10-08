@@ -1,5 +1,5 @@
 /** 底部面板：遮罩 bg/scrim，面板 bg/sheet，顶角 radius/xl，顶部抓手；点遮罩、×、Esc 或系统返回键关闭；打开时焦点进入面板，关闭后回到原处。
- *  阻尼拖拽（2026-10-04 用户选定 M05）：拖抓手在两档之间吸附——内容高度（最多屏高 60%）与近全屏（92%）；
+ *  阻尼拖拽（2026-10-04 用户选定 M05）：内容放得下（≤ 屏高 92%）就按内容高打开、只有一档、不出滚动；放不下才在两档之间吸附——屏高 60% 与近全屏（92%）；
  *  拉过上限越拉越重（橡皮筋 ×0.3）；松手按手指速度判档（快速上甩到近全屏、快速下甩关闭），慢慢松手吸到最近一档；拖到低档 60% 以下松手也关闭。
  *  面板盖住导航（ia §1.12），关掉即恢复。docked：只做静态展示（Playground 矩阵），不抢焦点、不登记返回键、不可拖。 */
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
@@ -24,8 +24,11 @@ export function Sheet({ title, meta, onClose, children, docked, sharedId, tall }
 
   useLayoutEffect(() => {
     if (docked || !ref.current || !scrim.current) return;
-    const H = scrim.current.clientHeight, natural = ref.current.scrollHeight;
-    const lo = Math.min(natural, H * LOW), hi = Math.max(lo, H * HIGH);
+    // 遮罩铺到状态栏下面、上边留了状态栏高的内边距：面板能用的高度不算这一段
+    const H = scrim.current.clientHeight - (parseFloat(getComputedStyle(scrim.current).paddingTop) || 0), natural = ref.current.scrollHeight;
+    // 放得下（≤ 92%）就按内容高打开、只有这一档，面板里不出滚动（键盘、确认这类定高内容，2026-10-08 走查 1 #19）；放不下才分 60% / 92% 两档
+    const fits = natural <= H * HIGH;
+    const lo = fits ? natural : H * LOW, hi = fits ? natural : H * HIGH;
     setAnchors([lo, hi]); setHgt(tall ? hi : lo);
   }, [docked, tall]);
 

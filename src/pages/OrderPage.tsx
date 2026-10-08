@@ -21,7 +21,7 @@ export function OrderPage({ scenario, now }: { scenario?: string; now: number })
   const o = wallet.orders.find((x) => x.id === id);
   if (!o) return (
     <Screen label="订单"><TopBar title="订单" onBack={toShop} />
-      <div className={s.body}><StateView kind="empty" title="没有这笔订单" detail="演示订单只存在这台设备上。" action="回商城" onAction={toShop} /></div>
+      <div className={s.body}><StateView kind="empty" title="没有这笔订单" detail="订单只存在这台设备上。" action="回商城" onAction={toShop} /></div>
     </Screen>
   );
   const spent = o.niujinOff * 100, latest = wallet.orders.at(-1)?.id === o.id;
@@ -34,7 +34,7 @@ export function OrderPage({ scenario, now }: { scenario?: string; now: number })
           <div className={s.done}>
             <div className={s.doneMascot}><Mascot stage={g.stage} mood="happy" animate title="开心的小牛" /></div>
             <h2 className={`milo-text-title-l ${s.doneTitle}`}>下单成功</h2>
-            <p className={`milo-text-caption ${s.note}`}>演示订单 {o.id} · 不会真的发货</p>
+            <p className={`milo-text-caption ${s.note}`}>订单号 {o.id}</p>
           </div>
           <div className={s.kv}>
             <div className={s.kvRow}><span className="milo-text-caption">{o.name}{o.size ? ` · ${o.size}` : ''}</span><span className="milo-text-number-s">{yuan(o.price)}</span></div>

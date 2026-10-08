@@ -11,22 +11,8 @@
 .collapsibleOpen > .collapsibleInner { overflow-clip-margin: var(--milo-space-xs); }
 @media (prefers-reduced-motion: reduce) { .collapsible { transition: none; } }
 
-/* M02 休息小胶囊 ↔ 面板：同一个容器，宽高与圆角按软弹簧过渡 */
-.dock { margin: 0 auto; overflow: hidden; width: calc(var(--milo-space-5xl) * 3); height: var(--milo-size-hit-min); border-radius: var(--milo-radius-pill);
-  background: var(--milo-color-bg-raised-2); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong), 0 var(--milo-space-s) var(--milo-space-2xl) var(--milo-color-shadow-float);
-  transition: width var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring-soft), height var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring-soft),
-    border-radius var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring-soft); }
-.dockOpen { width: 100%; height: calc(var(--milo-space-5xl) * 2.4); border-radius: var(--milo-radius-l); }
-.pill { position: relative; display: flex; align-items: center; justify-content: center; gap: var(--milo-space-xs); width: 100%; height: 100%; border: 0; font: inherit;
-  font-size: var(--milo-font-size-body); color: var(--milo-color-text-primary);
-  /* 胶囊底部一道骨白细线 = 剩余比例 */
-  background: linear-gradient(var(--milo-color-control-selected), var(--milo-color-control-selected)) 0 100% / var(--rest) var(--milo-stroke-focus) no-repeat, transparent; }
-.pill b { font-family: var(--milo-font-number); font-weight: 700; font-variant-numeric: tabular-nums; }
-.dockBody { display: grid; gap: var(--milo-space-2xs); padding: var(--milo-space-xs); animation: fadeIn var(--milo-motion-base) var(--milo-motion-ease-standard) var(--milo-motion-fast) both; }
-.dockBody > div { box-shadow: none; }
-.collapse { justify-self: center; min-height: var(--milo-size-hit-min); border: 0; background: none; color: var(--milo-color-text-secondary); font: inherit; font-size: var(--milo-font-size-caption); padding: 0 var(--milo-space-xl); }
 @keyframes fadeIn { from { opacity: 0; } }
-/* 休息胶囊的「导航滑块」形态：尺寸同导航一项（里面的进度条几何才和滑块一致），配色跟页面组件（凹底 + 细线），不抢荧光；
+/* 休息计时胶囊（只是状态，不可点）：尺寸同导航一项（里面的进度条几何才和滑块一致），配色跟页面组件（凹底 + 细线），不抢荧光；
    进度条是骨白实线，飞到导航滑块上才换成深色（转场样式在 interactive.css 的 .ring） */
 .ringPill { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--milo-space-2xs);
   height: var(--milo-size-nav-item-h); padding: 0; border: 0; border-radius: var(--milo-radius-pill); font: inherit; font-size: var(--milo-font-size-min); line-height: 1;
@@ -48,8 +34,7 @@
   animation: fadeIn var(--milo-motion-base) var(--milo-motion-ease-standard) var(--milo-motion-spring-ms) both; }
 
 @media (prefers-reduced-motion: reduce) {
-  .cascadeItem, .dockBody { animation: none; }
-  .dock { transition: none; }
+  .cascadeItem { animation: none; }
   .detailBody { animation: none; }
 }
 
