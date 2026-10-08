@@ -83,3 +83,28 @@
 .breakdown { display: grid; gap: var(--milo-space-xs); color: var(--milo-color-text-primary); }
 .bRow { display: flex; justify-content: space-between; align-items: baseline; }
 .bTotal { display: flex; justify-content: space-between; align-items: baseline; margin-top: var(--milo-space-xs); padding-top: var(--milo-space-s); border-top: var(--milo-stroke-hairline) solid var(--milo-color-line-strong); }
+
+/* ---------- 走查 1 待选：状态标外观（ShopTagLook） ---------- */
+.merchantLine { display: flex; align-items: center; gap: var(--milo-space-xs); min-width: 0; }
+/* T1 形状 + 图形 */
+.shape { display: inline-flex; align-items: center; gap: var(--milo-space-2xs); padding: var(--milo-space-2xs) var(--milo-space-xs); font-size: var(--milo-font-size-min); font-weight: 700; line-height: 1.2; border-radius: var(--milo-radius-xs); }
+.sh_sale { padding-left: var(--milo-space-m); font-family: var(--milo-font-number); font-size: var(--milo-font-size-caption); color: var(--milo-color-text-on-accent); background: var(--milo-color-accent-default);
+  clip-path: polygon(var(--milo-space-s) 0, 100% 0, 100% 100%, var(--milo-space-s) 100%, 0 50%); border-radius: 0 var(--milo-radius-xs) var(--milo-radius-xs) 0; }
+.sh_sale::before { content: ''; position: absolute; left: var(--milo-space-s); top: 50%; width: var(--milo-space-xs); height: var(--milo-space-xs); border-radius: 50%; transform: translate(-50%, -50%); background: var(--milo-color-bg-raised-2); }
+.sh_hot { color: var(--milo-color-text-primary); background: color-mix(in srgb, var(--milo-color-bg-base) 70%, transparent); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-text-primary); }
+.sh_new { color: var(--milo-color-accent-default); background: color-mix(in srgb, var(--milo-color-bg-base) 70%, transparent); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-accent-default); }
+.oosBand { position: absolute; left: 0; right: 0; bottom: 0; padding: var(--milo-space-2xs) var(--milo-space-s); border-radius: 0 0 var(--milo-radius-m) var(--milo-radius-m); text-align: center;
+  font-size: var(--milo-font-size-min); color: var(--milo-color-text-primary); background: color-mix(in srgb, var(--milo-color-bg-base) 78%, transparent); }
+/* T2 角带 */
+.ribbonBox { position: absolute; inset: 0; overflow: clip; border-radius: var(--milo-radius-m); pointer-events: none; }
+.ribbon { position: absolute; left: calc(var(--milo-space-3xl) * -0.75); top: var(--milo-space-m); width: calc(var(--milo-space-5xl) * 2); transform: rotate(-45deg); text-align: center;
+  padding: var(--milo-space-2xs) 0; font-size: var(--milo-font-size-min); font-weight: 900; letter-spacing: 0.06em; box-shadow: 0 var(--milo-space-2xs) var(--milo-space-s) var(--milo-color-shadow-float); }
+.rb_sale { font-family: var(--milo-font-number); font-size: var(--milo-font-size-caption); color: var(--milo-color-text-on-accent); background: var(--milo-color-accent-default); }
+.rb_hot { color: var(--milo-color-control-selected-ink); background: var(--milo-color-control-selected); }
+.rb_new { color: var(--milo-color-accent-default); background: var(--milo-color-bg-base); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-accent-default); }
+.oosMid { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); padding: var(--milo-space-2xs) 0; text-align: center; font-size: var(--milo-font-size-caption); font-weight: 700; letter-spacing: 0.3em;
+  color: var(--milo-color-text-primary); background: color-mix(in srgb, var(--milo-color-bg-base) 80%, transparent); }
+/* T3 放进价格区 */
+.lead { display: inline-flex; align-items: center; gap: var(--milo-space-2xs); flex: none; white-space: nowrap; color: var(--milo-color-accent-default); font-weight: 700; }
+.pctChip { padding: 0 var(--milo-space-xs); border-radius: var(--milo-radius-xs); font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-caption); color: var(--milo-color-text-on-accent); background: var(--milo-color-accent-default); }
+.oosLine { color: var(--milo-color-text-secondary); text-decoration: underline dotted; text-underline-offset: var(--milo-space-xs); }

@@ -3,7 +3,7 @@
  *  - 状态不只靠颜色：热销 / 折扣 / 新品 实心小标，缺货虚线框，已下架灰字。
  *  - 荧光只给每屏唯一焦点（主按钮）；这里的标、价格、证据图都不用荧光，「最大比例」这类标一律灰。
  *  - 数字全部由调用方算好传进来（data/wallet.ts 的 quote）。不写功效数字。 */
-import { useState, type CSSProperties, type ReactNode } from 'react';
+import { createContext, useContext, useState, type CSSProperties, type ReactNode } from 'react';
 import { Icon } from './Icon';
 import { ProLink } from './pro';
 import { cx, forced, type Forced } from './state';
@@ -13,10 +13,28 @@ export type ProductStatus = 'normal' | 'hot' | 'sale' | 'new' | 'oos' | 'off';
 const STATUS: Record<ProductStatus, string> = { normal: '', hot: '热销', sale: '折扣', new: '新品', oos: '缺货', off: '已下架' };
 const yuan = (n: number) => `¥${n.toLocaleString('en-US')}`;
 
+/** 商城状态标的外观（2026-10-08 走查 1 #08：「角标没有设计感，一眼看不出是什么状态」，方案台待选）：
+ *  now = 现在（热销 / 折扣 / 新品 一样的骨白实心小块）；
+ *  shape = T1 各有各的形：折扣 = 荧光价签「−18%」，热销 = 骨白描边 + 上升小箭头，新品 = 荧光描边 + 小星，缺货 = 图上压一条「缺货 · 可提醒」；
+ *  ribbon = T2 角带：图片左上角一条斜带，折扣荧光、热销骨白、新品深色荧光字，缺货横贯图片中间；
+ *  price = T3 放进价格区：图上不挂标——折扣在价格后跟荧光「−18%」，热销 / 新品写在商家那一行前面，缺货把价格换成「缺货 · 到货提醒」。 */
+export type ShopTagLookKind = 'now' | 'shape' | 'ribbon' | 'price';
+export const ShopTagLook = createContext<ShopTagLookKind>('now');
+const pct = (price: number, was?: number) => (was ? `−${Math.round((1 - price / was) * 100)}%` : '');
+
 /** 商品状态标：热销 / 折扣 / 新品 实心；缺货 虚线；已下架 灰字；普通不出标 */
 export function StatusTag({ status }: { status: ProductStatus }) {
   if (status === 'normal') return null;
   return <span className={cx('milo-text-micro', s.tag, s[`tag_${status}`])}>{STATUS[status]}</span>;
+}
+
+/** 待选外观的图上标（shape / ribbon）：形状和图形各不相同，一眼分得出；折扣 = 「得到」的东西，用荧光 */
+function LookTag({ look, status, price, was }: { look: 'shape' | 'ribbon'; status: ProductStatus; price: number; was?: number }) {
+  if (status === 'normal' || status === 'off') return null;
+  if (status === 'oos') return <span className={look === 'ribbon' ? s.oosMid : s.oosBand}>{look === 'ribbon' ? '缺货' : '缺货 · 可提醒'}</span>;
+  const text = status === 'sale' ? pct(price, was) : STATUS[status];
+  if (look === 'ribbon') return <span className={s.ribbonBox} aria-hidden="true"><span className={cx(s.ribbon, s[`rb_${status}`])}>{text}</span></span>;
+  return <span className={cx(s.tagAt, s.shape, s[`sh_${status}`])}>{status !== 'sale' && <Icon name={status === 'hot' ? 'up' : 'star'} small />}{text}</span>;
 }
 
 /** 商品图：public/shop/<id>.webp；加载好之前 / 没有图时显示品类占位（护具 = 横条、补剂 = 罐子），不出现破图 */
@@ -45,6 +63,7 @@ export interface ProductCardProps {
 /** 商品卡。grid = 商城两列（图 + 左上状态标 → 商家 → 名字 → 价格 + 划线价 → 会员价 · 牛劲抵）；row = 知识卡里的相关商品行。
  *  缺货整卡变暗但仍可点（进详情设到货提醒）；已下架不出现在商城列表，row 里出现时灰字、仍可点（详情页提示并回商城） */
 export function ProductCard({ id, name, merchant, price, member, category, status, was, off, variant = 'grid', onClick, state }: ProductCardProps) {
+  const look = useContext(ShopTagLook);
   const dim = status === 'oos' || status === 'off';
   const label = `${name}，${merchant}，${yuan(price)}${was ? `，原价 ${yuan(was)}` : ''}，会员 ${yuan(member)}${STATUS[status] ? `，${STATUS[status]}` : ''}`;
   const sub = status === 'off' ? '已下架' : `会员 ${yuan(member)}${off > 0 ? ` · 牛劲抵 ${yuan(off)}` : ''}`;
@@ -61,10 +80,11 @@ export function ProductCard({ id, name, merchant, price, member, category, statu
   );
   return (
     <button type="button" className={cx('milo-press milo-focus', s.card, dim && s.dim)} onClick={onClick} aria-label={label} {...forced(state)}>
-      <span className={s.picBox}><Pic id={id} category={category} /><span className={s.tagAt}><StatusTag status={status} /></span></span>
-      <span className={cx('milo-text-micro', s.muted)}>{merchant}</span>
+      <span className={s.picBox}><Pic id={id} category={category} />{look === 'now' ? <span className={s.tagAt}><StatusTag status={status} /></span> : look === 'price' ? null : <LookTag look={look} status={status} price={price} was={was} />}</span>
+      <span className={cx('milo-text-micro', s.muted, s.merchantLine)}>{look === 'price' && (status === 'hot' || status === 'new') && <span className={s.lead}><Icon name={status === 'hot' ? 'up' : 'star'} small />{status === 'hot' ? '本周热销' : '新品'}</span>}{merchant}</span>
       <b className={cx('milo-text-body-strong', s.name)}>{name}</b>
-      <span className={s.priceLine}><b className="milo-text-number-m">{yuan(price)}</b>{was && <s className={cx('milo-text-micro', s.muted)}>{yuan(was)}</s>}</span>
+      {look === 'price' && status === 'oos' ? <span className={cx('milo-text-caption', s.oosLine)}>缺货 · 到货提醒</span>
+        : <span className={s.priceLine}><b className="milo-text-number-m">{yuan(price)}</b>{was && <s className={cx('milo-text-micro', s.muted)}>{yuan(was)}</s>}{look === 'price' && status === 'sale' && <span className={s.pctChip}>{pct(price, was)}</span>}</span>}
       <span className={cx('milo-text-micro', s.muted)}>{sub}</span>
     </button>
   );

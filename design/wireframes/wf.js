@@ -1179,6 +1179,106 @@
     order: ['战略：演示一笔完整下单，展示卡券和牛劲怎么抵，同时不误导（演示模式）', '范围：P18 商品 · 卡券 · 牛劲抵扣开关（最多 20%，不足写还差多少）· 合计 · 提交（提交中禁用）；P19 演示订单号 · 明细 · 牛劲 / 卡券扣减 · 回商城（替换历史）', '结构：P17 → P18 → P19 → P15（返回不回 P18）', '框架：P18 第一优先 = 商品 + 合计，主操作「提交订单 · ¥」；P19 第一优先 = 成功 + 余额变化，主操作「回商城」', '表现：P19 小牛开心状态（Mascot happy）；不放支付相关输入'],
   });
 
+  // ---------- 走查 1（2026-10-08）：动作要领视频页重做 / 记录页可收起 / 首页「加一个动作」的位置 ----------
+  // 视频页：MuscleWiki 示范是 16:9 实拍（人站在画面中间、上下留白多），原来竖着裁成上半屏 → 头被裁、放大发糊（走查 1 #05）
+  const RDL = { name: '史密斯机罗马尼亚硬拉', cue: '髋部后推，杠贴腿下滑，背部始终平直', steps: ['双脚略前于杠，与髋同宽，握杠站直', '膝微屈，髋向后推，杠沿大腿下放', '腘绳肌明显拉伸时停下，背保持平直', '髋向前顶起站直，不过度挺腰'] };
+  const w1RdlSteps = (n = 4, thumb = false) => RDL.steps.slice(0, n).map((x, i) => `<div class="row" style="align-items:flex-start;gap:10px;min-height:${thumb ? 58 : 40}px;${i ? 'border-top:1px solid #E6E6E2;' : ''}padding-top:8px" ${thumb ? 'data-hit' : ''}>
+      ${thumb ? `<div class="dark" style="flex:none;width:72px;height:41px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#bbb;${i === 1 ? 'box-shadow:0 0 0 2px #2b2b29;outline:2px solid #FAFAF8' : ''}">第 ${i + 1} 帧</div>` : `<span class="t-h" style="width:18px">${i + 1}</span>`}
+      <span class="t-b" style="line-height:1.5;${thumb && i === 1 ? 'font-weight:700' : ''}">${x}</span></div>`).join('');
+  const w1V169 = (w, label = 'MuscleWiki 示范 · 16:9 完整画面 · 循环', extra = '') => `<div class="dark" style="width:${w}px;height:${Math.round(w * 9 / 16)}px;position:relative;display:flex;align-items:center;justify-content:center;border-radius:14px;${extra}">
+      <div style="position:absolute;left:50%;top:14%;bottom:8%;width:22%;transform:translateX(-50%);border:1.5px dashed #777;border-radius:40px 40px 6px 6px"></div>
+      <span style="position:relative;font-size:10px;color:#bbb;background:#2b2b29;padding:2px 6px">${label}</span>
+      <span style="position:absolute;right:8px;bottom:6px;font-size:8px;color:#999">© MuscleWiki</span></div>`;
+  const VIDEO2 = {
+    W1: {
+      title: '完整 16:9 示范卡，往下读',
+      note: '<em>不裁、不放大</em>：示范按原比例放进一张圆角卡（全宽 328 × 184，人完整、不发糊），正面 / 侧面在卡下面一行（拇指够得着）；点卡片进横屏全屏。下面是大字要点、带序号的步骤、练到的肌头（半身人体）、「我的进步」。训练中顶部一行休息（只在休息时）。代价：视频占的比例小一些，沉浸感弱。',
+      html: () => `${status}${back(RDL.name)}<div class="pad" style="padding-top:6px">${w1V169(328)}
+        <div class="row" style="margin-top:10px"><div class="seg" data-hit style="height:32px"><span class="on">正面</span><span>侧面</span></div><div class="sp"></div><span class="t-s" data-hit style="padding:0 6px">⤢ 横屏看</span></div>
+        <div data-a="1" style="margin-top:14px"><div class="t-h" style="font-size:18px;line-height:1.45">${RDL.cue}</div></div>
+        <div style="margin-top:8px">${w1RdlSteps(4)}</div>
+        <div class="t-s" style="margin-top:14px;font-weight:700">练到的肌头</div><div class="row" style="gap:12px;margin-top:8px"><div class="slot" style="width:92px;height:110px">半身人体（背面）<br>只亮这 3 块</div><div style="flex:1">${[['腘绳肌', '主练', 1], ['臀大肌', '主练', 1], ['竖脊肌', '协同', 0]].map(([h, r, on]) => `<div class="row" style="height:28px"><i class="sq${on ? ' on' : ''}" style="width:10px;height:10px"></i><span class="t-b">${h}</span><div class="sp"></div><span class="t-s">${r}</span></div>`).join('')}</div></div></div>`,
+    },
+    W2: {
+      title: '沉浸：同一段视频虚化铺满上半屏',
+      note: '<em>保住沉浸感又不裁</em>：上半屏是同一段视频放大虚化后的底（只取颜色和光，读不出细节），清晰的 16:9 原画面浮在中间——人完整、边缘融进背景；标题、返回、正 / 侧在顶上。要领还是底部抽屉（常态一句话 + 4 步，往上拉出肌头与进步，M05）。代价：两层视频解码更费电；虚化底要降级成静态帧（省电 / 减少动态效果）。',
+      html: () => `<div class="dark" style="position:absolute;left:0;right:0;top:0;height:430px;border-radius:0;background:repeating-linear-gradient(135deg,#3a3a37 0 14px,#33332f 14px 28px)"><span style="position:absolute;left:16px;top:84px;font-size:10px;color:#999">同一段视频 · 放大 + 虚化铺底</span></div>
+        <div style="position:relative;color:#FAFAF8">${status.replace('class="status"', 'class="status" style="color:#bbb"')}<div class="row" style="height:48px" data-a="3"><div data-hit style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:20px">‹</div><div class="t-h" style="font-size:16px">${RDL.name}</div><div class="sp"></div><div class="seg" data-hit style="background:rgba(255,255,255,.12);border-color:#888;color:#ddd;margin-right:12px"><span class="on" style="background:#FAFAF8;color:#1d1d1b">正面</span><span>侧面</span></div></div></div>
+        <div class="abs" style="left:16px;top:118px">${w1V169(328, '清晰的 16:9 原画面', 'box-shadow:0 10px 30px rgba(0,0,0,.45);background:#1f1f1d')}</div>
+        <div class="abs box" style="left:0;right:0;bottom:0;height:380px;border-radius:20px 20px 0 0;padding:8px 16px 16px">
+          <div data-hit style="height:24px;display:flex;justify-content:center;align-items:center;margin:0 120px"><i style="width:40px;height:4px;border-radius:2px;background:#C9C9C5"></i></div>
+          <div data-a="1"><div class="t-h" style="font-size:17px;line-height:1.45">${RDL.cue}</div></div><div style="margin-top:4px">${w1RdlSteps(4)}</div>
+          <div class="row" style="margin-top:10px"><span class="t-s">往上拉：练到的肌头 · 我的进步</span><div class="sp"></div><span class="t-s">⌃</span></div></div>`,
+    },
+    W3: {
+      title: '关键帧分步：点一步，视频跳到那一段',
+      note: '<em>最像教练在教</em>：上面是完整 16:9 示范；下面每一步配一张这一步的关键帧（从同一段视频截），点哪一步，视频就跳到那一段循环播放，当前一步加粗、关键帧描边。动作要点和画面一一对上，一眼看出「第 2 步膝盖该在哪」。代价：每个动作要标出每一步在视频里的时间（先按时长均分，常用动作再手工校准）。',
+      html: () => `${status}${back(RDL.name)}<div class="pad" style="padding-top:6px">${w1V169(328, '正在循环：第 2 步')}
+        <div class="row" style="margin-top:10px"><div class="seg" data-hit style="height:32px"><span class="on">正面</span><span>侧面</span></div><div class="sp"></div><span class="t-s">点一步看那一段</span></div>
+        <div data-a="1" style="margin-top:12px"><div class="t-h" style="font-size:17px;line-height:1.45">${RDL.cue}</div></div>
+        <div style="margin-top:6px">${w1RdlSteps(4, true)}</div></div>`,
+    },
+  };
+  LAYERS.p04v2 = ['战略：练到一半不确定动作做没做对，3 秒内看清示范、对上要点，再回去打卡（T5）；走查 1：现在的示范被裁、发糊，显得廉价', '范围：MuscleWiki 示范（16:9，正 / 侧）完整显示、不裁不放大 · 一句话要点 + 3–4 步 · 练到的肌头 · 我的进步；无示范只留文字', '结构：子页，无导航；入口 主角卡「要领」/ 处方行（首页点动作，阶段 3 改共享元素进来）/ 找动作 / 曲线页；训练中顶部一行休息（只在休息时）', '框架：第一优先 = 完整示范 + 一句话要点；正 / 侧切换在拇指够得着的地方；视频可进横屏全屏', '表现：暖黑底，视频卡是这一屏最亮的东西；荧光只给「加到今天」（从找动作进来时）；步骤用大号序号或关键帧'];
+
+  // 记录页：一次 8 周、每周全展开 → 一屏只看得到两三周，整页很长（走查 1 #15）
+  const WK = [['本周', '10月5日–11日', '1 次 · 25 组 · 8,455 kg', [['10/5', '周一', '肩 · 手臂 · 核心', '9 个动作 · 25 组 · 45 分钟', 0]]],
+    ['上周', '9月28日–10月4日', '4 次 · 91 组 · 46,228 kg', [['10/4', '周日', '背 · 手臂 · 胸', '8 个动作 · 20 组', 2], ['10/2', '周五', '手臂 · 肩 · 胸', '9 个动作 · 25 组', 1], ['10/1', '周四', '下肢', '7 个动作 · 21 组', 2], ['9/28', '周一', '肩 · 手臂 · 核心', '9 个动作 · 25 组', 0]]],
+    ['', '9月21日–27日', '4 次 · 97 组 · 48,223 kg', []], ['', '9月14日–20日', '4 次 · 91 组 · 45,643 kg', []], ['', '9月7日–13日', '3 次 · 66 组 · 33,550 kg', []], ['', '8月31日–9月6日', '4 次 · 91 组 · 46,010 kg', []]];
+  const w1PlateMini = (h = 120) => `<div class="fill" style="height:${h}px;margin-top:10px;display:flex;align-items:center;justify-content:center" data-hit="no"><span class="t-s">钢板日历（近 3 个月，练过 = 孔）</span></div>`;
+  const w1Ticket = ([d, w, t, m, pr]) => `<div class="box row" data-hit style="padding:6px 12px;margin-bottom:6px;min-height:52px;gap:10px"><div style="width:40px"><div class="t-h">${d}</div><div class="t-s">${w}</div></div><div style="flex:1"><div class="t-b" style="font-weight:700">${t}</div><div class="t-s">${m}</div></div>${pr ? `<span class="chip">PR ${pr}</span>` : ''}<span class="t-s">›</span></div>`;
+  const w1WeekHead = (l, r, tot, open, prs = 0) => `<div class="row" data-hit style="min-height:48px;${open ? '' : 'border-bottom:1px solid #E6E6E2'}"><span class="t-b" style="font-weight:700">${l || r}</span>${l ? `<span class="t-s">${r}</span>` : ''}<div class="sp"></div><span class="t-s">${tot}</span>${prs ? `<span class="chip" style="height:20px">PR ${prs}</span>` : ''}<span class="t-s" style="width:14px;text-align:right">${open ? '⌃' : '⌄'}</span></div>`;
+  const LOGFOLD = {
+    W1: {
+      title: '本周、上周展开，更早的周折成一行',
+      note: '<em>最省改动</em>：本周和上周照常展开；更早的每一周折成一行（日期范围 · 次数 · 组数 · 总负荷 · 这周几个 PR），点一下原地展开那一周（高度弹簧 + 行依次弹入，和增量分组同一套）。一屏能看到 6 周。滑到底照样自动加载更早的周（也是折着的）。代价：要看某一次具体训练得多点一下。',
+      html: () => `${status}<div class="pad" style="padding-top:10px"><div class="t-title">记录</div><div class="t-s" style="margin-top:4px">近 3 个月练了 38 天</div>${w1PlateMini(110)}
+        <div data-a="1" style="margin-top:8px">${WK.slice(0, 2).map(([l, r, tot, rows]) => `${w1WeekHead(l, r, tot, true)}${rows.map(w1Ticket).join('')}`).join('')}
+        ${WK.slice(2, 5).map(([l, r, tot], i) => w1WeekHead(l, r, tot, false, [1, 0, 3, 1][i])).join('')}</div></div>${nav('log')}`,
+    },
+    W2: {
+      title: '按月分组，过去的月份折成一行',
+      note: '<em>和钢板的月份对上</em>：列表按月分组——这个月展开（按周、每次训练一行），过去的每个月折成一行（几次 · 几组 · 总负荷 + 一条按周的小柱子），点开再看那个月。钢板上点某个月也能直接跳过去。代价：月初时「这个月」只有一两次，上个月要多点一下才看得到。',
+      html: () => `${status}<div class="pad" style="padding-top:10px"><div class="t-title">记录</div><div class="t-s" style="margin-top:4px">近 3 个月练了 38 天</div>${w1PlateMini(110)}
+        <div data-a="1" style="margin-top:8px"><div class="row" style="min-height:44px"><span class="t-h">10 月</span><span class="t-s">2 次 · 33 组</span><div class="sp"></div><span class="t-s">⌃</span></div>
+          ${[['10/5', '周一', '肩 · 手臂 · 核心', '9 个动作 · 25 组', 0], ['10/4', '周日', '背 · 手臂 · 胸', '8 个动作 · 20 组', 2]].map(w1Ticket).join('')}
+          ${[['9 月', '17 次 · 371 组 · 18.6 吨', [3, 4, 4, 4, 2]], ['8 月', '16 次 · 352 组 · 17.4 吨', [4, 4, 3, 4, 1]], ['7 月', '15 次 · 330 组 · 16.1 吨', [3, 4, 4, 4]]].map(([m, tot, bars]) => `<div class="row" data-hit style="min-height:56px;border-top:1px solid #E6E6E2"><span class="t-h" style="width:44px">${m}</span><span class="t-s">${tot}</span><div class="sp"></div><span class="row" style="gap:3px;align-items:flex-end;height:22px">${bars.map((b) => `<i style="width:6px;height:${b * 5}px;background:#8E8E8A;border-radius:2px"></i>`).join('')}</span><span class="t-s" style="width:14px;text-align:right">⌄</span></div>`).join('')}</div></div>${nav('log')}`,
+    },
+    W3: {
+      title: '钢板当目录：一次只看一周',
+      note: '<em>页面最短</em>：下面只列钢板上选中的那一周（默认本周）；拇指区一条周切换「‹ 上一周 · 9月28日–10月4日 · 下一周 ›」，左右滑这条也能换周；在钢板上拖到哪天，列表跟到那一周。不再有长列表。代价：想连续往回翻很多周要一直点；「最近 8 周练了什么」不能一眼扫完。',
+      html: () => `${status}<div class="pad" style="padding-top:10px"><div class="t-title">记录</div><div class="t-s" style="margin-top:4px">近 3 个月练了 38 天</div>${w1PlateMini(150)}
+        <div data-a="1" style="margin-top:12px"><div class="row" style="min-height:36px"><span class="t-b" style="font-weight:700">上周</span><span class="t-s">9月28日–10月4日</span><div class="sp"></div><span class="t-s">4 次 · 91 组 · 46,228 kg</span></div>${WK[1][3].map(w1Ticket).join('')}</div>
+        <div class="abs row" style="left:16px;right:16px;bottom:96px;height:48px;border-radius:24px;background:#EFEFEC;padding:0 4px" data-a="2"><span data-hit class="t-b" style="width:48px;text-align:center">‹</span><div class="sp"></div><span class="t-b">9月28日–10月4日</span><div class="sp"></div><span data-hit class="t-b" style="width:48px;text-align:center">›</span></div></div>${nav('log')}`,
+    },
+  };
+  LAYERS.logfold = ['战略：回看「最近练了什么、哪天练的」不用一路往下翻；走查 1：页面太长', '范围：钢板日历 · 按周（或按月）的训练列表 · 每周合计 · PR 标；分段加载（滑到底自动加载）保留', '结构：Tab 根页；点一次训练进详情（M09）；返回保持展开状态和滚动位置', '框架：第一优先 = 最近一两周的训练；更早的给摘要，按需展开', '表现：折叠行 / 月行和增量分组同一套（高度弹簧 + 行依次弹入）；荧光只在钢板'];
+
+  // 首页「＋ 加一个动作」：现在在列表最后（要滑到底才看见，和主按钮挤在一起）（走查 1 #06）
+  const w1NextRows = [['器械站姿提踵', '下肢 · 2 × 10–12', '60'], ['窄握下拉', '背 · 3 × 6–8', '首次'], ['杠铃硬拉', '背 · 3 × 6–8', '首次'], ['哑铃卧凳手腕伸展', '手臂 · 2 × 10–12', '首次']];
+  const w1HeroCard = () => `<div class="fill" style="margin-top:12px;padding:14px"><div class="t-s">第 1 个 · 下肢</div><div class="t-h" style="margin-top:2px">杠铃深蹲</div><div class="row" style="align-items:baseline;margin-top:6px"><span class="t-xl">85</span><span class="t-s">kg</span><div class="sp"></div><span class="t-l">3 × 6–8</span></div><div class="bar" style="margin-top:12px"><i style="left:45%;width:12%"></i></div></div>`;
+  const w1NextList = () => w1NextRows.map(([n, d, k]) => `<div class="row" data-hit style="min-height:52px"><div style="flex:1"><div class="t-b" style="font-weight:700">${n}</div><div class="t-s">${d}</div></div>${k === '首次' ? '<span class="chip">首次</span>' : `<span class="t-l" style="font-size:20px">${k}</span><span class="t-s">kg</span>`}</div>`).join('');
+  const w1HomeHead = () => `<div class="row"><div class="t-title">今日处方</div><div class="sp"></div><span class="t-s" style="text-decoration:underline">为什么是这些</span></div><div class="t-s" style="margin-top:4px">10月8日 周四 · 5 个动作 · 13 组</div>`;
+  const ADDEX = {
+    W1: {
+      title: '放在「接下来」标题行的右边',
+      note: '<em>和它管的那张清单放在一起</em>：「接下来」标题行右边一个「＋ 加动作」（文字 + 小人图标，命中区 48），一进首页就在视线里，不用滑到底；训练中同理，放在「全部动作」标题行右边。主按钮拇指区里只剩「开始训练」一件事。代价：标题行右边位置小，图标得精简。',
+      html: () => `${status}<div class="pad" style="padding-top:10px">${w1HomeHead()}${w1HeroCard()}
+        <div class="row" style="margin-top:14px;min-height:48px"><span class="t-s" style="font-weight:700">接下来</span><div class="sp"></div><span class="chip" data-hit style="height:32px">＋ 加动作</span></div>
+        <div data-a="1">${w1NextList()}</div></div>
+        <div class="abs" style="left:16px;right:16px;bottom:94px;z-index:5" data-a="2"><div class="btn">开始训练</div></div>${nav('home')}`,
+    },
+    W2: {
+      title: '处方卡下面一条，清单之前',
+      note: '<em>最显眼</em>：主角卡下面紧跟一条整宽的虚线胶囊「＋ 加一个动作 · 按肌肉找」，在清单之前，一眼看到「今天还能加」；训练中放在主角卡和「全部动作」之间。代价：每天都占一行，多数时候用不到；离主角卡太近，容易被当成主角卡的一部分。',
+      html: () => `${status}<div class="pad" style="padding-top:10px">${w1HomeHead()}${w1HeroCard()}
+        <div class="row" data-hit style="margin-top:10px;height:44px;border:1.5px dashed #A9A9A5;border-radius:22px;justify-content:center"><span class="t-b">＋ 加一个动作 · 按肌肉找</span></div>
+        <div class="t-s" style="margin-top:14px;font-weight:700">接下来</div><div data-a="1">${w1NextList()}</div></div>
+        <div class="abs" style="left:16px;right:16px;bottom:94px;z-index:5" data-a="2"><div class="btn">开始训练</div></div>${nav('home')}`,
+    },
+  };
+  LAYERS.addex = ['战略：今天想多练一个动作时，不用找就知道在哪加（T19）', '范围：入口打开找动作面板（点人体选肌肉）；加的动作排在今天处方最后', '结构：首页（未开始 / 训练中）；入口只放一处', '框架：入口挨着它影响的那张清单；不进拇指区（拇指区只放主操作）', '表现：次要操作的样子（文字 + 小图标 / 虚线胶囊），不用荧光'];
+
   const PAGES = {
     body: { title: '身体 · 容量与恢复（P06）', sub: '放大镜按住「中下胸」· 数据 design/benchmark/p06.json', v: BODY },
     home: { title: '首页 · 今日处方（P01）', sub: '有处方、还没开始 · 演示场景 plain-prescription', v: HOME },
@@ -1207,6 +1307,9 @@
     touch: { title: '6h · 触点静态稿（通知 · 桌面小组件 · 图标）', sub: '演示用户：连胜 21 周、本周 1 / 4、今日下肢 A · 只做设计稿，放进 /spec 第 7 章', v: TOUCH, layers: LAYERS.touch },
     proentry: { title: '6g 补 · Pro 标与冻结卡提示的落点', sub: '演示用户：股四头肌外侧头近 7 天 11 组；连胜 21 周、本周 1 / 3、周六', v: PROENTRY, layers: LAYERS.proentry },
     pause: { title: '6e · 暂停训练确认', sub: '训练中在首页按系统返回 · 已记 6 / 13 组', v: PAUSE, layers: LAYERS.pause },
+    p04v2: { title: '走查 1 · 动作要领视频页重做（P04）', sub: '史密斯机罗马尼亚硬拉 · 示范是 16:9 实拍：不裁、不放大 · 从主角卡「要领」进入', v: VIDEO2, layers: LAYERS.p04v2 },
+    logfold: { title: '走查 1 · 记录页可收起（P07）', sub: '演示用户 30 周 · 现在一次 8 周、每周全展开，页面太长', v: LOGFOLD, layers: LAYERS.logfold },
+    addex: { title: '走查 1 · 首页「＋ 加一个动作」放哪（P01）', sub: '有处方、还没开始 · 训练中同理放在「全部动作」那里', v: ADDEX, layers: LAYERS.addex },
   };
 
   // ---------- 标注 ----------

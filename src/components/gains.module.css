@@ -56,3 +56,9 @@
 .footnote i { font-style: normal; }
 .prRow { display: flex; align-items: baseline; justify-content: space-between; gap: var(--milo-space-m); color: var(--milo-color-text-secondary); }
 .prNum { display: inline-flex; align-items: baseline; gap: var(--milo-space-xs); color: var(--milo-color-text-primary); }
+
+/* 走查 1 待选配色（GainLook）：PR 不再是骨白实心块；上涨用荧光（点缀级）；star 方案的曲线用暗荧光 */
+.prLine { display: inline-flex; align-items: center; padding: 0 var(--milo-space-xs); border-radius: var(--milo-radius-xs); font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-min);
+  line-height: 1.5; color: var(--milo-color-accent-default); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-color-accent-default) 70%, transparent); }
+.prStar { display: inline-grid; place-items: center; font-style: normal; color: var(--milo-color-accent-default); filter: drop-shadow(0 0 var(--milo-space-2xs) var(--milo-color-accent-glow)); }
+.row:is([data-look='accent'], [data-look='curve'], [data-look='star']) .delta [class*='_up_'] { color: var(--milo-color-accent-default); }

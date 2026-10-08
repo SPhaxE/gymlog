@@ -21,3 +21,27 @@
 @media (max-width: 900px) { .composer { grid-template-columns: minmax(0, 1fr); } .phone { position: static; } }
 .iconGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--milo-space-5xl) * 5), 1fr)); gap: var(--milo-space-l); }
 .icons { display: grid; grid-template-columns: repeat(4, max-content); gap: var(--milo-space-l); padding: var(--milo-space-l); border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised); color: var(--milo-color-text-primary); }
+
+/* 流体粒子：页头角 + 主角卡两处落点（走查 1） */
+.pDemo { position: absolute; inset: 0; display: grid; align-content: start; gap: var(--milo-space-m); padding: var(--milo-space-l); background: var(--milo-color-bg-base); }
+.pHead { position: relative; overflow: clip; display: grid; gap: var(--milo-space-2xs); height: calc(var(--milo-space-5xl) * 3); margin: calc(var(--milo-space-l) * -1) calc(var(--milo-space-l) * -1) 0; padding: var(--milo-space-l); isolation: isolate; }
+.pHead h3 { margin: 0; position: relative; }
+.pHead span { position: relative; color: var(--milo-color-text-secondary); }
+.pRing { position: absolute; z-index: -1; right: calc(var(--milo-space-5xl) * -2); top: calc(var(--milo-space-5xl) * -2); width: calc(var(--milo-space-5xl) * 6); height: calc(var(--milo-space-5xl) * 6); border-radius: 50%;
+  background: repeating-radial-gradient(circle at 50% 50%, transparent 0 var(--milo-space-m), var(--milo-color-line-strong) var(--milo-space-m) calc(var(--milo-space-m) + var(--milo-stroke-hairline)));
+  -webkit-mask-image: radial-gradient(closest-side, var(--milo-color-text-primary), transparent); mask-image: radial-gradient(closest-side, var(--milo-color-text-primary), transparent); }
+.pCard { position: relative; overflow: clip; isolation: isolate; display: grid; gap: var(--milo-space-xs); padding: var(--milo-space-l); border-radius: var(--milo-radius-l); color: var(--milo-color-text-secondary);
+  background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
+.pCard > :not(canvas) { position: relative; }
+.pCard .milo-text-heading, .pCard :global(.milo-text-heading) { color: var(--milo-color-text-primary); }
+
+/* 钢板：每格是一块能滚的小屏（光源以这块屏为准） */
+.plDemo { position: absolute; inset: 0; overflow-y: auto; display: grid; align-content: start; gap: var(--milo-space-s); padding: var(--milo-space-l) var(--milo-size-gutter); background: var(--milo-color-bg-base); }
+.plDemo h3 { margin: 0; }
+.plDemo > span { color: var(--milo-color-text-secondary); }
+.plFill { display: grid; gap: var(--milo-space-s); padding-top: var(--milo-space-m); }
+.plFill i { height: calc(var(--milo-size-hit-min) + var(--milo-space-s)); border-radius: var(--milo-radius-m); background: var(--milo-color-bg-raised); }
+
+/* 增量配色：几台真实的增量页并排；商城标：一格放 4 件商品 */
+.phones { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--milo-space-5xl) * 6), 1fr)); gap: var(--milo-space-l); }
+.shopDemo { position: absolute; inset: 0; overflow-y: auto; padding: var(--milo-space-s); background: var(--milo-color-bg-base); }

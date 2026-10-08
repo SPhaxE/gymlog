@@ -34,3 +34,14 @@
 /* 板前的光束画布：和板同宽，比板高出一截（光束可以略微落到板下面），不接触摸 */
 .beams { position: absolute; left: 0; top: 0; z-index: 4; width: 100%; pointer-events: none; display: block; mix-blend-mode: screen; }
 @media (prefers-reduced-motion: reduce) { .focus { animation: none; } .live { transition: none; } }
+
+/* 走查 1 待选外观（lamp / center）：板后看得见光源——一团光晕垫在板后面、从板边漏出来；位置由脚本按光源算（--hx / --hy，相对光晕自己） */
+.halo { position: absolute; z-index: -1; inset: calc(var(--milo-space-2xl) * -1) calc(var(--milo-size-gutter) * -1); pointer-events: none;
+  background: radial-gradient(circle at var(--hx, 0) var(--hy, 0), color-mix(in srgb, var(--milo-prim-lime-300) 70%, transparent), color-mix(in srgb, var(--milo-prim-lime-500) 30%, transparent) calc(var(--milo-space-5xl) * 1.2), transparent calc(var(--milo-space-5xl) * 4)); }
+.halo {
+  -webkit-mask: linear-gradient(transparent, black var(--milo-space-2xl), black calc(100% - var(--milo-space-2xl)), transparent), linear-gradient(90deg, transparent, black var(--milo-size-gutter), black calc(100% - var(--milo-size-gutter)), transparent);
+  -webkit-mask-composite: source-in;
+  mask: linear-gradient(transparent, black var(--milo-space-2xl), black calc(100% - var(--milo-space-2xl)), transparent), linear-gradient(90deg, transparent, black var(--milo-size-gutter), black calc(100% - var(--milo-size-gutter)), transparent);
+  mask-composite: intersect; }
+.haloCenter { background: radial-gradient(ellipse 62% 70% at var(--hx, 50%) var(--hy, 50%), color-mix(in srgb, var(--milo-prim-lime-300) 55%, transparent), color-mix(in srgb, var(--milo-prim-lime-500) 22%, transparent) 55%, transparent 100%); }
+.dark .plate { background: var(--milo-color-bg-raised-2); }

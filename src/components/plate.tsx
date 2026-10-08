@@ -48,6 +48,26 @@ const hi = (p: number) => mix('var(--milo-prim-gray-900)', p);
 const lo = (p: number) => mix('var(--milo-prim-gray-0)', p);
 const STEEL_TOP = 'var(--milo-prim-gray-400)';
 const STEEL_BOT = 'var(--milo-prim-gray-300)';
+/** 走查 1（2026-10-08）待选：steel = 现在的中性冷灰钢板（光源只是算光束用的一个点，看不见）；
+ *  lamp = 主题黑钢板 + 光源固定在屏幕左上、板后看得见它的光（板边漏出光晕，随滚动沿板边滑动，和光束角度一致）；
+ *  center = 主题黑钢板 + 光源在板后正中、跟着板走（光晕从板四周漏出来，光束从中心往外放射，不再随滚动变角度）。
+ *  两个新方案的休息日都是白色手绘圈（4 种笔触轮换），可以选中。 */
+export type PlateLook = 'steel' | 'lamp' | 'center';
+const DARK_TOP = 'var(--milo-color-bg-raised-2)';
+const DARK_BOT = 'var(--milo-color-bg-raised)';
+const REST_INK = 'color-mix(in srgb, var(--milo-prim-bone-100) 78%, transparent)';
+/** 手绘圈：4 种笔触（差别不大）——收尾多绕一点 / 留一个小口 / 绕两圈 / 斜一点的椭圆；按日期轮换，同一天永远同一种 */
+function handCircle(cx: number, cy: number, rr: number, t: number) {
+  const k = Math.floor(t / 864e5) % 4, q = rnd(Math.floor(t / 864e5));
+  const [a0, sweep, r0, r1, ex, ey, rot] = [[-110, 385, 1, 1.04, 1, 1, 0], [200, 330, 1, 1, 1, 1, 0], [-60, 700, 0.94, 1.08, 1, 1, 0], [-140, 370, 1, 1.03, 1.08, 0.9, 24]][k];
+  const pts: string[] = [], n = Math.ceil(sweep / 14), ph = q() * 6.28, rr2 = rr * (0.92 + q() * 0.1);
+  for (let i = 0; i <= n; i++) {
+    const u = i / n, a = ((a0 + sweep * u) * Math.PI) / 180, rad = rr2 * (r0 + (r1 - r0) * u) * (1 + Math.sin(a * 3 + ph) * 0.035);
+    const x = Math.cos(a) * rad * ex, y = Math.sin(a) * rad * ey, rc = (rot * Math.PI) / 180;
+    pts.push(`${f2(cx + x * Math.cos(rc) - y * Math.sin(rc))} ${f2(cy + x * Math.sin(rc) + y * Math.cos(rc))}`);
+  }
+  return `M${pts.join('L')}`;
+}
 const f2 = (n: number) => +n.toFixed(2);
 const circ = (cx: number, cy: number, r: number) => `M${f2(cx - r)} ${f2(cy)}a${f2(r)} ${f2(r)} 0 1 0 ${f2(2 * r)} 0a${f2(r)} ${f2(r)} 0 1 0 ${f2(-2 * r)} 0Z`;
 
@@ -70,26 +90,35 @@ function palette() {
   const cs = getComputedStyle(document.documentElement), v = (k: string) => toRgb(cs.getPropertyValue(k));
   return { hot: v('--milo-prim-lime-300'), lime: v('--milo-prim-lime-500'), deep: v('--milo-prim-lime-900'), base: v('--milo-color-bg-base'), dust: v('--milo-prim-gray-900') };
 }
-/** 光源在屏幕上的位置（视口坐标，固定不动）：屏幕左上角附近。板在它右下方，光束朝右下打；页面往上滚，板升到光源上方，光束慢慢转成朝右、朝右上 */
-const lightAt = () => [window.innerWidth * 0.02, window.innerHeight * 0.04] as const;
+/** 光源在屏幕上的位置（视口坐标，固定不动）：屏幕左上角附近。板在它右下方，光束朝右下打；页面往上滚，板升到光源上方，光束慢慢转成朝右、朝右上。
+ *  frame：把哪块区域当「屏幕」（方案台、Playground 的迷你手机）；不给就是整个视口 */
+const lightAt = (frame?: HTMLElement | null) => {
+  const r = frame?.getBoundingClientRect() ?? { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+  return [r.left + r.width * 0.02, r.top + r.height * 0.04] as const;
+};
 const BEAM_SPILL = 0.35;  // 光束画布比板高出的比例（光束可以略微落到板下面）
 const DUST = 34;
 
 export interface PlateDay { t: number; title: string; value: string; unit: string; sub?: string }
 
-export function SteelPlate({ months, label = '近 3 个月训练', selected, onSelect, onOpen, day, dense }: {
+export function SteelPlate({ months, label = '近 3 个月训练', selected, onSelect, onOpen, day, dense, look = 'steel', frame }: {
   months: DotMonth[]; label?: string;
   /** 选中的那天（startOfDay 毫秒）；给了 onSelect 才能拖 / 点 */ selected?: number | null; onSelect?: (t: number) => void;
   /** 打开那天的训练（读数行的「查看」、再点一次同一个孔、回车） */ onOpen?: (t: number) => void;
   /** 选中那天的读数（日期 · 部位 / 数值 · 单位 / 小字）；没有就不画读数行 */ day?: PlateDay | null;
   /** 静态展示（playground 矩阵）：不跑浮尘 */ dense?: boolean;
+  /** 外观（走查 1 待选，见 PlateLook） */ look?: PlateLook;
+  /** 光源参照的「屏幕」（方案台的迷你手机）；不给 = 视口 */ frame?: React.RefObject<HTMLElement | null>;
 }) {
   const g = useMemo(() => plateLayout(months), [months]);
   const uid = useId().replace(/:/g, ''), u = (k: string) => `${uid}-${k}`, ref = (k: string) => `url(#${u(k)})`;
   const n = dotDays(months), lit = g.holes.length > 0, { r, pitch, h } = g;
   const dr = pitch * 0.12;  // 样冲点半径
-  const fig = useRef<HTMLElement>(null), back = useRef<HTMLCanvasElement>(null), front = useRef<HTMLCanvasElement>(null);
-  const sel = selected != null ? g.holes.find((p) => p.t === selected) ?? null : null;
+  const fig = useRef<HTMLElement>(null), back = useRef<HTMLCanvasElement>(null), front = useRef<HTMLCanvasElement>(null), halo = useRef<HTMLElement>(null);
+  const dark = look !== 'steel';
+  // 新外观里休息日也能选中（手绘圈）
+  const pickable = useMemo(() => (dark ? [...g.holes, ...g.dimples] : g.holes), [g, dark]);
+  const sel = selected != null ? pickable.find((p) => p.t === selected) ?? null : null;
   const [press, setPress] = useState(false);
 
   /* ---------- 画光：板后灯箱 + 板前光束 + 浮尘 ---------- */
@@ -110,7 +139,9 @@ export function SteelPlate({ months, label = '近 3 个月训练', selected, onS
       fc.style.top = `${el.offsetTop}px`; fc.style.height = `${H * (1 + BEAM_SPILL)}px`;  // 光束画布和板顶对齐（上面可能有读数行）
     };
     const paintStatic = () => {
-      const k = W / g.w, rect = el.getBoundingClientRect(), [lx0, ly0] = lightAt(), lx = lx0 - rect.left, ly = ly0 - rect.top;
+      const k = W / g.w, rect = el.getBoundingClientRect(), [lx0, ly0] = look === 'center' ? [rect.left + W * 0.5, rect.top + H * 0.42] : lightAt(frame?.current), lx = lx0 - rect.left, ly = ly0 - rect.top;
+      // 看得见的光源：板后的光晕跟着光源的位置走（lamp：屏幕上固定、滚动时沿板边滑；center：板后正中）
+      if (halo.current) { const hr = halo.current.getBoundingClientRect(); halo.current.style.setProperty('--hx', `${(lx0 - hr.left).toFixed(1)}px`); halo.current.style.setProperty('--hy', `${(ly0 - hr.top).toFixed(1)}px`); }
       // 板后灯箱：以光源为心的荧光渐变（离光越近越亮，最远的孔也留一点底光，不是黑洞）
       const b = bc.getContext('2d')!; b.setTransform(dpr, 0, 0, dpr, 0, 0);
       b.fillStyle = tint(pal.deep, 1); b.fillRect(0, 0, W, H);
@@ -175,15 +206,15 @@ export function SteelPlate({ months, label = '近 3 个月训练', selected, onS
     document.addEventListener('scroll', onScroll, { capture: true, passive: true });
     window.addEventListener('resize', onScroll);
     return () => { cancelAnimationFrame(raf); cancelAnimationFrame(pending); ro.disconnect(); io?.disconnect(); document.removeEventListener('scroll', onScroll, { capture: true }); window.removeEventListener('resize', onScroll); };
-  }, [g, lit, dense, sel?.t]);  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [g, lit, dense, sel?.t, look]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ---------- 手势：按住横向拖吸到最近的孔（M04），点一下选中，再点同一个孔打开 ---------- */
   const at = useCallback((clientX: number, clientY: number) => {
     const rc = fig.current!.getBoundingClientRect(), k = rc.width / g.w, x = (clientX - rc.left) / k, y = (clientY - rc.top) / k;
     let best: Pt | null = null, bd = Infinity;
-    for (const p of g.holes) { const d = (p.x - x) ** 2 + ((p.y - y) * 0.6) ** 2; if (d < bd) { bd = d; best = p; } }  // 竖向放宽：手指横着拖时上下略偏也吸得住
+    for (const p of pickable) { const d = (p.x - x) ** 2 + ((p.y - y) * 0.6) ** 2; if (d < bd) { bd = d; best = p; } }  // 竖向放宽：手指横着拖时上下略偏也吸得住
     return best;
-  }, [g]);
+  }, [g, pickable]);
   const gest = useRef<{ x: number; y: number; t0: number | null; moved: boolean } | null>(null);
   const pick = (p: Pt | null) => { if (p && p.t !== selected) { onSelect?.(p.t); navigator.vibrate?.(T['motion/press'] / 10); } };
   const down = (e: React.PointerEvent) => {
@@ -204,14 +235,15 @@ export function SteelPlate({ months, label = '近 3 个月训练', selected, onS
   };
   const key = (e: React.KeyboardEvent) => {
     if (!onSelect || !lit) return;
-    const order = [...g.holes].sort((a, b) => a.t - b.t), i = order.findIndex((p) => p.t === selected);
+    const order = [...pickable].sort((a, b) => a.t - b.t), i = order.findIndex((p) => p.t === selected);
     if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); const j = Math.max(0, Math.min(order.length - 1, (i < 0 ? order.length - 1 : i) + (e.key === 'ArrowRight' ? 1 : -1))); pick(order[j]); }
     if (e.key === 'Enter' && selected != null) { e.preventDefault(); onOpen?.(selected); }
   };
   const live = !!onSelect && lit;
 
   return (
-    <div className={s.wrap} data-plate data-holes={g.holes.length}>
+    <div className={cx(s.wrap, dark && s.dark)} data-plate data-holes={g.holes.length} data-look={look}>
+      {dark && lit && <i ref={halo} className={cx(s.halo, look === 'center' && s.haloCenter)} aria-hidden="true" />}
       {day !== undefined && (
         <div className={s.readout} aria-live="polite">
           {day ? <>
@@ -229,7 +261,7 @@ export function SteelPlate({ months, label = '近 3 个月训练', selected, onS
         {lit && <canvas ref={back} className={s.back} aria-hidden="true" />}
         <svg className={s.svg} viewBox={`0 0 ${g.w} ${f2(h)}`} aria-hidden="true">
           <defs>
-            <linearGradient id={u('steel')} x1="0" y1="0" x2="0" y2="1"><stop offset="0" style={{ stopColor: STEEL_TOP }} /><stop offset="1" style={{ stopColor: STEEL_BOT }} /></linearGradient>
+            <linearGradient id={u('steel')} x1="0" y1="0" x2="0" y2="1"><stop offset="0" style={{ stopColor: dark ? DARK_TOP : STEEL_TOP }} /><stop offset="1" style={{ stopColor: dark ? DARK_BOT : STEEL_BOT }} /></linearGradient>
             <radialGradient id={u('vig')} cx=".5" cy=".5" r=".72"><stop offset=".5" style={{ stopColor: lo(0) }} /><stop offset="1" style={{ stopColor: lo(58) }} /></radialGradient>
             <radialGradient id={u('blotD')}><stop offset="0" style={{ stopColor: lo(22) }} /><stop offset="1" style={{ stopColor: lo(0) }} /></radialGradient>
             <radialGradient id={u('blotL')}><stop offset="0" style={{ stopColor: hi(5) }} /><stop offset="1" style={{ stopColor: hi(0) }} /></radialGradient>
@@ -265,7 +297,9 @@ export function SteelPlate({ months, label = '近 3 个月训练', selected, onS
           {/* 月份：钢印字（骨白 80% + 右下一道暗影）。2026-10-06 用户：暗字压在灰钢上看不清——对比度约 7:1（骨白 80% 对钢面 gray-400），不再用暗字 */}
           {g.labels.map((l) => <g key={l.text} fontSize="10.5" fontWeight="600" letterSpacing="1"><text x={f2(l.x + 0.7)} y={TOP - 8 + 0.7} style={{ fill: lo(80) }}>{l.text}</text><text x={f2(l.x)} y={TOP - 8} style={{ fill: hi(80) }}>{l.text}</text></g>)}
           {g.holes.map((p) => <use key={p.t} href={`#${u('hole')}`} x={f2(p.x)} y={f2(p.y)} />)}
-          {g.dimples.map((p) => <use key={p.t} href={`#${u('dim')}`} x={f2(p.x)} y={f2(p.y)} />)}
+          {dark
+            ? g.dimples.map((p) => <path key={p.t} d={handCircle(p.x, p.y, r * 0.92, p.t)} fill="none" style={{ stroke: REST_INK }} strokeWidth={0.75} strokeLinecap="round" strokeLinejoin="round" />)
+            : g.dimples.map((p) => <use key={p.t} href={`#${u('dim')}`} x={f2(p.x)} y={f2(p.y)} />)}
           {g.ahead.map((p) => <circle key={p.t} cx={f2(p.x)} cy={f2(p.y)} r=".55" style={{ fill: hi(9) }} />)}
           {g.today && <g transform={`translate(${f2(g.today.x)} ${f2(g.today.y)})`} fill="none"><circle r={f2(r * 1.42)} style={{ stroke: lo(62) }} strokeWidth="1" /><circle r={f2(r * 1.42 + 0.6)} style={{ stroke: hi(22) }} strokeWidth=".7" /></g>}
         </svg>

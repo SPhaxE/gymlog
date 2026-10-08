@@ -5,6 +5,7 @@
  *  GainRow：三列固定宽度——名称（近 4 周有 PR 的打 PR 标）+ 下次目标（本行最大的数字）｜迷你曲线｜最近预估值 + 涨跌；
  *   曲线和数值各占固定宽度的列，所有行的曲线从同一条竖线开始，每条曲线下一条淡基线（每条自己缩放，只表达形状，不同动作之间不比大小）。
  *   ExerciseRow 右侧只有一个重量，装不下这些，所以单独一个件。没有 onClick 时是静态行（不假装能点）。 */
+import { createContext, useContext } from 'react';
 import { Icon, type IconName } from './Icon';
 import { Skeleton } from './feedback';
 import { Sparkline, type Point } from './charts';
@@ -15,6 +16,14 @@ import { Delta, Num, Tag, type DeltaDir } from './ui';
 import s from './gains.module.css';
 
 const fmt = (x: number) => (Math.round(x * 10) / 10).toLocaleString('en-US');
+
+/** 增量页配色（2026-10-08 走查 1 #28：「白色占比过多、PR 标重复度太高、没有主题色点缀」，方案台待选）：
+ *  now = 现在（每行骨白实心 PR 标、骨白曲线末点）；
+ *  accent = J1 点缀替代白块：PR 改成荧光细线小标，曲线压灰、末点荧光，上涨荧光；
+ *  curve  = J2 PR 进曲线：名字旁不再挂标，PR 那几次在曲线上是荧光点，末点荧光，上涨荧光；
+ *  star   = J3 一颗星 + 荧光曲线：PR 是名字前一颗荧光小星，整条曲线用暗荧光，上涨荧光。 */
+export type GainLookKind = 'now' | 'accent' | 'curve' | 'star';
+export const GainLook = createContext<GainLookKind>('now');
 
 export interface GainCounts { up: number; flat: number; down: number; baseline: number }
 
@@ -62,11 +71,13 @@ export function GainRow({ name, latest, unit = 'kg', delta, pr, points, target, 
   /** 钻入转场里被点的 / 返回时落回的那一行：名称、最新值、小曲线带共享名（M09），同名只能有一份，所以列表里只有这一行给 */
   drillId?: string;
 }) {
+  const look = useContext(GainLook);
   if (state === 'loading') return <div className={cx(s.row, s.loading)} aria-busy="true"><Skeleton shape="row" /></div>;
   const body = (
     <>
-      <span className={s.name}><b className="milo-text-body-strong" style={drillId ? drillName('name', drillId) : undefined}>{name}</b>{pr && <Tag tone="strong">PR</Tag>}</span>
-      <span className={s.spark} style={drillId ? drillName('line', drillId) : undefined}><Sparkline area points={points} label={`${name} 预估 1RM`} /></span>
+      <span className={s.name}>{pr && look === 'star' && <i className={s.prStar} aria-label="近 4 周有新纪录"><Icon name="star" small /></i>}<b className="milo-text-body-strong" style={drillId ? drillName('name', drillId) : undefined}>{name}</b>
+        {pr && (look === 'now' ? <Tag tone="strong">PR</Tag> : look === 'accent' ? <span className={s.prLine}>PR</span> : null)}</span>
+      <span className={s.spark} style={drillId ? drillName('line', drillId) : undefined}><Sparkline area points={look === 'curve' ? points : points.map((p, i) => (i < points.length - 1 ? { ...p, pr: false } : p))} label={`${name} 预估 1RM`} tone={look === 'now' ? undefined : look === 'star' ? 'lime' : 'accent'} /></span>
       <span className={s.value} style={drillId ? drillName('num', drillId) : undefined}>{latest != null ? <Num size="s" value={fmt(latest)} unit={unit} /> : <span className="milo-text-caption">—</span>}</span>
       <span className={s.target}>
         {target ? <><i>下次</i> <b className="milo-text-number-m">{target}</b></> : <span className="milo-text-caption">先做出一组工作组</span>}
@@ -75,9 +86,9 @@ export function GainRow({ name, latest, unit = 'kg', delta, pr, points, target, 
       <span className={s.delta}><Delta dir={delta.dir} value={delta.value} /></span>
     </>
   );
-  if (!onClick) return <div className={s.row}>{body}</div>;
+  if (!onClick) return <div className={s.row} data-look={look}>{body}</div>;
   return (
-    <button type="button" className={cx('milo-press milo-focus', s.row, s.btn)} onClick={onClick} aria-label={`查看${name}的进步曲线`} {...forced(state)}>
+    <button type="button" className={cx('milo-press milo-focus', s.row, s.btn)} data-look={look} onClick={onClick} aria-label={`查看${name}的进步曲线`} {...forced(state)}>
       {body}
     </button>
   );

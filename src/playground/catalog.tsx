@@ -4,7 +4,7 @@
  *  按下 / 聚焦在代码里是 :active / :focus-visible，这里经 state 强制显示（state.ts）。 */
 import { useRef, type ReactNode } from 'react';
 import {
-  BackToTop, Banner, BodyFigure, DotCalendar, SteelPlate, GainGroupHead, GainRow, GainSummary, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
+  BackToTop, Banner, BodyFigure, DotCalendar, SteelPlate, ParticleField, GainGroupHead, GainRow, GainSummary, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
   BodyPicker, PickRow, SwapRow, WarmupStrip,
   ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProfileTile, ProgressSteps, SectionLabel, Segmented,
   SessionRow, SetEditor, SetLine, SetRow, NumPad, Sheet, Tilt, SheetBlock, Skeleton, Sparkline, StateView, LoadMore, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
@@ -464,15 +464,20 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'SteelPlate', group: '训练与记录', desc: '记录页顶部的钢板打孔日历（2026-10-06 第 7 轮重做）：中性冷灰的冲压钢板，练过的日子是冲出来的孔、没练的只有样冲点、今天刻一圈细环。光源固定在屏幕左上角（不跟板走）：板后灯箱离光越近越亮，每个孔向光源反方向射出一束体积光（丁达尔），光束里有浮尘慢慢飘；页面滚动时板相对光源移动，孔的亮暗和光束角度真实变化。交互（M04）：按住横向拖吸到最近的练过的日子，孔口一圈光晕呼吸、轻振，上方读数行按位滚到那天；「查看」/ 再点同一个孔 / 回车钻进那天的训练。没练过任何一天时板后不点灯。一页只放一块。',
-    axes: { kind: ['trained', 'selected', 'today-done', 'empty'] }, size: 'card',
+    axes: { kind: ['trained', 'selected', 'today-done', 'empty', 'lamp', 'center'] }, size: 'card',
     render: (p, f) => {
       const days = new Set(f.trainedDays);
       if (p.kind === 'today-done') days.add(new Date(f.now).setHours(0, 0, 0, 0));
       const months = dotMonths(p.kind === 'empty' ? new Set() : days, f.now), last = Math.max(...f.trainedDays);
       return p.kind === 'selected'
         ? <SteelPlate dense months={months} selected={last} onSelect={noop} onOpen={noop} day={{ t: last, title: '10月2日 周五', sub: '下肢 · 13 组', value: '6,209', unit: 'kg' }} />
-        : <SteelPlate dense months={months} />;
+        : <SteelPlate dense months={months} look={p.kind === 'lamp' || p.kind === 'center' ? p.kind : 'steel'} />;
     },
+  },
+  {
+    name: 'ParticleField', group: '训练与记录', desc: '主题色流体粒子（2026-10-08 走查 1，方案台待选）：替换主角卡右上角的荧光色块与页头右上角的配重片同心纹。dust 漂浮光尘 / flow 流场丝带 / orbit 环轨粒子；颜色只取荧光 300 → 900 的渐变，离光源越远越暗；约 30 帧，离开视野停，减少动态效果时定格一帧。',
+    axes: { kind: ['dust', 'flow', 'orbit'] }, size: 'card',
+    render: (p) => <div style={{ position: 'relative', height: T['space/5xl'] * 3, overflow: 'clip', borderRadius: T['radius/l'] }}><ParticleField kind={p.kind as 'dust' | 'flow' | 'orbit'} /></div>,
   },
   {
     name: 'WeekBars', group: '数据图形', desc: 'E3 竖向胶囊量表（ref3）：近 8 周每周完成组数，本周骨白；和容量页胶囊同一语言（胶囊即量尺）。short（compact）= 增量页摘要卡里的 4 周破纪录柱，柱高一档 hit-min。',
