@@ -33,6 +33,7 @@ _Updated: 2026-10-10 01:00_
 - 关键帧缩略图直接用同一个视频 `#t=段中点` 定格（mp4 只有约 40 KB），不另做图
 
 ## 6. Failed Attempts
+- **推 main 别让最后一个提交只差 apk**：`vercel.json` 的 `ignoreCommand` 只比 `HEAD^ HEAD`（第一个父提交）且排除 `apk/`。把 `origin/main`（最新是 CI 的 apk 提交）合并进工作分支再推，合并提交对第一个父提交只差 apk → Vercel 跳过部署（2026-10-10 踩过）。做法：先 `git merge --ff-only origin/main` 或 rebase，再让有内容的提交排在最上面
 - 无头 Chromium 没有 H.264：要领页在门禁 / 截图里走「示范加载失败」分支；要看真播放，用 ffmpeg 转一份 webm，`page.route('**/*.mp4*')` 换掉（录屏就是这么录的）
 - 同一父元素下两个兄弟用同一个 key（`GuideVideo` / `GuideSteps` 都用 `media`）会渲染出两份示范 → key 加前缀
 - 无头截图在转场进行中拍不到中间帧 → 录屏 + ffmpeg 抽帧
