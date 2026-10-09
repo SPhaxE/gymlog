@@ -26,6 +26,4 @@
 .sp { flex: 1; }
 .blockHead { display: flex; align-items: center; justify-content: space-between; gap: var(--milo-space-m); }
 .block { display: grid; gap: var(--milo-space-s); padding: var(--milo-space-l); border-radius: var(--milo-radius-m); background: var(--milo-color-bg-raised); color: var(--milo-color-text-secondary); }
-/* 共享元素展开时（胶囊长成面板），面板不再自己滑上来：变形由 View Transitions 做 */
-.shared { animation: none; }
 @media (prefers-reduced-motion: reduce) { .scrim, .sheet { animation: none; transition: none; } }

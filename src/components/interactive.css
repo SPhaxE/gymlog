@@ -56,6 +56,19 @@
 ::view-transition-old(*.swap) { animation: vtOut var(--milo-motion-fast) var(--milo-motion-ease-standard) both; }
 ::view-transition-new(*.swap) { animation: vtIn var(--milo-motion-base) var(--milo-motion-ease-standard) var(--milo-motion-press) both; }
 @keyframes vtOut { to { opacity: 0; } }
+/* M02 流体胶囊形变（.fluid，2026-10-09 走查 1 #29）：容量页胶囊 ↔ 肌头详情浮层（FluidPanel）。
+   框按 motion/spring-soft 变形（有一点过冲）；图像对裁成 radius/xl、垫面板底色——胶囊很矮时圆角自然收成胶囊形，长大后是圆角面板；
+   快照按原尺寸贴左上角（窗口裁切，不拉伸）：旧的在前半程淡出、新的从四分之一处淡入（缩回时面板内容不会先没了、只剩一个空框在缩）。遮罩（.fscrim）单独一层：开时淡入、关时淡出，
+   z-index 让它在整页之上、面板与名称之下（只有新状态才有的遮罩组默认排在最后，会盖住正在长大的面板）。 */
+::view-transition-group(*.fluid) { z-index: 2; animation-duration: var(--milo-motion-spring-soft-ms); animation-timing-function: var(--milo-motion-ease-spring-soft); }
+::view-transition-group(*.title) { z-index: 3; }
+::view-transition-image-pair(*.fluid) { overflow: clip; border-radius: var(--milo-radius-xl); background: var(--milo-color-bg-sheet); }
+::view-transition-old(*.fluid), ::view-transition-new(*.fluid) { inset: 0; width: 100%; height: 100%; object-fit: none; object-position: left top; }
+::view-transition-old(*.fluid) { animation: vtOut calc(var(--milo-motion-spring-soft-ms) * 0.5) var(--milo-motion-ease-standard) both; }
+::view-transition-new(*.fluid) { animation: vtIn calc(var(--milo-motion-spring-soft-ms) * 0.4) var(--milo-motion-ease-standard) calc(var(--milo-motion-spring-soft-ms) * 0.25) both; }
+::view-transition-group(*.fscrim) { z-index: 1; animation-duration: var(--milo-motion-base); }
+::view-transition-new(*.fscrim) { animation: vtIn var(--milo-motion-base) var(--milo-motion-ease-standard) both; }
+::view-transition-old(*.fscrim) { animation: vtOut var(--milo-motion-base) var(--milo-motion-ease-standard) both; }
 /* 休息计时（.rest，2026-10-06）：首页主按钮旁的计时胶囊 ↔ 休息面板（点开 / 收起）。
    同样是「窗口」：快照按原尺寸居中、不拉伸（文字不变形），框按软弹簧变形，旧的先淡出、新的随后淡入。
    切 Tab 时胶囊（或面板）只有旧快照 / 只有新快照（:only-child）：不飞，往下滑着淡出 / 从下方升起 */

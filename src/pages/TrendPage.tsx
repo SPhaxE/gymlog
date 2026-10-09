@@ -10,7 +10,7 @@
  *  选了就把它的曲线以虚线叠上来，图下一行图例同时读两条（游标那天 + 对比动作那天及以前最近的一次）；✕ 取消对比。演示不拦截，Pro 只是标明这是 Pro 的权益。 */
 import { useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router';
-import { BackToTop, Banner, Chip, Delta, Icon, List, ListRow, Odometer, ProLink, Screen, SectionLabel, Sheet, StateView, Tag, TopBar, TrendChart, drillName, drillTransition } from '../components';
+import { BackToTop, Banner, Chip, Delta, Icon, List, ListRow, Odometer, OrbitPlate, ProLink, Screen, SectionLabel, Sheet, StateView, Tag, TopBar, TrendChart, drillName, drillTransition } from '../components';
 import { env, fmt, REGION_NAME } from '../data/demo';
 import { POINTS, compareCandidates, exerciseTrend } from '../data/gains';
 import { proStatus, usePro } from '../data/pro';
@@ -65,7 +65,7 @@ export function TrendPage({ scenario, now }: { scenario?: string; now: number })
         trailing={<button type="button" className={`milo-press milo-focus ${s.guide}`} onClick={() => pn.push(`/exercise/${exerciseId}?${guideQuery(loc.search, 'trend')}`)}>要领</button>} />
       <div ref={topRef} className={s.scroll} style={keep} data-drill-ready="trend">
         <header className={s.hero}>
-          <span className={s.plate} aria-hidden="true" />
+          <OrbitPlate />
           <span className={`milo-text-caption ${s.label}`}>{reps ? '每次最好一组的次数' : '预估 1RM'} · {dayText(cur.t)}{cur.pr ? ' · 新纪录' : ''}</span>
           <div className={s.big} style={drillName('num', exerciseId)}>
             <span className={s.odo}><Odometer value={fmt(cur.v)} size="hero" /></span><span className="milo-text-heading">{row.unit}</span>

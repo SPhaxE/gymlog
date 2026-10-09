@@ -4,7 +4,6 @@
 .hero { position: relative; isolation: isolate; padding-bottom: var(--milo-space-m); overflow: clip; }
 /* 页头右上角的环轨粒子（P3 + 内收，2026-10-09）：垫在页头文字下面，页头自己裁切 */
 /* 2026-10-09 用户：太实、抢焦点 → 加一层模糊、压淡，只当背景的光 */
-.plateFx { z-index: -1; filter: blur(calc(var(--milo-space-xs) * 0.75)); opacity: 0.7; }
 
 /* 不撑高（2026-10-08 走查 1 #13）：内容不足一屏就不能滚——分组都收起时页面是静止的；内容够长时部位筛选照常滑到顶贴住 */
 .body { display: grid; align-content: start; grid-auto-rows: max-content; gap: var(--milo-space-m); padding: 0 var(--milo-size-gutter) calc(var(--nav-clear) + var(--milo-space-2xl)); }

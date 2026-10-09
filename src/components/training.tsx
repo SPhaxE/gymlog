@@ -232,9 +232,7 @@ export function WeekStrip({ days, label = '本周' }: { days: DayProps[]; label?
 /* ---------- 动作示范（P05，ia §1.4） ---------- */
 export type MediaState = 'loading' | 'ready' | 'missing' | 'error';
 /** 只通过动作的 media 字段引用；没有素材显示「暂无示范」，不拿相近动作顶替；加载失败显示文字要领提示，不显示破图。保留 MuscleWiki 署名与链接 */
-export function MediaFrame({ src, label, force, fill }: { src: string | null; label: string; force?: MediaState;
-  /** 动作要领页（P04）：铺满容器、不留圆角，署名压在右上角 */
-  fill?: boolean }) {
+export function MediaFrame({ src, label, force }: { src: string | null; label: string; force?: MediaState }) {
   const [st, setSt] = useState<MediaState>(src ? 'loading' : 'missing');
   useEffect(() => setSt(src ? 'loading' : 'missing'), [src]);
   const shown = force ?? st;
@@ -242,7 +240,7 @@ export function MediaFrame({ src, label, force, fill }: { src: string | null; la
   if (shown === 'missing') overlay = <><Icon name="info" /><b className="milo-text-body-strong">暂无示范</b><span className="milo-text-caption">按下方文字要领做</span></>;
   if (shown === 'error') overlay = <><Icon name="alert" /><b className="milo-text-body-strong">示范加载失败</b><span className="milo-text-caption">按下方文字要领做</span></>;
   return (
-    <figure className={cx(s.media, fill && s.mediaFill)}>
+    <figure className={s.media}>
       <div className={cx(s.mediaBox, shown === 'loading' && s.mediaLoading)} aria-busy={shown === 'loading' || undefined}>
         {src && shown !== 'missing' && shown !== 'error' && (
           <video src={src} muted loop playsInline autoPlay preload="metadata" aria-label={label} className={shown === 'ready' ? s.video : s.videoHidden}

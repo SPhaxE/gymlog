@@ -3,7 +3,9 @@
  *  竖向短滑 = 滚动页面（hit 层 touch-action: pan-y）；按住 motion/long-press 不动才进入放大镜，进入后锁住页面滚动；
  *  进入前移动超过 motion/drag-slop 或浏览器开始滚动（pointercancel）都取消。上下滑动逐个放大；
  *  按下的那一刻就开始「预放大」（放大程度先到 PREVIEW），长按确认后接着放满——没有先等一段再动的空档（2026-10-05 用户：放大有一小段不自然的延迟）；
- *  放大程度逐帧补间（胶囊和引线同一帧算，跟手时不加过渡，不滞后）。引线是锚点到胶囊左缘中点的直线（折线的竖段会在胶囊左边挤成一束）。
+ *  放大程度逐帧补间（胶囊和引线同一帧算，跟手时不加过渡，不滞后）。
+ *  引线（2026-10-09 走查 1 #12）：常态不画；放大镜确认后再等 motion/fast，只给焦点胶囊画一条折线——胶囊左缘中点水平出 space/l，再斜折到肌头锚点，
+ *  沿线描出（motion/base）；拖到别的胶囊立刻按新焦点重描；松手后停 motion/base 再淡出（motion/fast）。换人体卡途中不画。
  *  松手只是退出放大镜，不打开详情（2026-10-04 用户改）；要看详情就轻点胶囊。
  *  胶囊：名称 · 组数/适宜量；底色按「组数 ÷ 最大可恢复量」从左填充（胶囊本身就是量尺）；0 组为斜纹。
  *  焦点（2026-10-04 用户第三轮反馈：无必要勿增实体）：还是那颗胶囊，实心荧光；名称挪到最右（手指按着的地方，放大前已经看过名称），
@@ -42,12 +44,11 @@ function useStrength(target: number) {
   return k;
 }
 
-export function CapsuleRail({ ids, stats, anchors, width, height, left, right, mag, onMag, onSelect, leaders = true, drawKey, sharedId }: {
+export function CapsuleRail({ ids, stats, anchors, width, height, left, right, mag, onMag, onSelect, leaders = true, sharedId }: {
   ids: string[]; stats: Map<string, HeadStat>; anchors: Anchors; width: number; height: number; left: number; right: number;
   mag: number | null; onMag: (f: number | null) => void; onSelect: (id: string) => void;
-  /** 画不画引线（换人体卡的途中先收起，新卡量完锚点再画） */ leaders?: boolean;
-  /** 引线重画的钥匙：变一次，所有引线从人体（左）往胶囊（右）重新描一遍 */ drawKey?: string | number;
-  /** M03：正在长成详情面板 / 从面板缩回来的那颗胶囊（只有它带共享名） */ sharedId?: string;
+  /** 画不画引线（换人体卡的途中不画，新卡量完锚点再画） */ leaders?: boolean;
+  /** M02：正在长成肌头详情浮层 / 从浮层缩回来的那颗胶囊（只有它带共享名） */ sharedId?: string;
 }) {
   const n = ids.length;
   const [preview, setPreview] = useState(false);  // 按下了、长按还没确认
@@ -60,6 +61,7 @@ export function CapsuleRail({ ids, stats, anchors, width, height, left, right, m
   const span = still.caps.length ? still.caps[n - 1].y + still.caps[n - 1].h : height;
   const g = useRef<{ x: number; y: number; timer: number; on: boolean } | null>(null);
   const rail = useRef<HTMLDivElement>(null), hit = useRef<HTMLDivElement>(null);
+  const lead = useLeader(mag != null && !preview ? ids[Math.round(mag)] ?? null : null);
   const fAt = (clientY: number) => indexAt(clientY - rail.current!.getBoundingClientRect().top - still.top, span, n);
 
   // 放大镜开着时拦下 touchmove，页面不跟着滚；没开时不拦，竖向短滑照常滚动页面（必须是非 passive 的原生监听）
@@ -99,19 +101,19 @@ export function CapsuleRail({ ids, stats, anchors, width, height, left, right, m
 
   return (
     <>
-      <svg key={drawKey} className={s.leaders} width={width} height={height} aria-hidden="true" style={leaders ? undefined : { opacity: 0 }}>
-        {caps.map((c, j) => {
-          const a = anchors[ids[j]];
-          if (!a) return null;
-          const cy = top + c.y + c.h / 2;
-          return (
-            <g key={ids[j]} className={c.focus ? s.leaderOn : s.leader}>
-              <line x1={a[0]} y1={a[1]} x2={c.x} y2={cy} pathLength={1} style={{ animationDelay: `${Math.round((j * T['motion/stagger']) / 4)}ms` }} />
-              <circle cx={a[0]} cy={a[1]} r={c.focus ? T['stroke/ring-progress'] : T['stroke/focus']} />
+      {leaders && lead.id && (() => {
+        const j = ids.indexOf(lead.id), a = anchors[lead.id], c = caps[j];
+        if (!a || !c) return null;
+        const cy = top + c.y + c.h / 2, kx = c.x - T['space/l'];
+        return (
+          <svg className={`${s.leaders} ${lead.out ? s.leadersOut : ''}`} width={width} height={height} aria-hidden="true">
+            <g key={lead.id} className={s.leaderOn}>
+              <polyline points={`${c.x},${cy} ${kx},${cy} ${a[0]},${a[1]}`} pathLength={1} />
+              <circle cx={a[0]} cy={a[1]} r={T['stroke/ring-progress']} />
             </g>
-          );
-        })}
-      </svg>
+          </svg>
+        );
+      })()}
       <div ref={rail} className={s.rail} role="listbox" aria-label="肌头容量（轻点看详情，按住上下滑动放大）">
         {caps.map((c, k) => <Capsule key={ids[k]} h={stats.get(ids[k])!} c={c} top={top} shared={sharedId === ids[k]} />)}
       </div>
@@ -122,14 +124,32 @@ export function CapsuleRail({ ids, stats, anchors, width, height, left, right, m
   );
 }
 
+/** 引线的出现 / 消失（只跟焦点胶囊）：focus 有值 motion/fast 后出现；换焦点立刻跟过去（重描）；focus 没了停 motion/base 再淡出 motion/fast */
+function useLeader(focus: string | null) {
+  const [st, setSt] = useState<{ id: string | null; out: boolean }>({ id: null, out: false });
+  const shown = st.id != null;
+  useEffect(() => {
+    if (focus) {
+      if (shown) { setSt({ id: focus, out: false }); return; }
+      const t = window.setTimeout(() => setSt({ id: focus, out: false }), T['motion/fast']);
+      return () => clearTimeout(t);
+    }
+    if (!shown) return;
+    const t1 = window.setTimeout(() => setSt((x) => ({ ...x, out: true })), T['motion/base']);
+    const t2 = window.setTimeout(() => setSt({ id: null, out: false }), T['motion/base'] + T['motion/fast']);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [focus, shown]);
+  return st;
+}
+
 /** 单个胶囊。在轨道里由 CapsuleRail 定位；standalone 时按自身宽高排在文档流里（Playground、说明页） */
-export function Capsule({ h, c, top = 0, standalone, shared }: { h: HeadStat; c: CapBox; top?: number; standalone?: boolean; /** M03 共享名（胶囊 ↔ 肌头详情面板） */ shared?: boolean }) {
+export function Capsule({ h, c, top = 0, standalone, shared }: { h: HeadStat; c: CapBox; top?: number; standalone?: boolean; /** M02 共享名（胶囊 ↔ 肌头详情浮层） */ shared?: boolean }) {
   const none = !(h.sets7d > 0);
   const fill = Math.min(1, h.sets7d / h.mrv) * 100;
   const thermal = useContext(BodyRender);
   return (
     <div className={`${c.focus ? s.focus : none ? s.none : s.cap} ${standalone ? s.standalone : ''}`} data-id={h.id} role="option" aria-selected={c.focus}
-      style={{ left: c.x, top: top + c.y, width: c.w, height: c.h, ['--w' as string]: c.weight, ...(shared ? sharedName('card', h.id) : {}) }}>
+      style={{ left: c.x, top: top + c.y, width: c.w, height: c.h, ['--w' as string]: c.weight, ...(shared ? sharedName('fluid', h.id) : {}) }}>
       {!c.focus && !none && <div className={`${s.gauge} ${h.sets7d > h.mrv && !thermal ? s.gaugeOver : ''}`}
         style={{ width: `${fill}%`, ...(thermal ? { background: heatCss(heatOf(h), thermal.palette), opacity: 0.55 } : {}) }} />}
       {c.focus ? <FocusBody h={h} /> : (

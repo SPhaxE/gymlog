@@ -101,17 +101,17 @@ export function RewardCard({ reward, pro, queued = 0, still, onClaim }: { reward
       path = <StagePath from={STAGE_ORDER.indexOf(reward.from)} to={STAGE_ORDER.indexOf(reward.to)} />;
       break;
     case 'pr':
-      headline = reward.exercise; line = `比上次最好多了 ${fmt1(reward.toKg - reward.fromKg)} kg。慢慢变牛，就是这样。`;
+      // 走查 1 #23：大数字 + 涨幅胶囊是主角（同一行），动作名在下面单独一行；涨幅已在胶囊里，说明句不再重复
+      headline = reward.exercise; line = '慢慢变牛，就是这样。';
       metric = (
-        <div className={cx(s.metric, s.in)}>
+        <div className={cx(s.metric, s.metricRow, s.in)} aria-label={`预估 1RM ${fmt1(reward.toKg)} kg，比之前多 ${fmt1(reward.toKg - reward.fromKg)} kg`}>
           <span className={s.kg}><Odometer value={fmt1(kg)} size="xl" /><i>kg</i></span>
           <span className={s.delta}>+{fmt1(reward.toKg - reward.fromKg)} kg</span>
-          <span className="milo-text-caption">预估 1RM · 之前 {fmt1(reward.fromKg)} kg</span>
         </div>
       );
       break;
     case 'streak':
-      headline = <span className={s.giant}>{weeks}<i>周</i></span>; line = `连续 ${reward.weeks} 周按处方练、该休就休。不奖励打开 App，只奖励守约。`;
+      headline = <span className={s.giant}>{weeks}<i>周</i></span>; line = `连续 ${reward.weeks} 周守约：该练就练，该休就休。`;
       metric = (
         <div className={cx(s.weeks, s.in)} aria-hidden="true">
           {Array.from({ length: Math.min(12, reward.weeks) }, (_, i) => <i key={i} style={{ '--i': i } as CSSProperties} />)}
@@ -120,7 +120,7 @@ export function RewardCard({ reward, pro, queued = 0, still, onClaim }: { reward
       );
       break;
     case 'level':
-      headline = `${STAGE_NAME[reward.stage]} ${reward.sub} 级`; line = reward.sub === 3 ? `再升一级就是${STAGE_NAME[STAGE_ORDER[STAGE_ORDER.indexOf(reward.stage) + 1]] ?? '满级'}。` : '每次只多一点，等级就是这样一格一格亮起来的。';
+      headline = `${STAGE_NAME[reward.stage]} ${reward.sub} 级`; line = reward.sub === 3 ? `再升一级就是${STAGE_NAME[STAGE_ORDER[STAGE_ORDER.indexOf(reward.stage) + 1]] ?? '满级'}。` : '每次只多一点，等级一格一格亮起来。';
       metric = (
         <div className={cx(s.pips, s.in)} aria-label={`${reward.sub} / 3 级`}>
           {[1, 2, 3].map((p) => <i key={p} className={cx(p <= reward.sub && s.pipOn, p === reward.sub && s.pipNew)} />)}
@@ -128,7 +128,7 @@ export function RewardCard({ reward, pro, queued = 0, still, onClaim }: { reward
       );
       break;
     case 'cycle':
-      headline = `第 ${reward.n} 个周期`; line = '练了一整轮，又按时减量。超量恢复之后，下一轮更重。';
+      headline = `第 ${reward.n} 个周期`; line = '练满一轮、按时减量，下一轮更重。';
       metric = (
         <div className={cx(s.stats, s.in)}>
           <span><b className="milo-text-number-l">{reward.weeks}</b><i className="milo-text-caption">周训练</i></span>
@@ -154,10 +154,11 @@ export function RewardCard({ reward, pro, queued = 0, still, onClaim }: { reward
       </div>
       <p className={cx(s.label, s.in, 'milo-text-label')} style={{ '--n': 0 } as CSSProperties}>
         {reward.kind === 'pr' && <LogoGlyph mark="bars" state={still ? 'idle' : 'pr'} small className={s.labelGlyph} />}
-        {REWARD_NAME[reward.kind]}
+        {REWARD_NAME[reward.kind]}{reward.kind === 'pr' && ' · 预估 1RM'}
       </p>
-      <h2 className={cx(s.headline, s.in)} style={{ '--n': 1 } as CSSProperties}>{headline}</h2>
-      {metric}
+      {reward.kind === 'pr' && metric}
+      <h2 className={cx(s.headline, s.in)} style={{ '--n': reward.kind === 'pr' ? 2 : 1 } as CSSProperties}>{headline}</h2>
+      {reward.kind !== 'pr' && metric}
       <p className={cx(s.line, s.in, 'milo-text-body')} style={{ '--n': 3 } as CSSProperties}>{line}</p>
       {path}
       <div className={cx(s.gain, s.in)} style={{ '--n': 4 } as CSSProperties} aria-label={`获得 ${reward.niujin} 牛劲`}>

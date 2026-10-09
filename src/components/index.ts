@@ -7,8 +7,9 @@ export { BodyPicker } from './BodyPicker';
 export { Button, IconButton, type ButtonKind } from './Button';
 export { Capsule, CapsuleRail } from './CapsuleRail';
 export { Sparkline, TrendChart, type Point } from './charts';
+export { FluidPanel } from './FluidPanel';
 export { FinderBody, PickRow, SwapRow, type EquipFilter } from './finder';
-export { GuideDrawer } from './guide';
+export { GuideCue, GuideSteps, GuideVideo, useGuidePlayer } from './guide';
 export { GainGroupHead, GainRow, GainSummary, type GroupKind as GainGroupKind, GainLook, type GainLookKind } from './gains';
 export { DotCalendar, GiantNumber, Odometer, HeadWeeks, StepRing, WeekBars, dotDays, dotMonths, type DotCell, type DotMonth } from './dataviz';
 export { SteelPlate, type PlateLook } from './plate';
@@ -38,4 +39,4 @@ export { RewardCard, RewardModal, REWARD_NAME, type Reward, type RewardKind } fr
 export { AgeBadge, Coupon, FreezeCard, GrowthBar, GrowthCard, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, StageHero, StreakBar, StreakRisk, StreakWeeks, type StreakStatus, type StreakWeekStatus } from './growth';
 export { Breakdown, EvidencePanel, NiujinLine, OrderLine, PriceBlock, ProductCard, ProductGrid, ProductImage, RecommendCard, StatusTag, WalletExits, type ProductCardProps, type ProductStatus , ShopTagLook, type ShopTagLookKind } from './shop';
 export { MonthStats, PerkLedger, PerkTable, PlanPicker, ProCard, ProLink, ProWelcome, type PerkItem, type PlanOption } from './pro';
-export { GrainGlow, ParticleField, type GrainKind, type ParticleKind } from './particles';
+export { GrainGlow, OrbitPlate, ParticleField, type GrainKind, type ParticleKind } from './particles';

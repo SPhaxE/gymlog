@@ -61,8 +61,9 @@ export function RestDock({ remaining, total, endAt, width }: { remaining: number
 /* ---------- M03 共享元素展开（View Transitions） ---------- */
 /** 共享元素的名字：同一个 id 的卡片、名称、数字在列表与详情里同名，转场时由浏览器把它们从旧位置变形到新位置。
  *  view-transition-class = 部位（card / title / num），CSS 按部位定转场方式。
+ *  fluid = M02 流体胶囊形变（容量页胶囊 ↔ 肌头详情浮层，FluidPanel）。
  *  同一时刻只给「正在展开 / 收起的那一项」起名：转场层里的分组按文档顺序叠放，列表其他行要是也有名字，会画在展开的卡片上面（用户 2026-10-05 逐帧看到的遮挡错） */
-export const sharedName = (part: 'card' | 'title' | 'num' | 'swap' | 'pic', id: string) => ({ viewTransitionName: `x-${part}-${id.replace(/[^a-zA-Z0-9-]/g, '-')}`, viewTransitionClass: part }) as CSSProperties;
+export const sharedName = (part: 'card' | 'title' | 'num' | 'swap' | 'pic' | 'fluid', id: string) => ({ viewTransitionName: `x-${part}-${id.replace(/[^a-zA-Z0-9-]/g, '-')}`, viewTransitionClass: part }) as CSSProperties;
 
 /** M09 钻入转场（2026-10-06，增量页的一行 ↔ 动作曲线页）：列表行里的名称、最新值、小曲线，分别飞成详情页的标题、大数字、整张曲线；
  *  整页只做很快的淡出 / 淡入（见 interactive.css 的 data-vt='drill'）。名字按动作 id 起，列表里只有「被点的那一行」带名字（同名不能出现两次）。
@@ -133,7 +134,7 @@ export function guardTransitionTaps() {
     if (!lost || e.target !== document.documentElement) return;
     const { x, y } = lost; lost = null;
     const el = document.elementFromPoint(x, y);
-    if (el && el !== document.documentElement) { e.stopImmediatePropagation(); e.preventDefault(); (el as HTMLElement).click(); }
+    if (el && el !== document.documentElement) { e.stopImmediatePropagation(); e.preventDefault(); el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: x, clientY: y })); }  // SVG 元素没有 .click()
   }, true);
 }
 

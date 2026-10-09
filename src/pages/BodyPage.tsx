@@ -2,9 +2,10 @@
  *  五层：
  *  - 战略：一眼看到每块肌肉近 7 天练了多少、哪块还在恢复；人体是读图的底，胶囊是读数的尺。
  *  - 范围：近 7 天合计 + 热力人体（正面 / 背面、男 / 女）+ 容量胶囊（长按放大、轻点看肌头详情）。
- *  - 结构：Tab 根页；肌头详情是底部面板（M05），由被点的胶囊原地长出来（M03）。
- *  - 框架：页头（切换器在右）→ 合计与图例 → 舞台（人体 + 引线 + 胶囊列）；没有主按钮。
- *  - 表现：半身人体（版式不变：从左裁掉 ratio/figure-crop、左缘渐隐，高度撑满舞台）；常态胶囊缩小 1/3（少挡人体）；浅荧光轮廓从下往上描出、扫描光带周期扫过（BodyFigure）。
+ *  - 结构：Tab 根页；肌头详情是浮在页面上的面板（FluidPanel），由被点的胶囊原地长出来（M02 流体胶囊形变，2026-10-09 走查 1 #29）。
+ *  - 框架：页头（切换器在右）→ 合计与图例 → 舞台（人体 + 胶囊列；按住放大时才有一条引线）；没有主按钮。
+ *  - 表现：半身人体（从左裁掉 ratio/figure-crop、左缘渐隐，高度撑满舞台）往右摆到手刚碰到胶囊列左缘（走查 1 #12；放不下时退回左对齐）；
+ *    常态胶囊缩小 1/3（少挡人体）、不画引线；放大的那颗背后泛光，确认放大后才从它折一条线到肌头；人体区左右滑 = 切正反面（往左背面、往右正面）。
  *  切换人体是「换卡」（2026-10-06 用户：所有更换都从左往右）：新卡从左边滑进来盖在上面，旧卡往右退、淡出；
  *  新卡量完锚点才滑进来，引线先收、到位后从人体往胶囊（左 → 右）重新描出。全程都在人体自己那一层里（figureClip 隔离层叠），
  *  引线和胶囊永远在两张卡之上。轻点人体上的肌肉 = 轻点那颗胶囊；人体与胶囊列的命中区左右分开，不重叠。
@@ -12,7 +13,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { useLocation } from 'react-router';
-import { BackToTop, Banner, BodyFigure, Button, CapsuleRail, HeadWeeks, LandmarkRuler, Nav, Num, PageHeader, PhaseSegments, ProLink, Screen, Segmented, Sheet, SheetBlock, Ticks, TierLegend, sharedTransition, type Anchors, type Tab } from '../components';
+import { BackToTop, Banner, BodyFigure, Button, CapsuleRail, FluidPanel, HeadWeeks, LandmarkRuler, Nav, Num, PageHeader, PhaseSegments, ProLink, Screen, Segmented, SheetBlock, Ticks, TierLegend, sharedTransition, type Anchors, type Tab } from '../components';
 import { ago, bodyData, fmt, headWeeks, REGION_NAME } from '../data/demo';
 import { deloadsOf } from '../data/me';
 import { proStatus, usePro } from '../data/pro';
@@ -52,7 +53,8 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
   const [anchors, setAnchors] = useState<Anchors>({});
   const [mag, setMag] = useState<number | null>(null);
   const [sheet, setSheet] = useState<string | null>(null);
-  // M03：正在长成详情 / 从详情缩回的那颗胶囊（只有它带共享名；转场放完撤掉）
+  const [anchorY, setAnchorY] = useState<number | undefined>();
+  // M02：正在长成详情 / 从详情缩回的那颗胶囊（只有它带共享名；转场放完撤掉）
   const [shared, setShared] = useState<string | null>(null);
   const stage = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState<{ w: number; h: number }>({ w: T['size/screen-w'], h: T['size/screen-h'] / 2 });
@@ -80,8 +82,9 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
   const openSheet = useCallback((id: string) => {
     if (!data.stats.has(id)) return;
     setMag(null);
+    setAnchorY(document.querySelector(`[role=option][data-id="${id}"]`)?.getBoundingClientRect().top);
     flushSync(() => setShared(id));              // 先让那颗胶囊带上共享名，再拍旧快照
-    sharedTransition(() => setSheet(id));        // 新状态里名字在面板上：胶囊原地长成面板
+    sharedTransition(() => setSheet(id));        // 新状态里名字在浮层上：胶囊原地长成浮层
   }, [data]);
   const k = data.kpi;
   const closeSheet = () => {
@@ -102,6 +105,23 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
     setCards((cs) => cs.flatMap((c) => (c.key !== key ? [c] : c.st === 'out' ? [] : [{ ...c, st: 'still' as const }])));
   };
   const cardCls = { still: s.card, wait: s.cardWait, in: s.cardIn, out: s.cardOut };
+  const railLeft = g + contentW * T['ratio/rail-start'];
+  // 人体区左右滑切正反（走查 1 #12）：只认起点在胶囊列左边的手势；横向 ≥ space/3xl 且明显大于竖向才算，这一下的点按拦掉（不误开肌头详情）
+  const swipe = useRef<{ x: number; y: number } | null>(null), swiped = useRef(false);
+  const swipeDown = (e: React.PointerEvent) => {
+    const r = stage.current!.getBoundingClientRect();
+    swipe.current = e.clientX - r.left < railLeft ? { x: e.clientX, y: e.clientY } : null;
+    swiped.current = false;
+  };
+  const swipeUp = (e: React.PointerEvent) => {
+    const st = swipe.current; swipe.current = null;
+    if (!st) return;
+    const dx = e.clientX - st.x, dy = e.clientY - st.y;
+    if (Math.abs(dx) < T['space/3xl'] || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    swiped.current = true;
+    const next: View = dx < 0 ? 'back' : 'front';
+    if (next !== view) swap({ view: next });
+  };
   return (
     <Screen label="容量">
       <div ref={topRef} className={s.scroll}>
@@ -119,26 +139,27 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
         <TierLegend />
       </PageHeader>
 
-      <div ref={stage} className={s.stage} style={{ minHeight: railMin }}>
-        {/* 人体只在内容区里（左缘 = 页面边距），不越过组件最外层 */}
+      <div ref={stage} className={s.stage} style={{ minHeight: railMin }} onPointerDown={swipeDown} onPointerUp={swipeUp} onPointerCancel={() => { swipe.current = null; }}
+        onClickCapture={(e) => { if (swiped.current) { swiped.current = false; e.stopPropagation(); } }}>
+        {/* 人体只在内容区里（左缘 = 页面边距），不越过组件最外层；卡宽到胶囊列起点为止，人体靠右（手刚碰到胶囊） */}
         <div className={s.figureClip}>
           {cards.map((c) => {
             const live = c === cur;
             return (
-              <div key={c.key} className={cardCls[c.st]} onAnimationEnd={settle(c.key)}>
+              <div key={c.key} className={cardCls[c.st]} style={{ right: contentW * (1 - T['ratio/rail-start']) }} onAnimationEnd={settle(c.key)}>
                 <BodyFigure gender={c.gender} view={c.view} stats={data.stats} focus={live ? (mag != null ? ids[Math.round(mag)] ?? null : sheet) : null}
-                  height={box.h} onAnchors={live ? onAnchors : noop} relativeTo={stage} onPick={live && c.st === 'still' ? openSheet : undefined} />
+                  height={box.h} width={box.w} onAnchors={live ? onAnchors : noop} relativeTo={stage} onPick={live && c.st === 'still' ? openSheet : undefined} />
               </div>
             );
           })}
         </div>
         <CapsuleRail ids={ids} stats={data.stats} anchors={anchors} width={box.w} height={box.h}
-          left={g + contentW * T['ratio/rail-start']} right={g + contentW} mag={mag} onMag={setMag} onSelect={openSheet}
-          leaders={cur.st !== 'wait'} drawKey={cur.key} sharedId={shared && sheet !== shared ? shared : undefined} />
+          left={railLeft} right={g + contentW} mag={mag} onMag={setMag} onSelect={openSheet}
+          leaders={cur.st === 'still'} sharedId={shared && sheet !== shared ? shared : undefined} />
       </div>
       </div>
 
-      {sheet && <HeadSheet h={data.stats.get(sheet)!} shared={shared === sheet} onClose={closeSheet}
+      {sheet && <HeadSheet h={data.stats.get(sheet)!} shared={shared === sheet} anchorY={anchorY} onClose={closeSheet}
         weeks={headWeeks(src.history, sheet, now, src.deloads ?? deloadsOf(src.deload))} proActive={proOn} onPro={() => pn.push((proOn ? '/me/pro' : '/pro') + loc.search)}
         onFind={FAMILY_OF[sheet] ? () => { const id = sheet; setSheet(null); setShared(null); finder.open(FAMILY_OF[id], id); } : undefined} />}
       {finder.find && <FinderSheet src={src} caption="加的动作排在今天处方后面" onClose={finder.close} />}
@@ -148,12 +169,12 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
   );
 }
 
-/** 肌头详情（线框 sheet W1：恢复在上、容量在下，阅读顺序同处方逻辑） */
-function HeadSheet({ h, shared, onClose, onFind, weeks, proActive, onPro }: { h: HeadStat; shared: boolean; onClose: () => void;
+/** 肌头详情（线框 sheet W1：恢复在上、容量在下，阅读顺序同处方逻辑）；浮层由胶囊原地长出来（M02） */
+function HeadSheet({ h, shared, anchorY, onClose, onFind, weeks, proActive, onPro }: { h: HeadStat; shared: boolean; anchorY?: number; onClose: () => void;
   /** 6e：找练这块的动作（打开找动作面板，选中这块肌肉、细分落在这个肌头） */ onFind?: () => void;
   /** 6g 补「高级分析 · 肌群容量趋势」：近 8 周每周组数（Pro 的权益，演示不拦截，块标题旁挂「Pro ›」） */ weeks: { value: number; deload: boolean }[]; proActive: boolean; onPro: () => void }) {
   return (
-    <Sheet title={h.name} meta={`${REGION_NAME[h.region]} · ${TIER_NAME[h.tier]}`} onClose={onClose} sharedId={shared ? h.id : undefined}>
+    <FluidPanel title={h.name} meta={`${REGION_NAME[h.region]} · ${TIER_NAME[h.tier]}`} onClose={onClose} sharedId={shared ? h.id : undefined} anchorY={anchorY}>
       <SheetBlock label="恢复">
         <div className={s.big}>
           <Num size="hero" value={h.recovery == null ? '—' : Math.round(h.recovery * 100)} unit="%" />
@@ -170,6 +191,6 @@ function HeadSheet({ h, shared, onClose, onFind, weeks, proActive, onPro }: { h:
         <HeadWeeks weeks={weeks} mev={h.mev} mrv={h.mrv} />
       </SheetBlock>
       {onFind && <Button kind="ghost" icon="plus" onClick={onFind}>找练这块的动作</Button>}
-    </Sheet>
+    </FluidPanel>
   );
 }

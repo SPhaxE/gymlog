@@ -1,12 +1,13 @@
-/* 动作要领（P04）：视频占上半屏（1:1 居中裁），顶栏压在视频上（上方渐隐垫底），要领抽屉在下 */
-.page { position: relative; height: 100%; overflow: hidden; background: var(--milo-color-bg-base); }
-.video { position: absolute; left: 0; right: 0; top: 0; height: 62dvh; }
-.video::after { content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(var(--milo-color-bg-scrim), transparent 30%, transparent 70%, var(--milo-color-bg-base)); }
-.top { position: relative; z-index: 1; display: grid; gap: var(--milo-space-s); padding-bottom: var(--milo-space-s); }
-.rest { display: flex; align-items: center; gap: var(--milo-space-s); justify-self: start; margin: 0 var(--milo-size-gutter); padding: var(--milo-space-xs) var(--milo-space-m);
+/* 动作要领（P04，走查 1 #05 · Stitch V1）：顶栏 + 整页一个滚动区；从找动作来时拇指区一条「加到今天」 */
+.page { position: relative; height: 100%; display: flex; flex-direction: column; background: var(--milo-color-bg-base); }
+.body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: grid; grid-auto-rows: max-content; gap: var(--milo-space-l);
+  padding: 0 var(--milo-size-gutter) calc(var(--milo-space-3xl) + var(--safe-bottom)); }
+.rest { display: flex; align-items: center; gap: var(--milo-space-s); justify-self: stretch; padding: var(--milo-space-xs) var(--milo-space-m);
   border-radius: var(--milo-radius-pill); background: var(--milo-color-bg-raised-2); color: var(--milo-color-text-primary); }
-.rest > :last-child { margin-left: var(--milo-space-s); }
+.rest > :last-child { margin-left: auto; }
+.bar { display: flex; align-items: center; justify-content: space-between; gap: var(--milo-space-m); color: var(--milo-color-text-secondary); }
+.footer { flex: none; padding: var(--milo-space-m) var(--milo-size-gutter) calc(var(--milo-space-l) + var(--safe-bottom)); background: var(--milo-color-bg-base);
+  box-shadow: 0 calc(var(--milo-space-s) * -1) var(--milo-space-xl) var(--milo-color-bg-base); }
 .block { display: grid; gap: var(--milo-space-s); }
 .block h2 { margin: 0; color: var(--milo-color-text-secondary); }
 .heads { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--milo-space-l); align-items: center; }

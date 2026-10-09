@@ -4,7 +4,7 @@
  *  按下 / 聚焦在代码里是 :active / :focus-visible，这里经 state 强制显示（state.ts）。 */
 import { useRef, type ReactNode } from 'react';
 import {
-  BackToTop, Banner, BodyFigure, DotCalendar, SteelPlate, ParticleField, GrainGlow, GainGroupHead, GainRow, GainSummary, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
+  BackToTop, Banner, BodyFigure, FluidPanel, DotCalendar, SteelPlate, ParticleField, OrbitPlate, GrainGlow, GainGroupHead, GainRow, GainSummary, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
   BodyPicker, PickRow, SwapRow, WarmupStrip,
   ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProfileTile, ProgressSteps, SectionLabel, Segmented,
   SessionRow, SetEditor, SetLine, SetRow, NumPad, Sheet, Tilt, SheetBlock, Skeleton, Sparkline, StateView, LoadMore, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
@@ -212,10 +212,16 @@ export const CATALOG: Entry[] = [
       : <DialogCard icon="info" title="载入示例数据？" confirm="载入">会覆盖现有的训练历史。</DialogCard>,
   },
   {
-    name: 'Sheet', group: '反馈与悬浮层', desc: '底部面板（肌头详情、减量面板）。盖住导航；点遮罩、×、Esc、返回键关闭。sharedId：由某个元素原地长出来（M03，容量页胶囊 → 肌头详情），这时面板不再自己滑上来。',
+    name: 'Sheet', group: '反馈与悬浮层', desc: '底部面板（减量面板、改数键盘、找动作）。盖住导航；点遮罩、×、Esc、返回键关闭。（肌头详情 2026-10-09 起改用 FluidPanel。）',
     axes: {}, size: 'screen', covers: ['SheetBlock'],
     render: () => <div className={s.sheetBox}><Sheet docked title="中下胸" meta="大肌群" onClose={noop}><PhaseSegments phase="recovering" />
       <SheetBlock label="近 7 天容量"><LandmarkRuler value={7.5} mev={8} mav={16} mrv={22} /></SheetBlock></Sheet></div>,
+  },
+  {
+    name: 'FluidPanel', group: '反馈与悬浮层', desc: 'M02 流体胶囊形变（2026-10-09 走查 1 #29）：容量页被点的胶囊原地长成浮在页面上的面板（不是贴底抽屉）——左右贴页面边距，竖向贴着那颗胶囊（anchorY），夹在安全区里，放不下才面板内滚动。转场：面板与胶囊同名（sharedName fluid），框按 motion/spring-soft 变形（有一点过冲），裁成 radius/xl（胶囊很矮时自然是胶囊形），旧快照前半程淡出、新快照从四分之一处淡入；遮罩单独一层淡入 / 淡出。role=dialog、焦点圈定、Esc / 返回键 / 点外面 / 「关闭」。真实动画：/body → 点任意胶囊。',
+    axes: {}, size: 'screen',
+    render: () => <div className={s.sheetBox}><FluidPanel docked title="中下胸" meta="胸 · 大肌群" onClose={noop}><SheetBlock label="恢复"><PhaseSegments phase="recovering" /></SheetBlock>
+      <SheetBlock label="近 7 天容量"><LandmarkRuler value={7.5} mev={8} mav={16} mrv={22} /></SheetBlock></FluidPanel></div>,
   },
   {
     name: 'Skeleton', group: '反馈与悬浮层', desc: '加载占位，与真实内容同尺寸；减少动态效果时不闪。',
@@ -434,10 +440,10 @@ export const CATALOG: Entry[] = [
     render: (p) => <FinderDemo start="chest" sub={p.from === 'from-body' ? 'mid-lower-pectoralis' : null} />,
   },
   {
-    name: 'GuideDrawer', group: '训练与记录',
-    desc: '动作要领的底部抽屉（P04，线框 p04 W3 + Stitch p04-v2 版式 + v3 的大号步骤编号）：常态露出一句话要点（前面一道荧光短竖 = 全屏唯一的荧光）和 3 步，全在拇指区；把手上下拖或点提示行展开出练到的肌头和我的进步，高度按弹簧过渡（M05）。从找动作进来时底部多一个「加到今天」。可以直接拖 / 点。',
-    axes: { open: ['peek', 'open'] }, size: 'screen',
-    render: (p) => <GuideDemo open={p.open === 'open'} />,
+    name: 'GuideVideo', group: '训练与记录', covers: ['GuideSteps', 'GuideCue', 'useGuidePlayer'],
+    desc: '动作要领的示范 + 分步（P04，2026-10-09 走查 1 #05：线框 W3 关键帧分步，Stitch v7 V1；取代原来的上半屏视频 + 要领抽屉 GuideDrawer）。GuideVideo：16:9 完整示范卡（内容宽、contain 不裁头，署名右下，底边 2 号段落进度线）；GuideCue：一句话要点（前面荧光短竖 = 全屏唯一荧光）；GuideSteps：每步一行，左边 16:9 关键帧（同一段视频定格在这段中点，不写编号）+ 右边文字，行 ≥ 56、细线分隔；当前一步缩略图骨白描边、文字加粗、缩略图下走一条细进度线。每步 = 时长 ÷ 步数的一段：没点时整段循环、当前步跟着走；点一步循环那一段，再点取消（useGuidePlayer 管状态，进度逐帧写在 CSS 变量上不重渲染）；离开视野暂停，减少动态效果时停在段首。可以直接点。',
+    axes: { media: ['video', 'missing'] }, size: 'screen',
+    render: (p, f) => <GuideDemo src={p.media === 'missing' ? null : f.media.src} cue={f.media.cue?.summary ?? '核心收紧'} steps={f.media.cue?.steps ?? []} />,
   },
   /* ---------------- 数据图形 ---------------- */
   {
@@ -485,9 +491,14 @@ export const CATALOG: Entry[] = [
     render: (p) => <div style={{ position: 'relative', height: T['space/5xl'] * 3, overflow: 'clip', borderRadius: T['radius/l'] }}><GrainGlow kind={(p.kind === 'pulse_calm' ? 'pulse' : p.kind) as GrainKind} calm={p.kind === 'pulse_calm'} /></div>,
   },
   {
-    name: 'ParticleField', group: '训练与记录', desc: '主题色流体粒子（2026-10-08 走查 1，方案台待选）：替换主角卡右上角的荧光色块与页头右上角的配重片同心纹。dust 漂浮光尘 / flow 流场丝带 / orbit 环轨粒子；颜色只取荧光 300 → 900 的渐变，离光源越远越暗；约 30 帧，离开视野停，减少动态效果时定格一帧。',
+    name: 'ParticleField', group: '训练与记录', desc: '主题色流体粒子（2026-10-08 走查 1；方案台 P 组选定 orbit + 内收，封装成 OrbitPlate）。dust 漂浮光尘 / flow 流场丝带 / orbit 环轨粒子；颜色只取荧光 300 → 900 的渐变，离光源越远越暗；约 30 帧，离开视野停，减少动态效果时定格一帧。',
     axes: { kind: ['dust', 'flow', 'orbit'] }, size: 'card',
     render: (p) => <div style={{ position: 'relative', height: T['space/5xl'] * 3, overflow: 'clip', borderRadius: T['radius/l'] }}><ParticleField kind={p.kind as 'dust' | 'flow' | 'orbit'} /></div>,
+  },
+  {
+    name: 'OrbitPlate', group: '训练与记录', desc: '配重片光环（2026-10-09 走查 1 #10 #18 收尾）：环轨粒子一圈圈向内收到光点 + 薄模糊、七成透明，取代所有静态的配重片同心纹——增量 / 曲线页头、牛龄页小牛背后（光点在正中）、「我的」成长卡、会员卡 / 开通成功、商城推荐卡。铺满定位祖先、画在内容后面；旧的同心纹 CSS 留在方案台 P0 对照。',
+    axes: { anchor: ['corner', 'center'] }, size: 'card',
+    render: (p) => <div style={{ position: 'relative', isolation: 'isolate', height: T['space/5xl'] * 3, overflow: 'clip', borderRadius: T['radius/l'] }}><OrbitPlate anchor={p.anchor === 'center' ? [0.5, 0.55] : [1, 0]} spread={p.anchor === 'center' ? 0.55 : 0.75} /></div>,
   },
   {
     name: 'WeekBars', group: '数据图形', desc: 'E3 竖向胶囊量表（ref3）：近 8 周每周完成组数，本周骨白；和容量页胶囊同一语言（胶囊即量尺）。short（compact）= 增量页摘要卡里的 4 周破纪录柱，柱高一档 hit-min。',
@@ -545,7 +556,7 @@ export const CATALOG: Entry[] = [
     render: (p, f) => cap(f, p.tier, p.size),
   },
   {
-    name: 'CapsuleRail', group: '容量', desc: '胶囊列 + 引线 + 放大镜手势：手势层只盖胶囊列静止宽度（人体在左边另接轻点）；竖向短滑滚动页面，按住 150 ms 不动才进放大镜、进入后锁住滚动；先动 8 px 算滚动；松手只退出，轻点才打开详情：被点的那颗胶囊原地长成肌头详情面板（M03，名称飞成面板标题；关闭缩回胶囊）。换人体卡时引线先收、到位后从人体往胶囊（左 → 右）重新描出。真机手势见下方交互演示。',
+    name: 'CapsuleRail', group: '容量', desc: '胶囊列 + 放大镜手势：手势层只盖胶囊列静止宽度（人体在左边另接轻点）；竖向短滑滚动页面，按住 150 ms 不动才进放大镜、进入后锁住滚动；先动 8 px 算滚动；松手只退出，轻点才打开详情：被点的那颗胶囊原地长成浮在页面上的肌头详情（M02 流体胶囊形变，FluidPanel；名称飞成标题；关闭缩回胶囊）。引线（2026-10-09 走查 1 #12）：常态不画；放大镜确认后再等 motion/fast，只给焦点胶囊从左缘折一条线到肌头锚点、沿线描出，拖到别的胶囊立刻重描，松手停一会儿再淡出；放大的那颗背后泛光（这屏唯一的荧光焦点）。真机手势见下方交互演示',
     axes: { mag: ['rest', 'focus'] }, size: 'card',
     render: (p, f) => {
       const ids = ['upper-pectoralis', 'mid-lower-pectoralis', 'anterior-deltoid', 'lateral-deltoid', 'long-head-bicep', 'upper-abdominals'].filter((id) => f.body.stats.has(id));
@@ -576,7 +587,7 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'RewardCard', group: '增长', covers: ['RewardModal'],
-    desc: '奖励弹窗（品牌时刻）：升段 = 满档（旧形态蓄力抖动发亮 → 闪屏 + 冲击波 + 光芒 + 碎屑 + 震屏 + 长振动 → 新形态从白光里弹出，就是「小牛长大」，五段路径长到新段）；破纪录 / 连胜里程碑 = 高（印章砸下、Logo 条点亮、重量码表滚到新纪录 / 周胶囊依次点亮）；升小级 / 周期完成 = 中。牛劲用码表滚出来，会员显示 ×1.5。一次只弹一个，其余进「消息」；点一下跳过到定格；减少动态效果时只淡入定格。这里是定格画面，交互演示里看完整编排。数据取自等级曲线模拟里的进阶用户。',
+    desc: '奖励弹窗（品牌时刻）：升段 = 满档（旧形态蓄力抖动发亮 → 闪屏 + 冲击波 + 光芒 + 碎屑 + 震屏 + 长振动 → 新形态从白光里弹出，就是「小牛长大」，五段路径长到新段）；破纪录 / 连胜里程碑 = 高（印章砸下、Logo 条点亮、重量码表滚到新纪录 / 周胶囊依次点亮）；升小级 / 周期完成 = 中。牛劲用码表滚出来，会员显示 ×1.5。一次只弹一个，其余进「消息」；点一下跳过到定格；减少动态效果时只淡入定格。这里是定格画面，交互演示里看完整编排。数据取自等级曲线模拟里的进阶用户。破纪录（2026-10-09 走查 1 #23）：标签「破纪录 · 预估 1RM」→ 大数字 + 涨幅胶囊同一行（主角）→ 动作名（Heading，balance、最多两行）→ 一句短话（涨幅不再重复）；五种标题都 balance、说明句 pretty + 按字数限行宽、收短到一行半以内。',
     axes: { kind: ['r-stage', 'r-milo', 'r-pr', 'r-streak', 'r-level', 'r-cycle'], member: ['free', 'pro'] }, rows: ['kind'], cols: 'member', size: 'screen',
     render: (p) => {
       const r = sampleRewards()[p.kind.slice(2) as keyof ReturnType<typeof sampleRewards>];
@@ -611,14 +622,14 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'GrowthCard', group: '增长',
-    desc: '「我的」第一屏的成长卡（主角）：小牛头像 + 牛龄 + 离下一级的进度条与一句能照着做的话，下面三个数（连胜 / 本周 / 牛劲）；整张卡是按钮，点进牛龄页。右上角淡淡的配重片同心槽纹，进度条是这一屏唯一的荧光。',
+    desc: '「我的」第一屏的成长卡（主角）：小牛头像 + 牛龄 + 离下一级的进度条与一句能照着做的话，下面三个数（连胜 / 本周 / 牛劲）；整张卡是按钮，点进牛龄页。右上角淡淡的配重片光环（OrbitPlate），进度条是这一屏唯一的荧光。',
     axes: { stage: ['newborn', 'young', 'sturdy', 'bull', 'milo'], state: ['default', 'pressed', 'focused'] }, rows: ['stage'], cols: 'state', size: 'card',
     render: (p) => <GrowthCard stage={p.stage as MascotStage} sub={p.stage === 'milo' ? 3 : 2} progress={p.stage === 'milo' ? 1 : 0.62} streak={growthSample().streak.weeks} done={2} target={4} niujin={fmt(growthSample().niujin.balance)}
       hint={p.stage === 'milo' ? 'Milo 满级。接下来比的只有昨天的自己。' : <>再涨 <b>3 kg</b> 杠铃卧推的预估 1RM，升 1 小级</>} onClick={noop} state={st(p.state)} />,
   },
   {
     name: 'StageHero', group: '增长',
-    desc: '牛龄页头：顶上一行 5 段名字（当前这一段加下划线，一眼看到「现在在哪、还有几段」），小牛站在一圈圈配重片同心环里，下面是大号「段名 · 小级」。小牛可以点（2026-10-09 走查 1 #16）：换「开心」表情、蹦一下（压扁 → 跳起拉长 → 落地回弹）、轻振，连点每次重新蹦；减少动态效果时只换表情。',
+    desc: '牛龄页头：顶上一行 5 段名字（当前这一段加下划线，一眼看到「现在在哪、还有几段」），小牛站在一圈圈配重片光环里，下面是大号「段名 · 小级」。小牛可以点（2026-10-09 走查 1 #16）：换「开心」表情、蹦一下（压扁 → 跳起拉长 → 落地回弹）、轻振，连点每次重新蹦；减少动态效果时只换表情。',
     axes: { stage: ['newborn', 'young', 'sturdy', 'bull', 'milo'] }, size: 'card',
     render: (p) => <StageHero stage={p.stage as MascotStage} sub={p.stage === 'milo' ? 3 : 2} />,
   },
@@ -674,7 +685,7 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'RecommendCard', group: '商城',
-    desc: '商城顶部「为你推荐」：知识卡的理由（按你的训练数据）+ 相关商品一行，背景是配重片同心槽纹；没有被数据触发时是通用入门卡（标签换「入门」，没有理由行）。整张点进知识卡。',
+    desc: '商城顶部「为你推荐」：知识卡的理由（按你的训练数据）+ 相关商品一行，背景是配重片光环（OrbitPlate）；没有被数据触发时是通用入门卡（标签换「入门」，没有理由行）。整张点进知识卡。',
     axes: { state: ['r-hit', 'r-general'] }, size: 'card',
     render: (p) => p.state === 'r-hit'
       ? <RecommendCard title={KNOWLEDGE.belt.title} why="你的杠铃硬拉预估 1RM 已到体重的 1.62 倍" product={{ name: '杠铃腰带 10 毫米', price: 329 }} />
@@ -750,7 +761,7 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'ProWelcome', group: '会员',
-    desc: '开通成功的品牌时刻（6g，Stitch 开通成功 V2，占位换真小牛）：小牛站在配重片同心环里，三道骨白环纹从脚下荡开一次，小牛按软弹簧弹出；标题、到期日依次升起，「刚到手的」三条随后交错弹入、刻度尺画出。荧光只留给页面底部的「开始用」。减少动态效果时直接定格。',
+    desc: '开通成功的品牌时刻（6g，Stitch 开通成功 V2，占位换真小牛）：小牛站在配重片光环里，三道骨白环纹从脚下荡开一次，小牛按软弹簧弹出；标题、到期日依次升起，「刚到手的」三条随后交错弹入、刻度尺画出。荧光只留给页面底部的「开始用」。减少动态效果时直接定格。',
     axes: {}, size: 'screen',
     render: () => <ProWelcome stage="bull" title="欢迎加入 Milo Pro" line="年度会员 · 2027 年 10 月 7 日到期">
       <PerkLedger kind="pair" label="刚到手的" items={[{ value: '冻结卡', unit: '×2', reason: '已放进钱包' }, { value: '牛劲', unit: '×1.5', reason: '从下一次训练起' }, { value: '会员价', reason: '商城已生效' }]} /></ProWelcome>,

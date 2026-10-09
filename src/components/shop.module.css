@@ -43,8 +43,6 @@
 .rec { position: relative; display: grid; gap: var(--milo-space-xs); width: 100%; padding: var(--milo-space-l); border: 0; border-radius: var(--milo-radius-l); overflow: clip; isolation: isolate;
   background: var(--milo-color-bg-raised); color: var(--milo-color-text-primary); font: inherit; text-align: left; }
 /* 配重片同心槽纹（商城 V2 推荐卡背景，品牌语言） */
-.rec::before { content: ''; position: absolute; z-index: -1; right: calc(var(--milo-space-5xl) * -1); top: calc(var(--milo-space-3xl) * -1); width: calc(var(--milo-space-5xl) * 3); aspect-ratio: 1; border-radius: 50%;
-  background: repeating-radial-gradient(circle, transparent 0 var(--milo-space-s), var(--milo-color-line-default) var(--milo-space-s) calc(var(--milo-space-s) + var(--milo-stroke-hairline))); opacity: var(--milo-opacity-figure); }
 .recHead { display: flex; align-items: center; justify-content: space-between; color: var(--milo-color-text-secondary); }
 .recLabel { padding: var(--milo-space-2xs) var(--milo-space-xs); border-radius: var(--milo-radius-xs); color: var(--milo-color-control-selected-ink); background: var(--milo-color-control-selected); font-weight: 700; }
 .recProduct { margin-top: var(--milo-space-xs); padding-top: var(--milo-space-s); border-top: var(--milo-stroke-hairline) solid var(--milo-color-line-default); color: var(--milo-color-text-secondary); }

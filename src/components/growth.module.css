@@ -43,9 +43,6 @@
 /* ---------- 成长卡（「我的」第一屏） ---------- */
 .gcard { position: relative; display: grid; gap: var(--milo-space-m); width: 100%; padding: var(--milo-space-l); border: 0; border-radius: var(--milo-radius-l); font: inherit; text-align: left; overflow: clip; isolation: isolate;
   color: var(--milo-color-text-primary); background-color: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
-.gcard::before { content: ''; position: absolute; z-index: -1; right: calc(var(--milo-space-5xl) * -1.2); top: calc(var(--milo-space-5xl) * -1.2); width: calc(var(--milo-space-5xl) * 5); aspect-ratio: 1; border-radius: 50%; pointer-events: none;
-  background: repeating-radial-gradient(circle, transparent 0 calc(var(--milo-space-m) - var(--milo-stroke-hairline)), var(--milo-color-line-default) 0 var(--milo-space-m));
-  -webkit-mask: radial-gradient(circle, black, transparent 72%); mask: radial-gradient(circle, black, transparent 72%); }
 .gcardBtn { cursor: pointer; }
 .gcTop { display: flex; align-items: center; gap: var(--milo-space-m); }
 .gcHead { position: relative; display: grid; place-items: center; flex: none; width: calc(var(--milo-space-5xl) * 1.3); aspect-ratio: 1; border-radius: 50%; background: var(--milo-color-bg-raised-2); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); overflow: clip; }
@@ -70,9 +67,6 @@
 .hop { animation: hop var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-standard) both; }
 @keyframes hop { 0% { transform: none; } 14% { transform: scale(1.08, 0.88); } 42% { transform: translateY(-14%) scale(0.95, 1.07); } 70% { transform: scale(1.05, 0.94); } 100% { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .hop { animation: none; } }
-.rings { position: absolute; inset: 0; margin: auto; width: calc(var(--milo-space-5xl) * 5.4); aspect-ratio: 1; border-radius: 50%; pointer-events: none; z-index: -1;
-  background: repeating-radial-gradient(circle, transparent 0 calc(var(--milo-space-xl) - var(--milo-stroke-hairline)), var(--milo-color-line-default) 0 var(--milo-space-xl));
-  -webkit-mask: radial-gradient(circle, black 35%, transparent 72%); mask: radial-gradient(circle, black 35%, transparent 72%); }
 
 /* ---------- 最近 N 周点阵 ---------- */
 .weeksBox { display: grid; gap: var(--milo-space-s); }

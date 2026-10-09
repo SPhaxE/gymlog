@@ -136,6 +136,13 @@ export function ParticleField({ kind, anchor = [1, 0], spread = 1, strength = 1,
   return <canvas ref={ref} className={`${s.field} ${className ?? ''}`} aria-hidden="true" />;
 }
 
+/** 配重片光环（2026-10-09 走查 1 #10 #18 收尾，DESIGN §6）：环轨粒子一圈圈向内收到光点（ParticleField orbit inward）+ 统一的薄模糊、七成透明。
+ *  取代所有静态的配重片同心纹：增量页头、曲线页页头、牛龄页小牛背后（光点在正中）、「我的」成长卡、会员卡 / 开通成功、商城推荐卡。
+ *  铺满最近的定位祖先（祖先要 isolation: isolate，它画在内容后面）。 */
+export function OrbitPlate({ anchor = [1, 0], spread = 0.75, strength = 0.8, className }: { anchor?: [number, number]; spread?: number; strength?: number; className?: string }) {
+  return <ParticleField kind="orbit" inward anchor={anchor} spread={spread} strength={strength} className={`${s.orbit} ${className ?? ''}`} />;
+}
+
 /** 主角卡的颗粒渐变光（2026-10-09 用户：主角卡 P0 的形是对的，但清晰度太低、没有噪点粒子渐变的动态 → 方案台 H 组）。
  *  都保留 P0 的形（右上角一团荧光，往左下渐隐），区别在颗粒怎么动：
  *  - grain  高清动态颗粒：按设备像素画，每个像素的亮度随机抖（胶片颗粒），颗粒只在光里、约 12 帧刷新；

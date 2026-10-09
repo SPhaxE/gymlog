@@ -99,11 +99,6 @@
 .mediaMsg b { color: var(--milo-color-text-primary); }
 .credit { color: var(--milo-color-text-secondary); }
 .credit a { color: inherit; }
-/* 铺满（P04）：视频按 cover 居中裁，署名压在右上角 */
-.mediaFill { position: absolute; inset: 0; gap: 0; }
-.mediaFill .mediaBox { height: 100%; aspect-ratio: auto; border-radius: 0; box-shadow: none; }
-.mediaFill .credit { position: absolute; top: var(--milo-space-s); right: var(--milo-space-m); z-index: 1; }
-
 @media (prefers-reduced-motion: reduce) { .mediaLoading { animation: none; } }
 
 /* 训练页自带数字键盘：深色圆角键、等宽数字；步进键略暗；「下一组」骨白实心（这一屏的主操作） */

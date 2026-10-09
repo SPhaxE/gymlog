@@ -52,10 +52,6 @@
 .card { position: relative; display: grid; gap: var(--milo-space-xs); padding: var(--milo-space-xl) var(--milo-space-l) var(--milo-space-l); border-radius: var(--milo-radius-xl); color: var(--milo-color-text-primary);
   overflow: clip; isolation: isolate; background: radial-gradient(120% 90% at 100% 0%, var(--milo-color-bg-raised-2), transparent 70%), var(--milo-color-bg-raised);
   box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); }
-/* 配重片同心槽纹（品牌语言，同商城推荐卡） */
-.card::before { content: ''; position: absolute; z-index: -1; right: calc(var(--milo-space-5xl) * -1.4); top: calc(var(--milo-space-5xl) * -1.2); width: calc(var(--milo-space-5xl) * 4); aspect-ratio: 1; border-radius: 50%;
-  background: repeating-radial-gradient(circle, transparent 0 var(--milo-space-s), var(--milo-color-line-default) var(--milo-space-s) calc(var(--milo-space-s) + var(--milo-stroke-hairline))); opacity: var(--milo-opacity-figure);
-  -webkit-mask: radial-gradient(circle, black 30%, transparent 70%); mask: radial-gradient(circle, black 30%, transparent 70%); }
 .cardOff { opacity: var(--milo-opacity-done-row); }
 .cardHead { display: flex; align-items: center; justify-content: space-between; gap: var(--milo-space-m); }
 .cardTitle { font-family: var(--milo-font-number); letter-spacing: 0.01em; }
@@ -94,12 +90,6 @@
 .welcome { display: grid; justify-items: center; text-align: center; color: var(--milo-color-text-primary); }
 .stage { position: relative; display: grid; place-items: end center; width: 100%; height: calc(var(--milo-space-5xl) * 3.4); isolation: isolate;
   --mascot-unit: calc(var(--milo-stroke-hairline) * 0.24); --mascot-max-h: calc(var(--milo-space-5xl) * 3.4 * 0.86); }
-/* 背后一团骨白柔光 + 配重片同心槽纹（同牛龄页） */
-.grooves { position: absolute; z-index: -2; inset: 0; margin: auto; width: calc(var(--milo-space-5xl) * 5.6); aspect-ratio: 1; border-radius: 50%; pointer-events: none;
-  background: radial-gradient(circle, var(--milo-color-bg-raised-2) 0 22%, transparent 55%),
-    repeating-radial-gradient(circle, transparent 0 calc(var(--milo-space-xl) - var(--milo-stroke-hairline)), var(--milo-color-line-default) 0 var(--milo-space-xl));
-  -webkit-mask: radial-gradient(circle, black 30%, transparent 70%); mask: radial-gradient(circle, black 30%, transparent 70%);
-  animation: fade var(--milo-motion-slow) var(--milo-motion-ease-decelerate) both; }
 /* 三道环纹从脚下荡开一次 */
 .wave { position: absolute; z-index: -1; left: 50%; top: 50%; width: calc(var(--milo-space-5xl) * 2.4); aspect-ratio: 1; border-radius: 50%; pointer-events: none; opacity: 0;
   box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-control-selected);
@@ -121,7 +111,7 @@
 .proMarkOn { color: var(--milo-color-control-selected-ink); background: var(--milo-color-control-selected); box-shadow: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .item, .rule, .spanLit, .today, .todayLabel, .stat, .grooves, .pop, .wTitle, .wLine { animation: none; }
+  .item, .rule, .spanLit, .today, .todayLabel, .stat, .pop, .wTitle, .wLine { animation: none; }
   .wave { display: none; }
   .thumb, .plan, .plan b { transition: none; }
 }

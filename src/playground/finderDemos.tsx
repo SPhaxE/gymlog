@@ -1,6 +1,6 @@
-/** Playground 里 6e 组件的可交互演示（找动作检索面板、要领抽屉）：用演示用户的真实数据。 */
+/** Playground 里 6e 组件的可交互演示（找动作检索面板、动作要领的示范 + 分步）：用演示用户的真实数据。 */
 import { useMemo, useState } from 'react';
-import { BodyPicker, FinderBody, GuideDrawer, PickRow, type EquipFilter } from '../components';
+import { BodyPicker, FinderBody, GuideCue, GuideSteps, GuideVideo, PickRow, useGuidePlayer, type EquipFilter } from '../components';
 import { demoState } from '../data/store';
 import { EQUIP_NAME, FAMILY_OF, PICK_SKIP, familyById, finderRows } from '../data/finder';
 import muscles from '../../mock/muscles.json';
@@ -32,15 +32,14 @@ export function FinderDemo({ start = 'chest', sub: sub0 = null }: { start?: stri
   );
 }
 
-export function GuideDemo({ open: open0 = false }: { open?: boolean }) {
-  const [open, setOpen] = useState(open0);
+/** 动作要领的示范 + 分步（走查 1 #05，Stitch V1）：真视频，点一步循环那一段、再点取消 */
+export function GuideDemo({ src: media, cue, steps }: { src: string | null; cue: string; steps: string[] }) {
+  const player = useGuidePlayer(steps.length);
   return (
-    <div className={s.guideBox}>
-      <div className={s.guideVideo}>示范视频（MuscleWiki）</div>
-      <GuideDrawer open={open} onOpen={setOpen} cue="核心收紧，蹲到大腿平行或略低，膝盖朝脚尖方向"
-        steps={['杠铃放上斜方肌，脚略宽于肩、脚尖外八', '吸气屏住，屈髋屈膝同时下蹲', '蹲到大腿平行，脚掌全踩发力站起']}
-        more={<p className="milo-text-caption">练到的肌头 · 我的进步（页面里是平涂人体 + 预估 1RM 曲线）</p>} />
+    <div ref={player.root} className={s.guideBox}>
+      <GuideVideo player={player} src={media} label="示范" />
+      <GuideCue>{cue}</GuideCue>
+      <GuideSteps player={player} src={media} steps={steps} />
     </div>
   );
 }
-

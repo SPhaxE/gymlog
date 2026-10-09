@@ -1,12 +1,13 @@
 .kpi { display: flex; align-items: baseline; gap: var(--milo-space-l); color: var(--milo-color-text-secondary); }
 /* 页头 + 人体与胶囊一起滚动；胶囊列放不下时才滚（BodyPage 给 stage 设最小高度） */
 .scroll { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; }
-.stage { position: relative; flex: 1 0 auto; margin: var(--milo-space-m) 0 var(--nav-clear); }
+.stage { position: relative; flex: 1 0 auto; margin: var(--milo-space-m) 0 var(--nav-clear); touch-action: pan-y; } /* 横向滑留给切正反面 */
 /* 人体裁切框：左右各留页面边距，越界部分剪掉（同 V1 body-left-boundary-clip） */
 .figureClip { position: absolute; top: 0; bottom: 0; left: var(--milo-size-gutter); right: var(--milo-size-gutter); overflow: hidden; pointer-events: none;
   isolation: isolate; z-index: 0; } /* 自成一层：抽卡时两张卡的 z-index 只在这里面比，不会跑到引线和胶囊上面 */
 /* 换卡（2026-10-06 用户：所有更换都从左往右）：新卡从左边滑进来、盖在上面；旧卡在下面往右退、淡出 */
-.card, .cardWait, .cardIn, .cardOut { position: absolute; inset: 0; }
+.card, .cardWait, .cardIn, .cardOut { position: absolute; inset: 0; display: flex; justify-content: safe flex-end; }
+.card > *, .cardWait > *, .cardIn > *, .cardOut > * { flex: none; } /* 右缘由 BodyPage 设到胶囊列起点：人体靠右，放不下退回左对齐 */
 .cardWait { opacity: 0; }
 .cardIn { z-index: 2; animation: cardIn var(--milo-motion-spring-ms) var(--milo-motion-ease-spring) both; }
 .cardOut { z-index: 1; animation: cardOut var(--milo-motion-spring-ms) var(--milo-motion-ease-standard) both; }

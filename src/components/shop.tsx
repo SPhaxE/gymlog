@@ -5,6 +5,7 @@
  *  - 数字全部由调用方算好传进来（data/wallet.ts 的 quote）。不写功效数字。 */
 import { createContext, useContext, useState, type CSSProperties, type ReactNode } from 'react';
 import { Icon } from './Icon';
+import { OrbitPlate } from './particles';
 import { sharedName } from './motion';
 import { ProLink } from './pro';
 import { cx, forced, type Forced } from './state';
@@ -97,6 +98,7 @@ export function ProductCard({ id, name, merchant, price, member, category, statu
 export function RecommendCard({ title, why, product, onClick, state }: { title: string; why: string | null; product?: { name: string; price: number }; onClick?: () => void; state?: Forced }) {
   return (
     <button type="button" className={cx('milo-press milo-focus', s.rec)} onClick={onClick} {...forced(state)}>
+      <OrbitPlate />
       <span className={s.recHead}><span className={cx('milo-text-micro', s.recLabel)}>{why ? '知识卡 · 按你的训练数据' : '知识卡 · 入门'}</span><Icon name="chevron" small /></span>
       <b className="milo-text-title-m">{title}</b>
       {why && <span className={cx('milo-text-caption', s.muted)}>{why}</span>}

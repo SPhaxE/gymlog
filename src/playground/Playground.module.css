@@ -120,10 +120,7 @@
 /* 6e 演示：检索面板、要领抽屉 */
 .finderBox { width: min(100%, calc(var(--milo-size-hit-min) * 8)); padding: var(--milo-space-m); border-radius: var(--milo-radius-l); background: var(--milo-color-bg-sheet); }
 .finderBox > div { height: calc(var(--milo-size-hit-min) * 9); }
-.guideBox { position: relative; overflow: hidden; width: min(100%, calc(var(--milo-size-hit-min) * 8)); height: calc(var(--milo-size-hit-min) * 14); border-radius: var(--milo-radius-l); background: var(--milo-color-bg-base); }
-.guideVideo { height: 55%; display: grid; place-items: center; color: var(--milo-color-text-secondary); background: var(--milo-color-bg-raised-2); font-size: var(--milo-font-size-caption); }
-.guideBox > section { height: 55%; }
-.guideBox > section[class*='open'] { height: 92%; }
+.guideBox { display: grid; gap: var(--milo-space-l); width: min(100%, calc(var(--milo-size-hit-min) * 8)); padding: var(--milo-space-l); border-radius: var(--milo-radius-l); background: var(--milo-color-bg-base); }
 /* 页面转场演示：小框里两页叠在一起，用 App 同一套关键帧（interactive.css） */
 .transitBox { position: relative; overflow: clip; width: calc(var(--milo-space-5xl) * 4); height: calc(var(--milo-space-5xl) * 5); border-radius: var(--milo-radius-l); background: var(--milo-color-bg-base);
   box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }

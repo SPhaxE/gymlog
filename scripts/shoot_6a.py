@@ -328,11 +328,24 @@ def gains_checks(b, w, h):
         pg.goto(f'{args.base}{path}?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(500)
         ys[path] = round(pg.locator('h1').first.bounding_box()['y'], 1)
     ok(max(ys.values()) - min(ys.values()) <= 1, f'{tag} 五个 Tab 的大标题 y 相同 {ys}')
-    # 容量页（2026-10-06 用户）：半身人体（版式不变）头到脚完整、常态胶囊缩 1/3、换卡一律从左往右、胶囊 → 详情是共享元素（M03）
+    # 容量页（2026-10-06 用户）：半身人体头到脚完整、常态胶囊缩 1/3、换卡一律从左往右；走查 1 #12 #29（2026-10-09）：人体右移到手碰到胶囊、常态无引线、胶囊长成浮层（M02）
     pg.goto(f'{args.base}/body?scenario=plain-prescription'); pg.wait_for_selector('[role=option]'); pg.wait_for_timeout(1500)
     fig = pg.evaluate("""() => { const f = document.querySelector('svg[class*=_thermal_]').getBoundingClientRect(), st = f && document.querySelector('[class*=_figureClip_]').getBoundingClientRect();
-      return { f: [f.left, f.top, f.right, f.bottom].map(Math.round), st: [st.left, st.top, st.right, st.bottom].map(Math.round) }; }""")
-    ok(fig['f'][1] >= fig['st'][1] - 1 and fig['f'][3] <= fig['st'][3] + 1 and abs(fig['f'][0] - fig['st'][0]) <= 1, f'{tag} 容量：半身人体从内容区左缘起、头到脚都在舞台里（版式同原来）{fig}')
+      const cap = Math.min(...[...document.querySelectorAll('[role=option]')].map((e) => e.getBoundingClientRect().left));
+      return { f: [f.left, f.top, f.right, f.bottom].map(Math.round), st: [st.left, st.top, st.right, st.bottom].map(Math.round), cap: Math.round(cap) }; }""")
+    ok(fig['f'][1] >= fig['st'][1] - 1 and fig['f'][3] <= fig['st'][3] + 1 and fig['f'][0] >= fig['st'][0] - 1 and abs(fig['f'][2] - fig['cap']) <= 2, f'{tag} 容量：人体右缘贴着胶囊列左缘、头到脚都在舞台里 {fig}')
+    ok(pg.locator('svg[class*=_leaders_]').count() == 0, f'{tag} 容量：常态不画引线')
+    cb = pg.locator('[role=option]').nth(3).bounding_box(); pg.mouse.move(cb['x'] + cb['width'] / 2, cb['y'] + cb['height'] / 2); pg.mouse.down()
+    until(pg, "() => document.querySelectorAll('svg[class*=_leaders_] polyline').length > 0", 2500); pg.wait_for_timeout(200)
+    held = pg.evaluate("document.querySelectorAll('svg[class*=_leaders_] polyline').length")
+    glow = pg.evaluate("getComputedStyle(document.querySelector('[role=option][aria-selected=true]')).boxShadow")
+    pg.mouse.up(); pg.wait_for_timeout(1200)
+    ok(held == 1 and pg.locator('svg[class*=_leaders_]').count() == 0, f'{tag} 容量：按住胶囊才出一条折线引线、松手后消失（按住时 {held} 条）')
+    ok(glow.count('rgb') >= 3, f'{tag} 容量：放大的胶囊背后有泛光 {glow[:60]}')
+    fb = pg.locator('svg[class*=_thermal_]').bounding_box()
+    pg.mouse.move(fb['x'] + fb['width'] * 0.7, fb['y'] + fb['height'] * 0.75); pg.mouse.down(); pg.mouse.move(fb['x'] + fb['width'] * 0.1, fb['y'] + fb['height'] * 0.76, steps=6); pg.mouse.up(); pg.wait_for_timeout(300)
+    ok(pg.get_by_role('radio', name='背面').get_attribute('aria-checked') == 'true' and pg.locator('[role=dialog]').count() == 0, f'{tag} 容量：人体上往左滑切到背面（不误开详情）')
+    pg.wait_for_timeout(1200); pg.get_by_role('radio', name='正面').click(); pg.wait_for_timeout(1500)
     caps_h = pg.evaluate("[...document.querySelectorAll('[role=option]')].map((e) => e.getBoundingClientRect().height)")
     ok(max(caps_h) <= 20.5, f'{tag} 容量：常态胶囊高 ≤ 20（缩了 1/3）{max(caps_h):.1f}')
     ok(pg.get_by_role('heading', level=1, name='容量').count() == 1 and pg.get_by_role('link', name='容量').count() == 1, f'{tag} 容量：页标题和导航都叫「容量」')
@@ -355,12 +368,14 @@ def gains_checks(b, w, h):
     cap = pg.locator('[role=option]').nth(2); cb = cap.bounding_box(); pg.mouse.click(cb['x'] + cb['width'] / 2, cb['y'] + cb['height'] / 2)
     pg.wait_for_selector('[role=dialog]'); pg.wait_for_timeout(300)
     vt = pg.evaluate('window.__vt') or []
-    ok(any('x-card-' in x for x in vt) and any('x-title-' in x for x in vt), f'{tag} 容量·M03：胶囊原地长成肌头详情（卡片与名称是共享元素）')
+    ok(any('x-fluid-' in x for x in vt) and any('x-title-' in x for x in vt) and any('x-fscrim' in x for x in vt), f'{tag} 容量·M02：胶囊原地长成肌头详情浮层（胶囊、名称、遮罩各自是共享元素）')
     pg.wait_for_timeout(900)
-    ok(pg.locator('[role=option][style*="view-transition-name"]').count() == 0, f'{tag} 容量·M03：面板开着时胶囊不带共享名（同名不能有两份）')
+    ok(pg.locator('[role=option][style*="view-transition-name"]').count() == 0, f'{tag} 容量·M02：浮层开着时胶囊不带共享名（同名不能有两份）')
+    pb = pg.locator('[role=dialog]').bounding_box()
+    ok(pb['y'] + pb['height'] <= h - 8 and pb['y'] >= 8, f'{tag} 容量·M02：详情是浮层，不是贴底的抽屉 {pb}')
     if not args.no_shots: pg.screenshot(path=os.path.join(OUT, 'volume-sheet.png'))
     click(pg, pg.get_by_role('button', name='关闭'))
-    ok(until(pg, '() => !document.querySelector(\'[role=dialog]\') && !document.querySelector(\'[style*="view-transition-name"]\')'), f'{tag} 容量·M03：关闭后缩回胶囊，转场放完不留共享名')
+    ok(until(pg, '() => !document.querySelector(\'[role=dialog]\') && !document.querySelector(\'[style*="view-transition-name"]\')'), f'{tag} 容量·M02：关闭后缩回胶囊，转场放完不留共享名')
     if not args.no_shots: pg.screenshot(path=os.path.join(OUT, 'volume.png'))
     # 对比度审查（2026-10-06 用户）：各页可见文字对它实际的底色，正文 ≥ 4.5、大字 ≥ 3（WCAG AA；画在 SVG / 画布里的字另有截图核对）
     for path in ('/today', '/body', '/gains', '/gains/barbell-bench-press-4', '/log', '/me', '/me/level', '/me/messages'):
@@ -400,7 +415,8 @@ def gains_checks(b, w, h):
     # 钻入转场：返回时名称 / 最新值 / 小曲线作为共享元素飞回那一行，转场放完后列表里不留共享名
     pg.evaluate('''() => { window.__vt = null; const o = document.startViewTransition.bind(document);
       document.startViewTransition = (cb) => { const vt = o(cb); vt.ready.then(() => { window.__vt = [...document.getAnimations()].map((a) => (a.effect && a.effect.pseudoElement) || ''); }, () => {}); return vt; }; }''')
-    click(pg, pg.get_by_role('button', name='返回')); pg.wait_for_selector('h1'); pg.wait_for_timeout(300)
+    click(pg, pg.get_by_role('button', name='返回')); pg.wait_for_selector('h1')
+    until(pg, '() => window.__vt !== null')   # 等转场就绪（目标页挂好才拍新快照，慢机器上要三四百毫秒）
     vt = pg.evaluate('window.__vt') or []
     ok(all(any(k in x for x in vt) for k in ('x-drill-name', 'x-drill-num', 'x-drill-line')), f'{tag} 曲线页：返回时名称、最新值、小曲线作为共享元素飞回那一行')
     ok(until(pg, '() => !document.querySelector(\'[style*="x-drill"]\')'), f'{tag} 曲线页：转场放完后列表里不留共享名（同名不能有两份）')
@@ -725,6 +741,14 @@ def me_checks(b, w, h):
     click(pg, pg.get_by_role('link', name='首页')); pg.wait_for_url(re.compile(r'/today')); pg.wait_for_timeout(900)
     click(pg, pg.locator('[data-hero]').first); pg.wait_for_url(re.compile(r'/exercise/')); pg.wait_for_timeout(700)
     ok(pg.evaluate('!!document.querySelector(\'[style*="view-transition-name: x-card"]\')'), f'{tag} 转场：从首页处方卡进来的要领页整页和那张卡同名（M03 卡片长成整页）')
+    # 动作要领（走查 1 #05，W3 关键帧分步 · Stitch V1）：16:9 示范在内容宽内；每步一行 ≥ 56；点第 3 步它成为当前一步；不写「第几帧 / STEP」
+    gd = pg.evaluate("""() => { const f = document.querySelector('figure [class*=_frame_]').getBoundingClientRect(), rows = [...document.querySelectorAll('ol[aria-label^="分步"] button')];
+      return { r: f.width / f.height, l: f.left, rt: innerWidth - f.right, rows: rows.map((b) => Math.round(b.getBoundingClientRect().height)), txt: document.body.innerText }; }""")
+    ok(abs(gd['r'] - 16 / 9) < 0.02 and gd['l'] >= 12 and gd['rt'] >= 12, f'{tag} 要领：示范 16:9、在内容宽内 {gd["r"]:.3f} {gd["l"]} {gd["rt"]}')
+    ok(len(gd['rows']) >= 3 and min(gd['rows']) >= 56, f'{tag} 要领：每步一行、行高 ≥ 56 {gd["rows"]}')
+    ok(not re.search(r'第\s*\S\s*帧|STEP', gd['txt'], re.I), f'{tag} 要领：不写「第几帧 / STEP」')
+    steps = pg.locator('ol[aria-label^="分步"] button'); click(pg, steps.nth(2)); pg.wait_for_timeout(300)
+    ok(steps.nth(2).get_attribute('aria-current') == 'step' and steps.nth(2).get_attribute('aria-pressed') == 'true', f'{tag} 要领：点第 3 步，它成为当前一步（循环那一段）')
     click(pg, pg.get_by_role('button', name='返回')); pg.wait_for_url(re.compile(r'/today')); pg.wait_for_timeout(900)
     click(pg, pg.get_by_role('link', name='我的')); pg.wait_for_url(re.compile(r'/me\?')); pg.wait_for_timeout(900)
     vts = pg.evaluate('window.__vts')

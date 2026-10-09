@@ -1,13 +1,13 @@
-.leaders { position: absolute; inset: 0; pointer-events: none; overflow: visible; transition: opacity var(--milo-motion-fast) var(--milo-motion-ease-standard); }
-/* 引线从人体（左）往胶囊（右）描出来：挂载 / 换人体卡后 drawKey 变一次就重描，自上而下依次起笔 */
-.leaders line { stroke-dasharray: 1 1; animation: leaderDraw calc(var(--milo-motion-slow) * 1.6) var(--milo-motion-ease-decelerate) both; }
-.leaders circle { animation: leaderDot var(--milo-motion-base) var(--milo-motion-ease-standard) both; }
+.leaders { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+/* 引线（走查 1 #12）：只给焦点胶囊画一条折线，从胶囊往肌头锚点描出；锚点小圆在描到时亮起。松手后整条淡出 */
+.leaders polyline { stroke-dasharray: 1 1; animation: leaderDraw var(--milo-motion-base) var(--milo-motion-ease-decelerate) both; }
+.leaders circle { animation: leaderDot var(--milo-motion-fast) var(--milo-motion-ease-standard) var(--milo-motion-base) both; }
+.leadersOut { animation: leaderFade var(--milo-motion-fast) var(--milo-motion-ease-standard) both; }
 @keyframes leaderDraw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 @keyframes leaderDot { from { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .leaders line, .leaders circle { animation: none; } }
-.leader line { fill: none; stroke: var(--milo-color-data-leader); stroke-width: var(--milo-stroke-hairline); }
-.leader circle { fill: var(--milo-color-text-disabled); }
-.leaderOn line { fill: none; stroke: var(--milo-color-accent-default); stroke-width: var(--milo-stroke-focus); }
+@keyframes leaderFade { to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .leaders polyline, .leaders circle, .leadersOut { animation: none; } }
+.leaderOn polyline { fill: none; stroke: var(--milo-color-accent-default); stroke-width: var(--milo-stroke-focus); stroke-linejoin: round; stroke-linecap: round; }
 .leaderOn circle { fill: var(--milo-color-accent-default); }
 .rail { position: absolute; inset: 0; pointer-events: none; -webkit-user-select: none; user-select: none; }
 /* 手势层：胶囊列静止宽度、整列高；竖向滑动交给页面滚动，按住才进放大镜（见 CapsuleRail.tsx） */
@@ -29,7 +29,8 @@
 .val { margin-left: auto; font-family: var(--milo-font-number); font-weight: 600; font-size: var(--milo-font-size-caption); color: var(--milo-color-text-secondary); font-variant-numeric: tabular-nums; }
 .val b { font-weight: 700; color: var(--milo-color-text-primary); font-size: calc(var(--milo-font-size-caption) + (var(--milo-font-size-m) - var(--milo-font-size-caption)) * var(--w, 0)); }
 .focus { padding: 0 var(--milo-space-l); border-radius: var(--milo-radius-l); background: var(--milo-color-accent-default);
-  box-shadow: 0 0 0 var(--milo-stroke-ring-gap) var(--milo-color-accent-glow-ring), 0 var(--milo-space-s) var(--milo-space-2xl) var(--milo-color-shadow-float); }
+  /* 背后泛光（走查 1 #12）：这屏唯一的荧光焦点 */
+  box-shadow: 0 0 0 var(--milo-stroke-ring-gap) var(--milo-color-accent-glow-ring), 0 0 var(--milo-space-4xl) var(--milo-space-s) var(--milo-color-accent-glow), 0 var(--milo-space-s) var(--milo-space-2xl) var(--milo-color-shadow-float); }
 /* 焦点：左边信息三行（手指挡不到），名称在最右（手指底下，放大前已看过）；名称最多两行，右对齐 */
 .fRow { position: relative; display: flex; align-items: center; gap: var(--milo-space-s); min-width: 0; }
 .fInfo { display: flex; flex-direction: column; gap: var(--milo-space-2xs); flex: none; color: var(--milo-color-text-on-accent-secondary); }

@@ -12,7 +12,7 @@ import { FinderGlyph, FinderSheet, guideQuery, useFinderParam } from './FinderSh
 import { useStore, type ActiveSession } from '../data/store';
 import { useSource } from '../data/useSource';
 import { useTrainingNav } from '../data/useTrainingNav';
-import { BackToTop, Banner, Button, Card, Cascade, ExerciseRow, Icon, Mascot, Nav, Num, PageHeader, PrescriptionHero, Screen, SectionLabel, Sheet, SheetBlock, Tag, sharedName, sharedTransition, useToast, type Tab } from '../components';
+import { BackToTop, Banner, Button, Card, Cascade, ExerciseRow, GrainGlow, Icon, Mascot, Nav, Num, PageHeader, PrescriptionHero, Screen, SectionLabel, Sheet, SheetBlock, Tag, sharedName, sharedTransition, useToast, type Tab } from '../components';
 import { dateLabel, env, fmt, homeData, PHASE_NAME, REGION_NAME, type DoneToday } from '../data/demo';
 import type { Prescription } from '../engine';
 import { DeloadBanner } from './DeloadBanner';
@@ -187,7 +187,7 @@ function Done({ d, onSummary }: { d: DoneToday; onSummary?: () => void }) {
   return (
     <>
       <section className={s.done}>
-        <div className={s.doneGlow} aria-hidden="true" />
+        <GrainGlow kind="pulse" calm anchor={[0.15, 0.1]} className={s.doneGlow} />
         <div className={s.doneFig}><Mascot stage={d.stage} mood="rest" animate /></div>
         <div className={s.doneText}>
           <span className={s.doneTick}><Icon name="check" active /></span>

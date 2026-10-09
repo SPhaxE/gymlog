@@ -11,6 +11,7 @@ import { PropGlyph, type PropKind } from './PropGlyph';
 import { cx, forced, type Forced } from './state';
 import { Ticks } from './Ticks';
 import { Num } from './ui';
+import { OrbitPlate } from './particles';
 import s from './growth.module.css';
 
 const STAGES: MascotStage[] = ['newborn', 'young', 'sturdy', 'bull', 'milo'];
@@ -74,6 +75,7 @@ export function GrowthCard({ stage, sub, progress, hint, streak, done, target, n
 }) {
   const body = (
     <>
+      <OrbitPlate />
       <span className={s.gcTop}>
         <span className={s.gcHead}><MascotHead stage={stage} className={s.badgeHeadImg} /></span>
         <span className={s.gcWho}>
@@ -114,7 +116,7 @@ export function StageHero({ stage, sub, mood = 'idle' }: { stage: MascotStage; s
         {STAGES.map((st) => <li key={st} className={cx('milo-text-label', st === stage && s.stageNow)} aria-current={st === stage ? 'step' : undefined}>{STAGE_NAME[st]}</li>)}
       </ol>
       <div className={s.stageArea}>
-        <i className={s.rings} aria-hidden="true" />
+        <OrbitPlate anchor={[0.5, 0.55]} spread={0.55} />
         <button type="button" className={cx('milo-focus', s.poke)} onClick={tap} aria-label={`${STAGE_NAME[stage]}，点一下摸摸它`}>
           <span key={poke} className={cx(s.pokeFig, poke > 0 && s.hop)}><Mascot stage={stage} mood={poke ? 'happy' : mood} animate /></span>
         </button>

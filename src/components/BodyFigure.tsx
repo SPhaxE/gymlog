@@ -59,8 +59,9 @@ export const FillFx = createContext<FillFxKind | null>(null);
  *  三个 context 不给值（null）就用这里；原来的默认留成可选项：描边 glow（浅荧光描出 + 游光）、填充 thermal（热成像）、S 层 band（扫描光带）。 */
 export const DEFAULT_LOOK = { contour: 'soft', fill: 'metal', scan: 'molten' } as const satisfies { contour: ContourFxKind; fill: FillFxKind; scan: ScanFxKind };
 
-export function BodyFigure({ gender, view, stats, focus, height, onAnchors, relativeTo, onPick }: {
+export function BodyFigure({ gender, view, stats, focus, height, width, onAnchors, relativeTo, onPick }: {
   gender: 'male' | 'female'; view: 'front' | 'back'; stats: Map<string, HeadStat>; focus: string | null; height: number;
+  /** 外框宽：人体靠右摆时位置随它变，变了要重量锚点（不参与绘制） */ width?: number;
   onAnchors: (a: Anchors) => void; relativeTo: React.RefObject<HTMLElement | null>;
   /** 轻点某块肌肉（只有带 data-head 的肌头可点；其余部分不接触摸，页面照常滚动） */
   onPick?: (id: string) => void;
@@ -98,7 +99,7 @@ export function BodyFigure({ gender, view, stats, focus, height, onAnchors, rela
       out[g.dataset.head!] = [pt.x - base.left, pt.y - base.top];
     }
     onAnchors(out);
-  }, [vb, height, stats, onAnchors, relativeTo]);
+  }, [vb, height, width, stats, onAnchors, relativeTo]);
 
   if (!data) return null;
   const v = data[view];

@@ -10,6 +10,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { Icon } from './Icon';
 import { Mascot, type MascotStage } from './Mascot';
 import { Odometer } from './dataviz';
+import { OrbitPlate } from './particles';
 import { cx, forced, type Forced } from './state';
 import s from './pro.module.css';
 
@@ -85,6 +86,7 @@ export function ProCard({ plan, status, fromMs, toMs, now }: { plan: string; sta
   const line = status === 'expired' ? `已于 ${md(toMs)}到期` : status === 'trial' ? `还剩 ${days} 天 · ${md(toMs)}到期，不自动扣费` : `${new Date(toMs).getFullYear()} 年 ${md(toMs)}到期 · 还剩 ${days} 天`;
   return (
     <section className={cx(s.card, status === 'expired' && s.cardOff)} aria-label={`Milo Pro ${plan}，${tag}，${line}`}>
+      <OrbitPlate />
       <div className={s.cardHead}>
         <b className={cx('milo-text-title-l', s.cardTitle)}>Milo Pro · {plan}</b>
         <span className={cx('milo-text-label', s.state, s[`state_${status}`])}>{tag}</span>
@@ -114,12 +116,12 @@ export function MonthStats({ items }: { items: { value: string; label: string }[
   );
 }
 
-/** 开通成功的品牌时刻：配重片同心环 + 三道环纹从小牛脚下荡开一次 + 小牛弹出；标题、到期日依次升起 */
+/** 开通成功的品牌时刻：配重片光环（OrbitPlate，光点在小牛背后）+ 三道环纹从小牛脚下荡开一次 + 小牛弹出；标题、到期日依次升起 */
 export function ProWelcome({ stage, title, line, children }: { stage: MascotStage; title: string; line: string; children?: ReactNode }) {
   return (
     <div className={s.welcome}>
       <div className={s.stage}>
-        <i className={s.grooves} aria-hidden="true" />
+        <OrbitPlate anchor={[0.5, 0.6]} spread={0.6} />
         <i className={s.wave} style={at(0)} aria-hidden="true" /><i className={s.wave} style={at(1)} aria-hidden="true" /><i className={s.wave} style={at(2)} aria-hidden="true" />
         <span className={s.pop}><Mascot stage={stage} mood="happy" animate title="开心的小牛" /></span>
       </div>

@@ -138,7 +138,8 @@
 | 2 | ✅ 拍板材料已出（2026-10-08）：线框 `?board=p04v2 / logfold / addex`；方案台 `/preview` 新增四组 P 粒子 · S 钢板 · J 增量配色 · T 商城标（组件：`ParticleField`、`SteelPlate look`、`GainLook`、`ShopTagLook`，默认都还是「现在」）；对照 `screenshots/walkthrough-1/stage2-choices.pdf` + 录屏 `stage2-motion.mp4`。**等用户选** |
 | 3 | ✅ 落地 + 新一轮拍板材料（2026-10-09）：七件已选全部落地（J1 + 描边字、T2 + 热销荧光 + 只用实物图、S1 固定灯 + 关灯渐变 + 暗手绘休息圈、P3 内收 + 模糊、记录按月、加动作挪到主角卡下）；规范 §1 第 6–7 条（荧光分面积 / 点缀两级）、§5 描边数字、钢板 / 商品卡 / 增量行 / 记录行条目；列表里重复的 PR 标全改荧光细线（`Tag tone="accent"`）；顺手修了「没有历史也提示这周快断了」（周五才暴露）。**等用户选**：主角卡 H0–H3（`/preview#grain`）· 视频页 Stitch V1–V3（`screenshots/hifi/v7/v7-board.png`）。对照 `screenshots/walkthrough-1/stage3-report.pdf` + 录屏 `stage3-grain.mp4` / `stage3-motion.mp4` |
 | 4 | ✅ 转场与动效（2026-10-09）：01 Tab 横滑 · 02 子页推入推出 + 面板 / 对话框 / 轻提示退场 · 06 首页卡 → 要领 M03 · 08 商品卡 → 详情 M03 · 25 出现式图标描线 · 26 曲线钻入对位 · 16 小牛点按；规范 §7 转场表、§9.6 第 19 条「每个出现都有退场」、§6 出现式描线；新 Token `motion/ease-accelerate`。录屏 `screenshots/walkthrough-1/stage4-motion.mp4` |
-| 5–6 | 未开始 |
+| 5 | ✅ 容量页 + 奖励弹窗 + 视频页 + 收尾粒子（2026-10-09）：12 人体右移贴胶囊 · 常态无引线、长按折线 · 放大胶囊泛光 · 人体区左右滑切正反；29 胶囊原地长成浮层（M02 `FluidPanel`）；23 破纪录层级重排、五种文案 balance / pretty；05 视频页 W3 · Stitch V1（`GuideVideo` / `GuideSteps`，取代抽屉）；10 18 收尾：全部同心纹换 `OrbitPlate`、今天已练完的色块换 `GrainGlow pulse calm`。规范 §1 第 6 条、§5 引线 / 人体位置 / 滑切、§7 M02 与转场表、§8.6 奖励文字层级、§9.4 组件目录 |
+| 6 | 未开始 |
 
 ### 用户选定（2026-10-09）
 1. 视频页 **W3 关键帧分步**；步骤文字照常写，不写「第几帧」。→ 先跑 Stitch（②）再搭。
@@ -167,6 +168,15 @@
 ### 用户回应（2026-10-08）
 - 触点静态稿（/spec 第 7 章）：看过，只算中保真；**进作品集时务必用真实的 iOS / 安卓页面样机**（真系统界面、真机框），不用自己画的手机框 → 作品集阶段做。
 - Stitch：要接上。现状：密钥只注入在 `stitch.withgoogle.com`（Stitch 网页本身，没有接口），接口 `stitch.googleapis.com/mcp` 连得上但不带密钥（列项目返回「缺少认证」）；代理按域名注入，密钥本身拿不到、也不能绕。要在环境设置把 Network secret 的域名改成 `stitch.googleapis.com`（请求头 `X-Goog-Api-Key`），新会话生效 → 视频页线框选定后在新会话里跑 Stitch。
+
+### 阶段 5 落地记录
+- 容量页 #12：人体卡右缘 = 胶囊列起点、`justify-content: safe flex-end`（人体右缘贴胶囊列，放不下退回左对齐），`BodyFigure width` 变了重量锚点；引线改成 `useLeader`——放大镜确认后等 `motion/fast` 只给焦点胶囊画一条折线（左缘出 `space/l` 再斜折到锚点，`motion/base` 描出），换焦点重描，松手停 `motion/base` 再淡出；`.focus` 加 `accent/glow` 泛光；舞台 `touch-action: pan-y`，起点在胶囊列左边、横向 ≥ `space/3xl` 且 > 竖向 1.5 倍 = 切正反（往左背面），这一下的点按在捕获阶段拦掉。
+- 容量页 #29：新组件 `FluidPanel`（浮层：左右贴边距、顶边对齐胶囊并夹在安全区里，放不下才内滚；焦点圈定、返回键、Esc、点外面、「关闭」）；`sharedName` 加 `fluid` 部位，CSS `.fluid`（spring-soft、`radius/xl` 裁切、窗口快照先出后进）+ 遮罩 `x-fscrim`（`.fscrim`，z-index 排在整页之上、面板之下）；`HeadSheet` 换成它；`Sheet sharedId` 没人用了，删掉。
+- 奖励弹窗 #23：破纪录先大数字 + 涨幅胶囊（同一行）再动作名（Heading、两行封顶），说明句「慢慢变牛，就是这样。」；标签加「· 预估 1RM」；连胜 / 升级 / 周期的说明句收短；标题 balance、说明 pretty + `18em`。
+- 视频页 #05：`useGuidePlayer` + `GuideVideo`（16:9 contain，署名右下，底边 2 号段落进度线）+ `GuideCue` + `GuideSteps`（左 16:9 关键帧 = 同一视频 `#t=段中点` 定格，右文字，行 ≥ 56）；进度逐帧写 CSS 变量（`--gt` / `--gs`）不重渲染；点一步循环那一段、再点取消；离开视野暂停、减少动态效果停段首。页面改成整页一个滚动区，「加到今天」在拇指区；`GuideDrawer` 与 `MediaFrame fill` 删掉。无头 Chromium 没有 H.264，本地验证用同内容 webm 拦截替换（播放、分段循环、当前步都对）。
+- 粒子收尾 #10 #18：`OrbitPlate`（orbit inward + 薄模糊、七成透明）替换增量 / 曲线页头、牛龄 `StageHero`、成长卡、会员卡、开通成功、商城推荐卡的同心纹；首页「今天已练完」色块换 `GrainGlow pulse calm`。
+- /playground：新 `FluidPanel`、`OrbitPlate`、`GuideVideo`（取代 `GuideDrawer`）；`CapsuleRail`、`RewardCard`、`Sheet`、`ParticleField` 说明更新。/demo：动作要领、容量、牛龄、会员四步文案。
+- 门禁：flow 加人体右缘贴胶囊、常态无引线、按住出一条折线松手消失、泛光、左滑切背面、M02 共享名（`x-fluid-` / `x-title-` / `x-fscrim`）、浮层不贴底；me 加要领页 16:9、行 ≥ 56、点第 3 步成为当前、不写「第几帧」。
 
 ### 阶段 4 落地记录
 - 骨架：`viewTransit`（`motion.tsx`）——回调里跳转、等目标页挂好（`pageSwapped`：`<main>` 换了节点）再拍新快照，最多等 3 × `motion/slow`；`html[data-vt][data-vt-dir]` 选转场；已有一次在跑时不嵌套。`drillTransition` 改成它的一个用法。

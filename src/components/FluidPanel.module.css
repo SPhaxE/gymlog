@@ -1,0 +1,28 @@
+/* 遮罩铺到状态栏和手势条下面；内边距 = 安全区 + space/l，面板只在这条带子里摆（FluidPanel 算 top） */
+.scrim { position: absolute; inset: 0; z-index: 20; background: var(--milo-color-bg-scrim);
+  top: calc(var(--safe-top) * -1); bottom: calc(var(--safe-bottom) * -1);
+  padding: calc(var(--safe-top) + var(--milo-space-l)) 0 calc(var(--safe-bottom) + var(--milo-space-l));
+  animation: fade var(--milo-motion-fast) var(--milo-motion-ease-standard); }
+@keyframes fade { from { opacity: 0; } }
+.panel { position: absolute; left: var(--milo-size-gutter); right: var(--milo-size-gutter); top: 0;
+  max-height: calc(100% - var(--safe-top) - var(--safe-bottom) - var(--milo-space-l) * 2); overflow-y: auto; overscroll-behavior: contain;
+  display: grid; align-content: start; grid-auto-rows: max-content; gap: var(--milo-space-l); padding: var(--milo-space-s) var(--milo-space-l) var(--milo-space-l);
+  background: var(--milo-color-bg-sheet); border-radius: var(--milo-radius-xl); outline: none;
+  box-shadow: 0 var(--milo-space-s) var(--milo-space-3xl) var(--milo-color-shadow-float);
+  animation: pop var(--milo-motion-base) var(--milo-motion-ease-decelerate); }
+@keyframes pop { from { opacity: 0; transform: scale(0.96); } }
+/* 胶囊长成面板时：遮罩和面板都不自己动，交给 View Transitions */
+.shared, .shared .panel { animation: none; }
+.head { display: flex; align-items: center; gap: var(--milo-space-s); }
+.head h2 { margin: 0; }
+.headText { flex: 1; min-width: 0; display: grid; gap: var(--milo-space-2xs); }
+.meta { color: var(--milo-color-text-secondary); }
+/* 退场（useExitGhost 的复制品）：遮罩和面板一起淡掉、面板微缩 */
+.out { pointer-events: none; animation: fadeOut var(--milo-motion-base) var(--milo-motion-ease-standard) both; }
+.out .panel { animation: shrink var(--milo-motion-base) var(--milo-motion-ease-accelerate) both; }
+@keyframes fadeOut { to { opacity: 0; } }
+@keyframes shrink { to { transform: scale(0.96); } }
+/* Playground：在文档流里静态摆着 */
+.docked { position: relative; inset: auto; padding: var(--milo-space-l) 0; animation: none; }
+.docked .panel { position: relative; left: auto; right: auto; margin: 0 var(--milo-size-gutter); animation: none; max-height: none; }
+@media (prefers-reduced-motion: reduce) { .scrim, .panel { animation: none; } }
