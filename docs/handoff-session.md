@@ -2,7 +2,7 @@
 
 > 新窗口请先完整读完本文件，再开始工作。遇到 Open Questions 里的问题先问我，不要自行决定。
 
-_Updated: 2026-10-09 19:10_
+_Updated: 2026-10-09 20:30_
 
 ## 1. Goal
 按**走查 1**（用户 2026-10-08 的 PDF 走查，29 条）把 App 改到位：同源问题归组统一改、写进规范（`docs/DESIGN.md`），按阶段执行、每阶段汇报。计划全文在 `docs/walkthrough-1.md`（§1 逐项、§2 A–J 归组、§3 新规则、§4 阶段、§6 进度 + 用户选定 + 每阶段落地记录）。
@@ -14,9 +14,11 @@ _Updated: 2026-10-09 19:10_
 - [x] 阶段 3：七件拍板落地 + H 组、Stitch 视频页 v7
 - [x] 主角卡选 **H4**（固定颗粒 + 薄模糊 + 心跳泵动，`Card hero` 默认）；商品不加了、五件够用 → 删掉已下架的镁粉（用户 2026-10-09）
 - [x] **阶段 4 转场与动效**（本窗口）：Tab 横滑、子页推入推出、面板 / 对话框 / 轻提示退场、首页卡 → 要领 M03、商品卡 → 详情 M03、曲线钻入对位、出现式图标描线、牛龄页小牛点按；DESIGN §7 转场表、§9.6 第 19 条、§6 出现式描线
-- [ ] **等用户看**：阶段 4 录屏 `screenshots/walkthrough-1/stage4-motion.mp4`（点头或提改）
-- [ ] **等用户选**：视频页 Stitch V1–V3（`screenshots/hifi/v7/v7-board.png`；Claude 倾向 V1）——阶段 5 搭之前问
-- [ ] 阶段 5：容量页 #12 #29 + 奖励弹窗 #23 + 视频页按 Stitch 选定搭建；阶段 6 收尾、作品集（真实 iOS / 安卓样机）
+- [x] 用户看过阶段 4 录屏：很好，不用改
+- [x] 视频页：用户让按 Claude 建议推进（**Stitch V1** + 步骤行收紧到 56、段落进度线加粗到 2），要「迅速做完」
+- [ ] Stitch 密钥：GitHub 推送保护拦下了 `secrets/stitch.env`（识别成 GCP API Key），没进仓库，已加进 .gitignore；**用户要在 https://github.com/SPhaxE/gymlog/security/secret-scanning/unblock-secret/3KT9YwxenYbYi9mnQ38t7DwN97O 点允许后**，新窗口再把文件提交上去（密钥原文在用户 2026-10-09 的消息里）；`stitch.py` 已会读这个文件、本窗口调通过；交接规矩按用户纠正改好（只在上下文逼近极限才换窗口）
+- [ ] **阶段 5（用户已批准计划，未开始写代码）**：计划全文 `docs/stage5-plan.md`——容量页 #12 #29、奖励弹窗 #23、视频页 V1、剩下的同心纹 / 色块换粒子
+- [ ] 阶段 6 收尾、作品集（真实 iOS / 安卓样机）
 
 ## 3. Active Files
 - `docs/walkthrough-1.md` — 计划与进度（§6「阶段 4 落地记录」先读）
@@ -50,9 +52,9 @@ _Updated: 2026-10-09 19:10_
 
 ## 7. Constraints
 - 见 `CLAUDE.md`：中文、结论先行；无写死 px / ms / hex（`rgba(` 也算，画布里用 hex8 字符串拼）；命中区 ≥ 48；`/playground` `/demo` 同步；方案台旧方案不删；五步流程；要拍板的图用 `SendUserFile` 推；改完直接推 `main`、只说改了什么
-- 密钥不进仓库、不打印；Stitch 用 `STITCH_API_KEY` 环境变量（新窗口没有密钥，需要时问用户）
+- 密钥不打印；**Stitch 密钥在仓库根 `secrets/stitch.env`**（用户 2026-10-09 让存，`stitch.py` 自动读；不再向用户要）
 - 汇报材料：一张连续长图、左图右文；超 8000px 存单页 PDF
-- 绝不让对话被自动压缩：每阶段收尾更新本文件；一个窗口做完一个阶段就主动交接
+- 绝不让对话被自动压缩：每次推 main 顺手更新本文件；只在上下文逼近极限时才停下交接、请用户换窗口——做完一个阶段不用换（用户 2026-10-09 纠正）
 
 ## 8. How to Verify
 ```bash
@@ -68,15 +70,18 @@ python3 scripts/shoot_6a.py --no-shots --base http://127.0.0.1:4173   # 全套�
 - Branch: 工作分支 `claude/trusting-goldberg-5cmk1f`，发布推 `main`（两边同步推）
 - Uncommitted changes: 无（本文件随阶段 4 提交推上）
 - Running services: vite 5199（dev）、vite preview 4173（容器重启后要重开）
-- Env vars / 依赖注意事项: Chromium `/opt/pw-browsers/chromium`；Python Playwright 要先 `pip install playwright`；Stitch 密钥**新窗口没有**
+- Env vars / 依赖注意事项: Chromium `/opt/pw-browsers/chromium`；Python Playwright 要先 `pip install playwright`；**Stitch 密钥在 `secrets/stitch.env`**
 
 ## 10. Open Questions
-- 阶段 4 录屏看完有没有要改的（Tab 横滑是整页跟着滑、旧页压暗；子页推入旧页让三成；M03 返回时列表立刻淡入）
-- 视频页 Stitch 选哪版：V1（Claude 倾向）/ V2 / V3，或混搭
-- 下次跑 Stitch 的密钥：请用户把 `STITCH_API_KEY` 加进环境变量，或再给一次
+- 无。阶段 5 计划用户已批准，直接按 `docs/stage5-plan.md` 做、做完汇报（用户：迅速做完，不要再问 Stitch 密钥）
 
 ## 11. Specific Next Steps
-1. 先问第 10 节前两条，给出 `screenshots/walkthrough-1/stage4-motion.mp4`
-2. 阶段 5：容量页 #12（人体右移到手刚碰到胶囊、常态无引线、长按才出折线引线且出现 / 消失有延迟、放大胶囊背后泛光、人体区左右滑翻正背）、#29 胶囊点开 = M02 流体胶囊形变（原地膨胀成浮层，不是底部抽屉）、#23 奖励弹窗排版（先出图给用户看）、视频页按 Stitch 选定搭建（五步流程：要 Stitch 密钥）
-3. 阶段 5 还有 #10 #18 的「配重片同心环纹」6 处换粒子材质（增量页头已换 P3；成长卡、牛龄页、知识卡、开通成功、曲线页头还没换）——先确认范围
-4. 每阶段收尾：check + 门禁 → 更新本文件 → 推 main → 核对线上 → 汇报（左图右文 PDF + 录屏）
+1. 读 `docs/stage5-plan.md`（已批准）按顺序做：§1 容量页 #12 → §2 #29 FluidPanel（M02）→ §3 奖励弹窗 → §4 视频页 V1 → §5 OrbitPlate 换掉 5 处同心纹 + 今天已练完的色块换 GrainGlow → §6 同步 /playground /demo 规范 → 验证。
+2. 已读过的代码要点（省得重读）：
+   - 容量页：`BodyPage.tsx` 的 `figureClip` 里人体卡（`.card*` 绝对定位 inset 0），人体 svg 左对齐、宽 = 高 × 裁后宽高比；胶囊列左缘 x = `gutter + contentW × ratio/rail-start(0.62)`。热成像模式根元素是 `span.stack`（里面 `svg._thermal_`），门禁量的是 `svg[class*=_thermal_]`。
+   - 引线：`CapsuleRail.tsx` 的 `svg.leaders` 现在每颗胶囊一条直线；`capsuleLayout()` 给每颗 `{x, y, w, h, focus}`，焦点 = `Math.round(mag)` 且 strength ≥ 0.5；`preview` 状态 = 按下未确认。
+   - 肌头详情：`HeadSheet` 用 `Sheet sharedId`；`openSheet` 先 flushSync 设 `shared` 再 `sharedTransition(setSheet)`；门禁 `scripts/shoot_6a.py` 约 331–363 行查 `x-card-` / `x-title-` 共享名、人体左缘对齐——改 M02 后要跟着改。
+   - 奖励弹窗：`Reward.tsx` `RewardCard` 的 pr 分支（headline = 动作名、metric = kg 码表 + 涨幅、line 两句）；样式 `Reward.module.css` 81–96 行。
+   - 视频页：`ExerciseGuidePage.tsx` 现在是上半屏视频 + `GuideDrawer` 抽屉；数据 `guideOf(id, gender)` → `cue.summary` + 4 个 `steps` + `media.front/side`（mp4 很小，约 40 KB）；`MediaFrame` 在 `training.tsx` 235 行。`GuideDrawer` 还被 `playground/finderDemos.tsx`、`catalog.tsx` 437 行用。
+   - 同心纹位置：`TrendPage.module.css .plate`、`growth.module.css .gcard::before` 与 `.rings`、`pro.module.css .card::before` 与 `.grooves`、`shop.module.css .rec::before`；增量页头的做法 `GainsPage.tsx` 72 行 + `.plateFx`。今天已练完的色块是 `HomePage.module.css .doneGlow`。
+3. 每次推 main 顺手更新本文件；阶段 5 做完录屏 + 左图右文汇报推给用户。

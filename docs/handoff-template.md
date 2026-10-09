@@ -45,6 +45,7 @@ _Updated: YYYY-MM-DD HH:MM_
 - 测试状态：全部通过 / 以下失败：……
 
 ## 9. Environment State
+<!-- 必写一行：Stitch 密钥在仓库根 `secrets/stitch.env`（用户 2026-10-09：每次交接都告知，不再向用户要） -->
 - Branch: 
 - Uncommitted changes: 有 / 无
 - Running services: 

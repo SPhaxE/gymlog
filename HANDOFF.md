@@ -58,7 +58,7 @@
 
 ## 2. 硬约束（不要破）
 
-1. **密钥不进仓库，也不打印**。Stitch 密钥只在本机：读环境变量 `STITCH_API_KEY`，或 `~/.claude.json` 里名为 stitch 的 MCP 配置（`design/hifi/tools/stitch.py`）。
+1. **密钥不进仓库，也不打印**。Stitch 密钥在仓库根 `secrets/stitch.env`（用户 2026-10-09 让存的，仓库私密，做完会删），也可以用环境变量 `STITCH_API_KEY`，或 `~/.claude.json` 里名为 stitch 的 MCP 配置（`design/hifi/tools/stitch.py`）。
 2. **不关 TLS 校验**。沙盒 Chromium 不信任代理证书，外部资源由 Python 代取（`render_stitch.py`）。
 3. **人体图只用真实的 MuscleWiki 素材**（`public/bodymap/`）。AI 画的肌肉只能当参考，不能当素材。
 4. **演示商家、品牌一律虚构**，价格是示例；付费墙和支付只做演示链路。**不仿冒真实品牌**。
@@ -253,7 +253,7 @@ python3 scripts/shoot_6a.py         # 演示全流程门禁（两个宽度并行
 python3 scripts/shoot_playground.py # 组件矩阵门禁
 ```
 
-- **Stitch**（可选）：`export STITCH_API_KEY=…`，或在本地 Claude Code 里配置名为 stitch 的 MCP；密钥不进仓库。
+- **Stitch**：密钥在 `secrets/stitch.env`，`design/hifi/tools/stitch.py` 自动读取；也可 `export STITCH_API_KEY=…`。不要向用户再要密钥。
 - **APK**：本地有 Android SDK（JDK 21）时 `npm run android:apk`；没有就用 CI 产物或 `apk/milo-debug.apk`。
 - **给 AI 客户端**：根目录 `CLAUDE.md`（Claude Code 自动读）和 `AGENTS.md`（Codex / Cursor 等读）都指向本文件，并列了不许破的规则。
 - **提交与上线**：本机检查过了直接推 `main` → Vercel 自动部署；CI 在后台跑，红了补修复提交。`main` 上的 APK 由 CI 自动提交，本地 `git pull` 会拿到。

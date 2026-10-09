@@ -3,3 +3,4 @@ node_modules/
 dist/
 design/hifi/*/.*-results.json
 .cache/
+secrets/stitch.env
