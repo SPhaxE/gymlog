@@ -4,7 +4,7 @@
  *  热成像上面再叠一层「光」（ThermalLight，混合模式 screen）：浅荧光轮廓从下往上描出、一道细光沿轮廓游走、扫描光带周期性从下往上扫过人体——
  *  动的东西都在这一层，下面带滤镜的热像层静止不重画。
  *  量完锚点后通过 onAnchors 交给胶囊列画引线（坐标相对 relativeTo）。 */
-import { createContext, useContext, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { HeadStat } from '../engine';
 import { T } from '../styles/tokens.gen';
 import { BodyRender, heatOf, rampTables, tables } from './thermal';
@@ -20,6 +20,8 @@ const load = (g: string) => {
   return cache.get(g)!;
 };
 export type Anchors = Record<string, [number, number]>;
+/** fit 时裁切量的范围：至少裁掉 25%（仍是半身），最多 70%（窄屏也露得出肩和手臂） */
+const FIT_MIN = 0.25, FIT_MAX = 0.7;
 
 /** 热力图扫描线的「逐层扫描」动效方案（2026-10-06 用户要几个方案看；当时在 /lab 里并排比较，选定后定为默认；现在的待选在 /preview 方案台）：
  *  band   扫描光带（第 7 轮的默认，2026-10-07 换下）：一条扫描光带周期性从脚扫到头；
@@ -59,25 +61,34 @@ export const FillFx = createContext<FillFxKind | null>(null);
  *  三个 context 不给值（null）就用这里；原来的默认留成可选项：描边 glow（浅荧光描出 + 游光）、填充 thermal（热成像）、S 层 band（扫描光带）。 */
 export const DEFAULT_LOOK = { contour: 'soft', fill: 'metal', scan: 'molten' } as const satisfies { contour: ContourFxKind; fill: FillFxKind; scan: ScanFxKind };
 
-export function BodyFigure({ gender, view, stats, focus, height, width, onAnchors, relativeTo, onPick }: {
+export function BodyFigure({ gender, view, stats, focus, height, width, fit, onAnchors, relativeTo, onPick }: {
   gender: 'male' | 'female'; view: 'front' | 'back'; stats: Map<string, HeadStat>; focus: string | null; height: number;
-  /** 外框宽：人体靠右摆时位置随它变，变了要重量锚点（不参与绘制） */ width?: number;
+  /** 外框宽：变了要重量锚点（不参与绘制） */ width?: number;
+  /** 可用宽度（2026-10-10 用户：左缘要贴页面边距、手要碰到胶囊）：给了就不用固定的 ratio/figure-crop，
+   *  按「露出宽 = 可用宽」反算从左裁多少——左缘落在页面边距、右缘（手）落在胶囊列起点；裁切量夹在 [FIT_MIN, FIT_MAX] 里，保证还是半身 */ fit?: number;
   onAnchors: (a: Anchors) => void; relativeTo: React.RefObject<HTMLElement | null>;
   /** 轻点某块肌肉（只有带 data-head 的肌头可点；其余部分不接触摸，页面照常滚动） */
   onPick?: (id: string) => void;
 }) {
   const [data, setData] = useState<BodyMap | null>(null);
-  const [vb, setVb] = useState<number[] | null>(null);
+  const [bb, setBb] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const svg = useRef<SVGSVGElement>(null);
   const thermal = useContext(BodyRender), fid = useId().replace(/[^a-zA-Z0-9-]/g, '');
-  useEffect(() => { let on = true; setVb(null); load(gender).then((d) => on && setData(d)); return () => { on = false; }; }, [gender, view]);
+  useEffect(() => { let on = true; setBb(null); load(gender).then((d) => on && setData(d)); return () => { on = false; }; }, [gender, view]);
 
-  // 第一次渲染整张图量包围盒，再按 ratio/figure-crop 从左裁
+  // 第一次渲染整张图量包围盒，再从左裁：固定 ratio/figure-crop，或按可用宽度反算（fit）
   useLayoutEffect(() => {
-    if (!data || vb || !svg.current) return;
-    const bb = svg.current.getBBox(), pad = bb.height * 0.004, x0 = bb.x + bb.width * T['ratio/figure-crop'];
-    setVb([x0, bb.y - pad, bb.x + bb.width - x0 + pad, bb.height + pad * 2]);
-  }, [data, vb]);
+    if (!data || bb || !svg.current) return;
+    const b = svg.current.getBBox();
+    setBb({ x: b.x, y: b.y, width: b.width, height: b.height });
+  }, [data, bb]);
+  const vb = useMemo(() => {
+    if (!bb) return null;
+    const pad = bb.height * 0.004, h = bb.height + pad * 2;
+    const crop = fit ? Math.min(FIT_MAX, Math.max(FIT_MIN, 1 - ((fit / height) * h - pad) / bb.width)) : T['ratio/figure-crop'];
+    const x0 = bb.x + bb.width * crop;
+    return [x0, bb.y - pad, bb.x + bb.width - x0 + pad, h];
+  }, [bb, fit, height]);
 
   // 锚点：每个肌头在可见部分里面积最大的一块的中心
   useLayoutEffect(() => {
@@ -311,7 +322,8 @@ function ThemeFx({ kind, box, height, width, v, fid, heat }: { kind: 'pump' | 's
     // 滤镜和渐变的属性 CSS 动不了，用 SMIL；减少动态效果时不挂动画（只剩静止的一层淡流纹）
     const still = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     return (
-      <svg {...svgProps} ref={flowSvg} data-flow="molten">
+      // 单独一层（will-change）：熔流每步重算滤镜时，只重画它自己，不连带下面静止的金属层一起重新栅格化（2026-10-10 性能，容量页栅格耗时降到约 1/8）
+      <svg {...svgProps} className={`${svgProps.className} ${s.ownLayer}`} ref={flowSvg} data-flow="molten">
         <defs>
           {hot.map(([k, h]) => (
             <linearGradient key={k} id={`mo${fid}${k}`} x1="0" y1="0" x2="0" y2="0.45" spreadMethod="reflect">

@@ -1,9 +1,13 @@
 /** 氛围（2026-10-04 用户选定 A4 + 底层流体背景）：
  *  - 颗粒：canvas 生成一块中灰噪声贴图（只生成一次），挂到 :root 的 --grain，用 overlay 叠加——暗处几乎不见，只在有光处显出质感；
- *  - FluidBackdrop：Tab 根页最底层的流体噪点渐变。几团主题色光斑在低分辨率 canvas 上缓慢漂移，CSS 放大 + 模糊得到流体感，上面再叠颗粒。
+ *  - FluidBackdrop：Tab 根页最底层的流体噪点渐变。几团主题色光斑在低分辨率 canvas 上缓慢漂移，放大 + 模糊得到流体感，上面再叠颗粒。
+ *    模糊在小画布里做（2026-10-10 性能：原来是整屏 CSS blur，画布每帧一变 GPU 就要对整屏重做一次大半径模糊，小米 15 上 Tab 页略卡）：
+ *    同样的 space/2xl 模糊按缩放比例换算成画布像素，先模糊再放大，看起来一样，GPU 只剩一次放大。
+ *    （试过每团光斑画一次、漂移交给合成器：主线程省了，但合成器每帧要叠四层大光斑，掉帧反而更多，没用。）
  *    level()（0–1）可选：传入音频电平时光斑随之涨落（原 /lab 用麦克风演示过，2026-10-07 /lab 撤掉后没有页面用；系统音乐的限制见 docs/refs-elements.md）。
  *    页面隐藏时停；减少动态效果时只画一帧静止的。训练中的页面不用（DESIGN §7）。 */
 import { useEffect, useRef } from 'react';
+import { T } from '../styles/tokens.gen';
 import s from './atmosphere.module.css';
 
 let tile: string | null = null;
@@ -45,24 +49,33 @@ export function FluidBackdrop({ level }: { level?: () => number }) {
     let ctx: CanvasRenderingContext2D | null = null;
     try { ctx = cv?.getContext('2d') ?? null; } catch { ctx = null; }
     if (!cv || !ctx) return;
-    const W = (cv.width = 48), H = (cv.height = 96);
+    const W = (cv.width = 96), H = (cv.height = 192);
+    const off = document.createElement('canvas'); off.width = W; off.height = H;
+    const oc = off.getContext('2d');
+    if (!oc) return;
+    // 屏幕上的 space/2xl 模糊 → 画布像素（画布按 CSS 拉伸到元素大小）
+    const sigma = () => (T['space/2xl'] * W) / Math.max(1, cv.getBoundingClientRect().width);
+    let blur = sigma();
     const cols = BLOBS.map((b) => hexVar(b.c));
     const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     let raf = 0, last = 0, energy = 0;
     const draw = (t: number) => {
       const sec = t / 1000, lv = level?.() ?? 0;
       energy += (lv - energy) * 0.25; // 平滑，避免一跳一跳
-      ctx!.clearRect(0, 0, W, H);
-      ctx!.globalCompositeOperation = 'lighter';
+      oc.clearRect(0, 0, W, H);
+      oc.globalCompositeOperation = 'lighter';
       BLOBS.forEach((b, i) => {
         const x = (b.x + Math.sin(sec * b.fx * Math.PI * 2 + i) * b.ax) * W, y = (b.y + Math.cos(sec * b.fy * Math.PI * 2 + i * 1.7) * b.ay) * H;
         const r = b.r * (1 + energy * 0.35) * Math.max(W, H) * 0.55;
-        const g = ctx!.createRadialGradient(x, y, 0, x, y, r);
+        const g = oc.createRadialGradient(x, y, 0, x, y, r);
         g.addColorStop(0, withAlpha(cols[i], b.a * (1 + energy * 1.2)));
         g.addColorStop(1, withAlpha(cols[i], 0));
-        ctx!.fillStyle = g; ctx!.fillRect(0, 0, W, H);
+        oc.fillStyle = g; oc.fillRect(0, 0, W, H);
       });
+      ctx!.clearRect(0, 0, W, H); ctx!.filter = `blur(${blur}px)`; ctx!.drawImage(off, 0, 0); ctx!.filter = 'none';
     };
+    const ro = new ResizeObserver(() => { blur = sigma(); draw(performance.now()); });
+    ro.observe(cv);
     const loop = (t: number) => {
       if (t - last > 33) { draw(t); last = t; } // 约 30 帧，够流体感、省电
       raf = requestAnimationFrame(loop);
@@ -71,7 +84,7 @@ export function FluidBackdrop({ level }: { level?: () => number }) {
     draw(performance.now());
     vis();
     document.addEventListener('visibilitychange', vis);
-    return () => { cancelAnimationFrame(raf); document.removeEventListener('visibilitychange', vis); };
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); document.removeEventListener('visibilitychange', vis); };
   }, [level]);
   return (
     <div className={s.fluid} aria-hidden="true">

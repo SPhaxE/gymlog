@@ -1,5 +1,5 @@
 /* 底色不透明：颗粒的 overlay 要有底可叠，否则在透明背景上会变成整片灰噪点 */
 .fluid { position: absolute; inset: 0; overflow: hidden; background: var(--milo-color-bg-base); }
 .canvas { position: absolute; inset: calc(var(--milo-space-3xl) * -1); width: calc(100% + var(--milo-space-3xl) * 2); height: calc(100% + var(--milo-space-3xl) * 2);
-  filter: blur(var(--milo-space-2xl)); }
+}  /* 模糊在画布里做（atmosphere.tsx），这里不再整屏 CSS blur */
 .grain { position: absolute; inset: 0; background-image: var(--grain); background-size: calc(var(--milo-space-5xl) * 3.333); mix-blend-mode: overlay; opacity: calc(var(--milo-opacity-grain) * 1.5); }

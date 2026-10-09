@@ -127,3 +127,6 @@
 @media (prefers-reduced-motion: reduce) {
   .pumpHead, .steamDot, .fiberRun, .beamSway, .beamDust { animation: none; }
   .pumpHead, .steamDot { opacity: 0; } }
+
+/* 自己一层：动的东西重画时不连带下面静止的滤镜层（性能） */
+.ownLayer { will-change: transform; }

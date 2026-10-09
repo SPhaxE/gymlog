@@ -333,7 +333,7 @@ def gains_checks(b, w, h):
     fig = pg.evaluate("""() => { const f = document.querySelector('svg[class*=_thermal_]').getBoundingClientRect(), st = f && document.querySelector('[class*=_figureClip_]').getBoundingClientRect();
       const cap = Math.min(...[...document.querySelectorAll('[role=option]')].map((e) => e.getBoundingClientRect().left));
       return { f: [f.left, f.top, f.right, f.bottom].map(Math.round), st: [st.left, st.top, st.right, st.bottom].map(Math.round), cap: Math.round(cap) }; }""")
-    ok(fig['f'][1] >= fig['st'][1] - 1 and fig['f'][3] <= fig['st'][3] + 1 and fig['f'][0] >= fig['st'][0] - 1 and abs(fig['f'][2] - fig['cap']) <= 2, f'{tag} 容量：人体右缘贴着胶囊列左缘、头到脚都在舞台里 {fig}')
+    ok(fig['f'][1] >= fig['st'][1] - 1 and fig['f'][3] <= fig['st'][3] + 1 and abs(fig['f'][0] - fig['st'][0]) <= 1 and abs(fig['f'][2] - fig['cap']) <= 2, f'{tag} 容量：人体左缘贴页面边距、右缘贴胶囊列左缘、头到脚都在舞台里 {fig}')
     ok(pg.locator('svg[class*=_leaders_]').count() == 0, f'{tag} 容量：常态不画引线')
     cb = pg.locator('[role=option]').nth(3).bounding_box(); pg.mouse.move(cb['x'] + cb['width'] / 2, cb['y'] + cb['height'] / 2); pg.mouse.down()
     until(pg, "() => document.querySelectorAll('svg[class*=_leaders_] polyline').length > 0", 2500); pg.wait_for_timeout(200)

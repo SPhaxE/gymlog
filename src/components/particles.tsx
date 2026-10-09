@@ -38,6 +38,11 @@ export function ParticleField({ kind, anchor = [1, 0], spread = 1, strength = 1,
     if (!cv || !ctx) return;
     const c = ctx;
     const cols = STOPS.map((n) => toTriple(hexVar(n)));
+    // 颜色查表（2026-10-10 性能）：每个粒子每帧要两次颜色，原来每次都现拼十六进制串；先把 256 级颜色和 256 级透明度拼好，用的时候查表（字节本来就只有 256 级，画出来一样）
+    const HEX = Array.from({ length: 256 }, (_, i) => ramp(cols, i / 255, 0).slice(0, 7));
+    const ALPHA = Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, '0'));
+    const q = (x: number) => Math.round(Math.max(0, Math.min(1, x)) * 255);
+    const col = (t: number, a: number) => HEX[q(t)] + ALPHA[q(a)];
     const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     let W = 0, H = 0, R = 1, ax = 0, ay = 0, ps: P[] = [];
@@ -67,12 +72,12 @@ export function ParticleField({ kind, anchor = [1, 0], spread = 1, strength = 1,
       t += 1;
       if (kind !== 'dust') {
         // 拖尾：每帧把旧的擦淡一点（保持透明底）；流场拖得长，环轨拖成一小段彗尾
-        c.globalCompositeOperation = 'destination-out'; c.fillStyle = ramp(cols, 1, kind === 'flow' ? 0.05 : 0.16); c.fillRect(0, 0, W, H);
+        c.globalCompositeOperation = 'destination-out'; c.fillStyle = col(1, kind === 'flow' ? 0.05 : 0.16); c.fillRect(0, 0, W, H);
       } else c.clearRect(0, 0, W, H);
       c.globalCompositeOperation = 'lighter';
       // 光源处一层很淡的底光：粒子是主角，底光只让它们像是从同一个光里来的
       const g = c.createRadialGradient(ax, ay, 0, ax, ay, R * 0.75);
-      g.addColorStop(0, ramp(cols, 0.3, 0.16 * strength)); g.addColorStop(0.5, ramp(cols, 0.7, 0.05 * strength)); g.addColorStop(1, ramp(cols, 1, 0));
+      g.addColorStop(0, col(0.3, 0.16 * strength)); g.addColorStop(0.5, col(0.7, 0.05 * strength)); g.addColorStop(1, col(1, 0));
       if (kind === 'dust') { c.fillStyle = g; c.fillRect(0, 0, W, H); }
       for (const p of ps) {
         p.age += 1;
@@ -87,7 +92,7 @@ export function ParticleField({ kind, anchor = [1, 0], spread = 1, strength = 1,
           p.x += Math.cos(a) * 0.9 * dpr; p.y += Math.sin(a) * 0.9 * dpr;
           const f = fall(p.x, p.y);
           if (f < 1) {
-            c.strokeStyle = ramp(cols, f * 0.9 + p.k * 0.1, lifeA * Math.pow(1 - f, 1.3) * 0.75 * strength);
+            c.strokeStyle = col(f * 0.9 + p.k * 0.1, lifeA * Math.pow(1 - f, 1.3) * 0.75 * strength);
             c.lineWidth = p.size; c.beginPath(); c.moveTo(px, py); c.lineTo(p.x, p.y); c.stroke();
           }
           if (p.age > p.life || f > 1.05) spawn(p);
@@ -103,20 +108,20 @@ export function ParticleField({ kind, anchor = [1, 0], spread = 1, strength = 1,
         const a = lifeA * Math.pow(Math.max(0, 1 - f), 1.4) * strength;
         if (a <= 0.01) continue;
         const r = p.size * (kind === 'dust' ? 1.2 - f * 0.5 : 1);
-        c.fillStyle = ramp(cols, f, a * 0.22); c.beginPath(); c.arc(p.x, p.y, r * 2.4, 0, Math.PI * 2); c.fill();   // 光晕
-        c.fillStyle = ramp(cols, f * 0.6, a); c.beginPath(); c.arc(p.x, p.y, r, 0, Math.PI * 2); c.fill();           // 亮核
+        c.fillStyle = col(f, a * 0.22); c.beginPath(); c.arc(p.x, p.y, r * 2.4, 0, Math.PI * 2); c.fill();   // 光晕
+        c.fillStyle = col(f * 0.6, a); c.beginPath(); c.arc(p.x, p.y, r, 0, Math.PI * 2); c.fill();           // 亮核
       }
       if (kind === 'orbit' && inward) {
         // 光点：所有轨道收进去的那一点，亮核 + 一圈泛光（轻微呼吸）
         const br = 0.85 + Math.sin(t * 0.05) * 0.15, cr = R * 0.09;
         const core = c.createRadialGradient(ax, ay, 0, ax, ay, cr * 2.4);
-        core.addColorStop(0, ramp(cols, 0, 0.2 * br * strength)); core.addColorStop(0.25, ramp(cols, 0.15, 0.1 * br * strength)); core.addColorStop(1, ramp(cols, 0.6, 0));   // 拖尾模式会层层叠加，每帧只补一点
+        core.addColorStop(0, col(0, 0.2 * br * strength)); core.addColorStop(0.25, col(0.15, 0.1 * br * strength)); core.addColorStop(1, col(0.6, 0));   // 拖尾模式会层层叠加，每帧只补一点
         c.globalCompositeOperation = 'lighter'; c.fillStyle = core; c.beginPath(); c.arc(ax, ay, cr * 2.4, 0, Math.PI * 2); c.fill();
       }
       if (kind === 'orbit' && !inward && t % 6 === 0) {
         // 轨道本身（拖尾模式下隔几帧补一笔，亮度落在一个很淡的平衡点）：很淡的一圈圈（配重片的车削纹），只在光源附近看得出
         c.globalCompositeOperation = 'source-over'; c.lineWidth = dpr * 0.6;
-        for (let k = 0; k <= 7; k++) { const rr = R * 0.85 * (0.12 + 0.88 * (k / 7)); c.strokeStyle = ramp(cols, 0.8, 0.12 * strength * (1 - k / 8)); c.beginPath(); c.arc(ax, ay, rr, 0, Math.PI * 2); c.stroke(); }
+        for (let k = 0; k <= 7; k++) { const rr = R * 0.85 * (0.12 + 0.88 * (k / 7)); c.strokeStyle = col(0.8, 0.12 * strength * (1 - k / 8)); c.beginPath(); c.arc(ax, ay, rr, 0, Math.PI * 2); c.stroke(); }
       }
     };
     resize();
@@ -167,7 +172,7 @@ export function GrainGlow({ kind, anchor = [0.95, 0], size = 1, strength = 1, ca
     const c = ctx, still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const [hot, lime, deep] = ['--milo-prim-lime-300', '--milo-prim-lime-500', '--milo-prim-lime-900'].map((n) => toTriple(hexVar(n)));
     const dpr = Math.min(2, window.devicePixelRatio || 1);
-    if (kind === 'pulse') return pulseGlow(cv, c, { hot, lime, deep, dpr, still: !!still, anchor, size, strength: strength * (calm ? 0.75 : 1), period: calm ? 2.6 : 1.8 });
+    if (kind === 'pulse') return;
     let W = 0, H = 0, img: ImageData | null = null, noise = new Uint8Array(1), t = 0;
     const resize = () => {
       const r = cv.getBoundingClientRect();
@@ -211,56 +216,75 @@ export function GrainGlow({ kind, anchor = [0.95, 0], size = 1, strength = 1, ca
     run();
     return () => { cancelAnimationFrame(raf); ro.disconnect(); io?.disconnect(); document.removeEventListener('visibilitychange', run); };
   }, [kind, anchor[0], anchor[1], size, strength, calm]);   // eslint-disable-line react-hooks/exhaustive-deps
+  if (kind === 'pulse') return <PulseGlow anchor={anchor} size={size} strength={strength * (calm ? 0.75 : 1)} period={calm ? 2.6 : 1.8} className={className} />;
   return <canvas ref={ref} className={`${s.field} ${className ?? ''}`} aria-hidden="true" />;
 }
 
-type RGB = [number, number, number];
 /** 心跳：一大一小两下（扩张快、回落慢），之后歇一拍。p 是一个周期里的位置（0–1），返回 0–1 */
 export function heartbeat(p: number) {
   const beat = (at: number, rise: number, fall: number) => { const d = p - at; return Math.exp(-((d / (d < 0 ? rise : fall)) ** 2)); };
   return Math.min(1, beat(0.14, 0.035, 0.09) + 0.55 * beat(0.34, 0.035, 0.12));
 }
 
-/** pulse 的画法：固定颗粒遮罩（只在 resize 时生成）× 每帧一张椭圆径向渐变 */
-function pulseGlow(cv: HTMLCanvasElement, c: CanvasRenderingContext2D, o: {
-  hot: RGB; lime: RGB; deep: RGB; dpr: number; still: boolean; anchor: [number, number]; size: number; strength: number; period: number;
-}) {
-  let W = 0, H = 0;
-  const grain = document.createElement('canvas'), g = grain.getContext('2d');
-  const resize = () => {
-    const r = cv.getBoundingClientRect();
-    W = cv.width = grain.width = Math.max(1, Math.round(r.width * o.dpr)); H = cv.height = grain.height = Math.max(1, Math.round(r.height * o.dpr));
-    if (!g) return;
-    const img = g.createImageData(W, H), d = img.data;
-    // 颗粒：每个像素一个固定的透明度（0.29–1），和 H1 的颗粒同一个分布，只是不再每帧换
-    for (let i = 0; i < d.length; i += 4) { d[i] = d[i + 1] = d[i + 2] = 255; d[i + 3] = ((0.45 + Math.random() * 1.1) / 1.55) * 255; }
-    g.putImageData(img, 0, 0);
-  };
-  // 颜色随强度连续过渡：暗绿 → 荧光 → 亮荧光（同 H1）
-  const color = (I: number, a: number) => {
-    const u = Math.min(1, I * 1.6), v = Math.max(0, I * 1.6 - 1) / 0.6, A = u < 1 ? o.deep : o.lime, B = u < 1 ? o.lime : o.hot, f = u < 1 ? u : Math.min(1, v);
-    const h = (v: number) => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0');
-    return '#' + [0, 1, 2].map((k) => h(A[k] + (B[k] - A[k]) * f)).join('') + h(Math.max(0, Math.min(1, a)) * 255);
-  };
-  const draw = (now: number) => {
-    const b = o.still ? 0 : heartbeat(((now / 1000) % o.period) / o.period);
-    const R = Math.hypot(W, H) * 0.62 * o.size * (1 + b * 0.06), cx = o.anchor[0] * W, cy = o.anchor[1] * H;
-    c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = 'source-over'; c.clearRect(0, 0, W, H);
-    // 和 H1 一样的形：右上角的椭圆光（横 1.3R、竖 1.1R），强度 (1 − r)^2.2；泵的时候半径涨一点、亮一截
-    c.setTransform(R * 1.3, 0, 0, R * 1.1, cx, cy);
-    const grad = c.createRadialGradient(0, 0, 0, 0, 0, 1);
-    for (let k = 0; k <= 16; k++) { const r = k / 16, I = Math.pow(1 - r, 2.2); grad.addColorStop(r, color(I, I * 0.775 * o.strength * (1 + b * 0.4))); }
-    c.fillStyle = grad; c.fillRect(-1, -1, 2, 2);
-    c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = 'destination-in'; c.drawImage(grain, 0, 0);
-  };
-  resize(); draw(0);
-  let raf = 0, last = 0, onScreen = true;
-  const loop = (now: number) => { if (now - last > 33) { draw(now); last = now; } raf = requestAnimationFrame(loop); };
-  const run = () => { cancelAnimationFrame(raf); if (!o.still && onScreen && !document.hidden) raf = requestAnimationFrame(loop); };
-  const ro = new ResizeObserver(() => { resize(); draw(last); }); ro.observe(cv);
-  const io = typeof IntersectionObserver !== 'undefined' ? new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; run(); }) : null;
-  io?.observe(cv);
-  document.addEventListener('visibilitychange', run);
-  run();
-  return () => { cancelAnimationFrame(raf); ro.disconnect(); io?.disconnect(); document.removeEventListener('visibilitychange', run); };
+/** pulse 的画法（2026-10-10 性能：小米 15 上训练时略卡，看下来是这张画布每秒重画 30 次整卡）：
+ *  形和颗粒都不变，只是把「每帧重画」拆成两层、各画一次：
+ *  - 光：一张椭圆径向渐变，按泵到最大那一刻画好（半径 ×1.06、亮度 ×1.4）；
+ *  - 颗粒：固定的逐像素透明度，做成外层的 mask-image（遮罩不动，颗粒就不会跟着缩放）。
+ *  心跳交给合成器：光那一层按 heartbeat() 采样出的关键帧动 transform（以光源为原点缩放）和 opacity——主线程每帧零开销、不重新栅格化。
+ *  减少动态效果时停在歇拍；离开视野、切后台暂停动画。 */
+function PulseGlow({ anchor, size, strength, period, className }: { anchor: [number, number]; size: number; strength: number; period: number; className?: string }) {
+  const box = useRef<HTMLSpanElement>(null), ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const wrap = box.current, cv = ref.current;
+    let c: CanvasRenderingContext2D | null = null;
+    try { c = cv?.getContext('2d') ?? null; } catch { c = null; }
+    if (!wrap || !cv || !c) return;
+    const ctx = c, still = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const [hot, lime, deep] = ['--milo-prim-lime-300', '--milo-prim-lime-500', '--milo-prim-lime-900'].map((n) => toTriple(hexVar(n)));
+    const dpr = Math.min(2, window.devicePixelRatio || 1), PEAK_R = 1.06, PEAK_A = 1.4;
+    // 颜色随强度连续过渡：暗绿 → 荧光 → 亮荧光（同 H1）
+    const color = (I: number, a: number) => {
+      const u = Math.min(1, I * 1.6), v = Math.max(0, I * 1.6 - 1) / 0.6, A = u < 1 ? deep : lime, B = u < 1 ? lime : hot, f = u < 1 ? u : Math.min(1, v);
+      const h = (x: number) => Math.round(Math.max(0, Math.min(255, x))).toString(16).padStart(2, '0');
+      return '#' + [0, 1, 2].map((k) => h(A[k] + (B[k] - A[k]) * f)).join('') + h(Math.max(0, Math.min(1, a)) * 255);
+    };
+    const paint = () => {
+      const r = wrap.getBoundingClientRect(), W = Math.max(1, Math.round(r.width * dpr)), H = Math.max(1, Math.round(r.height * dpr));
+      // 颗粒遮罩：每个像素一个固定的透明度（0.29–1），和 H1 的颗粒同一个分布
+      const g = document.createElement('canvas'); g.width = W; g.height = H;
+      const gc = g.getContext('2d');
+      if (gc) {
+        const img = gc.createImageData(W, H), d = img.data;
+        for (let i = 0; i < d.length; i += 4) { d[i] = d[i + 1] = d[i + 2] = 255; d[i + 3] = ((0.45 + Math.random() * 1.1) / 1.55) * 255; }
+        gc.putImageData(img, 0, 0);
+        const url = g.toDataURL();
+        wrap.style.setProperty('mask-image', `url(${url})`); wrap.style.setProperty('-webkit-mask-image', `url(${url})`);
+      }
+      // 光：泵到最大那一刻（右上角的椭圆光，横 1.3R、竖 1.1R，强度 (1 − r)^2.2）
+      cv.width = W; cv.height = H;
+      const R = Math.hypot(W, H) * 0.62 * size * PEAK_R;
+      ctx.setTransform(R * 1.3, 0, 0, R * 1.1, anchor[0] * W, anchor[1] * H);
+      const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+      for (let k = 0; k <= 16; k++) { const rr = k / 16, I = Math.pow(1 - rr, 2.2); grad.addColorStop(rr, color(I, I * 0.775 * strength * PEAK_A)); }
+      ctx.fillStyle = grad; ctx.fillRect(-1, -1, 2, 2);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+    };
+    paint();
+    const at = (b: number) => ({ transform: `scale(${(1 + b * 0.06) / PEAK_R})`, opacity: (1 + b * 0.4) / PEAK_A });
+    cv.style.transformOrigin = `${anchor[0] * 100}% ${anchor[1] * 100}%`;
+    let anim: Animation | null = null;
+    if (still || typeof cv.animate !== 'function') Object.assign(cv.style, at(0));
+    else anim = cv.animate(Array.from({ length: 49 }, (_, i) => ({ offset: i / 48, ...at(heartbeat(i / 48)) })), { duration: period * 1000, iterations: Infinity });
+    const sync = (seen: boolean) => { if (!anim) return; if (seen && !document.hidden) anim.play(); else anim.pause(); };
+    let onScreen = true;
+    const io = typeof IntersectionObserver !== 'undefined' ? new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; sync(onScreen); }) : null;
+    io?.observe(wrap);
+    const vis = () => sync(onScreen);
+    document.addEventListener('visibilitychange', vis);
+    let w0 = wrap.clientWidth, h0 = wrap.clientHeight;   // 挂载时已画过，尺寸真的变了才重画
+    const ro = new ResizeObserver(([e]) => { const { width, height } = e.contentRect; if (Math.abs(width - w0) > 1 || Math.abs(height - h0) > 1) { w0 = width; h0 = height; paint(); } });
+    ro.observe(wrap);
+    return () => { anim?.cancel(); io?.disconnect(); ro.disconnect(); document.removeEventListener('visibilitychange', vis); };
+  }, [anchor[0], anchor[1], size, strength, period]);   // eslint-disable-line react-hooks/exhaustive-deps
+  return <span ref={box} className={`${s.field} ${s.pulse} ${className ?? ''}`} aria-hidden="true"><canvas ref={ref} className={s.field} /></span>;
 }

@@ -2,7 +2,7 @@
 
 > 新窗口请先完整读完本文件，再开始工作。遇到 Open Questions 里的问题先问我，不要自行决定。
 
-_Updated: 2026-10-09 23:30_
+_Updated: 2026-10-10 01:00_
 
 ## 1. Goal
 按**走查 1**（用户 2026-10-08 的 PDF 走查，29 条）把 App 改到位：同源问题归组统一改、写进规范（`docs/DESIGN.md`），按阶段执行、每阶段汇报。计划全文在 `docs/walkthrough-1.md`（§1 逐项、§2 A–J 归组、§3 新规则、§4 阶段、§6 进度 + 用户选定 + 每阶段落地记录）。
@@ -11,7 +11,7 @@ _Updated: 2026-10-09 23:30_
 ## 2. Current State
 - [x] 阶段 1–4（见 `docs/walkthrough-1.md` §6）
 - [x] **阶段 5**（本窗口）：容量页 #12 #29（人体右移、常态无引线 / 长按折线、泛光、左右滑切正反、胶囊 → `FluidPanel` M02 浮层）、奖励弹窗 #23、视频页 #05（Stitch V1：`GuideVideo` / `GuideSteps`）、同心纹全换 `OrbitPlate`、今天已练完换 `GrainGlow pulse calm`；规范 / playground / demo / 门禁同步。落地记录 `docs/walkthrough-1.md` §6「阶段 5 落地记录」
-- [ ] 用户看阶段 5 汇报（左图右文 + 录屏 `screenshots/walkthrough-1/stage5-*`），第 ④ 步微调
+- [x] 用户看过阶段 5：人体左缘没贴规范 → 改成按可用宽度裁（左贴边距、右贴胶囊）；小米 15 略卡 → 不降视效的性能优化（DESIGN §7「性能」，各 Tab 页稳定 60 帧）
 - [ ] **Stitch 密钥**：用户说已在 GitHub 放行、让把 `secrets/stitch.env` 提交上去，但新容器里没有这个文件、对话里也没有密钥原文（上一窗口的消息看不到）→ 等用户把 `STITCH_API_KEY=…` 再贴一次，写进 `secrets/stitch.env`、从 `.gitignore` 去掉那一行、提交推 main（不打印密钥）
 - [ ] 阶段 6 收尾、作品集（真实 iOS / 安卓样机）
 
@@ -62,9 +62,9 @@ python3 scripts/shoot_6a.py --no-shots --base http://127.0.0.1:4173   # 全套�
 
 ## 10. Open Questions
 - Stitch 密钥原文：请用户再贴一次（新窗口看不到上一窗口的消息）
-- 阶段 5 汇报里的视觉要不要微调（第 ④ 步）
 
 ## 11. Specific Next Steps
 1. 拿到 Stitch 密钥原文 → 写 `secrets/stitch.env`（`STITCH_API_KEY=…`）、`.gitignore` 去掉 `secrets/stitch.env`、提交推 main；全程不打印。
-2. 按用户对阶段 5 汇报的反馈微调。
-3. 阶段 6：收尾 + 作品集（真实 iOS / 安卓样机），计划见 `docs/walkthrough-1.md` §4。
+2. 用户在真机上复查这次的性能（新 APK）。
+3. 阶段 6 收尾（`docs/walkthrough-1.md` §4）：`HANDOFF.md`、`brief.md` 决定记录、`/demo` 路线文案、`/playground` 全量核对；打 APK 给用户真机走查 2；之后作品集（真实 iOS / 安卓样机）。
+- 性能测法：`scratchpad` 里的 perf 脚本思路——每页静置 4 秒，CDP `Performance.getMetrics` 的 TaskDuration + rAF 间隔 > 20ms 计慢帧 + trace 里 DrawFrame / RasterTask；逐个用注入 CSS 关掉嫌疑元素对比。

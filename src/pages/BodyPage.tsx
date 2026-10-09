@@ -148,7 +148,7 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
             return (
               <div key={c.key} className={cardCls[c.st]} style={{ right: contentW * (1 - T['ratio/rail-start']) }} onAnimationEnd={settle(c.key)}>
                 <BodyFigure gender={c.gender} view={c.view} stats={data.stats} focus={live ? (mag != null ? ids[Math.round(mag)] ?? null : sheet) : null}
-                  height={box.h} width={box.w} onAnchors={live ? onAnchors : noop} relativeTo={stage} onPick={live && c.st === 'still' ? openSheet : undefined} />
+                  height={box.h} width={box.w} fit={contentW * T['ratio/rail-start']} onAnchors={live ? onAnchors : noop} relativeTo={stage} onPick={live && c.st === 'still' ? openSheet : undefined} />
               </div>
             );
           })}

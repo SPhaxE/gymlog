@@ -3,3 +3,5 @@
 
 /* 配重片光环（OrbitPlate）：画在内容后面，薄模糊、七成透明 */
 .orbit { z-index: -1; filter: blur(calc(var(--milo-space-xs) * 0.75)); opacity: 0.7; }
+/* pulse：外层是固定的颗粒遮罩（按设备像素铺满），里面那张光由合成器按心跳缩放 / 变亮 */
+.pulse { display: block; overflow: hidden; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
