@@ -136,7 +136,7 @@ export function TrainingView({ a, now, onFind, onGuide }: { a: ActiveSession; no
         </div>
 
         <div ref={hero} style={sharedName('swap', en.exerciseId)}>
-          <Card hero>
+          <Card hero calm>
             <div className={s.heroTop}><span className="milo-text-caption">第 {a.cur + 1} 个 · {regionName(en.exerciseId)} · {work.filter(([r]) => r.done).length} / {work.length} 组</span>
               <span className={s.heroLinks}>
                 {onGuide && <button type="button" className={`milo-press milo-focus ${s.link}`} onClick={() => onGuide(en.exerciseId)}>要领</button>}

@@ -56,13 +56,11 @@ li.listRow + li.listRow::before, .rowItem + .rowItem::before, li.listRow + .rowI
 
 .card, .hero { display: grid; gap: var(--milo-space-xs); padding: var(--milo-space-l); border-radius: var(--milo-radius-l); color: var(--milo-color-text-secondary);
   background-color: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
-/* 主角卡（2026-10-04 用户选定 A4，ref5）：右上角荧光弥散 + 左下一点骨白，颗粒只铺在光里；每屏只有这一张 */
+/* 主角卡（2026-10-04 用户选定 A4，ref5；2026-10-09 颗粒改 H4）：右上角的荧光是 GrainGlow pulse 画布（固定颗粒 × 心跳泵动），外面压一层模糊；左下一点骨白；每屏只有这一张。
+   旧的 CSS 径向渐变 + 放大颗粒贴图（H0）留在方案台 #grain */
 .hero { position: relative; overflow: hidden; isolation: isolate;
-  background: radial-gradient(110% 95% at 95% 0%, color-mix(in srgb, var(--milo-color-accent-default) 34%, transparent), transparent 62%),
-    radial-gradient(80% 70% at 0% 100%, color-mix(in srgb, var(--milo-prim-bone-500) 12%, transparent), transparent 70%), var(--milo-color-bg-raised); }
-.hero::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit;
-  background-image: var(--grain); background-size: calc(var(--milo-space-5xl) * 3.333); mix-blend-mode: overlay; opacity: calc(var(--milo-opacity-grain) * 2.5);
-  -webkit-mask: radial-gradient(110% 95% at 95% 0%, black, transparent 70%); mask: radial-gradient(110% 95% at 95% 0%, black, transparent 70%); }
+  background: radial-gradient(80% 70% at 0% 100%, color-mix(in srgb, var(--milo-prim-bone-500) 12%, transparent), transparent 70%), var(--milo-color-bg-raised); }
+.heroGlow { z-index: -1; filter: blur(calc(var(--milo-space-xs) * 0.25)); }
 .cardBtn { width: 100%; border: 0; font: inherit; text-align: left; }
 
 /* 档案格：两行（名称 + 值），整格可点，命中区远大于 hit-min */
@@ -71,7 +69,7 @@ li.listRow + li.listRow::before, .rowItem + .rowItem::before, li.listRow + .rowI
 .tileBtn { width: 100%; border: 0; font: inherit; text-align: left; }
 .tileValue { display: inline-flex; align-items: baseline; flex-wrap: wrap; min-width: 0; }
 .hero.cardBtn[data-pressed], .hero.cardBtn:active { background: linear-gradient(var(--press-tint), var(--press-tint)),
-  radial-gradient(110% 95% at 95% 0%, color-mix(in srgb, var(--milo-color-accent-default) 34%, transparent), transparent 62%), var(--milo-color-bg-raised); }
+  radial-gradient(80% 70% at 0% 100%, color-mix(in srgb, var(--milo-prim-bone-500) 12%, transparent), transparent 70%), var(--milo-color-bg-raised); }
 
 .legend { display: flex; flex-wrap: wrap; gap: var(--milo-space-xs) var(--milo-space-l); font-size: var(--milo-font-size-min); color: var(--milo-color-text-secondary); }
 .legend span { display: inline-flex; align-items: center; gap: var(--milo-space-xs); }

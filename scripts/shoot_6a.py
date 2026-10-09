@@ -804,7 +804,7 @@ def me_checks(b, w, h):
     pg.close()
 
 def shop_checks(b, w, h):
-    """钱包与商城（6f，P14–P19）：真存储（演示数据）走一遍 钱包 → 商城 → 知识卡 → 详情 → 下单 → 订单完成 → 钱包；兑换卡券；缺货到货提醒 → 消息；已下架；演示场景不写存储。"""
+    """钱包与商城（6f，P14–P19）：真存储（演示数据）走一遍 钱包 → 商城 → 知识卡 → 详情 → 下单 → 订单完成 → 钱包；兑换卡券；缺货到货提醒 → 消息；旧链接；演示场景不写存储。"""
     tag = f'{w}×{h}'
     pg = b.new_page(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True)
     pg.on('pageerror', lambda e: errors.append(f'{tag} shop pageerror: {e}'))
@@ -862,7 +862,7 @@ def shop_checks(b, w, h):
     # T2（2026-10-09 用户选定）：折扣 / 热销 / 新品是图左上角的荧光斜丝带，折扣写百分比；缺货写在卡上、整卡压暗
     ok(pg.locator('[class*=_rb_sale_]').filter(has_text=re.compile(r'^[−-]\d+%$')).count() >= 1 and pg.locator('[class*=_rb_hot_]').count() >= 1 and pg.locator('[class*=_rb_new_]').count() >= 1 and pg.get_by_text('缺货', exact=True).count() >= 1,
        f'{tag} 商城：折扣 / 热销 / 新品是斜丝带（折扣写百分比），缺货写在卡上')
-    ok(pg.get_by_text('液体镁粉 50 毫升').count() == 0, f'{tag} 商城：已下架的不在列表里')
+    ok(pg.locator('[class*=_pic_]').count() >= 5, f'{tag} 商城：五件商品都在（已下架的不在列表里）')
     click(pg, pg.get_by_role('radio', name='补剂')); pg.wait_for_timeout(400)
     ok(pg.get_by_role('button', name=re.compile('^杠铃腰带 10 毫米，')).count() == 0 and pg.get_by_role('button', name=re.compile('^乳清蛋白')).count() == 1, f'{tag} 商城：品类「补剂」只剩补剂')
     click(pg, pg.get_by_role('radio', name='全部')); pg.wait_for_timeout(300)
@@ -906,11 +906,10 @@ def shop_checks(b, w, h):
     click(pg, pg.get_by_role('button', name='到货提醒')); pg.wait_for_timeout(500)
     click(pg, pg.get_by_role('button', name='已设到货提醒 · 看消息')); pg.wait_for_url('**/me/messages'); pg.wait_for_timeout(900)
     ok(pg.get_by_text('7 毫米护膝 已到货').count() == 1, f'{tag} 缺货：消息里来一条「已到货」')
-    # 已下架
-    pg.goto(args.base + '/shop/item/chalk'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)
-    page_ok('item-off')
-    ok(pg.get_by_text('这件商品已下架').count() == 1, f'{tag} 已下架：详情页提示')
-    click(pg, pg.get_by_role('button', name='回商城看看别的')); pg.wait_for_url('**/shop'); pg.wait_for_timeout(500)
+    # 旧链接（2026-10-09 演示数据去掉了已下架的镁粉）：提示没有这件商品，回商城
+    pg.goto(args.base + '/shop/item/chalk'); pg.wait_for_timeout(900)
+    ok(pg.get_by_text('没有这件商品').count() == 1, f'{tag} 旧链接：详情页提示没有这件商品')
+    click(pg, pg.get_by_role('button', name='回商城')); pg.wait_for_url('**/shop'); pg.wait_for_timeout(500)
     # 演示场景：不写存储
     snap = json.dumps(store()['wallet'], sort_keys=True)
     pg.goto(args.base + '/shop/item/straps?scenario=plain-prescription'); pg.wait_for_selector('[class*=_scroll_]'); pg.wait_for_timeout(900)

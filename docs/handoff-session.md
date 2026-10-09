@@ -12,8 +12,9 @@ _Updated: 2026-10-09 17:40_
 - [x] 阶段 1：沉浸式全屏、不该滚的不滚、休息计时只留胶囊、删「演示」、找动作人体、故事曲线、排版、分段加载、描线顺序（线上 3fb8f0a）
 - [x] 阶段 2：拍板材料（线框 p04v2 / logfold / addex；方案台 P / S / J / T 四组）（线上 106cb09）
 - [x] 阶段 3：用户 2026-10-09 选的七件全部落地 + 新一轮方案（H 组、Stitch 视频页 v7）；规范、ia、brief、/demo、/playground 已同步（本文件随阶段 3 的提交推上）
-- [ ] **等用户选**：主角卡颗粒渐变 H0–H3（`/preview#grain`）· 视频页 Stitch V1–V3（`screenshots/hifi/v7/v7-board.png`）；汇报材料 `screenshots/walkthrough-1/stage3-report.pdf`、录屏 `stage3-grain.mp4` / `stage3-motion.mp4`
-- [ ] 等用户补图：液体镁粉（已下架商品）没有实物图
+- [x] 主角卡选 H4（固定颗粒 + 模糊 + 脉搏泵动）已落地；镁粉不加了，演示数据删掉（用户 2026-10-09）
+- [ ] **等用户选**：视频页 Stitch V1–V3（`screenshots/hifi/v7/v7-board.png`）——阶段 5 搭之前再问
+- [ ] 阶段 4 转场与动效：进行中
 - [ ] 阶段 4 转场与动效、阶段 5 容量页 + 奖励弹窗 + 视频页搭建 + 主角卡按 H 选定落地、阶段 6 收尾、作品集（真实 iOS / 安卓样机）
 
 ## 3. Active Files

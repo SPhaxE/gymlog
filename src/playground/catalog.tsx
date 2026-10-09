@@ -12,7 +12,7 @@ import {
   type LogoState, type MascotMood, type MascotStage, type StreakStatus, type StreakWeekStatus,
   type Forced, type IconName, type NumSize, type SkeletonShape, type Tab, type TagTone,
 } from '../components';
-import type { DeltaDir } from '../components';
+import type { DeltaDir, GrainKind } from '../components';
 import { REGION_NAME, fmt } from '../data/demo';
 import { COUPONS, KNOWLEDGE, PRODUCTS, dateOf, growthSample, sampleRewards, type KnowledgeId } from '../data/growth';
 import { PRO_PERKS } from '../data/pro';
@@ -245,7 +245,7 @@ export const CATALOG: Entry[] = [
       trailing={p.kind === 'toggle' ? <Switch checked label="显示今日进度环" state={st(p.state)} disabled={p.state === 'disabled'} /> : undefined} /></List>,
   },
   {
-    name: 'Card', group: '列表与页头', desc: 'bg/raised + 细描边 + radius/l；hero 带一点径向渐变深度，只给每屏的主角卡。可点时整卡是一个按钮。',
+    name: 'Card', group: '列表与页头', desc: 'bg/raised + 细描边 + radius/l；hero = 每屏的主角卡：右上角颗粒荧光按心跳泵（GrainGlow pulse，H4），左下一点骨白；训练中 / 恢复日加 calm 更慢更淡。可点时整卡是一个按钮。',
     axes: { kind: ['plain_card', 'hero'], state: ['default', 'pressed', 'focused'] }, rows: ['kind'], cols: 'state', size: 'card',
     render: (p) => <Card hero={p.kind === 'hero'} onClick={noop} label="示例卡片" state={st(p.state)}><span className="milo-text-caption">近 7 天</span><Num size="l" value="13,854" unit="kg" /></Card>,
   },
@@ -475,9 +475,9 @@ export const CATALOG: Entry[] = [
     },
   },
   {
-    name: 'GrainGlow', group: '训练与记录', desc: '主角卡的颗粒渐变光（2026-10-09，方案台 H 组待选）：保留 P0 的形（右上角一团荧光往左下渐隐），按设备像素画颗粒。grain 高清动态颗粒 / drift 颗粒流光（光团漂移呼吸）/ dither 点阵渐变；约 12 帧，离开视野停，减少动态效果定格。',
-    axes: { kind: ['grain', 'drift', 'dither'] }, size: 'card',
-    render: (p) => <div style={{ position: 'relative', height: T['space/5xl'] * 3, overflow: 'clip', borderRadius: T['radius/l'] }}><GrainGlow kind={p.kind as 'grain' | 'drift' | 'dither'} /></div>,
+    name: 'GrainGlow', group: '训练与记录', desc: '主角卡的颗粒渐变光（方案台 H 组）：保留 P0 的形（右上角一团荧光往左下渐隐），按设备像素画颗粒。pulse = 选定（2026-10-09，`Card hero` 默认）：颗粒固定、外压一层薄模糊、光团按心跳泵（一大一小两下再歇一拍），calm（训练中、恢复日）更慢更淡；grain / drift / dither 是落选的 H1–H3。离开视野停，减少动态效果定格。',
+    axes: { kind: ['pulse', 'pulse_calm', 'grain', 'drift', 'dither'] }, size: 'card',
+    render: (p) => <div style={{ position: 'relative', height: T['space/5xl'] * 3, overflow: 'clip', borderRadius: T['radius/l'] }}><GrainGlow kind={(p.kind === 'pulse_calm' ? 'pulse' : p.kind) as GrainKind} calm={p.kind === 'pulse_calm'} /></div>,
   },
   {
     name: 'ParticleField', group: '训练与记录', desc: '主题色流体粒子（2026-10-08 走查 1，方案台待选）：替换主角卡右上角的荧光色块与页头右上角的配重片同心纹。dust 漂浮光尘 / flow 流场丝带 / orbit 环轨粒子；颜色只取荧光 300 → 900 的渐变，离光源越远越暗；约 30 帧，离开视野停，减少动态效果时定格一帧。',

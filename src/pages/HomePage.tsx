@@ -166,7 +166,7 @@ function WhySheet({ rx, onClose }: { rx: Extract<Prescription, { kind: 'plan' }>
 
 function RestDay({ blocked }: { blocked: [string, number][] }) {
   return (
-    <Card hero>
+    <Card hero calm>
       <div className="milo-text-caption">今天</div>
       <div className={`milo-text-title-m ${s.primary}`}>恢复日</div>
       <div className="milo-text-caption">候选肌头都还在修复期，今天适合休息。离恢复还需要：</div>

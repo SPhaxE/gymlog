@@ -61,16 +61,19 @@ const PARTICLE: [ParticleKind | 'now', string, string][] = [
   ['flow', 'P2 流场丝带', '粒子顺着缓慢变化的流场走、留下拖尾，汇成丝缎一样的流纹，颜色从荧光渐变到暗绿'],
   ['orbit', 'P3 环轨粒子 · 增量页头选定', '粒子沿一圈圈同心轨道转（内圈快、外圈慢）；2026-10-09 增量页头选它，并加「向内收缩到右上角光点」、再加一层模糊'],
 ];
-/** 主角卡的颗粒渐变（2026-10-09 用户：P0 的形是对的，但清晰度太低、没有噪点粒子渐变的动态 → 再出几个） */
+/** 主角卡的颗粒渐变（2026-10-09 用户：P0 的形是对的，但清晰度太低、没有噪点粒子渐变的动态 → 再出几个）。
+ *  2026-10-09 用户看完：「H2 和 H1 看起来一样，噪点变换太快；固定噪点，加一层模糊，动效改成脉搏式泵动，就这样定了」→ H4 定为默认（`Card hero`），H0–H3 留作过程 */
 const GRAIN: [GrainKind | 'now', string, string][] = [
-  ['now', 'H0 现在', 'CSS 径向渐变 + 一张放大的颗粒贴图（贴图被拉大，所以糊、而且不动）'],
+  ['now', 'H0 旧默认', 'CSS 径向渐变 + 一张放大的颗粒贴图（贴图被拉大，所以糊、而且不动）'],
   ['grain', 'H1 高清动态颗粒', '同一个形，按设备像素画；每个像素的亮度随机抖（胶片颗粒），约 12 帧刷新，颗粒只在光里'],
   ['drift', 'H2 颗粒流光', 'H1 的颗粒 + 光团中心沿小椭圆慢慢漂、半径慢慢呼吸——光是活的'],
   ['dither', 'H3 点阵渐变', '光由一颗颗 1 像素的亮点组成（越亮越密），点慢慢闪烁换位；最「粒子」，最硬朗'],
+  ['pulse', 'H4 固定颗粒 · 脉搏泵动 · 选定', '颗粒固定不动，外面压一层很薄的模糊；光团按心跳泵——一大一小两下（扩张快、回落慢）再歇一拍。训练中更慢、更淡'],
 ];
 function GrainDemo({ kind }: { kind: GrainKind | 'now' }) {
   const body = <><span className="milo-text-caption">第 1 个 · 下肢</span><span className="milo-text-heading">杠铃深蹲</span><Num size="hero" value="85" unit="kg" /><span className="milo-text-caption">上次 8/8/8 全部顶到 8 次上限 → +5 kg</span></>;
-  return <div className={s.pDemo}>{kind === 'now' ? <Card hero>{body}</Card> : <div className={`${s.pCard} ${s.gCard}`}><GrainGlow kind={kind} />{body}</div>}</div>;
+  if (kind === 'pulse') return <div className={s.pDemo}><Card hero>{body}</Card></div>;
+  return <div className={s.pDemo}>{kind === 'now' ? <div className={`${s.pCard} ${s.h0}`}>{body}</div> : <div className={`${s.pCard} ${s.gCard}`}><GrainGlow kind={kind} />{body}</div>}</div>;
 }
 
 /** 方案台里的两处落点：页头右上角（原同心纹）+ 主角卡（原荧光色块） */
@@ -82,7 +85,7 @@ function ParticleDemo({ kind }: { kind: ParticleKind | 'now' }) {
         <h3 className="milo-text-title-l">增量</h3><span className="milo-text-caption">近 4 周练了 15 个动作</span>
       </div>
       {kind === 'now'
-        ? <Card hero><span className="milo-text-caption">第 1 个 · 下肢</span><span className="milo-text-heading">杠铃深蹲</span><Num size="hero" value="85" unit="kg" /></Card>
+        ? <div className={`${s.pCard} ${s.h0}`}><span className="milo-text-caption">第 1 个 · 下肢</span><span className="milo-text-heading">杠铃深蹲</span><Num size="hero" value="85" unit="kg" /></div>
         : <div className={s.pCard}><ParticleField kind={kind} spread={0.8} /><span className="milo-text-caption">第 1 个 · 下肢</span><span className="milo-text-heading">杠铃深蹲</span><Num size="hero" value="85" unit="kg" /></div>}
     </div>
   );
@@ -187,8 +190,8 @@ export function OptionsBoard({ now }: { now: number }) {
         <div className={s.grid}>{PARTICLE.map(([k, t, n]) => <Cell key={t} id={`particle-${k}`} title={t} note={n}><ParticleDemo kind={k} /></Cell>)}</div>
       </section>
       <section className={s.group} aria-label="主角卡颗粒渐变" id="grain">
-        <h2 className="milo-text-heading">主角卡颗粒渐变 · H（2026-10-09，待选）</h2>
-        <p className="milo-text-caption">用户：主角卡 P0 的形是对的，但清晰度太低、没有噪点粒子渐变的动态。都保留 P0 的形，只换颗粒的做法（是动的，看录屏或线上）。</p>
+        <h2 className="milo-text-heading">主角卡颗粒渐变 · H（2026-10-09，已选 H4）</h2>
+        <p className="milo-text-caption">用户：主角卡 P0 的形是对的，但清晰度太低、没有噪点粒子渐变的动态。都保留 P0 的形，只换颗粒的做法。看完 H1–H3：「H2 和 H1 看起来一样，噪点变换太快」→ 固定颗粒、加一层模糊、改成脉搏式泵动（H4），定为主角卡默认。</p>
         <div className={s.grid}>{GRAIN.map(([k, t, n]) => <Cell key={t} id={`grain-${k}`} title={t} note={n}><GrainDemo kind={k} /></Cell>)}</div>
       </section>
       <section className={s.group} aria-label="钢板" id="plate">

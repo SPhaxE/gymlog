@@ -47,3 +47,9 @@
 .phones { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--milo-space-5xl) * 6), 1fr)); gap: var(--milo-space-l); }
 .shopDemo { position: absolute; inset: 0; overflow-y: auto; padding: var(--milo-space-s); background: var(--milo-color-bg-base); }
 .gCard { background: radial-gradient(80% 70% at 0% 100%, color-mix(in srgb, var(--milo-prim-bone-500) 12%, transparent), transparent 70%), var(--milo-color-bg-raised); }
+/* H0 旧默认（2026-10-04 A4 原样）：CSS 径向渐变 + 放大的颗粒贴图，只在光里 */
+.h0 { background: radial-gradient(110% 95% at 95% 0%, color-mix(in srgb, var(--milo-color-accent-default) 34%, transparent), transparent 62%),
+    radial-gradient(80% 70% at 0% 100%, color-mix(in srgb, var(--milo-prim-bone-500) 12%, transparent), transparent 70%), var(--milo-color-bg-raised); }
+.h0::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit;
+  background-image: var(--grain); background-size: calc(var(--milo-space-5xl) * 3.333); mix-blend-mode: overlay; opacity: calc(var(--milo-opacity-grain) * 2.5);
+  -webkit-mask: radial-gradient(110% 95% at 95% 0%, black, transparent 70%); mask: radial-gradient(110% 95% at 95% 0%, black, transparent 70%); }

@@ -65,8 +65,9 @@ describe('钱包与下单（6f，ia §1.15 / F6）', () => {
     expect(restockMessages(w)[0]).toMatchObject({ kind: 'restock', title: '7 毫米护膝 已到货' });
   });
 
-  it('商品状态全有；已下架不在商城列表', () => {
-    expect(new Set(PRODUCTS.map((p) => p.status))).toEqual(new Set(['normal', 'hot', 'sale', 'new', 'oos', 'off']));
+  it('商品 5 件、上架的状态全有；已下架不在商城列表', () => {
+    expect(PRODUCTS).toHaveLength(5);
+    expect(new Set(PRODUCTS.map((p) => p.status))).toEqual(new Set(['normal', 'hot', 'sale', 'new', 'oos']));
     expect(SHOP_PRODUCTS.some((p) => p.status === 'off')).toBe(false);
     for (const p of PRODUCTS) expect(p.member).toBeLessThan(p.price);
   });

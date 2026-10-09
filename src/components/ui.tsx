@@ -2,6 +2,7 @@
 import { useContext, type CSSProperties, type ReactNode } from 'react';
 import { BodyRender, PALETTE } from './thermal';
 import { Icon, type IconName } from './Icon';
+import { GrainGlow } from './particles';
 import { cx, forced, type Forced } from './state';
 import s from './ui.module.css';
 
@@ -94,11 +95,13 @@ export function SectionLabel({ children, trailing }: { children: ReactNode; trai
   return <div className={cx('milo-text-label', s.secondary, s.section)}>{children}{trailing && <><span className={s.sp} />{trailing}</>}</div>;
 }
 
-/** 卡片：bg/raised + 细描边 + radius/l；hero 变体带一点径向渐变深度。传 onClick 时整卡可点 */
-export function Card({ children, hero, onClick, label, state }: { children: ReactNode; hero?: boolean; onClick?: () => void; label?: string; state?: Forced }) {
+/** 卡片：bg/raised + 细描边 + radius/l；hero 变体 = 主角卡：右上角一团颗粒荧光按心跳泵（H4，2026-10-09 用户选定），左下一点骨白。
+ *  calm = 训练中：泵得更慢、更淡。传 onClick 时整卡可点 */
+export function Card({ children, hero, calm, onClick, label, state }: { children: ReactNode; hero?: boolean; calm?: boolean; onClick?: () => void; label?: string; state?: Forced }) {
   const h = hero ? { 'data-hero': '' } : {};
-  if (onClick) return <button type="button" aria-label={label} className={cx('milo-press milo-focus', hero ? s.hero : s.card, s.cardBtn)} onClick={onClick} {...h} {...forced(state)}>{children}</button>;
-  return <section className={hero ? s.hero : s.card} aria-label={label} {...h}>{children}</section>;
+  const body = hero ? <>{children}<GrainGlow kind="pulse" calm={calm} className={s.heroGlow} /></> : children;
+  if (onClick) return <button type="button" aria-label={label} className={cx('milo-press milo-focus', hero ? s.hero : s.card, s.cardBtn)} onClick={onClick} {...h} {...forced(state)}>{body}</button>;
+  return <section className={hero ? s.hero : s.card} aria-label={label} {...h}>{body}</section>;
 }
 
 /** 档案格（「我的」的 2×2）：小字名称在上、大字当前值在下，整格是按钮，点开对应的编辑面板；没有 onClick 就是只读 */

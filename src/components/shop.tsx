@@ -38,7 +38,7 @@ function LookTag({ look, status, price, was }: { look: 'shape' | 'ribbon'; statu
 }
 
 /** 商品图：只用实物图 public/shop/<id>.webp（用户 2026-10-09：所有商品都用实物图，不用生成的矢量占位）；
- *  加载好之前只有一块暗底，加载完淡入；没有实物图的商品（镁粉）也只是暗底，不画假图 */
+ *  加载好之前只有一块暗底，加载完淡入；图没到之前只是暗底，不画假图 */
 function Pic({ id, className }: { id?: string; category?: '护具' | '补剂'; className?: string }) {
   const [img, setImg] = useState(false);
   return (

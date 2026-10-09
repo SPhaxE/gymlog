@@ -102,10 +102,8 @@ export const PRODUCTS: Product[] = [
     about: '7 毫米氯丁橡胶套筒，保暖、支撑，不带弹力绑带。尺码按膝盖上方 10 厘米的腿围：S 31–35、M 35–38、L 38–42 厘米。' },
   { id: 'straps', name: '8 字助力带', merchant: '铁砧运动', spec: '棉 + 硅胶防滑 · 一对', price: 69, member: 62, category: '护具', knowledge: 'straps', status: 'normal',
     about: '棉织带 + 硅胶防滑点，8 字形套腕。适合硬拉、耸肩这类握力先到极限的拉。' },
-  { id: 'chalk', name: '液体镁粉 50 毫升', merchant: '山羊护具', spec: '速干', price: 39, member: 35, category: '护具', knowledge: 'straps', status: 'off',
-    about: '涂在手掌，干了以后防滑。' },
 ];
-/** 商城列表里的商品：已下架的不出现（详情页仍能打开，提示并回商城） */
+/** 商城列表里的商品：已下架的不出现（详情页仍能打开，提示并回商城）。演示数据只有 5 件、没有已下架的（2026-10-09 用户：商品不加了，五个够用）；已下架态在 /playground 看 */
 export const SHOP_PRODUCTS = PRODUCTS.filter((p) => p.status !== 'off');
 export const productById = (id: string) => PRODUCTS.find((p) => p.id === id);
 export const STATUS_LABEL: Record<ProductStatus, string> = { normal: '', hot: '热销', sale: '折扣', new: '新品', oos: '缺货', off: '已下架' };

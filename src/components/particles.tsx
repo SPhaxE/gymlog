@@ -140,12 +140,16 @@ export function ParticleField({ kind, anchor = [1, 0], spread = 1, strength = 1,
  *  都保留 P0 的形（右上角一团荧光，往左下渐隐），区别在颗粒怎么动：
  *  - grain  高清动态颗粒：按设备像素画，每个像素的亮度随机抖（胶片颗粒），颗粒只在光里、约 12 帧刷新；
  *  - drift  颗粒流光：同样的颗粒，光团的中心沿一条小椭圆慢慢漂、半径慢慢呼吸，光是活的；
- *  - dither 点阵渐变：光由一颗颗 1 像素的亮点组成（越亮越密），点在慢慢闪烁换位。
+ *  - dither 点阵渐变：光由一颗颗 1 像素的亮点组成（越亮越密），点在慢慢闪烁换位；
+ *  - pulse  脉搏泵动（2026-10-09 用户选定，主角卡默认）：「H1 和 H2 看起来一样，噪点变得太快」→ 颗粒固定不动，
+ *           外面压一层模糊（由使用方的 CSS 给），光团按心跳的节奏泵：一大一小两下（扩张快、回落慢），然后歇一拍。
+ *           颗粒是一张只生成一次的遮罩，光是一张径向渐变，每帧只是渐变 × 遮罩，比逐像素便宜得多，所以能跑 30 帧。
  *  减少动态效果时定格一帧；离开视野、页面隐藏时停。 */
-export type GrainKind = 'grain' | 'drift' | 'dither';
-export function GrainGlow({ kind, anchor = [0.95, 0], size = 1, strength = 1, className }: {
+export type GrainKind = 'grain' | 'drift' | 'dither' | 'pulse';
+export function GrainGlow({ kind, anchor = [0.95, 0], size = 1, strength = 1, calm, className }: {
   kind: GrainKind; anchor?: [number, number];
-  /** 光团半径（相对卡的对角线） */ size?: number; strength?: number; className?: string;
+  /** 光团半径（相对卡的对角线） */ size?: number; strength?: number;
+  /** pulse：训练中更慢、更淡（走查 1 §5：粒子训练中也用，但更慢、更淡） */ calm?: boolean; className?: string;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -156,6 +160,7 @@ export function GrainGlow({ kind, anchor = [0.95, 0], size = 1, strength = 1, cl
     const c = ctx, still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const [hot, lime, deep] = ['--milo-prim-lime-300', '--milo-prim-lime-500', '--milo-prim-lime-900'].map((n) => toTriple(hexVar(n)));
     const dpr = Math.min(2, window.devicePixelRatio || 1);
+    if (kind === 'pulse') return pulseGlow(cv, c, { hot, lime, deep, dpr, still: !!still, anchor, size, strength: strength * (calm ? 0.75 : 1), period: calm ? 2.6 : 1.8 });
     let W = 0, H = 0, img: ImageData | null = null, noise = new Uint8Array(1), t = 0;
     const resize = () => {
       const r = cv.getBoundingClientRect();
@@ -198,6 +203,57 @@ export function GrainGlow({ kind, anchor = [0.95, 0], size = 1, strength = 1, cl
     document.addEventListener('visibilitychange', run);
     run();
     return () => { cancelAnimationFrame(raf); ro.disconnect(); io?.disconnect(); document.removeEventListener('visibilitychange', run); };
-  }, [kind, anchor[0], anchor[1], size, strength]);   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [kind, anchor[0], anchor[1], size, strength, calm]);   // eslint-disable-line react-hooks/exhaustive-deps
   return <canvas ref={ref} className={`${s.field} ${className ?? ''}`} aria-hidden="true" />;
+}
+
+type RGB = [number, number, number];
+/** 心跳：一大一小两下（扩张快、回落慢），之后歇一拍。p 是一个周期里的位置（0–1），返回 0–1 */
+export function heartbeat(p: number) {
+  const beat = (at: number, rise: number, fall: number) => { const d = p - at; return Math.exp(-((d / (d < 0 ? rise : fall)) ** 2)); };
+  return Math.min(1, beat(0.14, 0.035, 0.09) + 0.55 * beat(0.34, 0.035, 0.12));
+}
+
+/** pulse 的画法：固定颗粒遮罩（只在 resize 时生成）× 每帧一张椭圆径向渐变 */
+function pulseGlow(cv: HTMLCanvasElement, c: CanvasRenderingContext2D, o: {
+  hot: RGB; lime: RGB; deep: RGB; dpr: number; still: boolean; anchor: [number, number]; size: number; strength: number; period: number;
+}) {
+  let W = 0, H = 0;
+  const grain = document.createElement('canvas'), g = grain.getContext('2d');
+  const resize = () => {
+    const r = cv.getBoundingClientRect();
+    W = cv.width = grain.width = Math.max(1, Math.round(r.width * o.dpr)); H = cv.height = grain.height = Math.max(1, Math.round(r.height * o.dpr));
+    if (!g) return;
+    const img = g.createImageData(W, H), d = img.data;
+    // 颗粒：每个像素一个固定的透明度（0.29–1），和 H1 的颗粒同一个分布，只是不再每帧换
+    for (let i = 0; i < d.length; i += 4) { d[i] = d[i + 1] = d[i + 2] = 255; d[i + 3] = ((0.45 + Math.random() * 1.1) / 1.55) * 255; }
+    g.putImageData(img, 0, 0);
+  };
+  // 颜色随强度连续过渡：暗绿 → 荧光 → 亮荧光（同 H1）
+  const color = (I: number, a: number) => {
+    const u = Math.min(1, I * 1.6), v = Math.max(0, I * 1.6 - 1) / 0.6, A = u < 1 ? o.deep : o.lime, B = u < 1 ? o.lime : o.hot, f = u < 1 ? u : Math.min(1, v);
+    const h = (v: number) => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0');
+    return '#' + [0, 1, 2].map((k) => h(A[k] + (B[k] - A[k]) * f)).join('') + h(Math.max(0, Math.min(1, a)) * 255);
+  };
+  const draw = (now: number) => {
+    const b = o.still ? 0 : heartbeat(((now / 1000) % o.period) / o.period);
+    const R = Math.hypot(W, H) * 0.62 * o.size * (1 + b * 0.06), cx = o.anchor[0] * W, cy = o.anchor[1] * H;
+    c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = 'source-over'; c.clearRect(0, 0, W, H);
+    // 和 H1 一样的形：右上角的椭圆光（横 1.3R、竖 1.1R），强度 (1 − r)^2.2；泵的时候半径涨一点、亮一截
+    c.setTransform(R * 1.3, 0, 0, R * 1.1, cx, cy);
+    const grad = c.createRadialGradient(0, 0, 0, 0, 0, 1);
+    for (let k = 0; k <= 16; k++) { const r = k / 16, I = Math.pow(1 - r, 2.2); grad.addColorStop(r, color(I, I * 0.775 * o.strength * (1 + b * 0.4))); }
+    c.fillStyle = grad; c.fillRect(-1, -1, 2, 2);
+    c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = 'destination-in'; c.drawImage(grain, 0, 0);
+  };
+  resize(); draw(0);
+  let raf = 0, last = 0, onScreen = true;
+  const loop = (now: number) => { if (now - last > 33) { draw(now); last = now; } raf = requestAnimationFrame(loop); };
+  const run = () => { cancelAnimationFrame(raf); if (!o.still && onScreen && !document.hidden) raf = requestAnimationFrame(loop); };
+  const ro = new ResizeObserver(() => { resize(); draw(last); }); ro.observe(cv);
+  const io = typeof IntersectionObserver !== 'undefined' ? new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; run(); }) : null;
+  io?.observe(cv);
+  document.addEventListener('visibilitychange', run);
+  run();
+  return () => { cancelAnimationFrame(raf); ro.disconnect(); io?.disconnect(); document.removeEventListener('visibilitychange', run); };
 }
