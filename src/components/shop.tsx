@@ -16,10 +16,10 @@ const yuan = (n: number) => `¥${n.toLocaleString('en-US')}`;
 /** 商城状态标的外观（2026-10-08 走查 1 #08：「角标没有设计感，一眼看不出是什么状态」，方案台待选）：
  *  now = 现在（热销 / 折扣 / 新品 一样的骨白实心小块）；
  *  shape = T1 各有各的形：折扣 = 荧光价签「−18%」，热销 = 骨白描边 + 上升小箭头，新品 = 荧光描边 + 小星，缺货 = 图上压一条「缺货 · 可提醒」；
- *  ribbon = T2 角带：图片左上角一条斜带，折扣荧光、热销骨白、新品深色荧光字，缺货横贯图片中间；
+ *  ribbon = T2 角带（2026-10-09 选定，默认）：图片左上角一条斜带，折扣、热销荧光，新品深底荧光字，缺货横贯图片中间；
  *  price = T3 放进价格区：图上不挂标——折扣在价格后跟荧光「−18%」，热销 / 新品写在商家那一行前面，缺货把价格换成「缺货 · 到货提醒」。 */
 export type ShopTagLookKind = 'now' | 'shape' | 'ribbon' | 'price';
-export const ShopTagLook = createContext<ShopTagLookKind>('now');
+export const ShopTagLook = createContext<ShopTagLookKind>('ribbon');   // 2026-10-09 用户选定 T2 角带（热销也用荧光）
 const pct = (price: number, was?: number) => (was ? `−${Math.round((1 - price / was) * 100)}%` : '');
 
 /** 商品状态标：热销 / 折扣 / 新品 实心；缺货 虚线；已下架 灰字；普通不出标 */
@@ -37,12 +37,12 @@ function LookTag({ look, status, price, was }: { look: 'shape' | 'ribbon'; statu
   return <span className={cx(s.tagAt, s.shape, s[`sh_${status}`])}>{status !== 'sale' && <Icon name={status === 'hot' ? 'up' : 'star'} small />}{text}</span>;
 }
 
-/** 商品图：public/shop/<id>.webp；加载好之前 / 没有图时显示品类占位（护具 = 横条、补剂 = 罐子），不出现破图 */
-function Pic({ id, category, className }: { id?: string; category: '护具' | '补剂'; className?: string }) {
+/** 商品图：只用实物图 public/shop/<id>.webp（用户 2026-10-09：所有商品都用实物图，不用生成的矢量占位）；
+ *  加载好之前只有一块暗底，加载完淡入；没有实物图的商品（镁粉）也只是暗底，不画假图 */
+function Pic({ id, className }: { id?: string; category?: '护具' | '补剂'; className?: string }) {
   const [img, setImg] = useState(false);
   return (
-    <span className={cx(s.pic, !img && (category === '补剂' ? s.picSupp : s.picGear), className)} aria-hidden="true">
-      {!img && <i />}
+    <span className={cx(s.pic, className)} aria-hidden="true">
       {id && <img className={cx(s.picImg, !img && s.picWait)} src={`${import.meta.env.BASE_URL}shop/${id}.webp`} alt="" draggable={false} onLoad={() => setImg(true)} onError={() => setImg(false)} />}
     </span>
   );

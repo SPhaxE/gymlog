@@ -45,3 +45,8 @@
   mask-composite: intersect; }
 .haloCenter { background: radial-gradient(ellipse 62% 70% at var(--hx, 50%) var(--hy, 50%), color-mix(in srgb, var(--milo-prim-lime-300) 55%, transparent), color-mix(in srgb, var(--milo-prim-lime-500) 22%, transparent) 55%, transparent 100%); }
 .dark .plate { background: var(--milo-color-bg-raised-2); }
+/* lamp（2026-10-09 选定 S1）：灯在「屏幕」那一层、不跟内容滚——屏幕左上角一盏看得见的灯（亮核 + 一大圈泛光），钢板从它下面滚过；
+   板升上来时由脚本把 opacity 渐变到 0（关灯），孔和光束同步变暗。z-index -1：在页面内容下面、氛围底色上面 */
+.lamp { position: absolute; inset: 0; z-index: -1; pointer-events: none; transition: none;
+  background: radial-gradient(circle at var(--lx, 0) var(--ly, 0), color-mix(in srgb, var(--milo-prim-bone-100) 85%, transparent) 0, color-mix(in srgb, var(--milo-prim-lime-300) 70%, transparent) var(--milo-space-s),
+    color-mix(in srgb, var(--milo-prim-lime-500) 26%, transparent) calc(var(--milo-space-5xl) * 1.2), color-mix(in srgb, var(--milo-prim-lime-700) 8%, transparent) calc(var(--milo-space-5xl) * 3), transparent calc(var(--milo-space-5xl) * 4.5)); }

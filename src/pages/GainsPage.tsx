@@ -12,7 +12,7 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { flushSync } from 'react-dom';
-import { BackToTop, Cascade, Chip, Collapsible, GainGroupHead, GainRow, GainSummary, PageHeader, Screen, StateView, drillTransition, useToast, type Tab } from '../components';
+import { BackToTop, Cascade, Chip, Collapsible, GainGroupHead, GainRow, GainSummary, PageHeader, Screen, StateView, drillTransition, useToast, type Tab, ParticleField } from '../components';
 import { env, fmt, REGION_NAME } from '../data/demo';
 import { gainsData, groupGains, type GainRow as Row } from '../data/gains';
 import type { GainGroupKind as GroupKind } from '../components';
@@ -68,7 +68,8 @@ export function GainsPage({ scenario, now, onTab }: { scenario?: string; now: nu
     <Screen label="增量">
       <div ref={scroll} className={s.scroll} data-drill-ready="gains">
         <div className={s.hero}>
-          <span className={s.plate} aria-hidden="true" />
+          {/* 页头右上角（2026-10-09 用户选定 P3 + 内收）：环轨粒子一圈圈向内收到右上角的光点，替换原来静态的配重片同心纹 */}
+          <ParticleField kind="orbit" inward anchor={[1, 0]} spread={0.75} strength={0.8} className={s.plateFx} />
           <PageHeader title="增量">{!d.empty && <GainSummary {...sm} />}</PageHeader>
         </div>
         <div className={s.body}>

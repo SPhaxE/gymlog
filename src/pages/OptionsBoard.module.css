@@ -36,7 +36,8 @@
 .pCard .milo-text-heading, .pCard :global(.milo-text-heading) { color: var(--milo-color-text-primary); }
 
 /* 钢板：每格是一块能滚的小屏（光源以这块屏为准） */
-.plDemo { position: absolute; inset: 0; overflow-y: auto; display: grid; align-content: start; gap: var(--milo-space-s); padding: var(--milo-space-l) var(--milo-size-gutter); background: var(--milo-color-bg-base); }
+.plStage { position: absolute; inset: 0; isolation: isolate; overflow: clip; background: var(--milo-color-bg-base); }
+.plDemo { position: absolute; inset: 0; overflow-y: auto; display: grid; align-content: start; gap: var(--milo-space-s); padding: var(--milo-space-l) var(--milo-size-gutter); }
 .plDemo h3 { margin: 0; }
 .plDemo > span { color: var(--milo-color-text-secondary); }
 .plFill { display: grid; gap: var(--milo-space-s); padding-top: var(--milo-space-m); }
@@ -45,3 +46,4 @@
 /* 增量配色：几台真实的增量页并排；商城标：一格放 4 件商品 */
 .phones { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--milo-space-5xl) * 6), 1fr)); gap: var(--milo-space-l); }
 .shopDemo { position: absolute; inset: 0; overflow-y: auto; padding: var(--milo-space-s); background: var(--milo-color-bg-base); }
+.gCard { background: radial-gradient(80% 70% at 0% 100%, color-mix(in srgb, var(--milo-prim-bone-500) 12%, transparent), transparent 70%), var(--milo-color-bg-raised); }

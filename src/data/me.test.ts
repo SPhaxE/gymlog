@@ -143,4 +143,10 @@ describe('连胜快断（6g 补，牛龄页 StreakRisk）', () => {
       expect(riskOf(growthOf(demoState(now), now), now)).toBeNull();
     }
   });
+  it('没有历史的新用户：哪天打开都不提示「这周快断了」（连胜 0 周没有东西可断，2026-10-09 周五才暴露）', () => {
+    for (let d = 0; d < 7; d++) {
+      const now = new Date(2026, 9, 5 + d, 18).getTime();
+      expect(riskOf(growthOf({ ...demoState(now), history: [] }, now), now)).toBeNull();
+    }
+  });
 });

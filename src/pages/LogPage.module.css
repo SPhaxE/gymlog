@@ -12,3 +12,17 @@
 .weekTitle span { color: var(--milo-color-text-secondary); }
 .totals { display: inline-flex; align-items: baseline; gap: var(--milo-space-m); flex: none; }
 .rows { display: grid; gap: var(--milo-space-s); }
+
+/* 按月分组（2026-10-09 走查 1 选定 W2）：月头一整行可点（展开 / 收起，高度弹簧 + 行依次弹入），右边几次 · 几组 · 总负荷 + 按周的小柱子 */
+.month { display: grid; }
+.monthHead { display: flex; align-items: center; gap: var(--milo-space-m); width: 100%; min-height: calc(var(--milo-size-hit-min) + var(--milo-space-s)); padding: var(--milo-space-xs) var(--milo-space-2xs);
+  border: 0; border-top: var(--milo-stroke-hairline) solid var(--milo-color-line-default); background: none; color: var(--milo-color-text-secondary); font: inherit; text-align: left; }
+.month:first-child .monthHead { border-top: 0; }
+.monthTitle { margin: 0; flex: none; color: var(--milo-color-text-primary); }
+.monthSum { display: inline-flex; align-items: baseline; gap: var(--milo-space-s); flex: 1; min-width: 0; }
+.monthBars { display: inline-flex; align-items: flex-end; gap: var(--milo-space-2xs); height: var(--milo-space-xl); flex: none; }
+.monthBars i { width: var(--milo-space-xs); border-radius: var(--milo-radius-xs); background: var(--milo-color-line-strong); }
+.monthHead > svg { flex: none; transform: rotate(90deg); transition: transform var(--milo-motion-spring-ms) var(--milo-motion-ease-spring); }
+.monthHead[aria-expanded='true'] > svg { transform: rotate(-90deg); }
+.month .week { padding-top: var(--milo-space-xs); }
+@media (prefers-reduced-motion: reduce) { .monthHead > svg { transition: none; } }

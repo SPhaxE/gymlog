@@ -120,7 +120,7 @@ export function TrendPage({ scenario, now }: { scenario?: string; now: number })
                     <button type="button" className={`milo-press milo-focus ${s.rec}`} aria-pressed={idx === i} onClick={() => setSel(idx)}>
                       <span className={s.recDate}>{x.label}</span>
                       <span className={`milo-text-body ${s.recBest}`}>{x.best}</span>
-                      {x.pr && <span className={s.recPr}><Tag tone="strong">PR</Tag></span>}
+                      {x.pr && <span className={s.recPr}><Tag tone="accent">PR</Tag></span>}
                       <b className={`milo-text-number-m ${s.recV}`}>{fmt(x.v)}<i>{row.unit}</i></b>
                     </button>
                   </li>

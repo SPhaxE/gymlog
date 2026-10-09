@@ -23,6 +23,8 @@ export interface LogRow {
   /** 「6 个动作 · 14 组 · 52 分钟」 */
   meta: string;
   prs: number;
+  /** 这次的正式组数、总负荷（按月合计用） */
+  sets: number; load: number;
 }
 export interface LogWeek {
   /** 这一周周一 0 点（毫秒），当 key 用 */
@@ -72,7 +74,7 @@ export function logData(scenario: string | Source, now: number): LogData {
     const regions = mainRegions(env, s).map((r) => REGION_NAME[r]).join(' · ');
     w.rows.push({
       id: s.id, t: s.startMs, date: `${d.getMonth() + 1}/${d.getDate()}`, weekday: WD[d.getDay()], year: d.getFullYear() === y ? undefined : d.getFullYear(),
-      title: regions || '训练', meta: `${s.exercises.filter((e) => !e.skipped).length} 个动作 · ${st.sets} 组${s.durationMin ? ` · ${s.durationMin} 分钟` : ''}`, prs: prs.get(s.id)?.size ?? 0,
+      title: regions || '训练', meta: `${s.exercises.filter((e) => !e.skipped).length} 个动作 · ${st.sets} 组${s.durationMin ? ` · ${s.durationMin} 分钟` : ''}`, prs: prs.get(s.id)?.size ?? 0, sets: st.sets, load: st.load,
     });
     trained.add(startOfDay(s.startMs));
     const day = startOfDay(s.startMs);
@@ -80,6 +82,22 @@ export function logData(scenario: string | Source, now: number): LogData {
   }
   const weeks = [...byWeek.values()].sort((a, b) => b.key - a.key);
   return { weeks, trained, byDay, total: history.length, empty: history.length === 0 };
+}
+
+/** 按月分组（2026-10-09 走查 1 选定 W2）：月 → 周 → 每次训练。按训练日期分月；一周跨两个月时拆在两个月里，各自只算本月那几次 */
+export interface LogMonth { key: number; label: string; count: number; sets: number; load: number; weeks: LogWeek[] }
+export function byMonth(weeks: LogWeek[], now: number): LogMonth[] {
+  const y = new Date(now).getFullYear(), out = new Map<number, LogMonth>();
+  for (const w of weeks) for (const r of w.rows) {
+    const d = new Date(r.t), key = d.getFullYear() * 12 + d.getMonth();
+    let m = out.get(key);
+    if (!m) { m = { key, label: d.getFullYear() === y ? `${d.getMonth() + 1} 月` : `${d.getFullYear()} 年 ${d.getMonth() + 1} 月`, count: 0, sets: 0, load: 0, weeks: [] }; out.set(key, m); }
+    let mw = m.weeks.find((x) => x.key === w.key);
+    if (!mw) { mw = { ...w, count: 0, sets: 0, load: 0, rows: [] }; m.weeks.push(mw); }
+    mw.rows.push(r); mw.count += 1; mw.sets += r.sets; mw.load += r.load;
+    m.count += 1; m.sets += r.sets; m.load += r.load;
+  }
+  return [...out.values()].sort((a, b) => b.key - a.key);
 }
 
 /** 一周的合计行：「2 次 · 25 组 · 9,244 kg」（读屏和测试用；页面上拆成三个带单位的数） */

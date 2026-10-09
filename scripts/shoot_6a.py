@@ -371,6 +371,8 @@ def gains_checks(b, w, h):
     pg.goto(f'{args.base}/log?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(700)
     btt = pg.get_by_role('button', name='回到顶端')
     ok(btt.count() == 0, f'{tag} 回到顶端：在顶部时不出现（读屏也读不到）')
+    # 记录页按月收起（2026-10-09）后默认一屏多一点：先展开上一个月，页面才够长
+    click(pg, pg.get_by_role('button', name=re.compile(r'^\d+ 月')).nth(1)); pg.wait_for_timeout(700)
     pg.locator('[class*=_scroll_]').first.evaluate('e => e.scrollTo(0, e.scrollHeight)'); pg.wait_for_timeout(700)
     ok(btt.count() == 1 and float(btt.evaluate('e => getComputedStyle(e).opacity')) > 0.95, f'{tag} 回到顶端：滚过一屏出现')
     settle(pg); bb = btt.bounding_box(); nav_top = pg.get_by_role('navigation', name='主导航').bounding_box()['y']
@@ -473,7 +475,10 @@ CONTRAST = r"""() => {
     if (el.closest('svg') || el.closest('[aria-hidden=true]') || el.closest('nav')) continue;  // 导航选中项的字在骨白滑块上（滑块是兄弟元素，不是祖先），这里算不准，另有截图核对
     const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || +cs.opacity === 0) continue;
     const r = el.getBoundingClientRect(); if (r.width === 0 || r.bottom < 0 || r.top > innerHeight) continue;
-    let fg = parse(cs.color); if (!fg) continue; let op = 1; for (let e = el; e; e = e.parentElement) op *= +getComputedStyle(e).opacity;
+    let fg = parse(cs.color); if (!fg) continue;
+    // 描边无填充的字（增量页「下次」的数，2026-10-09）：按描边的颜色算
+    if (fg[3] === 0 && parseFloat(cs.webkitTextStrokeWidth) > 0) { fg = parse(cs.webkitTextStrokeColor); if (!fg) continue; }
+    let op = 1; for (let e = el; e; e = e.parentElement) op *= +getComputedStyle(e).opacity;
     const bg = bgOf(el); fg = blend([fg[0], fg[1], fg[2], fg[3] * op], bg);
     const L1 = lum(fg), L2 = lum(bg), ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
     const size = parseFloat(cs.fontSize), bold = +cs.fontWeight >= 600, large = size >= 24 || (size >= 18.66 && bold);
@@ -517,14 +522,33 @@ def log_checks(b, w, h):
     ok(min(bb for _, bb in s0) > 12, f'{tag} 记录·钢板：最远的孔也有底光，不是黑洞（{min(bb for _, bb in s0):.0f}）')
     cen = """() => { const c = document.querySelector('[data-plate] canvas[class*=_beams_]'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let lo = 0, s = 0;
       for (let y = 0; y < c.height; y += 2) for (let x = 0; x < c.width; x += 2) { const a = d[(y * c.width + x) * 4 + 3]; s += a; if (y > c.height * 0.62) lo += a; } return [lo / s, 0]; }"""
-    c0 = pg.evaluate(cen); pg.evaluate('document.querySelector("[class*=_scroll_]").scrollTo(0, 400)'); pg.wait_for_timeout(600); c1 = pg.evaluate(cen)
-    ok(c0[0] - c1[0] > 0.004, f'{tag} 记录·钢板：光源固定、板滚上去后光束转平，落到板下面的光变少（{c0[0]:.3f} → {c1[0]:.3f}）')
     beam = pg.evaluate("""() => { const c = document.querySelector('[data-plate] canvas[class*=_beams_]'); if (!c) return null; const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 16) if (d[i] > 12) n++; return n / (d.length / 16); }""")
     ok(beam is not None and beam > 0.08, f'{tag} 记录·钢板：孔前有光束（光束画布 {0 if beam is None else beam * 100:.0f}% 有光）')
     snap = "() => { const c = document.querySelector('[data-plate] canvas[class*=_beams_]'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let h = 0; for (let i = 0; i < d.length; i += 97) h = (h * 31 + d[i]) | 0; return h; }"
     f0 = pg.evaluate(snap); pg.wait_for_timeout(400); f1 = pg.evaluate(snap)
     ok(f0 != f1, f'{tag} 记录·钢板：光束里的浮尘在飘')
     pg.evaluate('document.querySelector("[class*=_scroll_]").scrollTo(0, 0)'); pg.evaluate('document.querySelector("[class*=_body_]").style.paddingTop = ""'); pg.wait_for_timeout(500)
+    # S1（2026-10-09 用户）：灯挂在不滚动的屏幕层、不跟页面走；板滚出灯下时慢慢关灯（中途有半亮的帧，不是一下子灭），透光和光束跟着一起暗；滚回来再亮
+    lamp = pg.evaluate("""async () => {
+      const L = document.querySelector('main [class*=_lamp_]'), sc = document.querySelector('[class*=_scroll_]'), body = document.querySelector('[class*=_body_]'), plate = document.querySelector('[data-plate]');
+      if (!L || !plate) return null;
+      const beams = () => { const c = plate.querySelector('canvas[class*=_beams_]'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let s = 0; for (let i = 3; i < d.length; i += 16) s += d[i]; return s; };
+      const frame = () => new Promise((r) => requestAnimationFrame(() => r()));
+      body.style.paddingBottom = '2000px'; await frame(); await frame();
+      const y0 = L.getBoundingClientRect().top, ly0 = getComputedStyle(L).getPropertyValue('--ly'), op0 = +getComputedStyle(L).opacity, b0 = beams();
+      sc.scrollTo(0, sc.scrollTop + plate.getBoundingClientRect().bottom - sc.getBoundingClientRect().top + 40);
+      const seq = []; const t0 = performance.now(); while (performance.now() - t0 < 1800) { await frame(); seq.push(+getComputedStyle(L).opacity); }
+      const y1 = L.getBoundingClientRect().top, ly1 = getComputedStyle(L).getPropertyValue('--ly'), b1 = beams();
+      sc.scrollTo(0, 0); const t1 = performance.now(); while (performance.now() - t1 < 1800) await frame();
+      const op2 = +getComputedStyle(L).opacity; body.style.paddingBottom = ''; await frame();
+      return { y0, y1, ly0, ly1, op0, seq, b0, b1, op2 }; }""")
+    ok(lamp is not None, f'{tag} 记录·钢板：有灯（挂在屏幕层 main 里）')
+    if lamp:
+        mid = [o for o in lamp['seq'] if 0.1 < o < 0.9]
+        ok(abs(lamp['y0'] - lamp['y1']) < 1 and lamp['ly0'] == lamp['ly1'], f'{tag} 记录·钢板：滚动时灯不动（{lamp["y0"]:.0f} → {lamp["y1"]:.0f}，光心 {lamp["ly0"]} → {lamp["ly1"]}）')
+        ok(lamp['op0'] > 0.95 and lamp['seq'][-1] < 0.05 and len(mid) >= 3, f'{tag} 记录·钢板：板滚出灯下慢慢关灯（{lamp["op0"]:.2f} → 中途 {len(mid)} 帧半亮 → {lamp["seq"][-1]:.2f}）')
+        ok(lamp['b1'] < lamp['b0'] * 0.2, f'{tag} 记录·钢板：关灯时光束一起暗（{lamp["b0"]:.0f} → {lamp["b1"]:.0f}）')
+        ok(lamp['op2'] > 0.95, f'{tag} 记录·钢板：滚回来灯重新亮（{lamp["op2"]:.2f}）')
     if not args.no_shots: pg.screenshot(path=os.path.join(OUT, 'log-plate-rest.png'))
     # 交互（M04）：默认选中最近练过的一天；按住横向拖吸到别的日子（读数行跟着换、孔口有光晕）；左右键换日子；「查看」进那天的训练
     rd = lambda: pg.locator('[data-plate] [class*=_rdText_] b').first.inner_text()
@@ -537,10 +561,20 @@ def log_checks(b, w, h):
     for k in range(12):
         pg.mouse.move(fb['x'] + fb['width'] * (0.9 - 0.07 * k), fb['y'] + fb['height'] * 0.55, steps=2); pg.wait_for_timeout(60); seen.add(rd())
     pg.mouse.up(); pg.wait_for_timeout(300)
-    ok(len(seen) >= 3 and rd() != d0, f'{tag} 记录·钢板：横向拖吸到一个个练过的日子（{len(seen)} 个），读数行跟着换')
+    ok(len(seen) >= 3 and rd() != d0, f'{tag} 记录·钢板：横向拖吸到一个个日子（{len(seen)} 个），读数行跟着换')
     pg.locator('[data-plate] figure').focus(); before = rd(); pg.keyboard.press('ArrowRight'); pg.wait_for_timeout(200)
-    ok(rd() != before, f'{tag} 记录·钢板：右键换到下一个练过的日子（{before} → {rd()}）')
-    picked = rd(); click(pg, pg.get_by_role('button', name=re.compile(r'^查看.+的训练$'))); pg.wait_for_selector('[data-drill-ready=logdetail]'); pg.wait_for_timeout(1000)
+    ok(rd() != before, f'{tag} 记录·钢板：右键换到下一天（{before} → {rd()}）')
+    # 休息日也能选（S1，2026-10-09）：读数行写「休息日」、没有「查看」（不给死路）；再换回练过的一天去「查看」
+    go = pg.get_by_role('button', name=re.compile(r'^查看.+的训练$'))
+    readout = lambda: pg.locator('[data-plate] [class*=_readout_]').first.inner_text()
+    for _ in range(20):
+        if '休息日' in readout(): break
+        pg.keyboard.press('ArrowLeft'); pg.wait_for_timeout(120)
+    ok('休息日' in readout() and go.count() == 0, f'{tag} 记录·钢板：选中休息日，读数写「休息日」、没有「查看」（{rd()}）')
+    for _ in range(20):   # 往后找（往前可能已经顶到三个月的第一天、是个休息日）
+        if go.count(): break
+        pg.keyboard.press('ArrowRight'); pg.wait_for_timeout(120)
+    picked = rd(); click(pg, go); pg.wait_for_selector('[data-drill-ready=logdetail]'); pg.wait_for_timeout(1000)
     m = re.match(r'(\d+)月(\d+)日', picked)
     ok('/log/' in pg.url and pg.get_by_role('heading', name=re.compile(f'^{m.group(1)}月{m.group(2)}日')).count() >= 1, f'{tag} 记录·钢板：「查看」进到选中那天的训练（{picked}）')
     # 减少动态效果：浮尘不动（光束是静止的一张图），呼吸光晕不动
@@ -552,7 +586,13 @@ def log_checks(b, w, h):
     ctx.close()
     # 训练详情（P08）：点一行进去，标题 / 汇总 / 动作卡与那一行一致；点动作卡头进曲线页再返回；返回记录页还原滚动位置；共享名飞进飞出
     pg.goto(f'{args.base}/log?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(900)
+    # 按月收起（2026-10-09）后默认页面不够长：先展开上一个月，返回时展开的月份也要还在
+    months = pg.get_by_role('button', name=re.compile(r'^\d+ 月'))
+    click(pg, months.nth(1)); pg.wait_for_timeout(700)
+    open0 = pg.evaluate("[...document.querySelectorAll('button[aria-expanded=true]')].map((e) => e.getAttribute('aria-label') || e.textContent).length")
     pg.evaluate('document.querySelector("[class*=_scroll_]").scrollTo(0, 420)'); pg.wait_for_timeout(400)
+    top0 = pg.evaluate('document.querySelector("[class*=_scroll_]").scrollTop')
+    ok(top0 > 380, f'{tag} 详情：展开一个月后页面够长、能滚到 420（{top0:.0f}）')
     row = pg.locator('button[class*=_session_]').nth(2)
     rt = row.inner_text().split('\n'); r_date, r_wd = rt[0], rt[1]; r_sets = int(re.search(r'(\d+) 组', row.inner_text()).group(1)); r_pr = 'PR' in row.inner_text()
     pg.evaluate('''() => { window.__vt = []; const o = document.startViewTransition.bind(document);
@@ -583,7 +623,8 @@ def log_checks(b, w, h):
     ok(any(all(any(k in x for x in v) for k in ('x-drill-name', 'x-drill-num')) for v in (pg.evaluate('window.__vt') or [])), f'{tag} 详情：返回时日期、部位作为共享元素飞回那一行')
     pg.wait_for_timeout(1800)
     top_back = pg.evaluate('document.querySelector("[class*=_scroll_]").scrollTop')
-    ok(abs(top_back - 420) <= 2, f'{tag} 详情：返回记录页后滚动位置还在（420 → {top_back:.0f}）')
+    ok(abs(top_back - top0) <= 2, f'{tag} 详情：返回记录页后滚动位置还在（{top0:.0f} → {top_back:.0f}）')
+    ok(pg.evaluate("document.querySelectorAll('button[aria-expanded=true]').length") == open0, f'{tag} 详情：返回记录页后展开的月份还展开着（{open0} 个）')
     ok(until(pg, '() => !document.querySelector(\'[style*="x-drill"]\')'), f'{tag} 详情：转场放完后记录页里不留共享名（同名不能有两份）')
     # 删除训练（场景里：删掉的记在内存里，所有页面共用）：⋮ → 删除这次训练 → 二次确认；取消不变；确认后回记录页，行没了、周合计和钢板孔数同步变
     pg.goto(f'{args.base}/log?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(900)
@@ -617,18 +658,22 @@ def log_checks(b, w, h):
     ok(pg.get_by_text('这次训练已经不在了').count() == 1 and pg.get_by_role('button', name='回到记录').count() == 1, f'{tag} 详情：训练不存在时有回记录的出口')
     click(pg, pg.get_by_role('button', name='回到记录')); pg.wait_for_timeout(700)
     ok(pg.url.split('?')[0].endswith('/log'), f'{tag} 详情：出口回到记录页（{pg.url.split("5199")[-1]}）')
-    # 分段加载（走查 1：滑到底自动加载）：用「载入示例数据」的真用户（30 周）走真实存储——一次渲染 8 周，滑到底自动再接 8 周
+    # 分段加载 + 按月分组：用「载入示例数据」的真用户（30 周）走真实存储
     lp = b.new_page(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True)
     lp.on('pageerror', lambda e: errors.append(f'{tag} log(live) pageerror: {e}'))
     lp.goto(args.base + '/onboarding'); lp.wait_for_selector('button:has-text("跳过")'); lp.wait_for_timeout(600)
     click(lp, lp.get_by_role('button', name='跳过')); click(lp, lp.get_by_role('button', name='下一步')); click(lp, lp.get_by_role('button', name='下一步'))
     click(lp, lp.get_by_role('button', name='载入示例数据 · 练了 30 周的进阶用户')); lp.wait_for_url('**/today**'); lp.wait_for_timeout(900)
-    click(lp, lp.get_by_role('link', name='记录')); lp.wait_for_url('**/log**'); lp.wait_for_selector('section[class*=_week_]'); lp.wait_for_timeout(700)
-    n0 = lp.locator('section[class*=_week_]').count()
-    ok(n0 == 8 and lp.get_by_text(re.compile('^更早的训练')).count() == 0 and lp.locator('[role=status]:has-text("加载更多")').count() == 1, f'{tag} 记录（真存储，30 周）：一次渲染 8 周，底部是「加载更多」，不写「还有 N 周」（{n0} 周）')
-    lp.evaluate('document.querySelector("[class*=_scroll_]").scrollTo(0, 1e6)'); lp.wait_for_timeout(1500)  # 到底：露出加载态、停一下再接上
-    n1 = lp.locator('section[class*=_week_]').count()
-    ok(n1 == 16, f'{tag} 记录：滑到底自动再加载 8 周（{n0} → {n1}）')
+    click(lp, lp.get_by_role('link', name='记录')); lp.wait_for_url('**/log**'); lp.wait_for_selector('section[class*=_month_]'); lp.wait_for_timeout(700)
+    # 按月分组（走查 1 选定 W2）：这个月展开、过去的月份折成一行；30 周 ≈ 7 个月，一次 6 个月，滑到底自动接上，最后写「到底了」
+    heads_m = lp.locator('section[class*=_month_] > button[aria-expanded]')
+    ok(heads_m.count() >= 5 and [heads_m.nth(i).get_attribute('aria-expanded') for i in range(heads_m.count())].count('true') == 1 and heads_m.first.get_attribute('aria-expanded') == 'true',
+       f'{tag} 记录（真存储，30 周）：按月分组，只有最近一个月展开（{heads_m.count()} 个月）')
+    lp.evaluate('document.querySelector("[class*=_scroll_]").scrollTo(0, 1e6)'); lp.wait_for_timeout(1500)
+    ok(lp.get_by_text('到底了').count() == 1 and lp.get_by_text(re.compile('^更早的训练')).count() == 0, f'{tag} 记录：滑到底自动加载完，写「到底了」（{lp.locator("section[class*=_month_]").count()} 个月）')
+    click(lp, heads_m.nth(1)); lp.wait_for_timeout(900)
+    ok(heads_m.nth(1).get_attribute('aria-expanded') == 'true' and lp.evaluate("document.getElementById(document.querySelectorAll('section[class*=_month_] > button')[1].getAttribute('aria-controls')).getBoundingClientRect().height") > 100,
+       f'{tag} 记录：点月头展开那个月')
     ok(lp.get_by_role('slider', name=re.compile(r'练了 \d+ 天')).count() == 1 and len(lp.evaluate(PLATE_HOLES)) > 0, f'{tag} 记录（真存储）：钢板有孔')
     lp.close()
     # 空态：钢板没有孔、板后不点灯，唯一出路是回今日处方
@@ -813,7 +858,10 @@ def shop_checks(b, w, h):
     click(pg, pg.get_by_role('button', name=re.compile('^去商城抵扣'))); pg.wait_for_url('**/shop'); pg.wait_for_timeout(900)
     page_ok('shop')
     ok(pg.get_by_text('知识卡 · 按你的训练数据').count() == 1 and pg.get_by_text(re.compile('硬拉预估 1RM 已到体重的 1\\.\\d+ 倍')).count() >= 1, f'{tag} 商城：为你推荐是数据触发的腰带知识卡')
-    for t in ('折扣', '热销', '新品', '缺货'): ok(pg.get_by_text(t, exact=True).count() >= 1, f'{tag} 商城：有「{t}」标')
+    for t in ('折扣', '热销', '新品', '缺货'): ok(pg.get_by_role('button', name=re.compile(f'，{t}$')).count() >= 1, f'{tag} 商城：有「{t}」的商品（读屏念得到状态）')
+    # T2（2026-10-09 用户选定）：折扣 / 热销 / 新品是图左上角的荧光斜丝带，折扣写百分比；缺货写在卡上、整卡压暗
+    ok(pg.locator('[class*=_rb_sale_]').filter(has_text=re.compile(r'^[−-]\d+%$')).count() >= 1 and pg.locator('[class*=_rb_hot_]').count() >= 1 and pg.locator('[class*=_rb_new_]').count() >= 1 and pg.get_by_text('缺货', exact=True).count() >= 1,
+       f'{tag} 商城：折扣 / 热销 / 新品是斜丝带（折扣写百分比），缺货写在卡上')
     ok(pg.get_by_text('液体镁粉 50 毫升').count() == 0, f'{tag} 商城：已下架的不在列表里')
     click(pg, pg.get_by_role('radio', name='补剂')); pg.wait_for_timeout(400)
     ok(pg.get_by_role('button', name=re.compile('^杠铃腰带 10 毫米，')).count() == 0 and pg.get_by_role('button', name=re.compile('^乳清蛋白')).count() == 1, f'{tag} 商城：品类「补剂」只剩补剂')

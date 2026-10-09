@@ -12,18 +12,18 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router';
-import { BackToTop, LoadMore, Num, PageHeader, Screen, SessionRow, StateView, SteelPlate, dotDays, dotMonths, drillTransition, type Tab } from '../components';
+import { BackToTop, Collapsible, Icon, LoadMore, Num, PageHeader, Screen, SessionRow, StateView, SteelPlate, dotDays, dotMonths, drillTransition, type Tab } from '../components';
 import { fmt } from '../data/demo';
-import { logData, weekTotals } from '../data/log';
+import { logData, weekTotals, byMonth } from '../data/log';
 import { useSource } from '../data/useSource';
 import { T } from '../styles/tokens.gen';
 import { TabNav } from './TabNav';
 import s from './LogPage.module.css';
 
 /** 一次渲染几周 */
-const CHUNK = 8;
-/** 点进详情前记下滚动位置、展开了几周、点的是哪一行，返回时还原（按场景分开记；刷新页面就忘了，不写存储） */
-const memo = new Map<string, { top: number; shown: number; from?: string }>();
+const CHUNK = 6;   // 一次渲染几个月（按月分组后，过去的月份折成一行）
+/** 点进详情前记下滚动位置、显示了几个月、展开了哪几个月、点的是哪一行，返回时还原（按场景分开记；刷新页面就忘了，不写存储） */
+const memo = new Map<string, { top: number; shown: number; open?: number[]; from?: string }>();
 
 export function LogPage({ scenario, now, onTab }: { scenario?: string; now: number; onTab?: (tab: Tab, path: string) => void }) {
   const nav = useNavigate(), loc = useLocation();
@@ -35,12 +35,19 @@ export function LogPage({ scenario, now, onTab }: { scenario?: string; now: numb
   // 钢板上选中的那天（M04）：默认最近练过的一天；读数行写那天的部位、组数、总负荷，「查看」打开那次训练
   const [pickDay, setPickDay] = useState<number | null>(null);
   const latest = useMemo(() => Math.max(-Infinity, ...d.byDay.keys()), [d.byDay]);
-  const selDay = pickDay != null && d.byDay.has(pickDay) ? pickDay : Number.isFinite(latest) ? latest : null;
-  const info = selDay != null ? d.byDay.get(selDay)! : null;
-  const plateDay = info ? { t: info.t, title: info.date, sub: `${info.regions} · ${info.sets} 组${info.prs ? ` · ${info.prs} 个新纪录` : ''}`, value: fmt(info.load), unit: 'kg' } : null;
+  // 休息日也能选（2026-10-09 走查 1：钢板上的白圈）：读数行写「休息日」，没有「查看」
+  const selDay = pickDay != null ? pickDay : Number.isFinite(latest) ? latest : null;
+  const info = selDay != null ? d.byDay.get(selDay) ?? null : null;
+  const restLabel = (t: number) => { const x = new Date(t); return `${x.getMonth() + 1}月${x.getDate()}日 周${'日一二三四五六'[x.getDay()]}`; };
+  const plateDay = info ? { t: info.t, title: info.date, sub: `${info.regions} · ${info.sets} 组${info.prs ? ` · ${info.prs} 个新纪录` : ''}`, value: fmt(info.load), unit: 'kg' }
+    : selDay != null ? { t: selDay, title: restLabel(selDay), sub: '休息日 · 超量恢复在这几天发生', value: '0', unit: '组', rest: true } : null;
   const [shown, setShown] = useState(() => memo.get(key)?.shown ?? CHUNK);
   const loadMore = useCallback(() => setShown((n) => n + CHUNK), []);
-  const weeks = d.weeks.slice(0, shown), more = d.weeks.length - weeks.length;
+  // 按月分组（2026-10-09 走查 1 选定 W2）：这个月展开，过去的月份折成一行（几次 · 几组 · 总负荷 + 按周的小柱子），点开看那个月
+  const mons = useMemo(() => byMonth(d.weeks, now), [d.weeks, now]);
+  const list = mons.slice(0, shown), more = mons.length - list.length;
+  const [openMonths, setOpenMonths] = useState<number[]>(() => memo.get(key)?.open ?? (mons[0] ? [mons[0].key] : []));
+  const toggle = (k: number) => setOpenMonths((xs) => (xs.includes(k) ? xs.filter((x) => x !== k) : [...xs, k]));
   useLayoutEffect(() => { const m = memo.get(key); if (m && scroll.current) scroll.current.scrollTop = m.top; }, [key]);
   // 钻入转场：被点的那一行带共享名；从详情返回时，落回的那一行（memo.from）也带名，转场放完后撤掉
   const [drill, setDrill] = useState<string | null>(() => memo.get(key)?.from ?? null);
@@ -52,7 +59,7 @@ export function LogPage({ scenario, now, onTab }: { scenario?: string; now: numb
     return () => window.clearTimeout(id);
   }, [key, landed]);
   const open = (id: string) => {
-    memo.set(key, { top: scroll.current?.scrollTop ?? 0, shown, from: id });
+    memo.set(key, { top: scroll.current?.scrollTop ?? 0, shown, open: openMonths, from: id });
     drillTransition(() => nav(`/log/${id}${loc.search}`), '[data-drill-ready=logdetail]', 'in', () => flushSync(() => setDrill(id)));
   };
 
@@ -65,10 +72,20 @@ export function LogPage({ scenario, now, onTab }: { scenario?: string; now: numb
         <div className={s.body}>
           <SteelPlate months={months} selected={selDay} onSelect={setPickDay} day={plateDay} onOpen={(t) => { const x = d.byDay.get(t); if (x) open(x.id); }} />
           {d.empty ? (
-            <StateView kind="empty" title="还没有训练记录" detail="练完第一次，这里会按周列出每次训练，并在钢板上冲出一个孔。" action="去今日处方" onAction={() => nav('/today' + (scenario ? `?scenario=${scenario}` : ''))} />
+            <StateView kind="empty" title="还没有训练记录" detail="练完第一次，这里会按月、按周列出每次训练，并在钢板上冲出一个孔。" action="去今日处方" onAction={() => nav('/today' + (scenario ? `?scenario=${scenario}` : ''))} />
           ) : (
             <>
-              {weeks.map((w) => (
+              {list.map((m) => { const isOpen = openMonths.includes(m.key), bars = [...m.weeks].reverse(), top = Math.max(1, ...bars.map((w) => w.sets)); return (
+                <section key={m.key} className={s.month}>
+                  <button type="button" className={`milo-press milo-focus ${s.monthHead}`} aria-expanded={isOpen} aria-controls={`m-${m.key}`} onClick={() => toggle(m.key)}>
+                    <h2 className={`milo-text-heading ${s.monthTitle}`}>{m.label}</h2>
+                    <span className={s.monthSum} role="text" aria-label={`${m.count} 次 · ${m.sets} 组 · ${fmt(m.load)} kg`}><Num size="s" value={m.count} unit="次" /><Num size="s" value={m.sets} unit="组" />
+                      <Num size="s" value={m.load >= 10000 ? (Math.round(m.load / 100) / 10).toFixed(1) : fmt(m.load)} unit={m.load >= 10000 ? '吨' : 'kg'} /></span>
+                    <span className={s.monthBars} aria-hidden="true">{bars.map((w) => <i key={w.key} style={{ height: `${Math.max(12, (w.sets / top) * 100)}%` }} />)}</span>
+                    <Icon name="chevron" small />
+                  </button>
+                  <Collapsible open={isOpen} id={`m-${m.key}`}>
+              {m.weeks.map((w) => (
                 <section key={w.key} className={s.week}>
                   <header className={s.weekHead}>
                     <h2 className={`milo-text-body-strong ${s.weekTitle}`}>{w.label && <b>{w.label}</b>}<span className="milo-text-caption">{w.range}</span></h2>
@@ -79,6 +96,9 @@ export function LogPage({ scenario, now, onTab }: { scenario?: string; now: numb
                   </div>
                 </section>
               ))}
+                  </Collapsible>
+                </section>
+              ); })}
               {/* 分段加载：滑到底自动接上下一段，全部加载完写「到底了」（走查 1 #17）；一段就放得下的不出现 */}
               {(more > 0 || shown > CHUNK) && <LoadMore left={more} onMore={loadMore} />}
             </>

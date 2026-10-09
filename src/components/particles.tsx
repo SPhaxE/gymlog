@@ -22,11 +22,12 @@ function ramp(cols: [number, number, number][], t: number, a: number) {
 
 type P = { x: number; y: number; vx: number; vy: number; age: number; life: number; size: number; k: number; th: number };
 
-export function ParticleField({ kind, anchor = [1, 0], spread = 1, strength = 1, className }: {
+export function ParticleField({ kind, anchor = [1, 0], spread = 1, strength = 1, inward, className }: {
   kind: ParticleKind;
   /** 光源在容器里的位置（0–1），默认右上角 */ anchor?: [number, number];
   /** 影响范围（相对容器长边） */ spread?: number;
   /** 亮度与密度（训练中的页面给小一点） */ strength?: number;
+  /** orbit：一圈圈轨道同时向内收缩，收到光源那一点（亮核），外面再补上新的一圈（2026-10-09 用户：增量页头用 P3 + 向内层层收缩到右上角的光点） */ inward?: boolean;
   className?: string;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -93,7 +94,8 @@ export function ParticleField({ kind, anchor = [1, 0], spread = 1, strength = 1,
           continue;
         } else {
           // 环轨：第 k 圈半径 = R × (0.18 + 0.82 k)，角速度内快外慢，同一个方向转
-          const ring = 0.12 + 0.88 * p.k, w = 0.004 / Math.sqrt(ring), wob = 1 + Math.sin(p.th * 5 + t * 0.02 + p.size) * 0.015;
+          const kk = inward ? (((p.k - t * 0.0011) % 1) + 1) % 1 : p.k;   // 内收：每圈的半径一直变小，到了中心从最外圈重新出现
+          const ring = (inward ? 0.02 : 0.12) + (inward ? 0.98 : 0.88) * kk, w = 0.004 / Math.sqrt(Math.max(0.05, ring)), wob = 1 + Math.sin(p.th * 5 + t * 0.02 + p.size) * 0.015;
           p.th += w; p.x = ax + Math.cos(p.th) * R * 0.85 * ring * wob; p.y = ay + Math.sin(p.th) * R * 0.85 * ring * wob;
         }
         const f = fall(p.x, p.y);
@@ -104,7 +106,14 @@ export function ParticleField({ kind, anchor = [1, 0], spread = 1, strength = 1,
         c.fillStyle = ramp(cols, f, a * 0.22); c.beginPath(); c.arc(p.x, p.y, r * 2.4, 0, Math.PI * 2); c.fill();   // 光晕
         c.fillStyle = ramp(cols, f * 0.6, a); c.beginPath(); c.arc(p.x, p.y, r, 0, Math.PI * 2); c.fill();           // 亮核
       }
-      if (kind === 'orbit' && t % 6 === 0) {
+      if (kind === 'orbit' && inward) {
+        // 光点：所有轨道收进去的那一点，亮核 + 一圈泛光（轻微呼吸）
+        const br = 0.85 + Math.sin(t * 0.05) * 0.15, cr = R * 0.09;
+        const core = c.createRadialGradient(ax, ay, 0, ax, ay, cr * 2.4);
+        core.addColorStop(0, ramp(cols, 0, 0.2 * br * strength)); core.addColorStop(0.25, ramp(cols, 0.15, 0.1 * br * strength)); core.addColorStop(1, ramp(cols, 0.6, 0));   // 拖尾模式会层层叠加，每帧只补一点
+        c.globalCompositeOperation = 'lighter'; c.fillStyle = core; c.beginPath(); c.arc(ax, ay, cr * 2.4, 0, Math.PI * 2); c.fill();
+      }
+      if (kind === 'orbit' && !inward && t % 6 === 0) {
         // 轨道本身（拖尾模式下隔几帧补一笔，亮度落在一个很淡的平衡点）：很淡的一圈圈（配重片的车削纹），只在光源附近看得出
         c.globalCompositeOperation = 'source-over'; c.lineWidth = dpr * 0.6;
         for (let k = 0; k <= 7; k++) { const rr = R * 0.85 * (0.12 + 0.88 * (k / 7)); c.strokeStyle = ramp(cols, 0.8, 0.12 * strength * (1 - k / 8)); c.beginPath(); c.arc(ax, ay, rr, 0, Math.PI * 2); c.stroke(); }
@@ -123,6 +132,72 @@ export function ParticleField({ kind, anchor = [1, 0], spread = 1, strength = 1,
     document.addEventListener('visibilitychange', run);
     run();
     return () => { cancelAnimationFrame(raf); ro.disconnect(); io?.disconnect(); document.removeEventListener('visibilitychange', run); };
-  }, [kind, anchor[0], anchor[1], spread, strength]);   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [kind, anchor[0], anchor[1], spread, strength, inward]);   // eslint-disable-line react-hooks/exhaustive-deps
+  return <canvas ref={ref} className={`${s.field} ${className ?? ''}`} aria-hidden="true" />;
+}
+
+/** 主角卡的颗粒渐变光（2026-10-09 用户：主角卡 P0 的形是对的，但清晰度太低、没有噪点粒子渐变的动态 → 方案台 H 组）。
+ *  都保留 P0 的形（右上角一团荧光，往左下渐隐），区别在颗粒怎么动：
+ *  - grain  高清动态颗粒：按设备像素画，每个像素的亮度随机抖（胶片颗粒），颗粒只在光里、约 12 帧刷新；
+ *  - drift  颗粒流光：同样的颗粒，光团的中心沿一条小椭圆慢慢漂、半径慢慢呼吸，光是活的；
+ *  - dither 点阵渐变：光由一颗颗 1 像素的亮点组成（越亮越密），点在慢慢闪烁换位。
+ *  减少动态效果时定格一帧；离开视野、页面隐藏时停。 */
+export type GrainKind = 'grain' | 'drift' | 'dither';
+export function GrainGlow({ kind, anchor = [0.95, 0], size = 1, strength = 1, className }: {
+  kind: GrainKind; anchor?: [number, number];
+  /** 光团半径（相对卡的对角线） */ size?: number; strength?: number; className?: string;
+}) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const cv = ref.current;
+    let ctx: CanvasRenderingContext2D | null = null;
+    try { ctx = cv?.getContext('2d') ?? null; } catch { ctx = null; }
+    if (!cv || !ctx) return;
+    const c = ctx, still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const [hot, lime, deep] = ['--milo-prim-lime-300', '--milo-prim-lime-500', '--milo-prim-lime-900'].map((n) => toTriple(hexVar(n)));
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    let W = 0, H = 0, img: ImageData | null = null, noise = new Uint8Array(1), t = 0;
+    const resize = () => {
+      const r = cv.getBoundingClientRect();
+      W = cv.width = Math.max(1, Math.round(r.width * dpr)); H = cv.height = Math.max(1, Math.round(r.height * dpr));
+      img = c.createImageData(W, H);
+      noise = new Uint8Array(W * H + 4099); for (let i = 0; i < noise.length; i++) noise[i] = (Math.random() * 256) | 0;
+    };
+    const draw = () => {
+      if (!img) return;
+      t += 1;
+      const d = img.data, sec = t / 12;
+      // 光团：P0 的形——右上角的椭圆光，半径约为对角线的 0.62 × size
+      const wob = kind === 'drift' ? 1 : 0;
+      const cx = (anchor[0] + wob * Math.sin(sec * 0.35) * 0.06) * W, cy = (anchor[1] + wob * Math.cos(sec * 0.27) * 0.08) * H;
+      const R = Math.hypot(W, H) * 0.62 * size * (1 + wob * Math.sin(sec * 0.5) * 0.06), rx = R * 1.3, ry = R * 1.1;   // 和 P0 一样宽、往左下拖得长
+      const off = (t * 977) % 4096;   // 每帧换一段噪声：颗粒在动
+      for (let y = 0; y < H; y++) {
+        const dy = (y - cy) / ry;
+        for (let x = 0; x < W; x++) {
+          const i = y * W + x, o = i * 4, dx = (x - cx) / rx, q = 1 - Math.sqrt(dx * dx + dy * dy);
+          if (q <= 0) { d[o + 3] = 0; continue; }
+          const I = Math.pow(q, 2.2), n = noise[i + off] / 255;   // 光的强度（越靠边衰减越快、没有硬边）× 颗粒
+          // 颜色随强度连续过渡：暗绿 → 荧光 → 亮荧光（不分档，避免出现一圈圈色阶）
+          const u = Math.min(1, I * 1.6), v = Math.max(0, I * 1.6 - 1) / 0.6, cA = u < 1 ? deep : lime, cB = u < 1 ? lime : hot, f = u < 1 ? u : Math.min(1, v);
+          let a: number;
+          if (kind === 'dither') { const on = n < Math.pow(I, 1.3) * 0.6; a = on ? Math.min(1, 0.3 + I * 0.8) : 0; }
+          else a = I * 0.5 * (0.45 + n * 1.1);
+          d[o] = cA[0] + (cB[0] - cA[0]) * f; d[o + 1] = cA[1] + (cB[1] - cA[1]) * f; d[o + 2] = cA[2] + (cB[2] - cA[2]) * f; d[o + 3] = Math.min(255, a * 255 * strength);
+        }
+      }
+      c.putImageData(img, 0, 0);
+    };
+    resize(); draw();
+    let raf = 0, last = 0, onScreen = true;
+    const loop = (now: number) => { if (now - last > 83) { draw(); last = now; } raf = requestAnimationFrame(loop); };   // 约 12 帧：颗粒刷新，像胶片
+    const run = () => { cancelAnimationFrame(raf); if (!still && onScreen && !document.hidden) raf = requestAnimationFrame(loop); };
+    const ro = new ResizeObserver(() => { resize(); draw(); }); ro.observe(cv);
+    const io = typeof IntersectionObserver !== 'undefined' ? new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; run(); }) : null;
+    io?.observe(cv);
+    document.addEventListener('visibilitychange', run);
+    run();
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); io?.disconnect(); document.removeEventListener('visibilitychange', run); };
+  }, [kind, anchor[0], anchor[1], size, strength]);   // eslint-disable-line react-hooks/exhaustive-deps
   return <canvas ref={ref} className={`${s.field} ${className ?? ''}`} aria-hidden="true" />;
 }

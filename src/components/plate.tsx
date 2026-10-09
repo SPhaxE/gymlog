@@ -9,6 +9,7 @@
  *  读屏是一个滑块：左右键换日子、回车打开。
  *  一页只放一块（荧光只给这块板）；没练过任何一天时板后不点灯（没有孔，也就没有光）。 */
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { T } from '../styles/tokens.gen';
 import { Icon } from './Icon';
 import { dotDays, Odometer, type DotMonth } from './dataviz';
@@ -48,14 +49,14 @@ const hi = (p: number) => mix('var(--milo-prim-gray-900)', p);
 const lo = (p: number) => mix('var(--milo-prim-gray-0)', p);
 const STEEL_TOP = 'var(--milo-prim-gray-400)';
 const STEEL_BOT = 'var(--milo-prim-gray-300)';
-/** 走查 1（2026-10-08）待选：steel = 现在的中性冷灰钢板（光源只是算光束用的一个点，看不见）；
+/** 走查 1：2026-10-09 用户选定 lamp（默认），steel / center 留在方案台对照。steel = 原来的中性冷灰钢板（光源只是算光束用的一个点，看不见）；
  *  lamp = 主题黑钢板 + 光源固定在屏幕左上、板后看得见它的光（板边漏出光晕，随滚动沿板边滑动，和光束角度一致）；
  *  center = 主题黑钢板 + 光源在板后正中、跟着板走（光晕从板四周漏出来，光束从中心往外放射，不再随滚动变角度）。
  *  两个新方案的休息日都是白色手绘圈（4 种笔触轮换），可以选中。 */
 export type PlateLook = 'steel' | 'lamp' | 'center';
 const DARK_TOP = 'var(--milo-color-bg-raised-2)';
 const DARK_BOT = 'var(--milo-color-bg-raised)';
-const REST_INK = 'color-mix(in srgb, var(--milo-prim-bone-100) 78%, transparent)';
+const REST_INK = 'color-mix(in srgb, var(--milo-prim-bone-100) 34%, transparent)';   // 2026-10-09 用户：白圈太明显，压暗
 /** 手绘圈：4 种笔触（差别不大）——收尾多绕一点 / 留一个小口 / 绕两圈 / 斜一点的椭圆；按日期轮换，同一天永远同一种 */
 function handCircle(cx: number, cy: number, rr: number, t: number) {
   const k = Math.floor(t / 864e5) % 4, q = rnd(Math.floor(t / 864e5));
@@ -99,9 +100,9 @@ const lightAt = (frame?: HTMLElement | null) => {
 const BEAM_SPILL = 0.35;  // 光束画布比板高出的比例（光束可以略微落到板下面）
 const DUST = 34;
 
-export interface PlateDay { t: number; title: string; value: string; unit: string; sub?: string }
+export interface PlateDay { t: number; title: string; value: string; unit: string; sub?: string; /** 休息日：没有训练可打开 */ rest?: boolean }
 
-export function SteelPlate({ months, label = '近 3 个月训练', selected, onSelect, onOpen, day, dense, look = 'steel', frame }: {
+export function SteelPlate({ months, label = '近 3 个月训练', selected, onSelect, onOpen, day, dense, look = 'lamp', frame }: {
   months: DotMonth[]; label?: string;
   /** 选中的那天（startOfDay 毫秒）；给了 onSelect 才能拖 / 点 */ selected?: number | null; onSelect?: (t: number) => void;
   /** 打开那天的训练（读数行的「查看」、再点一次同一个孔、回车） */ onOpen?: (t: number) => void;
@@ -116,6 +117,10 @@ export function SteelPlate({ months, label = '近 3 个月训练', selected, onS
   const dr = pitch * 0.12;  // 样冲点半径
   const fig = useRef<HTMLElement>(null), back = useRef<HTMLCanvasElement>(null), front = useRef<HTMLCanvasElement>(null), halo = useRef<HTMLElement>(null);
   const dark = look !== 'steel';
+  // lamp：灯画在「屏幕」那一层（不跟内容滚）——App 里是 Screen（<main>），方案台里是传进来的 frame；钢板只算它在哪、亮多少
+  const lamp = useRef<HTMLElement>(null);
+  const [host, setHost] = useState<HTMLElement | null>(null);
+  useEffect(() => { if (look === 'lamp') setHost(frame?.current ?? fig.current?.closest('main') ?? null); }, [look, frame]);
   // 新外观里休息日也能选中（手绘圈）
   const pickable = useMemo(() => (dark ? [...g.holes, ...g.dimples] : g.holes), [g, dark]);
   const sel = selected != null ? pickable.find((p) => p.t === selected) ?? null : null;
@@ -138,13 +143,26 @@ export function SteelPlate({ months, label = '近 3 个月训练', selected, onS
       for (const [c, hh] of [[bc, H], [fc, H * (1 + BEAM_SPILL)], [beams, H * (1 + BEAM_SPILL)], [dust, H * (1 + BEAM_SPILL)]] as const) { c.width = Math.round(W * dpr); c.height = Math.round(hh * dpr); }
       fc.style.top = `${el.offsetTop}px`; fc.style.height = `${H * (1 + BEAM_SPILL)}px`;  // 光束画布和板顶对齐（上面可能有读数行）
     };
+    // 灯的亮度（lamp，2026-10-09 用户：钢板上移后「关灯」，要渐变、不能瞬间，并且和透光联动）：
+    // 板的中线在灯下面 0.8 个板高以上 = 全亮；中线升到灯的高度 = 全灭；中间平滑过渡。实际亮度按 motion/slow 的时间常数追目标值（滚得再快也是慢慢暗下去）
+    let on = 1, target = 1, tAnim = 0, rafOn = 0;
+    const aim = () => {
+      if (look !== 'lamp') return 1;
+      const rect = el.getBoundingClientRect(), [, ly0] = lightAt(frame?.current), c = rect.top + rect.height / 2, u = Math.max(0, Math.min(1, (c - ly0) / (rect.height * 0.8)));
+      return u * u * (3 - 2 * u);
+    };
     const paintStatic = () => {
       const k = W / g.w, rect = el.getBoundingClientRect(), [lx0, ly0] = look === 'center' ? [rect.left + W * 0.5, rect.top + H * 0.42] : lightAt(frame?.current), lx = lx0 - rect.left, ly = ly0 - rect.top;
+      if (lamp.current && host) {
+        const hr = host.getBoundingClientRect();
+        lamp.current.style.setProperty('--lx', `${(lx0 - hr.left).toFixed(1)}px`); lamp.current.style.setProperty('--ly', `${(ly0 - hr.top).toFixed(1)}px`); lamp.current.style.opacity = on.toFixed(3);
+      }
       // 看得见的光源：板后的光晕跟着光源的位置走（lamp：屏幕上固定、滚动时沿板边滑；center：板后正中）
       if (halo.current) { const hr = halo.current.getBoundingClientRect(); halo.current.style.setProperty('--hx', `${(lx0 - hr.left).toFixed(1)}px`); halo.current.style.setProperty('--hy', `${(ly0 - hr.top).toFixed(1)}px`); }
       // 板后灯箱：以光源为心的荧光渐变（离光越近越亮，最远的孔也留一点底光，不是黑洞）
       const b = bc.getContext('2d')!; b.setTransform(dpr, 0, 0, dpr, 0, 0);
-      b.fillStyle = tint(pal.deep, 1); b.fillRect(0, 0, W, H);
+      b.fillStyle = tint(pal.base, 1); b.fillRect(0, 0, W, H);
+      b.globalAlpha = on; b.fillStyle = tint(pal.deep, 1); b.fillRect(0, 0, W, H);   // 关灯时孔里只剩板后的暗
       // 渐变的半径按「光源到板最远角」算：近处的孔接近白热，远处的孔只剩暗绿底光
       const R = Math.hypot(W - lx, H - ly), gr = b.createRadialGradient(lx, ly, 0, lx, ly, R);
       // 灯箱底光压暗一些（孔里不是一块实心的绿）；每个孔再垫一团中心亮、边缘暗的光——透过来的光像一团雾，不是一块色片（用户 2026-10-06：不要那么实，要有泛光）
@@ -158,14 +176,15 @@ export function SteelPlate({ months, label = '近 3 个月训练', selected, onS
         hg.addColorStop(0, tint(pal.dust, 0.85 * I)); hg.addColorStop(0.4, tint(pal.hot, 0.75 * I)); hg.addColorStop(0.8, tint(pal.lime, 0.45)); hg.addColorStop(1, tint(pal.deep, 0.85));
         b.fillStyle = hg; b.fillRect(x - rr * 1.1, y - rr * 1.1, rr * 2.2, rr * 2.2);
       }
+      b.globalAlpha = 1;
       // 板前光束：每个孔沿「离开光源」的方向射出一束锥形光，叠加发光（重叠处更亮）
       const c = beams.getContext('2d')!; c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, H * (1 + BEAM_SPILL));
       c.globalCompositeOperation = 'lighter'; c.filter = `blur(${(r * k * 0.6).toFixed(2)}px)`;  // 糊一点：光束和泛光是雾，不是硬边的形
       const dmax = Math.hypot(W - lx, H - ly) * 1.05;
       for (const p of g.holes) {
         const x = p.x * k, y = p.y * k, rr = r * k, dx = x - lx, dy = y - ly, d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d, nx = -uy, ny = ux;
-        const near = Math.max(0, 1 - d / dmax), on = sel && sel.t === p.t ? 1.6 : 1, I = (0.3 + 0.7 * near ** 1.5) * on;
-        const len = pitch * k * (3.2 + 3 * near) * (on > 1 ? 1.25 : 1), w0 = rr * 0.85, w1 = rr * (2.6 + 1.2 * near);
+        const near = Math.max(0, 1 - d / dmax), pick = sel && sel.t === p.t ? 1.6 : 1, I = (0.3 + 0.7 * near ** 1.5) * pick * on;
+        const len = pitch * k * (3.2 + 3 * near) * (pick > 1 ? 1.25 : 1), w0 = rr * 0.85, w1 = rr * (2.6 + 1.2 * near);
         const ex = x + ux * len, ey = y + uy * len, lg = c.createLinearGradient(x, y, ex, ey);
         lg.addColorStop(0, tint(pal.hot, 0.36 * I)); lg.addColorStop(0.3, tint(pal.lime, 0.14 * I)); lg.addColorStop(1, tint(pal.lime, 0));
         c.fillStyle = lg; c.beginPath();
@@ -198,15 +217,27 @@ export function SteelPlate({ months, label = '近 3 个月训练', selected, onS
       raf = requestAnimationFrame(loop);
     };
     let pending = 0;
-    const onScroll = () => { if (!pending) pending = requestAnimationFrame(() => { pending = 0; redraw(); }); };
-    size(); redraw();
+    const tween = (now: number) => {
+      rafOn = 0;
+      const dt = tAnim ? now - tAnim : 16; tAnim = now;
+      on += (target - on) * Math.min(1, dt / T['motion/slow']);
+      if (Math.abs(target - on) < 0.004) on = target;
+      redraw();
+      if (on !== target) rafOn = requestAnimationFrame(tween); else tAnim = 0;
+    };
+    const onScroll = () => {
+      target = aim();
+      if (target !== on) { if (!rafOn) rafOn = requestAnimationFrame(tween); return; }
+      if (!pending) pending = requestAnimationFrame(() => { pending = 0; redraw(); });
+    };
+    size(); on = target = aim(); redraw();
     const ro = new ResizeObserver(() => { size(); redraw(); }); ro.observe(el);
     const io = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible && !still && !raf) raf = requestAnimationFrame(loop); });
     io?.observe(el);
     document.addEventListener('scroll', onScroll, { capture: true, passive: true });
     window.addEventListener('resize', onScroll);
-    return () => { cancelAnimationFrame(raf); cancelAnimationFrame(pending); ro.disconnect(); io?.disconnect(); document.removeEventListener('scroll', onScroll, { capture: true }); window.removeEventListener('resize', onScroll); };
-  }, [g, lit, dense, sel?.t, look]);  // eslint-disable-line react-hooks/exhaustive-deps
+    return () => { cancelAnimationFrame(raf); cancelAnimationFrame(pending); cancelAnimationFrame(rafOn); ro.disconnect(); io?.disconnect(); document.removeEventListener('scroll', onScroll, { capture: true }); window.removeEventListener('resize', onScroll); };
+  }, [g, lit, dense, sel?.t, look, host]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ---------- 手势：按住横向拖吸到最近的孔（M04），点一下选中，再点同一个孔打开 ---------- */
   const at = useCallback((clientX: number, clientY: number) => {
@@ -231,25 +262,26 @@ export function SteelPlate({ months, label = '近 3 个月训练', selected, onS
     const st = gest.current; gest.current = null; setPress(false);
     if (!st || st.moved || !onOpen) return;
     const p = at(e.clientX, e.clientY);
-    if (p && st.t0 === p.t) onOpen(p.t);  // 点的是已经选中的那个孔：打开
+    if (p && st.t0 === p.t && g.holes.some((h) => h.t === p.t)) onOpen(p.t);  // 点的是已经选中的那个孔：打开（休息日没有训练可开）
   };
   const key = (e: React.KeyboardEvent) => {
     if (!onSelect || !lit) return;
     const order = [...pickable].sort((a, b) => a.t - b.t), i = order.findIndex((p) => p.t === selected);
     if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); const j = Math.max(0, Math.min(order.length - 1, (i < 0 ? order.length - 1 : i) + (e.key === 'ArrowRight' ? 1 : -1))); pick(order[j]); }
-    if (e.key === 'Enter' && selected != null) { e.preventDefault(); onOpen?.(selected); }
+    if (e.key === 'Enter' && selected != null && g.holes.some((h) => h.t === selected)) { e.preventDefault(); onOpen?.(selected); }
   };
   const live = !!onSelect && lit;
 
   return (
     <div className={cx(s.wrap, dark && s.dark)} data-plate data-holes={g.holes.length} data-look={look}>
-      {dark && lit && <i ref={halo} className={cx(s.halo, look === 'center' && s.haloCenter)} aria-hidden="true" />}
+      {look === 'center' && lit && <i ref={halo} className={cx(s.halo, s.haloCenter)} aria-hidden="true" />}
+      {look === 'lamp' && lit && host && createPortal(<i ref={lamp} className={s.lamp} aria-hidden="true" />, host)}
       {day !== undefined && (
         <div className={s.readout} aria-live="polite">
           {day ? <>
             <div className={s.rdText}><b className="milo-text-body-strong">{day.title}</b>{day.sub && <span className="milo-text-caption">{day.sub}</span>}</div>
             <span className={s.rdVal}><Odometer value={day.value} size="m" /><i>{day.unit}</i></span>
-            {onOpen && <button type="button" className={cx('milo-press milo-focus', s.rdGo)} onClick={() => onOpen(day.t)} aria-label={`查看${day.title}的训练`}><Icon name="chevron" small /></button>}
+            {onOpen && !day.rest && <button type="button" className={cx('milo-press milo-focus', s.rdGo)} onClick={() => onOpen(day.t)} aria-label={`查看${day.title}的训练`}><Icon name="chevron" small /></button>}
           </> : <span className="milo-text-caption">{lit ? '按住钢板横向拖，或点一个孔，看那天练了什么' : '练完第一次，这里会冲出第一个孔'}</span>}
         </div>
       )}

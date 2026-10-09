@@ -7,7 +7,7 @@
  *  组合写在地址里（?o=hair&f=metal&s=molten），复制链接就能把这个组合发给别人。 */
 import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
-import { BodyFigure, Card, Chip, ContourFx, DEFAULT_LOOK, FillFx, Icon, Num, GainLook, ParticleField, ProductCard, ProductGrid, ScanFx, ShopTagLook, SteelPlate, dotMonths, type ContourFxKind, type GainLookKind, type ShopTagLookKind, type FillFxKind, type ParticleKind, type PlateLook, type ScanFxKind } from '../components';
+import { BodyFigure, Card, Chip, ContourFx, DEFAULT_LOOK, FillFx, Icon, Num, GainLook, GrainGlow, ParticleField, ProductCard, ProductGrid, ScanFx, ShopTagLook, SteelPlate, dotMonths, type ContourFxKind, type GainLookKind, type GrainKind, type ShopTagLookKind, type FillFxKind, type ParticleKind, type PlateLook, type ScanFxKind } from '../components';
 import { IconStyleCtx, type IconStyle } from '../components/iconSets';
 import { bodyData } from '../data/demo';
 import { logData } from '../data/log';
@@ -59,8 +59,20 @@ const PARTICLE: [ParticleKind | 'now', string, string][] = [
   ['now', 'P0 现在', '主角卡右上角一团荧光弥散 + 颗粒；页头右上角静态的配重片同心纹'],
   ['dust', 'P1 漂浮光尘', '光源角附近一团细小光点慢慢往上飘、明灭，离光源越近越亮越密；底下一层很淡的底光'],
   ['flow', 'P2 流场丝带', '粒子顺着缓慢变化的流场走、留下拖尾，汇成丝缎一样的流纹，颜色从荧光渐变到暗绿'],
-  ['orbit', 'P3 环轨粒子', '粒子沿一圈圈同心轨道转（内圈快、外圈慢）+ 很淡的轨道线：会动的配重片环'],
+  ['orbit', 'P3 环轨粒子 · 增量页头选定', '粒子沿一圈圈同心轨道转（内圈快、外圈慢）；2026-10-09 增量页头选它，并加「向内收缩到右上角光点」、再加一层模糊'],
 ];
+/** 主角卡的颗粒渐变（2026-10-09 用户：P0 的形是对的，但清晰度太低、没有噪点粒子渐变的动态 → 再出几个） */
+const GRAIN: [GrainKind | 'now', string, string][] = [
+  ['now', 'H0 现在', 'CSS 径向渐变 + 一张放大的颗粒贴图（贴图被拉大，所以糊、而且不动）'],
+  ['grain', 'H1 高清动态颗粒', '同一个形，按设备像素画；每个像素的亮度随机抖（胶片颗粒），约 12 帧刷新，颗粒只在光里'],
+  ['drift', 'H2 颗粒流光', 'H1 的颗粒 + 光团中心沿小椭圆慢慢漂、半径慢慢呼吸——光是活的'],
+  ['dither', 'H3 点阵渐变', '光由一颗颗 1 像素的亮点组成（越亮越密），点慢慢闪烁换位；最「粒子」，最硬朗'],
+];
+function GrainDemo({ kind }: { kind: GrainKind | 'now' }) {
+  const body = <><span className="milo-text-caption">第 1 个 · 下肢</span><span className="milo-text-heading">杠铃深蹲</span><Num size="hero" value="85" unit="kg" /><span className="milo-text-caption">上次 8/8/8 全部顶到 8 次上限 → +5 kg</span></>;
+  return <div className={s.pDemo}>{kind === 'now' ? <Card hero>{body}</Card> : <div className={`${s.pCard} ${s.gCard}`}><GrainGlow kind={kind} />{body}</div>}</div>;
+}
+
 /** 方案台里的两处落点：页头右上角（原同心纹）+ 主角卡（原荧光色块） */
 function ParticleDemo({ kind }: { kind: ParticleKind | 'now' }) {
   return (
@@ -79,7 +91,7 @@ function ParticleDemo({ kind }: { kind: ParticleKind | 'now' }) {
 /** 钢板（2026-10-08 走查 1 #09 #14）：S0 = 现在；S1 / S2 主题黑钢板 + 白色手绘休息圈（可选中）+ 看得见的光源。每格是一块能滚的小屏：滚一滚看光怎么变 */
 const PLATE: [PlateLook, string, string][] = [
   ['steel', 'S0 现在', '中性冷灰钢板；光源只是算光束用的一个点，画面上看不见；休息日是很淡的样冲点'],
-  ['lamp', 'S1 屏幕左上一盏灯', '主题黑钢板；光源固定在屏幕左上（不跟板走），板后一团光晕从板边漏出来——滚动时光晕沿板边滑、光束跟着转角度，两者对得上'],
+  ['lamp', 'S1 屏幕左上一盏灯 · 选定', '2026-10-09 选定：灯固定在屏幕左上（不跟内容滚）；板往上滚、中线接近灯时慢慢关灯，孔和光束一起暗下去；休息日白圈压暗'],
   ['center', 'S2 板后正中一盏灯', '主题黑钢板；光源在板后正中、跟着板走，光晕从板四周漏出来，光束从中心往外放射，滚动时不再变角度'],
 ];
 function PlateDemo({ look, now }: { look: PlateLook; now: number }) {
@@ -87,13 +99,14 @@ function PlateDemo({ look, now }: { look: PlateLook; now: number }) {
   const d = useMemo(() => logData('plain-prescription', now), [now]);
   const months = useMemo(() => dotMonths(d.trained, now, 3), [d, now]);
   const [sel, setSel] = useState<number | null>(null);
+  // frame = 这块小屏本身（不滚）：灯挂在它上面；里面的 plDemo 才滚
   return (
-    <div ref={frame} className={s.plDemo}>
+    <div ref={frame} className={s.plStage}><div className={s.plDemo}>
       <h3 className="milo-text-title-l">记录</h3>
       <span className="milo-text-caption">近 3 个月练了 {d.trained.size} 天 · 往下滚看光怎么变{look !== 'steel' ? ' · 点一个白圈 = 休息日也能选' : ''}</span>
       <SteelPlate look={look} frame={frame} months={months} selected={sel} onSelect={setSel} />
       <div className={s.plFill} aria-hidden="true">{Array.from({ length: 6 }, (_, i) => <i key={i} />)}</div>
-    </div>
+    </div></div>
   );
 }
 
@@ -172,6 +185,11 @@ export function OptionsBoard({ now }: { now: number }) {
         <h2 className="milo-text-heading">主题色流体粒子 · P（走查 1，待选）</h2>
         <p className="milo-text-caption">替换两处：主角卡右上角的荧光色块、页头右上角的配重片同心纹（增量、曲线、成长卡、牛龄、知识卡、开通成功共 6 处）。选定后全局换，P0 留作对照。</p>
         <div className={s.grid}>{PARTICLE.map(([k, t, n]) => <Cell key={t} id={`particle-${k}`} title={t} note={n}><ParticleDemo kind={k} /></Cell>)}</div>
+      </section>
+      <section className={s.group} aria-label="主角卡颗粒渐变" id="grain">
+        <h2 className="milo-text-heading">主角卡颗粒渐变 · H（2026-10-09，待选）</h2>
+        <p className="milo-text-caption">用户：主角卡 P0 的形是对的，但清晰度太低、没有噪点粒子渐变的动态。都保留 P0 的形，只换颗粒的做法（是动的，看录屏或线上）。</p>
+        <div className={s.grid}>{GRAIN.map(([k, t, n]) => <Cell key={t} id={`grain-${k}`} title={t} note={n}><GrainDemo kind={k} /></Cell>)}</div>
       </section>
       <section className={s.group} aria-label="钢板" id="plate">
         <h2 className="milo-text-heading">记录页钢板 · S（走查 1，待选）</h2>

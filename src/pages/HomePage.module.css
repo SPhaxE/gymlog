@@ -74,8 +74,9 @@
 /* 6e：主角卡右上「要领 · 换一个」、列表末尾「加一个动作」、暂停面板、换一个面板、暂停后的首页 */
 .heroLinks { display: inline-flex; gap: var(--milo-space-s); margin-right: calc(var(--milo-space-s) * -1); }
 .heroLinks .link { margin-right: 0; min-width: var(--milo-size-hit-min); justify-content: center; color: var(--milo-color-text-secondary); text-decoration: underline; text-underline-offset: var(--milo-space-xs); }
-.addEx { display: inline-flex; align-items: center; justify-content: center; gap: var(--milo-space-xs); min-height: var(--milo-size-hit-min); margin: var(--milo-space-xs) var(--milo-space-m) 0;
-  border: var(--milo-stroke-hairline) dashed var(--milo-color-line-strong); border-radius: var(--milo-radius-m); background: none; color: var(--milo-color-text-secondary); font: inherit; }
+/* 加一个动作（走查 1 W2）：主角卡下面一条整宽的虚线胶囊（次要操作，不用荧光） */
+.addEx { display: inline-flex; align-items: center; justify-content: center; gap: var(--milo-space-xs); min-height: var(--milo-size-hit-min); margin: 0;
+  border: var(--milo-stroke-hairline) dashed var(--milo-color-line-strong); border-radius: var(--milo-radius-pill); background: none; color: var(--milo-color-text-secondary); font: inherit; }
 .pause { display: grid; gap: var(--milo-space-m); padding-bottom: var(--milo-space-s); }
 .pause > p { margin: 0; color: var(--milo-color-text-secondary); }
 .pauseSum { display: grid; grid-template-columns: auto minmax(0, 1fr); margin: 0; border-radius: var(--milo-radius-m); background: var(--milo-color-bg-raised-2); }
@@ -90,3 +91,4 @@
 .pausedBar i { height: var(--milo-space-xs); border-radius: var(--milo-radius-pill); background: var(--milo-color-data-track); }
 .pausedBar i.on { background: var(--milo-color-data-fill); }
 .addGlyph { width: var(--milo-space-3xl); height: var(--milo-space-3xl); }
+.addHint { font-size: var(--milo-font-size-caption); }

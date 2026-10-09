@@ -62,3 +62,5 @@
   line-height: 1.5; color: var(--milo-color-accent-default); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-color-accent-default) 70%, transparent); }
 .prStar { display: inline-grid; place-items: center; font-style: normal; color: var(--milo-color-accent-default); filter: drop-shadow(0 0 var(--milo-space-2xs) var(--milo-color-accent-glow)); }
 .row:is([data-look='accent'], [data-look='curve'], [data-look='star']) .delta [class*='_up_'] { color: var(--milo-color-accent-default); }
+/* J1：「下次」的重量 × 次数改描边无填充——左边一大串实心数字太重，右边的最新值才是实心（用户 2026-10-09） */
+.row[data-look='accent'] .target b { color: transparent; -webkit-text-stroke: var(--milo-stroke-hairline) var(--milo-color-text-primary); paint-order: stroke fill; letter-spacing: 0.02em; }

@@ -159,6 +159,8 @@ export function TrainingView({ a, now, onFind, onGuide }: { a: ActiveSession; no
           </Card>
         </div>
 
+        {/* 加一个动作（走查 1 W2）：主角卡和「全部动作」之间 */}
+        {onFind && <button type="button" className={`milo-press milo-focus ${s.addEx}`} onClick={onFind}><FinderGlyph gender={st.profile?.gender ?? 'male'} className={s.addGlyph} />加一个动作<span className={s.addHint}>· 按肌肉找</span></button>}
         <SectionLabel>全部动作 · 点一下换过去</SectionLabel>
         <div className={s.rows}>
           <Cascade>
@@ -168,7 +170,6 @@ export function TrainingView({ a, now, onFind, onGuide }: { a: ActiveSession; no
                 dots={x.skipped ? undefined : [x.rows.filter((r) => r.done && isWork(r)).length, x.rows.filter(isWork).length]} onClick={() => switchTo(i)} /></div>
             )).filter(Boolean)}
           </Cascade>
-          {onFind && <button type="button" className={`milo-press milo-focus ${s.addEx}`} onClick={onFind}><FinderGlyph gender={st.profile?.gender ?? 'male'} className={s.addGlyph} />加一个动作</button>}
         </div>
       </div>
       </div>

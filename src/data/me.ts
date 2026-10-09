@@ -138,7 +138,8 @@ export const GROWTH = GROWTH_CONFIG;
 /** 这周快断了吗（6g 补，牛龄页 StreakRisk / 「我的」成长卡）：引擎判 risk 时给「还差几次、还剩几天（含今天）」，否则 null */
 export function riskOf(g: GrowthState, now: number): { need: number; daysLeft: number } | null {
   const cur = g.streak.current;
-  if (!cur || cur.status !== 'risk') return null;
+  // 连胜 0 周就没有东西可断（没有历史的新用户周五起也会被判 risk）：不提示，状态以真值为准（DESIGN §9.6 第 18 条）
+  if (!cur || cur.status !== 'risk' || g.streak.weeks === 0) return null;
   const end = cur.start + 7 * DAY - 1;
   return { need: cur.target - cur.done, daysLeft: Math.floor((end - now) / DAY) + 1 };
 }

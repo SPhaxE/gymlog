@@ -42,7 +42,8 @@ export function TopBar({ title, sub, onBack, trailing, titleStyle }: { title: st
 }
 
 /** 标签：neutral = 信息；strong = 骨白实心（PR）；outline = 虚线（首次、基线、未做）；danger = 错误 */
-export type TagTone = 'neutral' | 'strong' | 'outline' | 'danger';
+/** accent = 荧光细线小标（2026-10-09 DESIGN §1 第 7 条）：一屏重复出现的「得到」标记（列表每行的 PR）用它，不用骨白实心块 */
+export type TagTone = 'neutral' | 'strong' | 'outline' | 'danger' | 'accent';
 export function Tag({ children, tone = 'neutral', icon }: { children: ReactNode; tone?: TagTone; icon?: IconName }) {
   return <span className={cx(s.tag, s[`tag_${tone}`])}>{icon && <Icon name={icon} small />}{children}</span>;
 }

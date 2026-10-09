@@ -19,11 +19,11 @@ const fmt = (x: number) => (Math.round(x * 10) / 10).toLocaleString('en-US');
 
 /** 增量页配色（2026-10-08 走查 1 #28：「白色占比过多、PR 标重复度太高、没有主题色点缀」，方案台待选）：
  *  now = 现在（每行骨白实心 PR 标、骨白曲线末点）；
- *  accent = J1 点缀替代白块：PR 改成荧光细线小标，曲线压灰、末点荧光，上涨荧光；
+ *  accent = J1 点缀替代白块（2026-10-09 选定，默认）：PR 改成荧光细线小标，曲线压灰、末点荧光，上涨荧光；「下次 重量 × 次数」描边无填充，平衡左右（右边是实心的最新值）；
  *  curve  = J2 PR 进曲线：名字旁不再挂标，PR 那几次在曲线上是荧光点，末点荧光，上涨荧光；
  *  star   = J3 一颗星 + 荧光曲线：PR 是名字前一颗荧光小星，整条曲线用暗荧光，上涨荧光。 */
 export type GainLookKind = 'now' | 'accent' | 'curve' | 'star';
-export const GainLook = createContext<GainLookKind>('now');
+export const GainLook = createContext<GainLookKind>('accent');   // 2026-10-09 用户选定 J1（+「下次」的数改描边字）
 
 export interface GainCounts { up: number; flat: number; down: number; baseline: number }
 

@@ -199,7 +199,7 @@ export function SessionRow({ date, weekday, year, title, meta, prs, deload, onCl
     <>
       <span className={s.date}><b className="milo-text-number-m" style={drillId ? drillName('name', drillId) : undefined}>{date}</b><span className="milo-text-caption">{year ? `${year} · ` : ''}周{weekday}</span></span>
       <span className={s.exText}>
-        <span className={s.titleRow}><b className="milo-text-body-strong" style={drillId ? drillName('num', drillId) : undefined}>{title}</b>{deload && <Tag>减量</Tag>}{prs ? <Tag tone="strong" icon="star">PR {prs}</Tag> : null}</span>
+        <span className={s.titleRow}><b className="milo-text-body-strong" style={drillId ? drillName('num', drillId) : undefined}>{title}</b>{deload && <Tag>减量</Tag>}{prs ? <Tag tone="accent" icon="star">PR {prs}</Tag> : null}</span>
         <span className={cx('milo-text-caption', s.meta)}>{meta.split(' · ').map((m, i) => <span key={i}>{m}</span>)}</span>
       </span>
       {onClick && <Icon name="chevron" small />}

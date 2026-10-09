@@ -78,6 +78,8 @@ export function HomePage({ scenario, now, onTab }: { scenario?: string; now: num
 
         {first && <div style={sharedName('swap', first.exerciseId)}><PrescriptionHero order={1} region={REGION_NAME[first.region]} name={first.name} weight={first.suggestion.weightKg} sets={first.sets} reps={first.repRange}
           reason={first.suggestion.reason.text} last={d.lastWeight(first.exerciseId)} step={env.cfg.loadStep} deload={dv.kind === 'week'} onClick={() => guide(first.exerciseId)} /></div>}
+        {/* 加一个动作（2026-10-09 走查 1 选定 W2）：主角卡下面一条，清单之前——一进首页就看得到「今天还能加」 */}
+        {!done && (rx.kind === 'plan' || rx.kind === 'rest') && <button type="button" className={`milo-press milo-focus ${s.addEx}`} onClick={openFinder}><FinderGlyph gender={src.profile?.gender ?? 'male'} className={s.addGlyph} />加一个动作<span className={s.addHint}>· 按肌肉找</span></button>}
         {rest.length > 0 && (
           <>
             <SectionLabel>接下来</SectionLabel>
@@ -91,7 +93,6 @@ export function HomePage({ scenario, now, onTab }: { scenario?: string; now: num
             </div>
           </>
         )}
-        {!done && (rx.kind === 'plan' || rx.kind === 'rest') && <button type="button" className={`milo-press milo-focus ${s.addEx}`} onClick={openFinder}><FinderGlyph gender={src.profile?.gender ?? 'male'} className={s.addGlyph} />加一个动作</button>}
       </div>
       </div>
 
