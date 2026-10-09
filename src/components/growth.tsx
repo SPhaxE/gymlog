@@ -1,7 +1,8 @@
 /** 增长层组件（阶段 5.5c，brief「增长与商业化层」，ia §1.14–§1.17）。
  *  品牌位置（牛龄徽章、付费墙、开通成功）放 IP 小牛，功能位置（连胜、流水、卡券、商品）不放，遵守「语气分工」。
  *  数字全部由调用方从引擎（growth.ts）算好传进来；这里只管怎么显示和各个状态。 */
-import { type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import { T } from '../styles/tokens.gen';
 import { Button } from './Button';
 import { Icon } from './Icon';
 import { Odometer } from './dataviz';
@@ -96,7 +97,17 @@ export function GrowthCard({ stage, sub, progress, hint, streak, done, target, n
 }
 
 /** 牛龄页头：顶上一行 5 段名字（当前这一段加下划线，一眼看到「现在在哪、还有几段」），小牛站在一圈圈配重片同心环里，下面是大号「段名 · 小级」。 */
+/** 牛龄页的主角：五段刻度 + 当前这一段的小牛。小牛可以点（2026-10-09 走查 1 #16「点一下能简单互动」）：
+ *  点一下它开心地蹦一下（先压扁、跳起拉长、落地回弹，按 motion/spring-soft），表情换成「开心」、轻振一下，过一会儿回到原来的样子；
+ *  连点每次都重新蹦。减少动态效果时只换表情、不蹦。 */
 export function StageHero({ stage, sub, mood = 'idle' }: { stage: MascotStage; sub: 1 | 2 | 3; mood?: 'idle' | 'happy' | 'rest' | 'deload' }) {
+  const [poke, setPoke] = useState(0);
+  useEffect(() => {
+    if (!poke) return;
+    const t = window.setTimeout(() => setPoke(0), T['motion/spring-soft-ms'] * 2.5);
+    return () => window.clearTimeout(t);
+  }, [poke]);
+  const tap = () => { setPoke((n) => n + 1); navigator.vibrate?.(T['motion/press'] / 5); };
   return (
     <div className={s.hero}>
       <ol className={s.stages} aria-label="牛龄五段">
@@ -104,7 +115,9 @@ export function StageHero({ stage, sub, mood = 'idle' }: { stage: MascotStage; s
       </ol>
       <div className={s.stageArea}>
         <i className={s.rings} aria-hidden="true" />
-        <Mascot stage={stage} mood={mood} animate title={`${STAGE_NAME[stage]}`} />
+        <button type="button" className={cx('milo-focus', s.poke)} onClick={tap} aria-label={`${STAGE_NAME[stage]}，点一下摸摸它`}>
+          <span key={poke} className={cx(s.pokeFig, poke > 0 && s.hop)}><Mascot stage={stage} mood={poke ? 'happy' : mood} animate /></span>
+        </button>
       </div>
       <b className="milo-text-title-l">{STAGE_NAME[stage]} · {sub} 级</b>
     </div>

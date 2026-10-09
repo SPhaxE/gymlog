@@ -29,11 +29,13 @@ import { ProfileSheet, type ProfileField } from './ProfileSheet';
 import { TabNav } from './TabNav';
 import type { Tab } from '../components';
 import s from './MePage.module.css';
+import { usePageNav } from '../shell/pageNav';
 
 const REST_END = [['vibrate', '描边 + 振动', '休息结束时，选中项变成对勾，手机振一下'], ['outline', '仅描边', '只有结束态（描边 / 对勾），不振动']] as const;
 
 export function MePage({ scenario, now, onTab }: { scenario?: string; now: number; onTab?: (tab: Tab, path: string) => void }) {
   const nav = useNavigate(), loc = useLocation(), toast = useToast();
+  const pn = usePageNav();
   const st = useStore();
   const topRef = useRef<HTMLDivElement>(null);
   const { src } = useSource(scenario, now);
@@ -83,7 +85,7 @@ export function MePage({ scenario, now, onTab }: { scenario?: string; now: numbe
         <PageHeader title="我的" />
         <div className={s.body}>
           <GrowthCard stage={g.stage} sub={g.sub} progress={g.next?.progress ?? 1} hint={risk ? <><b>这周快断了</b>：还差 {risk.need} 次，只剩 {risk.daysLeft} 天</> : <GoalHint g={g} empty={empty} />} streak={g.streak.weeks}
-            done={cur?.done ?? 0} target={cur?.target ?? weeklyTarget(profile)} niujin={g.niujin.balance.toLocaleString('en-US')} onClick={() => nav(`/me/level${loc.search}`)} />
+            done={cur?.done ?? 0} target={cur?.target ?? weeklyTarget(profile)} niujin={g.niujin.balance.toLocaleString('en-US')} onClick={() => pn.push(`/me/level${loc.search}`)} />
 
           <section className={s.group} aria-label="档案">
             <SectionLabel>档案</SectionLabel>
@@ -96,10 +98,10 @@ export function MePage({ scenario, now, onTab }: { scenario?: string; now: numbe
           </section>
 
           <div className={s.card}><List label="钱包、会员与消息">
-            <ListRow kind="nav" title="钱包 · 商城" detail={`牛劲 ${g.niujin.balance.toLocaleString('en-US')} · ${couponsOf(wallet, now).filter((c) => c.state === 'available').length + (g.streak.freezeCards > 0 ? 1 : 0)} 张卡券可用`} onClick={() => nav(`/me/wallet${loc.search}`)} />
-            <ListRow kind="nav" title="Milo Pro" detail={proDetail} onClick={() => nav(`${ps.kind === 'free' ? '/pro' : '/me/pro'}${loc.search}`)}
+            <ListRow kind="nav" title="钱包 · 商城" detail={`牛劲 ${g.niujin.balance.toLocaleString('en-US')} · ${couponsOf(wallet, now).filter((c) => c.state === 'available').length + (g.streak.freezeCards > 0 ? 1 : 0)} 张卡券可用`} onClick={() => pn.push(`/me/wallet${loc.search}`)} />
+            <ListRow kind="nav" title="Milo Pro" detail={proDetail} onClick={() => pn.push(`${ps.kind === 'free' ? '/pro' : '/me/pro'}${loc.search}`)}
               trailing={ps.kind !== 'free' ? <ProBadge state="active" /> : undefined} />
-            <ListRow kind="nav" title="消息" detail="同时达成的其余奖励、冻结卡自动使用" onClick={() => nav(`/me/messages${loc.search}`)}
+            <ListRow kind="nav" title="消息" detail="同时达成的其余奖励、冻结卡自动使用" onClick={() => pn.push(`/me/messages${loc.search}`)}
               trailing={unread > 0 ? <Tag tone="strong">{unread} 条新</Tag> : undefined} />
           </List></div>
 

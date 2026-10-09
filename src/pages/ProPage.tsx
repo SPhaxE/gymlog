@@ -9,7 +9,7 @@
  *  - 框架：第一优先 = 对我有什么用（权益账单）；主操作 = 拇指区「开通年度（演示，不扣费）」，方案分段紧贴在它上方；看对比是次要文字链。
  *  - 表现：荧光只给主按钮（M06 光晕边框）；分段滑块骨白、「省 40%」骨白小标；权益行 M07 交错弹入 + 刻度尺画出；开通成功：同心环纹荡开 + 小牛软弹簧弹出（减少动态效果时定格）。 */
 import { useMemo, useRef, useState } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router';
+import { Navigate, useLocation } from 'react-router';
 import { BackToTop, Button, Collapsible, PerkLedger, PerkTable, PlanPicker, ProWelcome, Screen, TopBar, useBackHandler, type PlanOption } from '../components';
 import { DAY, GROWTH_CONFIG } from '../engine';
 import { T } from '../styles/tokens.gen';
@@ -17,10 +17,12 @@ import { PLAN_DAYS, PLAN_NAME, PLAN_PRICE, PRO_PERKS, activate, dayText, pitchPr
 import { keepQuery, useShop } from './useShop';
 import s from './ShopPages.module.css';
 import p from './ProPages.module.css';
+import { usePageNav } from '../shell/pageNav';
 
 
 export function ProPage({ scenario, now }: { scenario?: string; now: number }) {
-  const nav = useNavigate(), loc = useLocation();
+  const loc = useLocation();
+  const pn = usePageNav();
   const topRef = useRef<HTMLDivElement>(null);
   const { g, hits } = useShop(scenario, now);
   const [ps, update] = usePro(scenario);
@@ -28,7 +30,7 @@ export function ProPage({ scenario, now }: { scenario?: string; now: number }) {
   const [plan, setPlan] = useState<Plan>('year');
   const [table, setTable] = useState(false);
   const [done, setDone] = useState<{ plan: Plan; toMs: number } | null>(null);
-  const back = () => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav('/me' + keepQuery(loc.search), { replace: true }));
+  const back = () => pn.back('/me' + keepQuery(loc.search));
   useBackHandler(!!done, back);
 
   const facts = useMemo(() => proFacts(g, now), [g, now]);

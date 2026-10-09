@@ -1,7 +1,7 @@
 /** 图表（DESIGN §5）：Sparkline（P09 列表行的趋势小线）、TrendChart（P10 动作进步曲线）。
  *  时间一律按正序画（旧 → 新），组件内部再排一次（ia §1.9：V1 把倒序当正序，进步画成了退步）。
  *  PR 点同时用形状（菱形）区分，不只靠颜色。 */
-import { useId, useLayoutEffect, useRef, useState } from 'react';
+import { useId, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { Odometer } from './dataviz';
 import { T } from '../styles/tokens.gen';
 import { cx } from './state';
@@ -45,7 +45,11 @@ function smooth(xy: [number, number][]) {
 /** 动作进步曲线（P10；2026-10-04 用户选定 E5 + M04）：预估 1RM 对日期，时间按正序画。
  *  圆滑曲线 + 下方荧光渐隐面积；按住横向拖，竖向游标吸到最近一次训练（吸附时轻振），顶部读数按位滚动（Odometer）；
  *  选中点有一圈呼吸光晕。也可以点、或聚焦后用 ← → 逐次看。PR 点是菱形。少于 2 次不画线。 */
-export function TrendChart({ points, selected, onSelect, unit = 'kg', readout = true, draw, compare }: { points: Point[]; selected?: number | null; onSelect?: (i: number) => void; unit?: string;
+export function TrendChart({ points, selected, onSelect, unit = 'kg', readout = true, draw, compare, tail }: { points: Point[]; selected?: number | null; onSelect?: (i: number) => void; unit?: string;
+  /** 曲线钻入对位（2026-10-09 走查 1 #26）：增量页的小曲线是最近 n 次。给最后 n 次那一段单独罩一层（同一条线、同样的点，裁在这一段的框里），
+   *  带上共享名（style），转场时小曲线就贴到大曲线里重合的那一段；框按小曲线的留白比例放大，拉伸后两边的数据区正好对齐。
+   *  有 tail 时 draw 改成从右往左画：重合的那一段已经在了，更早的部分接着往左画出来 */
+  tail?: { n: number; style?: CSSProperties };
   /** 6g 补「动作对比」：另一个动作的曲线，虚线叠在同一坐标里（不画面积、不画点，游标所在那天给它一个小圆点）；读数由页面在图下写 */
   compare?: { name: string; points: Point[] };
   /** 进场时曲线从左到右画出来、面积随后淡入（从列表钻进来的转场里，小曲线展开成这条真曲线） */ draw?: boolean;
@@ -80,6 +84,15 @@ export function TrendChart({ points, selected, onSelect, unit = 'kg', readout = 
     if (e.key === 'ArrowLeft') { e.preventDefault(); onSelect(Math.max(0, (sel ?? ps.length) - 1)); }
   };
   const line = ps.length > 1 ? smooth(xy) : '', cline = cxy.length > 1 ? smooth(cxy) : '';
+  // 对位罩层：最后 n 个点的包围盒，按小曲线（Sparkline）数据区占整框的比例往外扩
+  const tn = tail && ps.length > 1 ? Math.min(tail.n, ps.length) : 0, txy = tn > 1 ? xy.slice(-tn) : [];
+  let tbox: [number, number, number, number] | null = null;
+  if (txy.length) {
+    const sw = T['size/spark-w'], sh = T['size/spark-h'], sp = (T['stroke/ring-progress'] / 2 + T['stroke/hairline']) * 1.6;
+    const xs = txy.map(([x]) => x), ys = txy.map(([, y]) => y), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    const W = Math.max(1, x1 - x0) * sw / (sw - sp * 2), H = Math.max(1, y1 - y0) * sh / (sh - sp * 2);
+    tbox = [(x0 + x1) / 2 - W / 2, (y0 + y1) / 2 - H / 2, W, H];
+  }
   // 游标那天，对比动作取「那天及以前最近的一次」
   const cAt = sel != null && cps.length ? cps.reduce((k, p, j) => (p.t <= ps[sel].t ? j : k), 0) : null;
   return (
@@ -88,6 +101,7 @@ export function TrendChart({ points, selected, onSelect, unit = 'kg', readout = 
         {sel != null ? <><Odometer value={fmt(ps[sel].v)} size="m" /><i>{unit}</i><span className="milo-text-caption">{ps[sel].label}{ps[sel].pr ? ' · PR' : ''}</span></>
           : <span className="milo-text-caption">{ps.length > 1 ? '按住横向拖，或点一个点查看当次' : '再练一次就能看到趋势'}</span>}
       </div>}
+      <div className={s.plotBox}>
       <svg className={cx('milo-focus', s.plot)} width={w} height={h} tabIndex={onSelect ? 0 : -1} onKeyDown={key} role="img"
         aria-label={`预估 1RM，共 ${ps.length} 次：${fmt(ps[0].v)} 到 ${fmt(ps.at(-1)!.v)} ${unit}${cps.length ? `；对比${compare!.name}：${fmt(cps[0].v)} 到 ${fmt(cps.at(-1)!.v)} ${unit}（虚线）` : ''}`}
         onPointerDown={(e) => { if (!onSelect) return; e.currentTarget.setPointerCapture(e.pointerId); drag.current = true; pick(e.clientX, e.currentTarget); }}
@@ -98,10 +112,15 @@ export function TrendChart({ points, selected, onSelect, unit = 'kg', readout = 
         {sel != null && <line className={s.rule} x1={xy[sel][0]} x2={xy[sel][0]} y1={0} y2={h} />}
         {cline && <path key={compare!.name} className={s.cmp} d={cline} />}
         {cAt != null && <circle className={s.cmpDot} cx={cxy[cAt][0]} cy={cxy[cAt][1]} r={r * 0.8} />}
-        {line && <path className={cx(s.trend, draw && s.trendDraw)} d={line} pathLength={draw ? 1 : undefined} />}
+        {line && <path className={cx(s.trend, draw && (tbox ? s.trendDrawBack : s.trendDraw))} d={line} pathLength={draw ? 1 : undefined} />}
         {ps.map((p, i) => p.pr ? <path key={i} className={cx(s.prDot, i === sel && s.on)} d={diamond(...xy[i], r)} /> : <circle key={i} className={cx(s.dot, i === sel && s.on)} cx={xy[i][0]} cy={xy[i][1]} r={r} />)}
         {sel != null && <circle className={s.halo} cx={xy[sel][0]} cy={xy[sel][1]} r={r * 3} />}
       </svg>
+      {tbox && <svg className={s.tail} style={{ ...tail!.style, left: tbox[0], top: tbox[1], width: tbox[2], height: tbox[3] }} viewBox={tbox.join(' ')} aria-hidden="true">
+        <path className={s.trend} d={line} />
+        {txy.map(([x, y], k) => ps[ps.length - tn + k].pr ? <path key={k} className={s.prDot} d={diamond(x, y, r)} /> : <circle key={k} className={s.dot} cx={x} cy={y} r={r} />)}
+      </svg>}
+      </div>
       <div className={cx('milo-text-micro', s.dates)}><span>{both[0].label}</span>{both.length > 1 && <span>{both.at(-1)!.label}</span>}</div>
     </div>
   );

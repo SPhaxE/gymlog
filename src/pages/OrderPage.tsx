@@ -9,11 +9,13 @@ import { useNavigate, useLocation, useParams } from 'react-router';
 import { Button, Mascot, Screen, StateView, TopBar, useBackHandler } from '../components';
 import { keepQuery, useShop } from './useShop';
 import s from './ShopPages.module.css';
+import { usePageNav } from '../shell/pageNav';
 
 const yuan = (n: number) => `¥${n.toLocaleString('en-US')}`;
 
 export function OrderPage({ scenario, now }: { scenario?: string; now: number }) {
   const nav = useNavigate(), loc = useLocation();
+  const pn = usePageNav();
   const { id } = useParams();
   const { wallet, g, balance } = useShop(scenario, now);
   const toShop = () => nav('/shop' + keepQuery(loc.search), { replace: true });
@@ -45,7 +47,7 @@ export function OrderPage({ scenario, now }: { scenario?: string; now: number })
         </div>
       </div>
       <div className={s.cta}>
-        <button type="button" className={`milo-text-body milo-focus ${s.link}`} onClick={() => nav('/me/wallet' + keepQuery(loc.search))}>查看钱包</button>
+        <button type="button" className={`milo-text-body milo-focus ${s.link}`} onClick={() => pn.push('/me/wallet' + keepQuery(loc.search))}>查看钱包</button>
         <Button kind="primary" glow onClick={toShop}>回商城</Button>
       </div>
     </Screen>

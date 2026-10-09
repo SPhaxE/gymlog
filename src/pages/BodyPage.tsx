@@ -11,7 +11,7 @@
  *  页面可以竖向滚动：胶囊列至少保留每颗 capsule-rest-max-h 的高度，放不下就滚；胶囊列上竖向短滑也是滚动，按住才进放大镜。 */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { useLocation, useNavigate } from 'react-router';
+import { useLocation } from 'react-router';
 import { BackToTop, Banner, BodyFigure, Button, CapsuleRail, HeadWeeks, LandmarkRuler, Nav, Num, PageHeader, PhaseSegments, ProLink, Screen, Segmented, Sheet, SheetBlock, Ticks, TierLegend, sharedTransition, type Anchors, type Tab } from '../components';
 import { ago, bodyData, fmt, headWeeks, REGION_NAME } from '../data/demo';
 import { deloadsOf } from '../data/me';
@@ -25,6 +25,7 @@ import { TipBanner } from './TipBanner';
 import { useSource } from '../data/useSource';
 import { FinderSheet, useFinderParam } from './FinderSheet';
 import s from './BodyPage.module.css';
+import { usePageNav } from '../shell/pageNav';
 
 const TIER_NAME = { large: '大肌群', medium: '中肌群', small: '小肌群' } as const;
 type View = 'front' | 'back';
@@ -39,7 +40,8 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
   const topRef = useRef<HTMLDivElement>(null);
   const { src } = useSource(scenario, now);
   const finder = useFinderParam();
-  const nav = useNavigate(), loc = useLocation();
+  const loc = useLocation();
+  const pn = usePageNav();
   const [pro] = usePro(scenario);
   const proOn = proStatus(pro, now).kind !== 'free';
   const data = useMemo(() => bodyData(scenario ?? st, now), [scenario, st.history, st.profile, now]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -137,7 +139,7 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
       </div>
 
       {sheet && <HeadSheet h={data.stats.get(sheet)!} shared={shared === sheet} onClose={closeSheet}
-        weeks={headWeeks(src.history, sheet, now, src.deloads ?? deloadsOf(src.deload))} proActive={proOn} onPro={() => nav((proOn ? '/me/pro' : '/pro') + loc.search)}
+        weeks={headWeeks(src.history, sheet, now, src.deloads ?? deloadsOf(src.deload))} proActive={proOn} onPro={() => pn.push((proOn ? '/me/pro' : '/pro') + loc.search)}
         onFind={FAMILY_OF[sheet] ? () => { const id = sheet; setSheet(null); setShared(null); finder.open(FAMILY_OF[id], id); } : undefined} />}
       {finder.find && <FinderSheet src={src} caption="加的动作排在今天处方后面" onClose={finder.close} />}
       <Nav selected="body" {...navState} onSelect={onTab} />

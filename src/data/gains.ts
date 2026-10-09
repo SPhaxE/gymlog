@@ -65,7 +65,8 @@ export interface GainsData {
 }
 
 const WINDOW = 28 * DAY;
-const POINTS = 8;
+/** 增量页小曲线画最近几次（曲线页钻入对位也按它，走查 1 #26） */
+export const POINTS = 8;
 const md = (ms: number) => { const d = new Date(ms); return `${d.getMonth() + 1}/${d.getDate()}`; };
 
 function repsText(reps: number[]) {

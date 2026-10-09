@@ -716,6 +716,24 @@ def me_checks(b, w, h):
     ok(pg.evaluate('document.querySelector("h1").getBoundingClientRect().bottom < 0'), f'{tag} 我的：大标题滑出了屏幕')
     pg.locator('[class*=_scroll_]').first.evaluate('e => e.scrollTo(0, 0)'); pg.wait_for_timeout(300)
     if not args.no_shots and w == 360: pg.screenshot(path=os.path.join(OUT, 'me-plain.png'))
+    # ---- 转场（2026-10-09 走查 1 #01 #02 #06，DESIGN §7 转场表）：记下每次 <html data-vt> 的值，和退场复制品出现过没有
+    pg.evaluate("""() => { window.__vts = []; window.__ghost = false; const h = document.documentElement;
+      new MutationObserver(() => { if (h.dataset.vt) window.__vts.push(h.dataset.vt + ':' + (h.dataset.vtDir || '')); }).observe(h, { attributes: true, attributeFilter: ['data-vt'] });
+      new MutationObserver((ms) => { if (ms.some((m) => [...m.addedNodes].some((n) => n.dataset && 'ghost' in n.dataset))) window.__ghost = true; }).observe(document.body, { childList: true, subtree: true }); }""")
+    tap(pg.get_by_role('button', name=re.compile('^消息'))); pg.wait_for_url(re.compile(r'/me/messages')); pg.wait_for_timeout(700)
+    click(pg, pg.get_by_role('button', name='返回')); pg.wait_for_url(re.compile(r'/me\?')); pg.wait_for_timeout(700)
+    click(pg, pg.get_by_role('link', name='首页')); pg.wait_for_url(re.compile(r'/today')); pg.wait_for_timeout(900)
+    click(pg, pg.locator('[data-hero]').first); pg.wait_for_url(re.compile(r'/exercise/')); pg.wait_for_timeout(700)
+    ok(pg.evaluate('!!document.querySelector(\'[style*="view-transition-name: x-card"]\')'), f'{tag} 转场：从首页处方卡进来的要领页整页和那张卡同名（M03 卡片长成整页）')
+    click(pg, pg.get_by_role('button', name='返回')); pg.wait_for_url(re.compile(r'/today')); pg.wait_for_timeout(900)
+    click(pg, pg.get_by_role('link', name='我的')); pg.wait_for_url(re.compile(r'/me\?')); pg.wait_for_timeout(900)
+    vts = pg.evaluate('window.__vts')
+    ok(vts == ['push:', 'pop:', 'tab:back', 'drill:in', 'drill:back', 'tab:fwd'], f'{tag} 转场：子页推入 / 推出、Tab 往左 / 往右横滑、处方卡 ↔ 要领共享元素 {vts}')
+    click(pg, pg.get_by_role('button', name=re.compile('^单次时长：'))); pg.wait_for_timeout(600)
+    click(pg, pg.get_by_role('dialog').get_by_role('button', name='关闭')); pg.wait_for_timeout(100)
+    ok(pg.evaluate('window.__ghost'), f'{tag} 转场：面板关掉时留了一份退场复制品（每个出现都有退场）')
+    pg.wait_for_timeout(1200)
+    ok(pg.locator('[data-ghost]').count() == 0 and pg.get_by_role('dialog').count() == 0, f'{tag} 转场：退场播完复制品删掉，不留东西')
     # 档案面板：时长 +15 → 保存 → 格子上写 75
     click(pg, pg.get_by_role('button', name=re.compile('^单次时长：'))); pg.wait_for_timeout(500)
     ok(sheet_of('单次训练时长').count() == 1, f'{tag} 面板：点档案格弹出对应的底部面板')
@@ -863,6 +881,10 @@ def shop_checks(b, w, h):
     ok(pg.locator('[class*=_rb_sale_]').filter(has_text=re.compile(r'^[−-]\d+%$')).count() >= 1 and pg.locator('[class*=_rb_hot_]').count() >= 1 and pg.locator('[class*=_rb_new_]').count() >= 1 and pg.get_by_text('缺货', exact=True).count() >= 1,
        f'{tag} 商城：折扣 / 热销 / 新品是斜丝带（折扣写百分比），缺货写在卡上')
     ok(pg.locator('[class*=_pic_]').count() >= 5, f'{tag} 商城：五件商品都在（已下架的不在列表里）')
+    # M03（走查 1 #08）：商品卡 → 详情，商品图和名字飞过去（详情页的大图、标题和那张卡同名）；返回飞回去
+    click(pg, pg.get_by_role('button', name=re.compile('^乳清蛋白'))); pg.wait_for_url(re.compile(r'/shop/item/whey')); pg.wait_for_timeout(800)
+    ok(pg.evaluate('!!document.querySelector(\'[style*="view-transition-name: x-pic-whey"]\') && !!document.querySelector(\'[style*="view-transition-name: x-title-whey"]\')'), f'{tag} 商城：从商品卡进来的详情页，大图和标题和那张卡同名（M03）')
+    click(pg, pg.get_by_role('button', name='返回')); pg.wait_for_url(re.compile(r'/shop(\?|$)')); pg.wait_for_timeout(900)
     click(pg, pg.get_by_role('radio', name='补剂')); pg.wait_for_timeout(400)
     ok(pg.get_by_role('button', name=re.compile('^杠铃腰带 10 毫米，')).count() == 0 and pg.get_by_role('button', name=re.compile('^乳清蛋白')).count() == 1, f'{tag} 商城：品类「补剂」只剩补剂')
     click(pg, pg.get_by_role('radio', name='全部')); pg.wait_for_timeout(300)

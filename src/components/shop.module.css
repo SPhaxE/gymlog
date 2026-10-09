@@ -23,6 +23,7 @@
 .card { display: grid; grid-auto-rows: max-content; gap: var(--milo-space-2xs); min-width: 0; padding: var(--milo-space-s); border: 0; border-radius: var(--milo-radius-l);
   background: var(--milo-color-bg-raised); color: var(--milo-color-text-primary); font: inherit; text-align: left; }
 .picBox { position: relative; display: block; margin-bottom: var(--milo-space-xs); }
+.picShare { display: block; border-radius: var(--milo-radius-m); }
 .tagAt { position: absolute; left: var(--milo-space-xs); top: var(--milo-space-xs); }
 .name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: clip; }
 .priceLine { display: flex; align-items: baseline; gap: var(--milo-space-xs); }

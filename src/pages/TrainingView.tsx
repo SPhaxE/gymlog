@@ -9,7 +9,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { T } from '../styles/tokens.gen';
 import { flushSync } from 'react-dom';
-import { useNavigate } from 'react-router';
 import { BackToTop, Button, Card, Cascade, Dialog, ExerciseRow, Odometer, PageHeader, RestDock, SectionLabel, SetEditor, SetLine, Sheet, SwapRow, WarmupStrip, sharedName, sharedTransition, useBackHandler, useCountdown, useToast } from '../components';
 import { dateLabel, env, REGION_NAME } from '../data/demo';
 import { addSet, completeSet, discardSession, finishSession, focusExercise, hasWork, isWork, pauseSession, setError, setField, toggleSkip, toggleWarmup, workDone, MAX_SETS } from '../data/session';
@@ -20,6 +19,7 @@ import type { ActiveSession } from '../data/store';
 import { useStore } from '../data/store';
 import { regionOfEx } from '../engine';
 import s from './HomePage.module.css';
+import { usePageNav } from '../shell/pageNav';
 
 type Edit = { row: number; field: 'weight' | 'reps'; fresh: boolean; checkin: boolean };
 const regionName = (id: string) => { const ex = env.ex.get(id); return ex ? REGION_NAME[regionOfEx(env, ex)] : ''; };
@@ -28,7 +28,8 @@ const HEAD: Record<string, string> = Object.fromEntries(muscles.heads.map((h) =>
 export function TrainingView({ a, now, onFind, onGuide }: { a: ActiveSession; now: number;
   /** 6e：列表末尾「＋ 加一个动作」打开找动作；主角卡「要领」进动作要领页 */
   onFind?: () => void; onGuide?: (exerciseId: string) => void }) {
-  const st = useStore(), nav = useNavigate(), toast = useToast();
+  const st = useStore(), toast = useToast();
+  const pn = usePageNav();
   const [edit, setEdit] = useState<Edit | null>(null);
   const [confirm, setConfirm] = useState(false);
   // 暂停面板（6e，线框 pause W2）：页头「暂停」和系统返回键都打开它；换一个面板（线框 swap W1）
@@ -108,7 +109,7 @@ export function TrainingView({ a, now, onFind, onGuide }: { a: ActiveSession; no
     setConfirm(false);
     if (!hasWork(a)) { toast.show('没有可保存的记录', { kind: 'error' }); return; }
     const saved = finishSession();
-    if (saved) nav(`/summary/${saved.id}`);
+    if (saved) pn.push(`/summary/${saved.id}`);
   };
   const primary = (() => {
     if (pending === 0) return { label: hasWork(a) ? '结束并结算' : '放弃这次训练', run: () => (hasWork(a) ? end() : setConfirm(true)) };

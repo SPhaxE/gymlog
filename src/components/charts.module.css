@@ -5,6 +5,7 @@
 .pr { fill: var(--milo-color-control-selected); }
 
 .chart { display: grid; gap: var(--milo-space-s); }
+.plotBox { position: relative; }
 .readout { display: flex; align-items: baseline; gap: var(--milo-space-xs); min-height: var(--milo-space-3xl); color: var(--milo-color-text-secondary); }
 .readout b { color: var(--milo-color-text-primary); }
 .readout > i { font-style: normal; font-size: var(--milo-font-size-caption); margin-right: var(--milo-space-s); }
@@ -32,8 +33,12 @@
 .trendDraw { stroke-dasharray: 1; animation: drawLine calc(var(--milo-motion-spring-ms) * 1.4) var(--milo-motion-ease-decelerate) var(--milo-motion-fast) both; }
 .areaIn { animation: areaFade var(--milo-motion-slow) var(--milo-motion-ease-standard) calc(var(--milo-motion-spring-ms) * 0.8) both; }
 @keyframes drawLine { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+/* 对位钻入（tail）：最后一段由罩层先落好，整条线等它落定后从右往左画出来 */
+.trendDrawBack { stroke-dasharray: 1; animation: drawLineBack calc(var(--milo-motion-spring-ms) * 1.6) var(--milo-motion-ease-decelerate) calc(var(--milo-motion-spring-ms) * 1.1) both; }
+@keyframes drawLineBack { from { stroke-dashoffset: -1; } to { stroke-dashoffset: 0; } }
+.tail { position: absolute; overflow: hidden; pointer-events: none; }
 @keyframes areaFade { from { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .trendDraw, .areaIn { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .trendDraw, .trendDrawBack, .areaIn { animation: none; } }
 /* 6g 补：对比动作的虚线（叠在主线下面，不画面积；换一个动作时淡入） */
 .cmp { fill: none; stroke: var(--milo-color-text-secondary); stroke-width: var(--milo-stroke-ring-progress); stroke-linejoin: round; stroke-dasharray: var(--milo-space-xs) var(--milo-space-xs); animation: areaFade var(--milo-motion-slow) var(--milo-motion-ease-standard) both; }
 .cmpDot { fill: var(--milo-color-bg-base); stroke: var(--milo-color-text-secondary); stroke-width: var(--milo-stroke-focus); }

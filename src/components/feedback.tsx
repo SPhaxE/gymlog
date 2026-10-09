@@ -4,7 +4,7 @@ import { T } from '../styles/tokens.gen';
 import { Button } from './Button';
 import { Icon, type IconName } from './Icon';
 import { LogoGlyph } from './Logo';
-import { Portal, useBackHandler, useFocusTrap, useToast, type ToastKind } from './overlay';
+import { Portal, useBackHandler, useExitGhost, useFocusTrap, useToast, type ToastKind, type ToastItem } from './overlay';
 import { cx } from './state';
 import s from './feedback.module.css';
 
@@ -13,7 +13,7 @@ export function Toast({ kind = 'success', message, action, onAction }: { kind?: 
   const icon: Record<ToastKind, IconName> = { success: 'check', error: 'alert', info: 'info' };
   return (
     <div className={cx(s.toast, kind === 'error' && s.toastError)} role={kind === 'error' ? 'alert' : 'status'}>
-      <Icon name={icon[kind]} />
+      <Icon name={icon[kind]} active />
       <span className={s.toastText}>{message}</span>
       {action && <button type="button" className={cx('milo-press milo-focus', s.toastAction)} onClick={onAction}>{action}</button>}
     </div>
@@ -31,9 +31,16 @@ export function ToastViewport() {
   }, [t, dismiss]);
   return (
     <div className={s.viewport} aria-live="polite">
-      {t && <div key={t.id} className={s.toastIn}><Toast kind={t.kind} message={t.message} action={t.action?.label} onAction={() => { t.action?.run(); dismiss(t.id); }} /></div>}
+      {t && <ToastSlot key={t.id} t={t} dismiss={dismiss} />}
     </div>
   );
+}
+
+/** 一条轻提示：从下面滑上来；到时、被新的一条替换、或点了操作时往下滑走（useExitGhost） */
+function ToastSlot({ t, dismiss }: { t: ToastItem; dismiss: (id: number) => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useExitGhost(ref, s.toastOut);
+  return <div ref={ref} className={s.toastIn}><Toast kind={t.kind} message={t.message} action={t.action?.label} onAction={() => { t.action?.run(); dismiss(t.id); }} /></div>;
 }
 
 /** 对话框：只用于二次确认（删除训练、载入示例数据、清除全部数据）。焦点圈定、Esc / 返回键关闭、关闭后焦点回到原处。
@@ -43,7 +50,7 @@ export function DialogCard({ title, children, icon, confirm, cancel = '取消', 
 }) {
   return (
     <div className={s.dialog} role="alertdialog" aria-modal="true" aria-label={title}>
-      {icon && <span className={cx(s.dialogIcon, tone === 'danger' && s.dialogIconDanger)}><Icon name={icon} /></span>}
+      {icon && <span className={cx(s.dialogIcon, tone === 'danger' && s.dialogIconDanger)}><Icon name={icon} active /></span>}
       <h2 className="milo-text-title-m">{title}</h2>
       {children && <div className={cx('milo-text-body', s.dialogBody)}>{children}</div>}
       <div className={s.dialogActions}>
@@ -62,6 +69,7 @@ export function Dialog({ open, onClose, ...card }: Parameters<typeof DialogCard>
 function DialogLayer({ onClose, children }: { onClose: () => void; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   useFocusTrap(ref, onClose);
+  useExitGhost(ref, s.out);   // 退场：卡片缩小淡出、遮罩淡掉
   return <div ref={ref} className={s.scrim} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>{children}</div>;
 }
 
@@ -79,7 +87,7 @@ export function StateView({ kind, title, detail, action, onAction }: { kind: Sta
   if (kind === 'loading') return <div className={s.loading} role="status" aria-label="加载中"><Skeleton shape="card" /><Skeleton shape="row" /><Skeleton shape="row" /><Skeleton shape="row" /></div>;
   return (
     <div className={s.state} role={kind === 'error' ? 'alert' : undefined}>
-      <span className={cx(s.stateIcon, kind === 'error' && s.dialogIconDanger)}><Icon name={kind === 'error' ? 'alert' : 'calendar'} /></span>
+      <span className={cx(s.stateIcon, kind === 'error' && s.dialogIconDanger)}><Icon name={kind === 'error' ? 'alert' : 'calendar'} active /></span>
       {title && <h2 className="milo-text-heading">{title}</h2>}
       {detail && <p className={cx('milo-text-body', s.dialogBody)}>{detail}</p>}
       {action && <div className={s.stateAction}><Button kind={kind === 'error' ? 'neutral' : 'primary'} size="s" icon={kind === 'error' ? 'refresh' : undefined} onClick={onAction}>{action}</Button></div>}

@@ -15,14 +15,16 @@ import { TIP_PAGES } from '../data/knowledge';
 import { mute } from '../data/wallet';
 import { offOf, useShop } from './useShop';
 import s from './ShopPages.module.css';
+import { usePageNav } from '../shell/pageNav';
 
 export function GuidePage({ scenario, now }: { scenario?: string; now: number }) {
   const nav = useNavigate(), loc = useLocation(), toast = useToast();
+  const pn = usePageNav();
   const topRef = useRef<HTMLDivElement>(null);
   const id = useParams().id as KnowledgeId;
   const { balance, hits, wallet, update } = useShop(scenario, now);
   const k = KNOWLEDGE[id];
-  const back = () => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav('/shop' + loc.search, { replace: true }));
+  const back = () => pn.back('/shop' + loc.search);
   if (!k) return (
     <Screen label="知识卡"><TopBar title="知识卡" onBack={back} />
       <div className={s.body}><StateView kind="empty" title="没有这张知识卡" detail="可能是旧链接。" action="回商城" onAction={() => nav('/shop' + loc.search, { replace: true })} /></div>
@@ -38,7 +40,7 @@ export function GuidePage({ scenario, now }: { scenario?: string; now: number })
     update((w) => (muted ? { ...w, muted: w.muted.filter((x) => x !== id) } : mute(w, id)));
     toast.show(muted ? '这一类提示恢复了' : '容量页、增量页不再提示这一类');
   };
-  const go = (pid: string) => nav(`/shop/item/${pid}${loc.search}`);
+  const go = (pid: string) => pn.push(`/shop/item/${pid}${loc.search}`);
 
   return (
     <Screen label="知识卡">

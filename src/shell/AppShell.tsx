@@ -5,8 +5,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';
 import { App as CapApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
-import { Banner, Button, FluidBackdrop, OverlayHost, ScreenAtmosphere, ToastProvider, ToastViewport, guardTransitionTaps, handleBack, navHandoff, type Tab } from '../components';
-import { T } from '../styles/tokens.gen';
+import { Banner, Button, FluidBackdrop, OverlayHost, ScreenAtmosphere, TABS, ToastProvider, ToastViewport, guardTransitionTaps, handleBack, navHandoff, pageSwapped, viewTransit, type Tab } from '../components';
 import { BodyPage } from '../pages/BodyPage';
 import { DemoPage } from '../pages/DemoPage';
 import { GainsPage } from '../pages/GainsPage';
@@ -45,9 +44,10 @@ function useBackButton() {
     const sub = CapApp.addListener('backButton', () => {
       const a = backAction(loc.pathname, false);
       if (handleBack()) return;
-      if (a === 'home') nav('/today' + loc.search, { replace: true });
+      // 系统返回键也有转场：别的 Tab 回首页按 Tab 横滑（往左），子页推回去（走查 1 #02）
+      if (a === 'home') viewTransit({ vt: 'tab', dir: 'back', go: () => nav('/today' + loc.search, { replace: true }), ready: () => !!document.querySelector('nav [aria-current="page"][href="/today"]') });
       else if (a === 'exit') void CapApp.exitApp();
-      else nav(-1);
+      else viewTransit({ vt: 'pop', go: () => nav(-1), ready: pageSwapped() });
     });
     return () => { void sub.then((h) => h.remove()); };
   }, [nav, loc]);
@@ -59,25 +59,22 @@ function Routed() {
   useEffect(() => { guardTransitionTaps(); }, []);  // 转场进行中点按会落在 <html> 上：改成点坐标处的真元素（motion.tsx）
   const q = new URLSearchParams(loc.search);
   const now = Number(q.get('now')) || Date.now();
-  // 切 Tab：休息计时在走时，首页的计时胶囊下滑消失，只有里面的进度条借 View Transitions 飞进被点的导航滑块（反过来亦然，Nav.tsx 的 REST_RING_VT）。
-  // 只有首页这一头有胶囊：别的 Tab 之间互切照旧，进度条在滑块里跟着滑，不走转场
+  // 切 Tab（2026-10-09 走查 1 #01）：横滑——往右边的 Tab 从右边滑进来、旧页同向滑出并压暗，导航不动（滑块在里面自己滑），motion/slow + 减速；
+  // 新页面在回调里先渲染好（容量页的人体借这段时间加载）。休息计时在走时，首页的计时胶囊下滑消失，只有里面的进度条飞进被点的导航滑块（反过来亦然，Nav.tsx 的 REST_RING_VT），和横滑是同一次转场
   const onTab = (_: Tab, path: string) => {
+    if (path === loc.pathname) return;
     const go = () => nav(path + loc.search);
+    const from = TABS.findIndex(([, , h]) => h === loc.pathname), to = TABS.findIndex(([, , h]) => h === path);
     const leaving = loc.pathname === '/today' && !!document.querySelector('[style*="x-rest-timer"]');
     const returning = path === '/today' && loc.pathname !== '/today' && !!document.querySelector('[style*="x-rest-ring"]');
-    const doc = document as Document & { startViewTransition?: (cb: () => Promise<void>) => { finished: Promise<unknown> } };
-    if (!(leaving || returning) || !doc.startViewTransition || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) { go(); return; }
-    if (leaving) navHandoff.skipSlide = true;  // 目标页的滑块直接停好，进度条才飞得到准确的落点
     const html = document.documentElement;
-    html.dataset.restFly = leaving ? 'out' : 'in';
-    // 路由更新不是同步提交的：等目标页的导航选中项出现了再拍「新」快照（最多等 motion/slow）；转场回调期间页面暂停渲染、rAF 不跑，所以用 setTimeout 轮询
-    const vt = doc.startViewTransition(() => new Promise<void>((done) => {
-      go();
-      const t0 = performance.now();
-      const ready = () => (document.querySelector(`nav [aria-current="page"][href="${path}"]`) || performance.now() - t0 > T['motion/slow'] ? done() : window.setTimeout(ready, 16));
-      ready();
-    }));
-    void vt.finished.finally(() => { delete html.dataset.restFly; });
+    viewTransit({
+      vt: 'tab', dir: to < from ? 'back' : 'fwd', go,
+      before: () => { if (leaving || returning) { if (leaving) navHandoff.skipSlide = true; html.dataset.restFly = leaving ? 'out' : 'in'; } },  // 进度条飞进来时目标页的滑块直接停好
+      // 路由更新不是同步提交的：等目标页的导航选中项出现了再拍「新」快照
+      ready: () => !!document.querySelector(`nav [aria-current="page"][href="${path}"]`),
+      after: () => { delete html.dataset.restFly; },
+    });
   };
   const focus = q.get('focus');
   // 数据源：?scenario= 走演示场景（截图、回归）；否则读本机存储，没建档先去故事引导 + 建档（ia §4 P12）

@@ -54,7 +54,7 @@ export function Banner({ title, detail, tone = 'info', actions, quiet }: { title
   if (quiet) return <div className={`milo-text-caption ${s.secondary}`}>{detail}</div>;
   return (
     <div className={cx(s.banner, tone === 'error' && s.bannerError)} role={tone === 'error' ? 'alert' : undefined}>
-      {tone === 'error' && <Icon name="alert" />}
+      {tone === 'error' && <Icon name="alert" active />}
       <div className={s.bannerText}>{title && <b className="milo-text-body-strong">{title}</b>}<span className="milo-text-caption">{detail}</span></div>
       {actions && <div className={s.bannerActions}>{actions}</div>}
     </div>

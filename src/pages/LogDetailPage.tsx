@@ -17,10 +17,12 @@ import { fmt } from '../data/demo';
 import { logDetail } from '../data/log';
 import { useSource } from '../data/useSource';
 import s from './LogDetailPage.module.css';
+import { usePageNav } from '../shell/pageNav';
 
 export function LogDetailPage({ scenario, now }: { scenario?: string; now: number }) {
   const { id = '' } = useParams();
   const nav = useNavigate(), loc = useLocation();
+  const pn = usePageNav();
   const topRef = useRef<HTMLDivElement>(null);
   const { src, remove } = useSource(scenario, now);
   const toast = useToast();
@@ -68,7 +70,7 @@ export function LogDetailPage({ scenario, now }: { scenario?: string; now: numbe
 
           {d.exercises.map((ex) => (
             <section key={ex.exerciseId} className={s.card} aria-label={ex.name}>
-              <button type="button" className={`milo-press milo-focus ${s.head}`} aria-label={`查看${ex.name}的进步曲线`} onClick={() => nav(`/gains/${ex.exerciseId}${loc.search}`)}>
+              <button type="button" className={`milo-press milo-focus ${s.head}`} aria-label={`查看${ex.name}的进步曲线`} onClick={() => pn.push(`/gains/${ex.exerciseId}${loc.search}`)}>
                 <b className="milo-text-heading">{ex.name}</b>{ex.pr && <Tag tone="accent">PR</Tag>}<span className={s.grow} /><Icon name="chevron" small />
               </button>
               {ex.skipped ? <p className={`milo-text-caption ${s.skipped}`}>未做</p> : (

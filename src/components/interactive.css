@@ -77,12 +77,17 @@
 ::view-transition-old(*.dname), ::view-transition-new(*.dname), ::view-transition-old(*.dnum), ::view-transition-new(*.dnum) { inset: 0; width: 100%; height: 100%; object-fit: none; object-position: left center; }
 ::view-transition-old(*.dname), ::view-transition-old(*.dnum) { animation: vtOut var(--milo-motion-fast) var(--milo-motion-ease-standard) both; }
 ::view-transition-new(*.dname), ::view-transition-new(*.dnum) { animation: vtIn var(--milo-motion-base) var(--milo-motion-ease-standard) var(--milo-motion-fast) both; }
+/* 小曲线对位（2026-10-09 走查 1 #26）：曲线页上带名的是「最后 8 次那一段」的罩层（TrendChart tail），框按小曲线的留白比例算好——
+   新旧快照都拉满框（不保持宽高比），小曲线就正好贴到大曲线重合的那一段上，交叉淡化；落定后更早的部分从右往左画出来 */
+::view-transition-old(*.dline), ::view-transition-new(*.dline) { width: 100%; height: 100%; object-fit: fill; }
 ::view-transition-old(*.dline) { animation: vtOut calc(var(--milo-motion-spring-ms) * 0.6) var(--milo-motion-ease-standard) both; }
 ::view-transition-new(*.dline) { animation: vtIn calc(var(--milo-motion-spring-ms) * 0.7) var(--milo-motion-ease-standard) calc(var(--milo-motion-spring-ms) * 0.45) both; }
 html[data-vt='drill']::view-transition-old(root) { animation: vtOut var(--milo-motion-base) var(--milo-motion-ease-standard) both; }
 html[data-vt='drill']::view-transition-new(root) { animation: drillPageIn var(--milo-motion-base) var(--milo-motion-ease-decelerate) var(--milo-motion-fast) both; }
 /* 回列表：详情淡出的同时名称 / 数字 / 曲线飞回行里，列表等它们飞到一半才淡入（不让它们压在荧光色带上，也不留一段空屏） */
 html[data-vt='drill'][data-vt-dir='out']::view-transition-new(root) { animation: vtIn var(--milo-motion-base) var(--milo-motion-ease-standard) calc(var(--milo-motion-spring-ms) * 0.5) both; }
+/* M03 跨页返回（back，详情 → 首页处方卡 / 商城卡片）：卡片缩回、图和名字飞回去的同时列表立刻淡入，不留一段黑屏（飞的东西本来就在最上层） */
+html[data-vt='drill'][data-vt-dir='back']::view-transition-new(root) { animation: vtIn var(--milo-motion-base) var(--milo-motion-ease-standard) both; }
 @keyframes drillPageIn { from { opacity: 0; transform: translateY(var(--milo-space-m)); } }
 /* 休息进度条（.ring）：切 Tab 时唯一飞过去的东西，借共享元素从计时胶囊移进被点的导航滑块（反过来亦然），几何完全一致、快照不拉伸（用默认的等比映射；拉伸会让环在转场里比落地后大一圈，转场一结束环缩进去、外圈多出一圈骨白，像填色块在放大），按减速曲线走（不过冲）。
    换色不做交叉淡化：旧色一直不透明，新色盖上去——出发（out，胶囊 → 滑块）在快到滑块时才换成深色（到之前一直是骨白，深色在深底上看不见），
@@ -92,7 +97,27 @@ html[data-vt='drill'][data-vt-dir='out']::view-transition-new(root) { animation:
 ::view-transition-new(*.ring) { animation: vtIn var(--milo-motion-base) var(--milo-motion-ease-standard) both; }
 html[data-rest-fly='out']::view-transition-new(*.ring) { animation-delay: calc(var(--milo-motion-spring-ms) * 0.4); }
 html[data-rest-fly='in']::view-transition-new(*.ring) { animation-duration: var(--milo-motion-fast); }
-/* 切 Tab 带休息进度条飞行时，整页也不是硬切：旧页很快淡出、新页稍后淡入（和 M09 钻入转场同一套节奏），进度条在上面飞 */
-html[data-rest-fly]::view-transition-old(root) { animation: vtOut var(--milo-motion-fast) var(--milo-motion-ease-standard) both; }
-html[data-rest-fly]::view-transition-new(root) { animation: vtIn var(--milo-motion-base) var(--milo-motion-ease-standard) var(--milo-motion-press) both; }
+/* 页面转场（2026-10-09 走查 1 #01 #02，DESIGN §7 转场表；data-vt 由 viewTransit 设置）：
+   Tab 横滑（tab）：新页从点的那一边整页滑进来，旧页同向整页滑出并压暗；导航单独成一层不动（只显示新的那份：滑块、外圈、描线在里面照常动）。
+   带休息进度条飞行时也是这一次转场：进度条在最上面飞，计时胶囊往下滑走。
+   子页推入（push）：新页从右边盖进来，旧页往左让三成并压暗；推出（pop）反过来——子页在上面往右滑走，底下那页从左边回来、亮起来。
+   都是 motion/slow + 减速曲线：起步快、落地轻。 */
+html[data-vt='tab'] { --vt-x: 1; }
+html[data-vt='tab'][data-vt-dir='back'] { --vt-x: -1; }
+html[data-vt='tab'] nav[aria-label='主导航'] { view-transition-name: x-tabnav; }
+::view-transition-group(x-tabnav) { animation: none; }
+::view-transition-old(x-tabnav) { animation: none; opacity: 0; }
+::view-transition-new(x-tabnav) { animation: none; }
+html[data-vt='tab']::view-transition-old(root) { animation: tabOut var(--milo-motion-slow) var(--milo-motion-ease-decelerate) both; }
+html[data-vt='tab']::view-transition-new(root) { animation: tabIn var(--milo-motion-slow) var(--milo-motion-ease-decelerate) both; }
+@keyframes tabIn { from { transform: translateX(calc(var(--vt-x) * 100%)); } }
+@keyframes tabOut { to { transform: translateX(calc(var(--vt-x) * -100%)); filter: brightness(0.4); } }
+html[data-vt='push']::view-transition-old(root) { animation: pushUnder var(--milo-motion-slow) var(--milo-motion-ease-decelerate) both; }
+html[data-vt='push']::view-transition-new(root) { animation: pushIn var(--milo-motion-slow) var(--milo-motion-ease-decelerate) both; }
+html[data-vt='pop']::view-transition-old(root) { z-index: 1; animation: popOut var(--milo-motion-slow) var(--milo-motion-ease-decelerate) both; }
+html[data-vt='pop']::view-transition-new(root) { animation: popUnder var(--milo-motion-slow) var(--milo-motion-ease-decelerate) both; }
+@keyframes pushIn { from { transform: translateX(100%); } }
+@keyframes pushUnder { to { transform: translateX(-30%); filter: brightness(0.4); } }
+@keyframes popOut { to { transform: translateX(100%); } }
+@keyframes popUnder { from { transform: translateX(-30%); filter: brightness(0.4); } }
 html[data-rest-fly='out'] nav[aria-label='主导航'] > span[aria-hidden] { animation: vtIn var(--milo-motion-fast) var(--milo-motion-ease-standard) both; }

@@ -9,7 +9,7 @@
  *  - 表现：荧光只有进度条一处；小牛是品牌位置，可以用 IP 小牛；功能位置（连胜、记录）不放小牛（语气分工）；守约点阵的每种状态形状 / 纹理都不同，不只靠颜色。
  *  设计过程见 design/hifi/me/（线框 level W1 小牛为主角；Stitch 第 1 轮 m6）。 */
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router';
+import { useLocation } from 'react-router';
 import { BackToTop, GrowthBar, LoadMore, LedgerRow, MessageRow, Num, Screen, SectionLabel, StageHero, StreakRisk, StreakWeeks, TopBar, type StreakWeekStatus } from '../components';
 import { COUPONS, dateOf } from '../data/growth';
 import { growthLog, growthOf, nextGoal, riskOf } from '../data/me';
@@ -20,12 +20,14 @@ import { useWallet } from '../data/wallet';
 import { weeklyTarget } from '../engine';
 import { GoalHint } from './GoalHint';
 import s from './LevelPage.module.css';
+import { usePageNav } from '../shell/pageNav';
 
 /** 成长记录一次露几条 */
 const CHUNK = 6;
 
 export function LevelPage({ scenario, now }: { scenario?: string; now: number }) {
-  const nav = useNavigate(), loc = useLocation();
+  const loc = useLocation();
+  const pn = usePageNav();
   const st = useStore();
   const topRef = useRef<HTMLDivElement>(null);
   const { src } = useSource(scenario, now);
@@ -37,7 +39,7 @@ export function LevelPage({ scenario, now }: { scenario?: string; now: number })
   const loadMore = useCallback(() => setShown((n) => n + CHUNK), []);
   const cur = g.streak.current, empty = src.history.length === 0, goal = nextGoal(g), risk = riskOf(g, now);
   const weeks = g.streak.history.slice(-12).map((w): StreakWeekStatus => (w.status === 'risk' ? 'open' : w.status));
-  const back = () => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav('/me' + loc.search, { replace: true }));
+  const back = () => pn.back('/me' + loc.search);
 
   return (
     <Screen label="牛龄">
@@ -53,7 +55,7 @@ export function LevelPage({ scenario, now }: { scenario?: string; now: number })
             <div className={s.stat}><Num size="l" value={g.streak.freezeCards} unit="张" /><i className="milo-text-caption">冻结卡</i></div>
           </div>
           {risk && <StreakRisk need={risk.need} daysLeft={risk.daysLeft} freeze={g.streak.freezeCards} pro={proStatus(pro, now).kind !== 'free'} cost={COUPONS.freeze.cost}
-            onRedeem={() => { const q = new URLSearchParams(loc.search); q.set('redeem', 'freeze'); nav(`/me/wallet?${q}`); }} onPro={() => nav('/pro' + loc.search)} />}
+            onRedeem={() => { const q = new URLSearchParams(loc.search); q.set('redeem', 'freeze'); pn.push(`/me/wallet?${q}`); }} onPro={() => pn.push('/pro' + loc.search)} />}
 
           {weeks.length > 0 && (
             <section className={s.sec} aria-label="最近 12 周"><SectionLabel>最近 12 周</SectionLabel><StreakWeeks weeks={weeks} /></section>

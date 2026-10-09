@@ -10,6 +10,11 @@
   animation: up var(--milo-motion-base) var(--milo-motion-ease-decelerate); }
 @keyframes up { from { transform: translateY(var(--milo-space-4xl)); opacity: 0; } }
 .dragging { transition: none; }
+/* 退场（useExitGhost 的复制品）：遮罩淡掉，面板按当前高度往下滑出屏幕（越走越快） */
+.out { pointer-events: none; animation: fadeOut var(--milo-motion-base) var(--milo-motion-ease-standard) both; }
+.out .sheet { animation: down var(--milo-motion-base) var(--milo-motion-ease-accelerate) both; }
+@keyframes fadeOut { to { opacity: 0; } }
+@keyframes down { to { transform: translateY(100%); } }
 /* 抓手：视觉是一根短横条，命中区是整条 hit-min 高的带子 */
 .grip { display: grid; place-items: center; height: var(--milo-size-hit-min); margin-bottom: calc(var(--milo-space-l) * -1); touch-action: none; cursor: grab; }
 .grip i { width: var(--milo-space-4xl); height: var(--milo-space-xs); border-radius: var(--milo-radius-pill); background: var(--milo-color-line-strong); }

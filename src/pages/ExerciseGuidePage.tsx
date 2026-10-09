@@ -7,7 +7,7 @@
  *  - 表现：视频是 16:9 实拍，铺满会糊、会裁掉杠铃 → 占上半屏、按 1:1 居中裁；要领抽屉 M05，展开出平涂人体（只亮练到的肌头，和找动作同一套）与预估 1RM 小曲线。 */
 import { useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
-import { BodyPicker, Button, GuideDrawer, Icon, MediaFrame, Num, Screen, Segmented, Sparkline, Tag, TopBar, clock, useCountdown, useToast } from '../components';
+import { BodyPicker, Button, GuideDrawer, Icon, MediaFrame, Num, Screen, Segmented, Sparkline, Tag, TopBar, clock, sharedName, useCountdown, useToast } from '../components';
 import { env, homeData, fmt } from '../data/demo';
 import { FAMILY_OF, addToToday, useExtras } from '../data/finder';
 import { exerciseTrend } from '../data/gains';
@@ -16,6 +16,7 @@ import { useStore } from '../data/store';
 import { useSource } from '../data/useSource';
 import muscles from '../../mock/muscles.json';
 import s from './ExerciseGuidePage.module.css';
+import { usePageNav, useSharedDetail } from '../shell/pageNav';
 
 const HEAD: Record<string, string> = Object.fromEntries(muscles.heads.map((h) => [h.id, h.name]));
 const BACK_ONLY = new Set(['traps', 'lats', 'lowerback', 'glutes', 'hamstrings', 'triceps']);
@@ -23,6 +24,7 @@ const BACK_ONLY = new Set(['traps', 'lats', 'lowerback', 'glutes', 'hamstrings',
 export function ExerciseGuidePage({ scenario, now }: { scenario?: string; now: number }) {
   const { id = '' } = useParams();
   const nav = useNavigate(), loc = useLocation(), toast = useToast(), st = useStore();
+  const pn = usePageNav();
   const q = new URLSearchParams(loc.search), from = q.get('from');
   const { src } = useSource(scenario, now);
   const ex = env.ex.get(id), g = guideOf(id, src.profile?.gender ?? 'male');
@@ -36,7 +38,8 @@ export function ExerciseGuidePage({ scenario, now }: { scenario?: string; now: n
     const rx = homeData(src, now).rx;
     return rx.items.some((it) => it.exerciseId === id) || extras.includes(id);
   }, [scenario, st.active, src, now, id, extras]);
-  const back = () => (window.history.length > 1 ? nav(-1) : nav('/today' + loc.search));
+  // 从首页处方卡 / 行长出来的（M03）：整页是那张卡、标题是那个名字；返回沿原路缩回去
+  const { shared, back } = useSharedDetail(id, '/today' + loc.search);
 
   if (!ex || !g) return (
     <Screen label="动作要领">
@@ -54,10 +57,10 @@ export function ExerciseGuidePage({ scenario, now }: { scenario?: string; now: n
   const steps = g.cue?.steps ?? [];
   return (
     <Screen label={`动作要领 · ${ex.name}`}>
-      <div className={s.page}>
+      <div className={s.page} style={shared ? sharedName('card', id) : undefined}>
         <div className={s.video}><MediaFrame fill src={g.media[view]} label={`${ex.name} ${view === 'front' ? '正面' : '侧面'}示范`} /></div>
         <div className={s.top}>
-          <TopBar title={ex.name} onBack={back} trailing={<Segmented label="示范角度" items={[['front', '正面'], ['side', '侧面']] as const} value={view} onChange={setView} />} />
+          <TopBar title={ex.name} onBack={back} titleStyle={shared ? { ...sharedName('title', id), width: 'fit-content' } : undefined} trailing={<Segmented label="示范角度" items={[['front', '正面'], ['side', '侧面']] as const} value={view} onChange={setView} />} />
           {/* 「在走」以剩余时间为准：休息结束就收起这一行（走查 1 #22） */}
           {st.rest && left > 0 && !scenario && <div className={s.rest} aria-live="polite"><Icon name="timer" small /><span className="milo-text-caption">组间休息还在走</span><Num size="s" value={clock(left)} /></div>}
         </div>
@@ -78,7 +81,7 @@ export function ExerciseGuidePage({ scenario, now }: { scenario?: string; now: n
               <section className={s.block} aria-label="我的进步">
                 <h2 className="milo-text-label">我的进步</h2>
                 {trend ? (
-                  <button type="button" className={`milo-press milo-focus ${s.progress}`} onClick={() => nav(`/gains/${id}${loc.search ? `?${new URLSearchParams([...q].filter(([k]) => k === 'scenario' || k === 'now'))}` : ''}`)}>
+                  <button type="button" className={`milo-press milo-focus ${s.progress}`} onClick={() => pn.push(`/gains/${id}${loc.search ? `?${new URLSearchParams([...q].filter(([k]) => k === 'scenario' || k === 'now'))}` : ''}`)}>
                     <span><span className="milo-text-caption">预估 1RM · 近 {trend.sessions.length} 次</span><Num value={fmt(trend.sessions.at(-1)!.v)} unit="kg" /></span>
                     <Sparkline points={trend.sessions.map((x) => ({ t: x.t, v: x.v, label: x.label }))} label="预估 1RM 趋势" />
                     <Icon name="chevron" small />

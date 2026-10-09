@@ -12,17 +12,19 @@ import { useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router';
 import { BackToTop, Banner, Chip, Delta, Icon, List, ListRow, Odometer, ProLink, Screen, SectionLabel, Sheet, StateView, Tag, TopBar, TrendChart, drillName, drillTransition } from '../components';
 import { env, fmt, REGION_NAME } from '../data/demo';
-import { compareCandidates, exerciseTrend } from '../data/gains';
+import { POINTS, compareCandidates, exerciseTrend } from '../data/gains';
 import { proStatus, usePro } from '../data/pro';
 import { useSource } from '../data/useSource';
 import { guideQuery } from './FinderSheet';
 import s from './TrendPage.module.css';
+import { usePageNav } from '../shell/pageNav';
 
 const dayText = (ms: number) => { const d = new Date(ms); return `${d.getMonth() + 1}月${d.getDate()}日`; };
 
 export function TrendPage({ scenario, now }: { scenario?: string; now: number }) {
   const { exerciseId = '' } = useParams();
   const nav = useNavigate(), loc = useLocation();
+  const pn = usePageNav();
   const topRef = useRef<HTMLDivElement>(null);
   const { src } = useSource(scenario, now);
   const d = useMemo(() => exerciseTrend(src, exerciseId, now), [src, exerciseId, now]);
@@ -60,7 +62,7 @@ export function TrendPage({ scenario, now }: { scenario?: string; now: number })
   return (
     <Screen label={`${row.name} 进步曲线`}>
       <TopBar title={row.name} sub={sub} onBack={back} titleStyle={drillName('name', exerciseId)}
-        trailing={<button type="button" className={`milo-press milo-focus ${s.guide}`} onClick={() => nav(`/exercise/${exerciseId}?${guideQuery(loc.search, 'trend')}`)}>要领</button>} />
+        trailing={<button type="button" className={`milo-press milo-focus ${s.guide}`} onClick={() => pn.push(`/exercise/${exerciseId}?${guideQuery(loc.search, 'trend')}`)}>要领</button>} />
       <div ref={topRef} className={s.scroll} style={keep} data-drill-ready="trend">
         <header className={s.hero}>
           <span className={s.plate} aria-hidden="true" />
@@ -80,9 +82,9 @@ export function TrendPage({ scenario, now }: { scenario?: string; now: number })
             {cmp
               ? <span className={s.cmpOn}><Chip selected onClick={() => setPicking(true)}>对比 · {cmp.name}</Chip><button type="button" className={`milo-focus ${s.cmpX}`} aria-label="取消对比" onClick={() => setCmpId(null)}><Icon name="close" small /></button></span>
               : <Chip onClick={() => setPicking(true)}>对比 ＋ 选一个动作</Chip>}
-            <ProLink active={proOn} onClick={() => nav((proOn ? '/me/pro' : '/pro') + loc.search)} />
+            <ProLink active={proOn} onClick={() => pn.push((proOn ? '/me/pro' : '/pro') + loc.search)} />
           </div>}
-          <div style={drillName('line', exerciseId)}><TrendChart draw points={sessions.map((x) => ({ t: x.t, v: x.v, pr: x.pr, label: x.label }))} selected={i} onSelect={setSel} unit={row.unit} readout={false}
+          <div><TrendChart draw tail={{ n: POINTS, style: drillName('line', exerciseId) }} points={sessions.map((x) => ({ t: x.t, v: x.v, pr: x.pr, label: x.label }))} selected={i} onSelect={setSel} unit={row.unit} readout={false}
             compare={cmp ? { name: cmp.name, points: cmp.points } : undefined} /></div>
           {cmp && (() => { const c = [...cmp.points].reverse().find((p) => p.t <= cur.t) ?? cmp.points[0]; return (
             <p className={`milo-text-caption ${s.legend}`} aria-live="polite">

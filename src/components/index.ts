@@ -12,7 +12,7 @@ export { GuideDrawer } from './guide';
 export { GainGroupHead, GainRow, GainSummary, type GroupKind as GainGroupKind, GainLook, type GainLookKind } from './gains';
 export { DotCalendar, GiantNumber, Odometer, HeadWeeks, StepRing, WeekBars, dotDays, dotMonths, type DotCell, type DotMonth } from './dataviz';
 export { SteelPlate, type PlateLook } from './plate';
-export { Cascade, Collapsible, RestDock, SharedDetail, Tilt, drillName, drillTransition, guardTransitionTaps, sharedName, sharedTransition } from './motion';
+export { Cascade, Collapsible, RestDock, SharedDetail, Tilt, drillName, drillTransition, guardTransitionTaps, pageSwapped, sharedName, sharedTransition, viewTransit } from './motion';
 export { Chip, NumberField, OptionCard, OptionGroup, ProgressSteps, Stepper, Switch } from './controls';
 export { Dialog, DialogCard, LoadMore, Skeleton, StateView, Toast, ToastViewport, type SkeletonShape, type StateKind } from './feedback';
 export { IncrementRuler, LandmarkRuler, PhaseSegments } from './Gauges';
@@ -21,7 +21,7 @@ export { AppIcon, Lockup, LogoGlyph, LOGO_STATE_NAME, type LogoMark, type LogoSt
 export { PropGlyph, PROP_NAME, type PropKind } from './PropGlyph';
 export { Mascot, MascotHead, MASCOT_MOODS, MASCOT_STAGES, MOOD_NAME, STAGE_NAME, type MascotMood, type MascotStage } from './Mascot';
 export { Nav, TABS, navHandoff, type Tab } from './Nav';
-export { OverlayHost, Portal, ToastProvider, handleBack, useBackHandler, useToast } from './overlay';
+export { OverlayHost, Portal, ToastProvider, handleBack, useBackHandler, useExitGhost, useToast } from './overlay';
 export { Screen, ScreenAtmosphere } from './Screen';
 export { BodyRender, heatCss, heatOf, type Thermal } from './thermal';
 export { Segmented } from './Segmented';

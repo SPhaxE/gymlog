@@ -6,7 +6,7 @@
  *  - 框架：顶栏（返回 + 消息）→ 列表。没有主操作按钮。
  *  - 表现：奖励是荧光图标（只给未读），冻结卡是冰块；按月分段；入账的牛劲单独一列右对齐的大数字（一眼扫得到）；不放小牛（功能位置）。 */
 import { useEffect, useRef, useMemo, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router';
+import { useLocation } from 'react-router';
 import { BackToTop, MessageRow, Screen, SectionLabel, StateView, TopBar } from '../components';
 import { dateOf } from '../data/growth';
 import { markMessagesSeen } from '../data/inbox';
@@ -16,6 +16,7 @@ import { proPeriods, usePro } from '../data/pro';
 import { useSource } from '../data/useSource';
 import { restockMessages, useWallet } from '../data/wallet';
 import s from './MessagesPage.module.css';
+import { usePageNav } from '../shell/pageNav';
 
 const MAX = 30;
 /** 按月分段（新的在前），段头「10月」「9月」；不在今年的带年份 */
@@ -26,7 +27,8 @@ function byMonth(ms: Message[]): [string, Message[]][] {
 }
 
 export function MessagesPage({ scenario, now }: { scenario?: string; now: number }) {
-  const nav = useNavigate(), loc = useLocation();
+  const loc = useLocation();
+  const pn = usePageNav();
   const st = useStore();
   const topRef = useRef<HTMLDivElement>(null);
   const { src } = useSource(scenario, now);
@@ -36,7 +38,7 @@ export function MessagesPage({ scenario, now }: { scenario?: string; now: number
   const all = useMemo(() => [...messagesOf(growthOf({ ...src, wallet, pro: proPeriods(pro) }, now)), ...restockMessages(wallet)].sort((a, b) => b.atMs - a.atMs), [src, wallet, pro, now]);
   const [seenAt] = useState(st.messagesSeenAt);   // 进来时「看过的时刻」：这一次的未读小点照常显示
   useEffect(() => { if (!scenario) markMessagesSeen(); }, [scenario]);
-  const back = () => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav('/me' + loc.search, { replace: true }));
+  const back = () => pn.back('/me' + loc.search);
   return (
     <Screen label="消息">
       <TopBar title="消息" onBack={back} />

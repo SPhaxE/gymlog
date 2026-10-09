@@ -5,6 +5,7 @@
  *  - 数字全部由调用方算好传进来（data/wallet.ts 的 quote）。不写功效数字。 */
 import { createContext, useContext, useState, type CSSProperties, type ReactNode } from 'react';
 import { Icon } from './Icon';
+import { sharedName } from './motion';
 import { ProLink } from './pro';
 import { cx, forced, type Forced } from './state';
 import s from './shop.module.css';
@@ -49,8 +50,8 @@ function Pic({ id, className }: { id?: string; category?: '护具' | '补剂'; c
 }
 
 /** 商品详情的大图（同一张商品图，占满宽度；缺货 / 已下架变灰） */
-export function ProductImage({ id, category, dim }: { id?: string; category: '护具' | '补剂'; dim?: boolean }) {
-  return <span className={cx(s.hero, dim && s.dim)}><Pic id={id} category={category} /></span>;
+export function ProductImage({ id, category, dim, sharedId }: { id?: string; category: '护具' | '补剂'; dim?: boolean; /** M03：和商城卡片上的商品图同名（从卡片飞过来） */ sharedId?: string }) {
+  return <span className={cx(s.hero, dim && s.dim)} style={sharedId ? sharedName('pic', sharedId) : undefined}><Pic id={id} category={category} /></span>;
 }
 
 export interface ProductCardProps {
@@ -59,10 +60,12 @@ export interface ProductCardProps {
   off: number;
   variant?: 'grid' | 'row';
   onClick?: () => void; state?: Forced;
+  /** M03 跨页（走查 1 #08）：点开详情时，商品图和名字与详情页的大图、标题同名（只给被点的那一张） */
+  sharedId?: string;
 }
 /** 商品卡。grid = 商城两列（图 + 左上状态标 → 商家 → 名字 → 价格 + 划线价 → 会员价 · 牛劲抵）；row = 知识卡里的相关商品行。
  *  缺货整卡变暗但仍可点（进详情设到货提醒）；已下架不出现在商城列表，row 里出现时灰字、仍可点（详情页提示并回商城） */
-export function ProductCard({ id, name, merchant, price, member, category, status, was, off, variant = 'grid', onClick, state }: ProductCardProps) {
+export function ProductCard({ id, name, merchant, price, member, category, status, was, off, variant = 'grid', onClick, state, sharedId }: ProductCardProps) {
   const look = useContext(ShopTagLook);
   const dim = status === 'oos' || status === 'off';
   const label = `${name}，${merchant}，${yuan(price)}${was ? `，原价 ${yuan(was)}` : ''}，会员 ${yuan(member)}${STATUS[status] ? `，${STATUS[status]}` : ''}`;
@@ -80,9 +83,9 @@ export function ProductCard({ id, name, merchant, price, member, category, statu
   );
   return (
     <button type="button" className={cx('milo-press milo-focus', s.card, dim && s.dim)} onClick={onClick} aria-label={label} {...forced(state)}>
-      <span className={s.picBox}><Pic id={id} category={category} />{look === 'now' ? <span className={s.tagAt}><StatusTag status={status} /></span> : look === 'price' ? null : <LookTag look={look} status={status} price={price} was={was} />}</span>
+      <span className={s.picBox}><span className={s.picShare} style={sharedId ? sharedName('pic', sharedId) : undefined}><Pic id={id} category={category} /></span>{look === 'now' ? <span className={s.tagAt}><StatusTag status={status} /></span> : look === 'price' ? null : <LookTag look={look} status={status} price={price} was={was} />}</span>
       <span className={cx('milo-text-micro', s.muted, s.merchantLine)}>{look === 'price' && (status === 'hot' || status === 'new') && <span className={s.lead}><Icon name={status === 'hot' ? 'up' : 'star'} small />{status === 'hot' ? '本周热销' : '新品'}</span>}{merchant}</span>
-      <b className={cx('milo-text-body-strong', s.name)}>{name}</b>
+      <b className={cx('milo-text-body-strong', s.name)}><span style={sharedId ? sharedName('title', sharedId) : undefined}>{name}</span></b>
       {look === 'price' && status === 'oos' ? <span className={cx('milo-text-caption', s.oosLine)}>缺货 · 到货提醒</span>
         : <span className={s.priceLine}><b className="milo-text-number-m">{yuan(price)}</b>{was && <s className={cx('milo-text-micro', s.muted)}>{yuan(was)}</s>}{look === 'price' && status === 'sale' && <span className={s.pctChip}>{pct(price, was)}</span>}</span>}
       <span className={cx('milo-text-micro', s.muted)}>{sub}</span>

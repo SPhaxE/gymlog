@@ -7,7 +7,7 @@
  *  - 框架：第一优先 = 余额；主操作 = 底部拇指区两个出口（「去商城抵扣」荧光，「兑换卡券」描边）；返回左上。
  *  - 表现：余额码表大数 + 刻度尺分隔；支出骨白、获得荧光（流水行自带）；这一屏唯一的荧光块是「去商城抵扣」。 */
 import { useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router';
+import { useLocation } from 'react-router';
 import { BackToTop, Coupon, LedgerRow, NiujinBalance, Screen, SectionLabel, Sheet, StateView, TopBar, WalletExits, useToast } from '../components';
 import { COUPONS, dateOf, type CouponType } from '../data/growth';
 import { activate, proStatus, trialUsed, usePro } from '../data/pro';
@@ -15,12 +15,14 @@ import { redeem } from '../data/wallet';
 import { DAY } from '../engine';
 import { useShop } from './useShop';
 import s from './ShopPages.module.css';
+import { usePageNav } from '../shell/pageNav';
 
 const REDEEMABLE: CouponType[] = ['freeze', 'shipping', 'merchant'];
 const RECENT = 5, ALL = 30;
 
 export function WalletPage({ scenario, now }: { scenario?: string; now: number }) {
-  const nav = useNavigate(), loc = useLocation(), toast = useToast();
+  const loc = useLocation(), toast = useToast();
+  const pn = usePageNav();
   const topRef = useRef<HTMLDivElement>(null);
   const { g, balance, coupons, update } = useShop(scenario, now);
   const [pro, setPro] = usePro(scenario);
@@ -32,13 +34,13 @@ export function WalletPage({ scenario, now }: { scenario?: string; now: number }
   const month = useMemo(() => g.niujin.ledger.filter((r) => r.amount > 0 && r.atMs > now - 30 * DAY).reduce((a, r) => a + r.amount, 0), [g, now]);
   const freeze = g.streak.freezeCards;
   const usable = coupons.filter((c) => c.state === 'available').length + (freeze > 0 ? 1 : 0);
-  const back = () => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav('/me' + loc.search, { replace: true }));
-  const shop = () => nav('/shop' + loc.search);
+  const back = () => pn.back('/me' + loc.search);
+  const shop = () => pn.push('/shop' + loc.search);
   const doRedeem = (t: CouponType) => {
     update((w) => redeem(w, t, Date.now())); setSheet(false);
     if (t === 'trial') setPro((x) => activate(x, 'trial', now));
     toast.show(t === 'trial' ? '已兑换：Milo Pro 体验 7 天，今天起生效' : `已兑换：${COUPONS[t].title}`);
-    if (only && (window.history.state?.idx ?? 0) > 0) nav(-1);   // 从牛龄页「兑一张冻结卡」来的：兑完回去看连胜保住了
+    if (only && (window.history.state?.idx ?? 0) > 0) pn.back('/me');   // 从牛龄页「兑一张冻结卡」来的：兑完回去看连胜保住了
   };
 
   return (

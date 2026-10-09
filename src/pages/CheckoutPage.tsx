@@ -13,11 +13,13 @@ import { productById } from '../data/growth';
 import { couponOff, placeOrder, quote, usableCoupons } from '../data/wallet';
 import { keepQuery, useShop } from './useShop';
 import s from './ShopPages.module.css';
+import { usePageNav } from '../shell/pageNav';
 
 const yuan = (n: number) => `¥${n.toLocaleString('en-US')}`;
 
 export function CheckoutPage({ scenario, now }: { scenario?: string; now: number }) {
   const nav = useNavigate(), loc = useLocation();
+  const pn = usePageNav();
   const topRef = useRef<HTMLDivElement>(null);
   const params = new URLSearchParams(loc.search);
   const p = productById(params.get('item') ?? ''), size = params.get('size');
@@ -27,7 +29,7 @@ export function CheckoutPage({ scenario, now }: { scenario?: string; now: number
   const [useNiujin, setUseNiujin] = useState(true);
   const [pick, setPick] = useState(false);
   const [busy, setBusy] = useState(false);
-  const back = () => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav('/shop' + keepQuery(loc.search), { replace: true }));
+  const back = () => pn.back('/shop' + keepQuery(loc.search));
   if (!p || p.status === 'oos' || p.status === 'off') return (
     <Screen label="确认订单"><TopBar title="确认订单" onBack={back} />
       <div className={s.body}><StateView kind="empty" title={p ? '这件商品现在买不了' : '没有要买的商品'} detail={p ? '缺货或已下架。' : '从商品详情点「购买」进来。'} action="回商城" onAction={() => nav('/shop' + keepQuery(loc.search), { replace: true })} /></div>
@@ -44,7 +46,7 @@ export function CheckoutPage({ scenario, now }: { scenario?: string; now: number
     window.setTimeout(() => {
       let id = '';
       update((w) => { const r = placeOrder(w, p, size, q, coupon, Date.now()); id = r.order.id; return r.wallet; });
-      nav(`/shop/order/${id}${keepQuery(loc.search)}`, { replace: true });
+      pn.push(`/shop/order/${id}${keepQuery(loc.search)}`, { replace: true });
     }, 600);
   };
   const rows: [string, number, ('minus' | 'plus')?][] = [['商品', q.price], ['会员价', q.price - q.member, 'minus']];

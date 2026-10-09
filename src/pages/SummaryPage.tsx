@@ -5,7 +5,7 @@
  *  - 力竭度 1–10（默认 8，可跳过）写回这次训练，驱动恢复窗口；「下次」一行写最慢恢复的部位还要多久。
  *  - 「完成」回首页（替换历史，不能返回到结算）。 */
 import { useMemo, useState } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router';
+import { Navigate, useParams } from 'react-router';
 import { AgeBadge, Button, Delta, GrowthBar, Num, Odometer, RewardModal, Screen, SectionLabel, Tilt, TopBar } from '../components';
 import { dateLabel, env, fmt, REGION_NAME } from '../data/demo';
 import { rewardOf } from '../data/growth';
@@ -13,12 +13,14 @@ import { setExertion } from '../data/session';
 import { useStore } from '../data/store';
 import { growth, headStats, pickRewards, regionOfEx, summarize } from '../engine';
 import s from './SummaryPage.module.css';
+import { usePageNav } from '../shell/pageNav';
 
 const shown = new Set<string>();  // 这次打开 App 里已经弹过奖励的训练（刷新后不再重复弹）
 
 export function SummaryPage() {
   const { id } = useParams();
-  const st = useStore(), nav = useNavigate();
+  const st = useStore();
+  const pn = usePageNav();
   const ses = st.history.find((x) => x.id === id);
   const d = useMemo(() => {
     if (!ses) return null;
@@ -103,7 +105,7 @@ export function SummaryPage() {
         {d.slow && <p className="milo-text-caption">下次：{d.slow.region}约 {Math.max(1, Math.round(d.slow.hours))} 小时后恢复 · 下一份处方已经更新</p>}
       </div>
       {/* 从首页来的就退回首页（「今天已练完」）；直接打开的结算页替换成首页 */}
-      <div className={s.cta}><Button kind={best ? 'neutral' : undefined} onClick={() => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav('/today', { replace: true }))}>完成</Button></div>
+      <div className={s.cta}><Button kind={best ? 'neutral' : undefined} onClick={() => pn.back('/today')}>完成</Button></div>
       <RewardModal reward={reward} queued={d.queued} onClose={() => setReward(null)} />
     </Screen>
   );

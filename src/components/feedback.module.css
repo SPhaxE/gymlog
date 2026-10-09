@@ -3,6 +3,9 @@
   display: grid; justify-items: center; pointer-events: none; }
 .toastIn { pointer-events: auto; animation: toast-in var(--milo-motion-base) var(--milo-motion-ease-decelerate); }
 @keyframes toast-in { from { opacity: 0; transform: translateY(var(--milo-space-l)) scale(var(--milo-motion-press-scale)); } }
+/* 退场：往下滑、缩一点、淡掉（和入场反着走）；叠在原位，被新的一条替换时两条交错而过 */
+.toastOut { position: absolute; bottom: 0; pointer-events: none; animation: toast-out var(--milo-motion-base) var(--milo-motion-ease-accelerate) both; }
+@keyframes toast-out { to { opacity: 0; transform: translateY(var(--milo-space-l)) scale(var(--milo-motion-press-scale)); } }
 .toast { display: flex; align-items: center; gap: var(--milo-space-s); min-height: var(--milo-size-button-h-s); padding: var(--milo-space-xs) var(--milo-space-xs) var(--milo-space-xs) var(--milo-space-l);
   border-radius: var(--milo-radius-pill); background: var(--milo-color-bg-raised-2); color: var(--milo-color-text-primary);
   box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong), 0 var(--milo-space-s) var(--milo-space-2xl) var(--milo-color-shadow-float); }
@@ -18,6 +21,11 @@
 .scrim > * { animation: pop var(--milo-motion-base) var(--milo-motion-ease-decelerate); }
 @keyframes fade { from { opacity: 0; } }
 @keyframes pop { from { opacity: 0; transform: scale(var(--milo-motion-press-scale)); } }
+/* 对话框退场：遮罩淡掉，卡片缩回 press-scale 淡出 */
+.out { pointer-events: none; animation: fadeOut var(--milo-motion-base) var(--milo-motion-ease-standard) both; }
+.out > * { animation: popOut var(--milo-motion-fast) var(--milo-motion-ease-accelerate) both; }
+@keyframes fadeOut { to { opacity: 0; } }
+@keyframes popOut { to { opacity: 0; transform: scale(var(--milo-motion-press-scale)); } }
 .dialog { width: 100%; max-width: calc(var(--milo-size-screen-w) - var(--milo-size-gutter) * 2); display: grid; gap: var(--milo-space-m); justify-items: start;
   padding: var(--milo-space-2xl); border-radius: var(--milo-radius-xl); background: var(--milo-color-bg-sheet); color: var(--milo-color-text-primary);
   box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default), 0 var(--milo-space-s) var(--milo-space-3xl) var(--milo-color-shadow-float); }

@@ -64,6 +64,12 @@
 .stages .stageNow { color: var(--milo-color-text-primary); }
 .stages .stageNow::after { content: ''; position: absolute; left: 0; right: 0; bottom: calc((var(--milo-space-s) + var(--milo-stroke-hairline)) * -1); height: var(--milo-stroke-focus); background: var(--milo-color-text-primary); }
 .stageArea { position: relative; display: grid; place-items: end center; width: 100%; height: calc(var(--milo-space-5xl) * 3.6); --mascot-unit: calc(var(--milo-stroke-hairline) * 0.26); --mascot-max-h: calc(var(--milo-space-5xl) * 3.6 * 0.86); }
+/* 小牛可以点：整块是按钮（远大于 hit-min），点一下蹦一下：压扁 → 跳起拉长 → 落地回弹，脚底为原点 */
+.poke { display: grid; place-items: end center; min-width: var(--milo-size-hit-min); min-height: var(--milo-size-hit-min); padding: 0; border: 0; background: none; color: inherit; cursor: pointer; border-radius: var(--milo-radius-l); -webkit-tap-highlight-color: transparent; }
+.pokeFig { display: grid; place-items: end center; transform-origin: 50% 100%; }
+.hop { animation: hop var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-standard) both; }
+@keyframes hop { 0% { transform: none; } 14% { transform: scale(1.08, 0.88); } 42% { transform: translateY(-14%) scale(0.95, 1.07); } 70% { transform: scale(1.05, 0.94); } 100% { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .hop { animation: none; } }
 .rings { position: absolute; inset: 0; margin: auto; width: calc(var(--milo-space-5xl) * 5.4); aspect-ratio: 1; border-radius: 50%; pointer-events: none; z-index: -1;
   background: repeating-radial-gradient(circle, transparent 0 calc(var(--milo-space-xl) - var(--milo-stroke-hairline)), var(--milo-color-line-default) 0 var(--milo-space-xl));
   -webkit-mask: radial-gradient(circle, black 35%, transparent 72%); mask: radial-gradient(circle, black 35%, transparent 72%); }

@@ -1,7 +1,8 @@
 /** 图标（2026-10-04 用户选定 I3）：2 号圆头线稿，故意留缺口，整体右倾（iconref2 的动态感）；颜色跟随 currentColor。
  *  默认 size/icon，small 为 size/icon-s。active：选中瞬间的加载态（iconmotionref1 的 Motion Trace）——
- *   每一笔画出来，已画出的那段沿笔画由暗到亮（尾部几乎透明、笔头实色圆头），画满后整枚提亮定格（导航选中、选项打勾时用）。
- *   方向（2026-10-06 用户）：横向为主的笔从左往右、竖向为主的从下往上，各笔按左下 → 右上依次起笔（iconTrace.ts）。
+ *   每一笔画出来，已画出的那段沿笔画由暗到亮（尾部几乎透明、笔头实色圆头），画满后整枚提亮定格（导航选中、选项打勾时用；
+ *   出现式图标——今天已练完的勾、休息「好了」、轻提示、对话框、空态 / 错误态、错误横幅——挂载时就传 active，描一遍，2026-10-09 走查 1 #25）。
+ *   方向（2026-10-08 补优先级）：从下到上优先于从左到右，下面的笔先起（iconTrace.ts）。
  *  装饰性，含义由文字或 aria-label 给出。
  *  PATHS 是旧的实心一套，只在 /preview 方案台对照（IconStyleCtx = 'current'）时用。 */
 import { useContext, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';

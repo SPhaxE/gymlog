@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import {
-  BackToTop, Banner, Button, Icon, ICONS, Cascade, Collapsible, GainGroupHead, GainRow, Dialog, ExerciseRow, PageHeader, RestDock, SharedDetail, SteelPlate, dotMonths, sharedTransition, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
+  BackToTop, Banner, Button, Chip, Icon, ICONS, Cascade, Collapsible, GainGroupHead, GainRow, Dialog, ExerciseRow, PageHeader, RestDock, SharedDetail, SteelPlate, dotMonths, sharedTransition, Nav, NumberField, OptionCard, OptionGroup, ProgressSteps, Sheet, SheetBlock, Stepper, TopBar, TrendChart, WeekStrip,
   LandmarkRuler, PhaseSegments, Num, Screen, SetRow, clock, useCountdown, useToast, type Tab,
   Mascot, MASCOT_MOODS, MASCOT_STAGES, MOOD_NAME, STAGE_NAME, RewardModal, REWARD_NAME, AgeBadge, GrowthBar, Paywall, type MascotMood, type MascotStage, type Reward,
 } from '../components';
@@ -86,6 +86,26 @@ function FeedbackInner() {
     </div>
   );
 }
+/** 页面转场（2026-10-09 走查 1 #01 #02）：App 里是整页的 View Transitions（会把整个规范页也滑走），这里用同一套关键帧在小框里演一遍 */
+const TRANSIT = { tab: ['Tab 横滑', 'tabOut', 'tabIn'], push: ['子页推入', 'pushUnder', 'pushIn'], pop: ['子页推出', 'popOut', 'popUnder'] } as const;
+function TransitDemo() {
+  const [k, setK] = useState<{ kind: keyof typeof TRANSIT; n: number }>({ kind: 'tab', n: 0 });
+  const [, out, inn] = TRANSIT[k.kind];
+  const a = (name: string) => (k.n ? `${name} var(--milo-motion-slow) var(--milo-motion-ease-decelerate) both` : 'none');
+  const [from, to] = k.kind === 'tab' ? ['首页', '容量'] : k.kind === 'push' ? ['我的', '牛龄'] : ['牛龄', '我的'];
+  return (
+    <div className={s.demoCol}>
+      <div className={s.demoRow}>{(Object.keys(TRANSIT) as (keyof typeof TRANSIT)[]).map((x) => <Chip key={x} selected={k.kind === x} onClick={() => setK((p) => ({ kind: x, n: p.n + 1 }))}>{TRANSIT[x][0]}</Chip>)}</div>
+      <div className={s.transitBox} style={{ ['--vt-x' as string]: 1 }}>
+        <div key={`o${k.n}`} className={s.transitPage} style={{ animation: a(out), zIndex: k.kind === 'pop' ? 1 : 0 }}><b className="milo-text-title-l">{from}</b></div>
+        <div key={`n${k.n}`} className={s.transitPage} style={{ animation: a(inn) }}><b className="milo-text-title-l">{to}</b></div>
+        {k.kind === 'tab' && <i className={s.transitNav} />}
+      </div>
+      <Note>Tab 之间：新页从点的那一边整页滑进来、旧页同向滑出并压暗，导航不动；子页：从右边推进来、旧页往左让三成并压暗，返回时反过来。都是 motion/slow + 减速曲线。面板、对话框、轻提示关掉时也有退场（useExitGhost：留一份最后一帧的复制品播完退场再删）。</Note>
+    </div>
+  );
+}
+
 export function FeedbackDemo() {
   return <div className={s.demoCol}><Stage label="反馈演示"><FeedbackInner /></Stage>
     <Note>对话框打开时焦点进入、Tab 在框内循环、Esc 关闭，关闭后焦点回到「删除训练」；面板同理，点遮罩也能关。</Note></div>;
@@ -455,6 +475,7 @@ export const DEMOS: Record<string, (f: Fixtures) => ReactNode> = {
   Button: () => <ButtonDemo />,
   OptionCard: () => <FormDemo />,
   DialogCard: () => <FeedbackDemo />,
+  viewTransit: () => <TransitDemo />,
   SetRow: (f) => <SessionDemo f={f} />,
   Nav: () => <NavDemo />,
   CapsuleRail: (f) => <MagnifierDemo f={f} />,

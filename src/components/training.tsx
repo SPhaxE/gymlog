@@ -38,14 +38,15 @@ export function ExerciseRow({ name, detail, weight, status = 'todo', sets, dots,
 }
 
 /* ---------- 处方主角卡（P01 第一个动作） ---------- */
-export function PrescriptionHero({ order, region, name, weight, sets, reps, reason, last, step, deload, onClick, state }: {
+export function PrescriptionHero({ order, region, name, weight, sets, reps, reason, last, step, deload, onClick, state, sharedId }: {
   order: number; region: string; name: string; weight: number | null; sets: number; reps: [number, number]; reason: string; last: number | null; step: number;
   deload?: boolean; onClick?: () => void; state?: Forced;
+  /** M03 跨页（走查 1 #06）：点开要领页时，动作名和要领页标题同名（卡片的共享名由外面包的那一层给） */ sharedId?: string;
 }) {
   return (
     <Card hero onClick={onClick} label={`${name}，${weight != null ? `${fmt(weight)} 千克` : '首次'}，${sets} 组 ${reps.join('到')} 次`} state={state}>
       <div className={s.heroTop}><span className="milo-text-caption">第 {order} 个 · {region}</span>{deload && <Tag>减量周 · 强度 ×0.9</Tag>}</div>
-      <div className={`milo-text-heading ${s.primary}`}>{name}</div>
+      <div className={`milo-text-heading ${s.primary}`}><span style={sharedId ? sharedName('title', sharedId) : undefined}>{name}</span></div>
       <div className={s.heroRow}>
         {weight != null ? <Num size="hero" value={fmt(weight)} unit="kg" /> : <span className={`milo-text-title-l ${s.primary}`}>首次</span>}
         <span className={s.target}><Num size="l" value={`${sets} × ${reps.join('–')}`} /><span className="milo-text-caption">组 × 次</span></span>

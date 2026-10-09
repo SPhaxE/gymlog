@@ -6,11 +6,12 @@
  *  - 框架：输入在下、结果在上——右栏人体（拇指点，往下放）、正 / 背在人体下面；左栏结果（眼睛看）；关闭：右上 ×、下拉、点面板外。
  *  - 表现：平涂高对比，不用容量页视效（用户 2026-10-07）；全屏唯一的荧光是动作数；面板 M05。 */
 import { useMemo } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
 import { BodyPicker, FinderBody, PickRow, Sheet, type EquipFilter } from '../components';
 import type { Source } from '../data/demo';
 import { EQUIP_NAME, FAMILY_OF, PICK_SKIP, familyById, finderRows, sideOf } from '../data/finder';
 import muscles from '../../mock/muscles.json';
+import { usePageNav } from '../shell/pageNav';
 
 const HEAD: Record<string, string> = Object.fromEntries(muscles.heads.map((h) => [h.id, h.name]));
 const groupOf = (h: string) => FAMILY_OF[h] ?? null;
@@ -45,7 +46,8 @@ export function useFinderParam() {
 
 export function FinderSheet({ src, caption, onClose }: { src: Pick<Source, 'history' | 'profile'>; caption: string; onClose: () => void }) {
   const [q, setQ] = useSearchParams();
-  const nav = useNavigate(), loc = useLocation();
+  const loc = useLocation();
+  const pn = usePageNav();
   const fam = familyById(q.get('find') ?? '') ?? familyById('chest')!;
   const sub = q.get('sub') && fam.heads.includes(q.get('sub')!) ? q.get('sub') : null;
   const side = (q.get('side') === 'back' ? 'back' : 'front') as 'front' | 'back';
@@ -63,7 +65,7 @@ export function FinderSheet({ src, caption, onClose }: { src: Pick<Source, 'hist
         picker={<BodyPicker gender={gender} view={side} height={Math.round(window.innerHeight * 0.56)} groupOf={groupOf} groupName={famName} skip={PICK_SKIP[side]}
           lit={sub ? [sub] : fam.heads} dim={sub ? fam.heads.filter((h) => h !== sub) : []} onPick={(g) => patch({ find: g, sub: null })} />}>
         {rows.map((r) => <PickRow key={r.ex.id} name={r.ex.name} equipment={EQUIP_NAME[r.ex.equipmentType] ?? r.ex.equipment} last={r.last} owned={r.owned} secondary={!r.primary}
-          onClick={() => nav(`/exercise/${r.ex.id}?${guideQuery(loc.search, 'finder')}`)} />)}
+          onClick={() => pn.push(`/exercise/${r.ex.id}?${guideQuery(loc.search, 'finder')}`)} />)}
       </FinderBody>
     </Sheet>
   );

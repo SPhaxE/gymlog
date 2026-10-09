@@ -115,7 +115,7 @@ const cap = (f: Fixtures, tier: string, size: string) => {
 export const CATALOG: Entry[] = [
   /* ---------------- 基础 ---------------- */
   {
-    name: 'Icon', group: '基础', desc: 'I3：24u 网格上 2u 圆头断笔线稿，画完整体 skewX(−11°)；颜色跟随 currentColor；默认 size/icon，小号 size/icon-s。导航五个图标按图标网格规范对齐（下方内嵌整页规范板，源文件 design/icon-grid/index.html）。选中描线（导航、选项打勾）：横笔从左往右、竖笔从下往上、左下的笔先起，下面「重播描线」可看。装饰性，含义由文字或 aria-label 给出。',
+    name: 'Icon', group: '基础', desc: 'I3：24u 网格上 2u 圆头断笔线稿，画完整体 skewX(−11°)；颜色跟随 currentColor；默认 size/icon，小号 size/icon-s。导航五个图标按图标网格规范对齐（下方内嵌整页规范板，源文件 design/icon-grid/index.html）。选中描线（导航、选项打勾）：从下到上优先于从左到右、下面的笔先起，下面「重播描线」可看。出现式图标（今天已练完的勾、休息「好了」、轻提示、对话框、空态 / 错误态、错误横幅）挂载时也描一遍（`active`，2026-10-09 走查 1 #25）。装饰性，含义由文字或 aria-label 给出。',
     axes: { name: ICONS }, size: 'auto',
     render: (p) => <span className={s.iconCell}><Icon name={p.name as IconName} /><span className="milo-text-micro">{p.name}</span></span>,
   },
@@ -452,6 +452,11 @@ export const CATALOG: Entry[] = [
       <span className="milo-text-caption">上次 8/8/8 全部顶到 8 次上限 → +5 kg</span></SharedDetail></div>,
   },
   {
+    name: 'viewTransit', group: '训练与记录', desc: '页面转场（2026-10-09 走查 1 #01 #02，DESIGN §7 转场表）：viewTransit 是整页 View Transitions 的骨架（回调里跳转、等目标页挂好再拍新快照，最多等 3 × motion/slow），M09 钻入、Tab 横滑（AppShell onTab）、子页推入 / 推出（shell/pageNav 的 usePageNav：push / back）共用；pageSwapped 判断 <main> 换了一页。面板、对话框、轻提示的退场是 useExitGhost：卸载时留一份最后一帧的复制品播退场再删，谁关的都一样。下面的交互演示用同一套关键帧。',
+    axes: { kind: ['tab', 'push', 'pop'] }, size: 'card', covers: ['pageSwapped', 'useExitGhost'],
+    render: (p) => <div className="milo-text-caption">{p.kind === 'tab' ? 'Tab 横滑：新页从点的那一边整页滑进，旧页同向滑出并压暗，导航不动' : p.kind === 'push' ? '子页推入：新页从右边盖进来，旧页往左让三成并压暗' : '子页推出：子页往右滑走，底下那页从左边回来、亮起来'}</div>,
+  },
+  {
     name: 'StepRing', group: '训练与记录', desc: 'E2 环中数字（ref1）：序号在进度环里，环 = 这个动作已完成的组数比例；完成后整行降到 opacity/done-row。',
     axes: { state: ['todo', 'current', 'done'] }, size: 'card',
     render: (p, f) => <StepRing n={2} ratio={p.state === 'todo' ? 0 : p.state === 'current' ? 1 / 3 : 1} done={p.state === 'done'} title={f.items[1]?.name ?? '窄握下拉'}
@@ -613,7 +618,7 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'StageHero', group: '增长',
-    desc: '牛龄页头：顶上一行 5 段名字（当前这一段加下划线，一眼看到「现在在哪、还有几段」），小牛站在一圈圈配重片同心环里，下面是大号「段名 · 小级」。',
+    desc: '牛龄页头：顶上一行 5 段名字（当前这一段加下划线，一眼看到「现在在哪、还有几段」），小牛站在一圈圈配重片同心环里，下面是大号「段名 · 小级」。小牛可以点（2026-10-09 走查 1 #16）：换「开心」表情、蹦一下（压扁 → 跳起拉长 → 落地回弹）、轻振，连点每次重新蹦；减少动态效果时只换表情。',
     axes: { stage: ['newborn', 'young', 'sturdy', 'bull', 'milo'] }, size: 'card',
     render: (p) => <StageHero stage={p.stage as MascotStage} sub={p.stage === 'milo' ? 3 : 2} />,
   },

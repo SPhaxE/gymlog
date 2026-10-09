@@ -5,7 +5,7 @@
  *  今天已练完（ia §1.2）：主角换成「今天已练完」——睡着的小牛、本次三格摘要、这次练到的肌头离黄金窗还有几小时；
  *  不在练完的瞬间就推下一份处方，「再练一次」是次要操作，点了才展开现算的处方。 */
 import { useMemo, useRef, useState, type CSSProperties } from 'react';
-import { useLocation, useNavigate } from 'react-router';
+import { useLocation } from 'react-router';
 import { resumeSession, startSession } from '../data/session';
 import { suggestFamily, useExtras, withExtras } from '../data/finder';
 import { FinderGlyph, FinderSheet, guideQuery, useFinderParam } from './FinderSheet';
@@ -19,9 +19,11 @@ import { DeloadBanner } from './DeloadBanner';
 import { DeloadSheet } from './DeloadSheet';
 import { TrainingView } from './TrainingView';
 import s from './HomePage.module.css';
+import { usePageNav, useSharedList } from '../shell/pageNav';
 
 export function HomePage({ scenario, now, onTab }: { scenario?: string; now: number; onTab?: (tab: Tab, path: string) => void }) {
-  const st = useStore(), nav = useNavigate(), toast = useToast(), loc = useLocation();
+  const st = useStore(), toast = useToast(), loc = useLocation();
+  const pn = usePageNav(), m03 = useSharedList();
   const topRef = useRef<HTMLDivElement>(null);
   const { src, adopt, skip } = useSource(scenario, now);
   const d = useMemo(() => homeData(src, now), [src, now]);
@@ -34,7 +36,11 @@ export function HomePage({ scenario, now, onTab }: { scenario?: string; now: num
   const finder = useFinderParam();
   const openFinder = () => finder.open(suggestFamily(rx.stats));
   const finderSheet = finder.find && <FinderSheet src={src} caption={active ? '加的动作排在这次训练最后' : '加的动作排在今天处方后面'} onClose={finder.close} />;
-  const guide = (id: string) => nav(`/exercise/${id}?${guideQuery(loc.search, active ? 'training' : 'today')}`);
+  // 点处方卡 / 行进要领（走查 1 #06）：卡片原地长成要领页、名称飞成标题（M03 跨页）；训练中从主角卡的「要领」进，推入
+  const guide = (id: string) => {
+    const to = `/exercise/${id}?${guideQuery(loc.search, active ? 'training' : 'today')}`;
+    if (active) pn.push(to); else m03.open(id, to);
+  };
   // 开始训练：主角卡原地展开成组行（M03 共享元素，卡片同名）；处方抄成进行中的训练，留在首页
   const start = () => { if (live && rx.kind === 'plan') sharedTransition(() => startSession(rx, Date.now(), env.cfg.loadStep)); };
   const [again, setAgain] = useState(false);
@@ -73,10 +79,10 @@ export function HomePage({ scenario, now, onTab }: { scenario?: string; now: num
       <div className={s.content}>
         <DeloadBanner dv={dv} hits={d.hits} onOpen={() => setDeloadOpen(true)} />
         {rx.kind === 'pool-empty' && <Banner title="当前器械下没有可排的动作" detail="去「我的」里加器械" actions={<Button kind="ghost" size="s">去设置</Button>} />}
-        {done && <Done d={done} onSummary={live ? () => nav(`/summary/${done.session.id}`) : undefined} />}
+        {done && <Done d={done} onSummary={live ? () => pn.push(`/summary/${done.session.id}`) : undefined} />}
         {!done && rx.kind === 'rest' && <RestDay blocked={rx.blocked.slice(0, 6).map((h) => [h.name, Math.round(h.hoursLeft)] as [string, number])} />}
 
-        {first && <div style={sharedName('swap', first.exerciseId)}><PrescriptionHero order={1} region={REGION_NAME[first.region]} name={first.name} weight={first.suggestion.weightKg} sets={first.sets} reps={first.repRange}
+        {first && <div style={sharedName(m03.opening === first.exerciseId ? 'card' : 'swap', first.exerciseId)}><PrescriptionHero order={1} sharedId={m03.opening === first.exerciseId ? first.exerciseId : undefined} region={REGION_NAME[first.region]} name={first.name} weight={first.suggestion.weightKg} sets={first.sets} reps={first.repRange}
           reason={first.suggestion.reason.text} last={d.lastWeight(first.exerciseId)} step={env.cfg.loadStep} deload={dv.kind === 'week'} onClick={() => guide(first.exerciseId)} /></div>}
         {/* 加一个动作（2026-10-09 走查 1 选定 W2）：主角卡下面一条，清单之前——一进首页就看得到「今天还能加」 */}
         {!done && (rx.kind === 'plan' || rx.kind === 'rest') && <button type="button" className={`milo-press milo-focus ${s.addEx}`} onClick={openFinder}><FinderGlyph gender={src.profile?.gender ?? 'male'} className={s.addGlyph} />加一个动作<span className={s.addHint}>· 按肌肉找</span></button>}
@@ -84,9 +90,9 @@ export function HomePage({ scenario, now, onTab }: { scenario?: string; now: num
           <>
             <SectionLabel>接下来</SectionLabel>
             <div className={s.rows}>
-              <Cascade>
+              <Cascade still={m03.landed}>
                 {rest.map((it) => (
-                  <ExerciseRow key={it.exerciseId} name={it.name} detail={`${REGION_NAME[it.region]} · ${it.sets} × ${it.repRange.join('–')}${extras.includes(it.exerciseId) ? ' · 手动加的' : ''}`} weight={it.suggestion.weightKg}
+                  <ExerciseRow key={it.exerciseId} sharedId={m03.opening === it.exerciseId ? it.exerciseId : undefined} name={it.name} detail={`${REGION_NAME[it.region]} · ${it.sets} × ${it.repRange.join('–')}${extras.includes(it.exerciseId) ? ' · 手动加的' : ''}`} weight={it.suggestion.weightKg}
                     onClick={() => guide(it.exerciseId)} />
                 ))}
               </Cascade>
@@ -184,7 +190,7 @@ function Done({ d, onSummary }: { d: DoneToday; onSummary?: () => void }) {
         <div className={s.doneGlow} aria-hidden="true" />
         <div className={s.doneFig}><Mascot stage={d.stage} mood="rest" animate /></div>
         <div className={s.doneText}>
-          <span className={s.doneTick}><Icon name="check" /></span>
+          <span className={s.doneTick}><Icon name="check" active /></span>
           <h2 className={`milo-text-title-l ${s.primary}`}>今天已练完</h2>
           <p className="milo-text-caption">超量恢复从现在开始：睡一觉，它会比今天更强一点。{next && <>最快的 <b className={s.primary}>{next.name}</b> 约 {Math.round(next.hours)} 小时后进黄金窗。</>}</p>
         </div>

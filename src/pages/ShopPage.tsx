@@ -7,26 +7,28 @@
  *  - 框架：第一优先 = 为你推荐的理由；主操作 = 点商品（两列卡片，滑一下就到拇指区）；没有固定主按钮。
  *  - 表现：推荐卡背景配重片槽纹；状态标形状 + 文字（缺货虚线、整卡变暗）；整页不放荧光块（荧光留给详情页的「购买」）。 */
 import { useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router';
+import { useLocation } from 'react-router';
 import { BackToTop, ProductCard, ProductGrid, RecommendCard, Screen, Segmented, TopBar } from '../components';
 import { KNOWLEDGE, SHOP_PRODUCTS } from '../data/growth';
 import { recommendFor } from '../data/knowledge';
 import { offOf, useShop } from './useShop';
 import s from './ShopPages.module.css';
+import { usePageNav, useSharedList } from '../shell/pageNav';
 
 type Cat = 'all' | '护具' | '补剂';
 const CATS = [['all', '全部'], ['护具', '护具'], ['补剂', '补剂']] as const;
 
 export function ShopPage({ scenario, now }: { scenario?: string; now: number }) {
-  const nav = useNavigate(), loc = useLocation();
+  const loc = useLocation();
+  const pn = usePageNav(), m03 = useSharedList();
   const topRef = useRef<HTMLDivElement>(null);
   const { balance, hits } = useShop(scenario, now);
   const [cat, setCat] = useState<Cat>('all');
   const rec = recommendFor(hits), k = KNOWLEDGE[rec.id];
   const recProduct = SHOP_PRODUCTS.find((p) => p.knowledge === rec.id);
   const list = useMemo(() => SHOP_PRODUCTS.filter((p) => cat === 'all' || p.category === cat), [cat]);
-  const back = () => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav('/me/wallet' + loc.search, { replace: true }));
-  const go = (path: string) => nav(path + loc.search);
+  const back = () => pn.back('/me/wallet' + loc.search);
+  const go = (path: string) => pn.push(path + loc.search);
 
   return (
     <Screen label="商城">
@@ -39,7 +41,7 @@ export function ShopPage({ scenario, now }: { scenario?: string; now: number }) 
           <RecommendCard title={k.title} why={rec.why} product={recProduct && { name: recProduct.name, price: recProduct.price }} onClick={() => go(`/shop/guide/${rec.id}`)} />
           <Segmented items={CATS} value={cat} onChange={setCat} label="品类" />
           <ProductGrid>
-            {list.map((p) => <ProductCard key={p.id} {...p} off={offOf(p.member, balance)} onClick={() => go(`/shop/item/${p.id}`)} />)}
+            {list.map((p) => <ProductCard key={p.id} {...p} off={offOf(p.member, balance)} sharedId={m03.opening === p.id ? p.id : undefined} onClick={() => m03.open(p.id, `/shop/item/${p.id}${loc.search}`)} />)}
           </ProductGrid>
         </div>
       </div>

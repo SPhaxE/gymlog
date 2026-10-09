@@ -15,9 +15,11 @@ import { PLAN_NAME, cancel, monthStart, proSaved, proStatus, proThisMonth, usePr
 import { keepQuery, useShop } from './useShop';
 import s from './ShopPages.module.css';
 import p from './ProPages.module.css';
+import { usePageNav } from '../shell/pageNav';
 
 export function ProHubPage({ scenario, now }: { scenario?: string; now: number }) {
   const nav = useNavigate(), loc = useLocation(), toast = useToast();
+  const pn = usePageNav();
   const topRef = useRef<HTMLDivElement>(null);
   const q = keepQuery(loc.search);
   const { g, wallet, src } = useShop(scenario, now);
@@ -29,8 +31,8 @@ export function ProHubPage({ scenario, now }: { scenario?: string; now: number }
   const last = st.period ?? [...ps].sort((a, b) => b.toMs - a.toMs)[0];
   const month = useMemo(() => proThisMonth(g, now), [g, now]);
   const saved = useMemo(() => proSaved(wallet.orders, ps, monthStart(now)), [wallet.orders, ps, now]);
-  const back = () => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav('/me' + q, { replace: true }));
-  const go = (path: string) => () => nav(path + q);
+  const back = () => pn.back('/me' + q);
+  const go = (path: string) => () => pn.push(path + q);
   if (!last) return <Navigate to={'/pro' + q} replace />;
 
   const status = st.kind === 'free' ? 'expired' : st.kind;

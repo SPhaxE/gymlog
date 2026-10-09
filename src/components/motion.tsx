@@ -52,7 +52,7 @@ export function RestDock({ remaining, total, endAt, width }: { remaining: number
     <div ref={ref} role="timer" className={cx(s.ringPill, remaining <= 0 && s.ringDone)} style={{ ...(width ? { width } : {}), ...REST_VT }}
       aria-label={remaining > 0 ? `组间休息剩余 ${clock(remaining)}` : '休息结束'}>
       {box && remaining > 0 && <svg className={s.ringLayer} style={REST_RING_VT} aria-hidden="true"><path className={s.ringRest} d={pillPath(inset, inset, box[0] - inset * 2, box[1] - inset * 2)} pathLength={1} style={{ strokeDasharray: `${rr} 1` }} /></svg>}
-      <Icon name={remaining > 0 ? 'timer' : 'check'} small />
+      <Icon name={remaining > 0 ? 'timer' : 'check'} small active={remaining <= 0} />
       <b>{remaining > 0 ? clock(remaining) : '好了'}</b>
     </div>
   );
@@ -62,28 +62,41 @@ export function RestDock({ remaining, total, endAt, width }: { remaining: number
 /** 共享元素的名字：同一个 id 的卡片、名称、数字在列表与详情里同名，转场时由浏览器把它们从旧位置变形到新位置。
  *  view-transition-class = 部位（card / title / num），CSS 按部位定转场方式。
  *  同一时刻只给「正在展开 / 收起的那一项」起名：转场层里的分组按文档顺序叠放，列表其他行要是也有名字，会画在展开的卡片上面（用户 2026-10-05 逐帧看到的遮挡错） */
-export const sharedName = (part: 'card' | 'title' | 'num' | 'swap', id: string) => ({ viewTransitionName: `x-${part}-${id.replace(/[^a-zA-Z0-9-]/g, '-')}`, viewTransitionClass: part }) as CSSProperties;
+export const sharedName = (part: 'card' | 'title' | 'num' | 'swap' | 'pic', id: string) => ({ viewTransitionName: `x-${part}-${id.replace(/[^a-zA-Z0-9-]/g, '-')}`, viewTransitionClass: part }) as CSSProperties;
 
 /** M09 钻入转场（2026-10-06，增量页的一行 ↔ 动作曲线页）：列表行里的名称、最新值、小曲线，分别飞成详情页的标题、大数字、整张曲线；
  *  整页只做很快的淡出 / 淡入（见 interactive.css 的 data-vt='drill'）。名字按动作 id 起，列表里只有「被点的那一行」带名字（同名不能出现两次）。
  *  part：name 名称 → 标题；num 最新值 → 大数字；line 小曲线 → 整张曲线。 */
 export const drillName = (part: 'name' | 'num' | 'line', id: string) => ({ viewTransitionName: `x-drill-${part}-${id.replace(/[^a-zA-Z0-9-]/g, '-')}`, viewTransitionClass: `d${part}` }) as CSSProperties;
 
-/** 钻入 / 退出转场：before 里（flushSync）让起点页的共享名就位；go 里跳转；等 ready 选择器出现（目标页挂好、共享名就位）才拍新快照。
- *  dir：in = 进详情，out = 回列表（只影响整页淡入时要不要上浮）。不支持或减少动态效果时直接跳转。 */
-export function drillTransition(go: () => void, ready: string, dir: 'in' | 'out', before?: () => void, after?: () => void) {
+/** 页面级转场的骨架（M09 钻入、Tab 横滑、子页推入 / 推出共用）：before 里（flushSync）让起点页的共享名就位；回调里跳转，
+ *  等 ready() 为真（目标页挂好、共享名就位）才拍新快照，最多等 3 × motion/slow（重页面借这段时间渲染）。
+ *  vt / dir 挂在 <html data-vt data-vt-dir> 上，CSS 按它选转场（interactive.css）。不支持、减少动态效果、或已经有一次页面转场在跑时直接跳转（不嵌套）。 */
+export function viewTransit(o: { vt: 'drill' | 'tab' | 'push' | 'pop'; dir?: string; go: () => void; ready: () => boolean; before?: () => void; after?: () => void }) {
   const doc = document as Document & { startViewTransition?: (cb: () => Promise<void>) => { finished: Promise<unknown> } };
-  if (!doc.startViewTransition || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) { go(); return; }
-  before?.();
   const html = document.documentElement;
-  html.dataset.vt = 'drill'; html.dataset.vtDir = dir;
+  if (!doc.startViewTransition || html.dataset.vt || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) { o.go(); return; }
+  o.before?.();
+  html.dataset.vt = o.vt; if (o.dir) html.dataset.vtDir = o.dir;
   const vt = doc.startViewTransition(() => new Promise<void>((done) => {
-    go();
+    o.go();
+    // 回调期间页面暂停渲染、rAF 不跑，所以用 setTimeout 轮询
     const t0 = performance.now();
-    const check = () => (document.querySelector(ready) || performance.now() - t0 > T['motion/slow'] ? done() : window.setTimeout(check, 16));
+    const check = () => (o.ready() || performance.now() - t0 > T['motion/slow'] * 3 ? done() : window.setTimeout(check, 16));
     check();
   }));
-  void vt.finished.catch(() => undefined).finally(() => { delete html.dataset.vt; delete html.dataset.vtDir; after?.(); });
+  void vt.finished.catch(() => undefined).finally(() => { delete html.dataset.vt; delete html.dataset.vtDir; o.after?.(); });
+}
+
+/** 钻入 / 退出转场（M09）：ready 是目标页挂好后才有的选择器；dir：in = 进详情，out = 回列表（只影响整页淡入时要不要上浮） */
+export function drillTransition(go: () => void, ready: string, dir: 'in' | 'out', before?: () => void, after?: () => void) {
+  viewTransit({ vt: 'drill', dir, go, ready: () => !!document.querySelector(ready), before, after });
+}
+
+/** 换了一页：<main> 换成了另一个节点（Tab 根页、子页都用 Screen 渲染 <main>，路由切换时整页重挂） */
+export function pageSwapped() {
+  const m0 = document.querySelector('main');
+  return () => { const m = document.querySelector('main'); return !!m && m !== m0; };
 }
 
 /** 用 View Transitions 包住一次状态切换（flushSync 让新 DOM 在回调里就位）；不支持或减少动态效果时直接切换 */

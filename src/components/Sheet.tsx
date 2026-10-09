@@ -4,7 +4,7 @@
  *  面板盖住导航（ia §1.12），关掉即恢复。docked：只做静态展示（Playground 矩阵），不抢焦点、不登记返回键、不可拖。 */
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { IconButton } from './Button';
-import { useBackHandler, useFocusTrap } from './overlay';
+import { useBackHandler, useExitGhost, useFocusTrap } from './overlay';
 import { sharedName } from './motion';
 import { cx } from './state';
 import s from './Sheet.module.css';
@@ -17,6 +17,8 @@ export function Sheet({ title, meta, onClose, children, docked, sharedId, tall }
   const ref = useRef<HTMLElement>(null), scrim = useRef<HTMLDivElement>(null);
   useBackHandler(!docked, onClose);
   useFocusTrap(ref, onClose, !docked);
+  // 退场：面板往下滑走、遮罩淡掉；共享元素那种（缩回胶囊）由转场负责，不留复制品
+  useExitGhost(scrim, s.out, docked || !!sharedId);
   const [anchors, setAnchors] = useState<[number, number] | null>(null);
   const [hgt, setHgt] = useState<number | null>(null);
   const [drag, setDrag] = useState(false);

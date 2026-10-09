@@ -137,7 +137,8 @@
 | 1 | ✅ 完成（2026-10-08）：03 13 19 20 21 22 27 07 08（补剂）11 04 24 17 25（顺序）；规范 §4 / §6 / §9.2 / §9.6 第 15–18 条；门禁加「演示」字样、伪滚动、键盘面板、自动加载四项 |
 | 2 | ✅ 拍板材料已出（2026-10-08）：线框 `?board=p04v2 / logfold / addex`；方案台 `/preview` 新增四组 P 粒子 · S 钢板 · J 增量配色 · T 商城标（组件：`ParticleField`、`SteelPlate look`、`GainLook`、`ShopTagLook`，默认都还是「现在」）；对照 `screenshots/walkthrough-1/stage2-choices.pdf` + 录屏 `stage2-motion.mp4`。**等用户选** |
 | 3 | ✅ 落地 + 新一轮拍板材料（2026-10-09）：七件已选全部落地（J1 + 描边字、T2 + 热销荧光 + 只用实物图、S1 固定灯 + 关灯渐变 + 暗手绘休息圈、P3 内收 + 模糊、记录按月、加动作挪到主角卡下）；规范 §1 第 6–7 条（荧光分面积 / 点缀两级）、§5 描边数字、钢板 / 商品卡 / 增量行 / 记录行条目；列表里重复的 PR 标全改荧光细线（`Tag tone="accent"`）；顺手修了「没有历史也提示这周快断了」（周五才暴露）。**等用户选**：主角卡 H0–H3（`/preview#grain`）· 视频页 Stitch V1–V3（`screenshots/hifi/v7/v7-board.png`）。对照 `screenshots/walkthrough-1/stage3-report.pdf` + 录屏 `stage3-grain.mp4` / `stage3-motion.mp4` |
-| 4–6 | 未开始 |
+| 4 | ✅ 转场与动效（2026-10-09）：01 Tab 横滑 · 02 子页推入推出 + 面板 / 对话框 / 轻提示退场 · 06 首页卡 → 要领 M03 · 08 商品卡 → 详情 M03 · 25 出现式图标描线 · 26 曲线钻入对位 · 16 小牛点按；规范 §7 转场表、§9.6 第 19 条「每个出现都有退场」、§6 出现式描线；新 Token `motion/ease-accelerate`。录屏 `screenshots/walkthrough-1/stage4-motion.mp4` |
+| 5–6 | 未开始 |
 
 ### 用户选定（2026-10-09）
 1. 视频页 **W3 关键帧分步**；步骤文字照常写，不写「第几帧」。→ 先跑 Stitch（②）再搭。
@@ -166,6 +167,17 @@
 ### 用户回应（2026-10-08）
 - 触点静态稿（/spec 第 7 章）：看过，只算中保真；**进作品集时务必用真实的 iOS / 安卓页面样机**（真系统界面、真机框），不用自己画的手机框 → 作品集阶段做。
 - Stitch：要接上。现状：密钥只注入在 `stitch.withgoogle.com`（Stitch 网页本身，没有接口），接口 `stitch.googleapis.com/mcp` 连得上但不带密钥（列项目返回「缺少认证」）；代理按域名注入，密钥本身拿不到、也不能绕。要在环境设置把 Network secret 的域名改成 `stitch.googleapis.com`（请求头 `X-Goog-Api-Key`），新会话生效 → 视频页线框选定后在新会话里跑 Stitch。
+
+### 阶段 4 落地记录
+- 骨架：`viewTransit`（`motion.tsx`）——回调里跳转、等目标页挂好（`pageSwapped`：`<main>` 换了节点）再拍新快照，最多等 3 × `motion/slow`；`html[data-vt][data-vt-dir]` 选转场；已有一次在跑时不嵌套。`drillTransition` 改成它的一个用法。
+- Tab 横滑：`AppShell onTab` 一律走 `vt=tab`（方向按导航顺序），导航在转场里单独一层（`x-tabnav`，只显示新的那份）；休息进度条飞行合进同一次转场。系统返回键：回首页按横滑往左、子页按推出。
+- 子页：`src/shell/pageNav.ts` 的 `usePageNav().push / back`，20 个页面的子页链接和返回按钮换过去（`back(fallback)` 取代各页的 `history.idx > 0 ? nav(-1) : nav(fallback)`）。
+- M03 跨页：`useSharedList`（点开前 flushSync 只给被点的一项起名；回来时落回的那一项带名、不播入场）+ `useSharedDetail`（history state 的 `m03` 标记决定起不起名；返回 `dir=back`：列表立刻淡入）。首页处方卡 / 行 → 要领（`.card` 窗口展开 + 标题）；商城卡 → 详情（`pic` + 标题）。训练中从主角卡「要领」进是推入。
+- 退场：`useExitGhost`（`overlay.tsx`）——卸载时复制最后一帧（画布也拷）、inert + aria-hidden、播退场再删；`Sheet`（共享元素那种不留）、`Dialog`、`ToastSlot`。
+- 曲线对位：`TrendChart tail={{ n: POINTS }}` 在最后 8 次那一段上罩一层同样的线和点、带 `dline` 共享名，框按 `Sparkline` 留白比例外扩；`dline` 快照拉满框（`object-fit: fill`）；整条线 `trendDrawBack` 从右往左画。
+- 出现式描线：`Icon active` 加在今天已练完的勾、休息「好了」、轻提示、对话框、空态 / 错误态、错误横幅。
+- 小牛：`StageHero` 小牛是按钮，点一下 `happy` + `hop` 关键帧 + 轻振。
+- /playground：新条目 `viewTransit`（小框里用同一套关键帧演 Tab / 推入 / 推出）；`GrainGlow` 加 pulse / pulse_calm；`StageHero`、`Icon`、`Card` 说明更新。/demo：今日处方、曲线、牛龄、商城、我的五步补了转场说明。
 
 ### 阶段 3 落地记录
 - 增量：`GainLook` 默认 `accent`；PR 荧光细线小标、小曲线压灰末点荧光、上涨荧光；「下次」数字 `-webkit-text-stroke` 描边（门禁对比度按描边色算）；页头 `ParticleField kind="orbit" inward anchor={[1, 0]}` + `blur` + 0.7 透明。

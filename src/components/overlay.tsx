@@ -1,7 +1,7 @@
 /** 悬浮层（DESIGN §9.3）：Dialog、Toast、Sheet 都渲染到同一个宿主里。
  *  App 壳把宿主放在屏幕框里；Playground 的每块迷你屏幕各有自己的宿主，所以弹窗只盖住那块屏幕。
  *  返回键：打开的悬浮层按后开先关的顺序登记，系统返回键先关最上面的一层（壳里接 Capacitor backButton）。 */
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 
 export const OverlayHost = createContext<HTMLElement | null>(null);
@@ -51,6 +51,35 @@ export function useFocusTrap(ref: React.RefObject<HTMLElement | null>, onClose: 
     el.addEventListener('keydown', key);
     return () => { el.removeEventListener('keydown', key); before?.focus?.({ preventScroll: true }); };
   }, [ref, onClose, enabled]);
+}
+
+/** 每个出现都有退场（2026-10-09 走查 1 #02，DESIGN §9.6）：悬浮层卸载时，把它最后一帧的 DOM 复制一份留在原处、播退场动画（exitClass），播完删掉。
+ *  这样不管是谁关的（遮罩、×、返回键，还是父组件选完直接不渲染了）都有退场，调用处不用改。
+ *  复制品不可交互、读屏不念（inert + aria-hidden），画布照原样拷过去；减少动态效果、页面转场进行中（整页快照会把它拍进去）、skip 为真时不留。
+ *  严格模式在开发时会「挂上 → 卸下 → 再挂上」一次：挂上后第一帧之前的卸下不算。 */
+export function useExitGhost(ref: RefObject<HTMLElement | null>, exitClass: string, skip?: boolean) {
+  const skipRef = useRef(skip);
+  skipRef.current = skip;
+  useLayoutEffect(() => {
+    const el = ref.current;
+    let live = false;
+    const raf = requestAnimationFrame(() => { live = true; });
+    return () => {
+      cancelAnimationFrame(raf);
+      const parent = el?.parentNode;
+      if (!el || !parent || !live || skipRef.current || !el.isConnected || document.documentElement.dataset.vt
+        || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+      const g = el.cloneNode(true) as HTMLElement;
+      const src = el.querySelectorAll('canvas'), dst = g.querySelectorAll('canvas');
+      src.forEach((c, i) => { try { dst[i].width = c.width; dst[i].height = c.height; dst[i].getContext('2d')?.drawImage(c, 0, 0); } catch { /* 画布拷不了就留空 */ } });
+      g.inert = true; g.setAttribute('aria-hidden', 'true'); g.removeAttribute('role'); g.removeAttribute('aria-label'); g.dataset.ghost = '';
+      g.classList.add(exitClass);
+      parent.insertBefore(g, el.nextSibling);
+      const done = () => g.remove();
+      g.addEventListener('animationend', (e) => { if (e.target === g) done(); });
+      window.setTimeout(done, 1000);   // 兜底：动画事件没来（标签页在后台）也删掉
+    };
+  }, [ref, exitClass]);
 }
 
 /* ---------- Toast 队列 ---------- */
