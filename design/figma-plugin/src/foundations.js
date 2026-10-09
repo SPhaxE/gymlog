@@ -8,7 +8,9 @@ async function importVariables() {
   const defs = [];
   for (const k of Object.keys(T.semantic.color)) {
     const d = T.semantic.color[k];
-    defs.push({ name: 'color/' + k, type: 'COLOR', value: figma.variables.createVariableAlias(prim['color/' + d.ref]), desc: (d.desc ? d.desc + ' · ' : '') + '= ' + d.ref, scopes: d.scopes, css: cssName('color-', k) });
+    defs.push({ name: 'color/' + k, type: 'COLOR', value: figma.variables.createVariableAlias(prim['color/' + d.ref]),
+      valueLight: d.light ? figma.variables.createVariableAlias(prim['color/' + d.light]) : undefined,
+      desc: (d.desc ? d.desc + ' · ' : '') + '深 = ' + d.ref + (d.light ? ' · 浅 = ' + d.light : ''), scopes: d.scopes, css: cssName('color-', k) });
   }
   for (const k of Object.keys(T.number)) {
     const d = T.number[k];
@@ -18,7 +20,7 @@ async function importVariables() {
     const d = T.string[k];
     defs.push({ name: k, type: 'STRING', value: d.value, desc: d.desc || '', scopes: d.scopes, css: cssName('', k) });
   }
-  const tok = await upsertVariables(await collection(TOKEN_COLLECTION, false), defs);
+  const tok = await upsertVariables(await collection(TOKEN_COLLECTION, false, (T.meta.modes || []).slice(1)), defs);
   return { prim, tok };
 }
 

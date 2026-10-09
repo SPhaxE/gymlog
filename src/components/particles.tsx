@@ -6,13 +6,16 @@
  *  颜色只取主题色原色（荧光 300 → 500 → 700 → 900 的渐变，离光源越远越暗）；叠加混合（lighter），暗处几乎不见。
  *  画布按容器大小 × 设备像素比（最多 2）；约 30 帧；离开视野或页面隐藏时停；减少动态效果时只画一帧静止的。 */
 import { useEffect, useRef } from 'react';
+import { useTheme } from '../styles/theme';
 import s from './particles.module.css';
 
 export type ParticleKind = 'dust' | 'flow' | 'orbit';
 
-const hexVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim().slice(0, 7);
+/** 从元素自己身上读颜色变量（局部主题 data-theme 也算数），取 6 位十六进制 */
+const hexVar = (name: string, el: Element = document.documentElement) => getComputedStyle(el).getPropertyValue(name).trim().slice(0, 7);
 const toTriple = (hex: string): [number, number, number] => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) || 0) as [number, number, number];
-const STOPS = ['--milo-prim-lime-300', '--milo-prim-lime-500', '--milo-prim-lime-700', '--milo-prim-lime-900'];
+/** 粒子的四段颜色（靠近光源 → 最远）：语义色 fx/spark-0…3，深色是亮荧光 → 暗橄榄，浅色是深绿 → 浅荧光（2026-10-10 浅色模式） */
+const STOPS = ['--milo-color-fx-spark-0', '--milo-color-fx-spark-1', '--milo-color-fx-spark-2', '--milo-color-fx-spark-3'];
 /** 0（近光源、亮）→ 1（远、暗）在四个荧光原色之间插值 */
 function ramp(cols: [number, number, number][], t: number, a: number) {
   const x = Math.max(0, Math.min(0.999, t)) * (cols.length - 1), i = Math.floor(x), f = x - i, p = cols[i], q = cols[i + 1];
@@ -31,13 +34,16 @@ export function ParticleField({ kind, anchor = [1, 0], spread = 1, strength = 1,
   className?: string;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
+  const theme = useTheme();
   useEffect(() => {
     const cv = ref.current;
     let ctx: CanvasRenderingContext2D | null = null;
     try { ctx = cv?.getContext('2d') ?? null; } catch { ctx = null; }
     if (!cv || !ctx) return;
     const c = ctx;
-    const cols = STOPS.map((n) => toTriple(hexVar(n)));
+    const cols = STOPS.map((n) => toTriple(hexVar(n, cv)));
+    // 浅色底上叠加混合（lighter）会把粒子冲淡成白：浅色主题改成普通叠放
+    const add = theme === 'light' ? 'source-over' : 'lighter';
     // 颜色查表（2026-10-10 性能）：每个粒子每帧要两次颜色，原来每次都现拼十六进制串；先把 256 级颜色和 256 级透明度拼好，用的时候查表（字节本来就只有 256 级，画出来一样）
     const HEX = Array.from({ length: 256 }, (_, i) => ramp(cols, i / 255, 0).slice(0, 7));
     const ALPHA = Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, '0'));
@@ -74,7 +80,7 @@ export function ParticleField({ kind, anchor = [1, 0], spread = 1, strength = 1,
         // 拖尾：每帧把旧的擦淡一点（保持透明底）；流场拖得长，环轨拖成一小段彗尾
         c.globalCompositeOperation = 'destination-out'; c.fillStyle = col(1, kind === 'flow' ? 0.05 : 0.16); c.fillRect(0, 0, W, H);
       } else c.clearRect(0, 0, W, H);
-      c.globalCompositeOperation = 'lighter';
+      c.globalCompositeOperation = add;
       // 光源处一层很淡的底光：粒子是主角，底光只让它们像是从同一个光里来的
       const g = c.createRadialGradient(ax, ay, 0, ax, ay, R * 0.75);
       g.addColorStop(0, col(0.3, 0.16 * strength)); g.addColorStop(0.5, col(0.7, 0.05 * strength)); g.addColorStop(1, col(1, 0));
@@ -116,7 +122,7 @@ export function ParticleField({ kind, anchor = [1, 0], spread = 1, strength = 1,
         const br = 0.85 + Math.sin(t * 0.05) * 0.15, cr = R * 0.09;
         const core = c.createRadialGradient(ax, ay, 0, ax, ay, cr * 2.4);
         core.addColorStop(0, col(0, 0.2 * br * strength)); core.addColorStop(0.25, col(0.15, 0.1 * br * strength)); core.addColorStop(1, col(0.6, 0));   // 拖尾模式会层层叠加，每帧只补一点
-        c.globalCompositeOperation = 'lighter'; c.fillStyle = core; c.beginPath(); c.arc(ax, ay, cr * 2.4, 0, Math.PI * 2); c.fill();
+        c.globalCompositeOperation = add; c.fillStyle = core; c.beginPath(); c.arc(ax, ay, cr * 2.4, 0, Math.PI * 2); c.fill();
       }
       if (kind === 'orbit' && !inward && t % 6 === 0) {
         // 轨道本身（拖尾模式下隔几帧补一笔，亮度落在一个很淡的平衡点）：很淡的一圈圈（配重片的车削纹），只在光源附近看得出
@@ -137,7 +143,7 @@ export function ParticleField({ kind, anchor = [1, 0], spread = 1, strength = 1,
     document.addEventListener('visibilitychange', run);
     run();
     return () => { cancelAnimationFrame(raf); ro.disconnect(); io?.disconnect(); document.removeEventListener('visibilitychange', run); };
-  }, [kind, anchor[0], anchor[1], spread, strength, inward]);   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [kind, anchor[0], anchor[1], spread, strength, inward, theme]);   // eslint-disable-line react-hooks/exhaustive-deps
   return <canvas ref={ref} className={`${s.field} ${className ?? ''}`} aria-hidden="true" />;
 }
 
@@ -164,13 +170,14 @@ export function GrainGlow({ kind, anchor = [0.95, 0], size = 1, strength = 1, ca
   /** pulse：训练中更慢、更淡（走查 1 §5：粒子训练中也用，但更慢、更淡） */ calm?: boolean; className?: string;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
+  const theme = useTheme();
   useEffect(() => {
     const cv = ref.current;
     let ctx: CanvasRenderingContext2D | null = null;
     try { ctx = cv?.getContext('2d') ?? null; } catch { ctx = null; }
     if (!cv || !ctx) return;
     const c = ctx, still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const [hot, lime, deep] = ['--milo-prim-lime-300', '--milo-prim-lime-500', '--milo-prim-lime-900'].map((n) => toTriple(hexVar(n)));
+    const [hot, lime, deep] = ['--milo-color-fx-glow-hot', '--milo-color-fx-glow-mid', '--milo-color-fx-glow-deep'].map((n) => toTriple(hexVar(n, cv)));
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     if (kind === 'pulse') return;
     let W = 0, H = 0, img: ImageData | null = null, noise = new Uint8Array(1), t = 0;
@@ -215,7 +222,7 @@ export function GrainGlow({ kind, anchor = [0.95, 0], size = 1, strength = 1, ca
     document.addEventListener('visibilitychange', run);
     run();
     return () => { cancelAnimationFrame(raf); ro.disconnect(); io?.disconnect(); document.removeEventListener('visibilitychange', run); };
-  }, [kind, anchor[0], anchor[1], size, strength, calm]);   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [kind, anchor[0], anchor[1], size, strength, calm, theme]);   // eslint-disable-line react-hooks/exhaustive-deps
   if (kind === 'pulse') return <PulseGlow anchor={anchor} size={size} strength={strength * (calm ? 0.75 : 1)} period={calm ? 2.6 : 1.8} className={className} />;
   return <canvas ref={ref} className={`${s.field} ${className ?? ''}`} aria-hidden="true" />;
 }
@@ -234,13 +241,14 @@ export function heartbeat(p: number) {
  *  减少动态效果时停在歇拍；离开视野、切后台暂停动画。 */
 function PulseGlow({ anchor, size, strength, period, className }: { anchor: [number, number]; size: number; strength: number; period: number; className?: string }) {
   const box = useRef<HTMLSpanElement>(null), ref = useRef<HTMLCanvasElement>(null);
+  const theme = useTheme();
   useEffect(() => {
     const wrap = box.current, cv = ref.current;
     let c: CanvasRenderingContext2D | null = null;
     try { c = cv?.getContext('2d') ?? null; } catch { c = null; }
     if (!wrap || !cv || !c) return;
     const ctx = c, still = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const [hot, lime, deep] = ['--milo-prim-lime-300', '--milo-prim-lime-500', '--milo-prim-lime-900'].map((n) => toTriple(hexVar(n)));
+    const [hot, lime, deep] = ['--milo-color-fx-glow-hot', '--milo-color-fx-glow-mid', '--milo-color-fx-glow-deep'].map((n) => toTriple(hexVar(n, cv)));
     const dpr = Math.min(2, window.devicePixelRatio || 1), PEAK_R = 1.06, PEAK_A = 1.4;
     // 颜色随强度连续过渡：暗绿 → 荧光 → 亮荧光（同 H1）
     const color = (I: number, a: number) => {
@@ -285,6 +293,6 @@ function PulseGlow({ anchor, size, strength, period, className }: { anchor: [num
     const ro = new ResizeObserver(([e]) => { const { width, height } = e.contentRect; if (Math.abs(width - w0) > 1 || Math.abs(height - h0) > 1) { w0 = width; h0 = height; paint(); } });
     ro.observe(wrap);
     return () => { anim?.cancel(); io?.disconnect(); ro.disconnect(); document.removeEventListener('visibilitychange', vis); };
-  }, [anchor[0], anchor[1], size, strength, period]);   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [anchor[0], anchor[1], size, strength, period, theme]);   // eslint-disable-line react-hooks/exhaustive-deps
   return <span ref={box} className={`${s.field} ${s.pulse} ${className ?? ''}`} aria-hidden="true"><canvas ref={ref} className={s.field} /></span>;
 }

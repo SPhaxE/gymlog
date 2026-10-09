@@ -15,7 +15,7 @@
 .headList { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--milo-space-s); }
 .headList li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--milo-space-s); color: var(--milo-color-text-primary); }
 .headList li > :last-child { color: var(--milo-color-text-secondary); }
-.headList i { width: var(--milo-space-m); height: var(--milo-space-m); border-radius: var(--milo-radius-xs); background: var(--milo-prim-gray-600); }
+.headList i { width: var(--milo-space-m); height: var(--milo-space-m); border-radius: var(--milo-radius-xs); background: var(--milo-color-picker-dim); }
 .headList i.on { background: var(--milo-color-text-primary); }
 .progress { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: var(--milo-space-m); width: 100%; min-height: calc(var(--milo-size-hit-min) + var(--milo-space-m));
   padding: var(--milo-space-s) var(--milo-space-m); border: 0; border-radius: var(--milo-radius-m); background: var(--milo-color-bg-raised-2); color: var(--milo-color-text-primary); text-align: left; font: inherit; }

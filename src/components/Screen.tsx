@@ -7,7 +7,8 @@ import s from './Screen.module.css';
 
 export const ScreenAtmosphere = createContext<ReactNode>(null);
 
-export function Screen({ label, children }: { label: string; children: ReactNode }) {
+export function Screen({ label, children, theme }: { label: string; children: ReactNode;
+  /** 整页固定一种主题（故事引导是深色的电影画面，浅色模式下也不变） */ theme?: 'dark' | 'light' }) {
   const atm = useContext(ScreenAtmosphere);
-  return <main className={s.screen} aria-label={label}>{atm && <div className={s.atm} aria-hidden="true">{atm}</div>}<div className={s.frame}>{children}</div></main>;
+  return <main className={s.screen} aria-label={label} data-theme={theme}>{atm && <div className={s.atm} aria-hidden="true">{atm}</div>}<div className={s.frame}>{children}</div></main>;
 }

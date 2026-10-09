@@ -46,7 +46,7 @@
 /* 右边的手机跟着滚动、始终停在屏幕中间（2026-10-07：左栏演示步骤变多后比一屏高很多，手机原来在长栏里居中，一打开在第一屏下面、往下滚又滚走） */
 .stage { position: sticky; top: calc((100vh - var(--milo-size-screen-h) * 0.84 - var(--milo-space-5xl)) / 2); align-self: start; display: grid; grid-template-columns: auto auto; align-items: end; justify-items: center; column-gap: 0; row-gap: var(--milo-space-m); }
 .stage > .phoneWrap { grid-column: 2; grid-row: 1; }
-.stage > .reset { grid-column: 2; }
+.stage > .tools { grid-column: 2; }
 .phoneWrap { --bezel: var(--milo-space-s); --pw: calc(var(--milo-size-screen-w) + var(--bezel) * 2); --ph: calc(var(--milo-size-screen-h) + var(--bezel) * 2);
   width: calc(var(--pw) * var(--k)); height: calc(var(--ph) * var(--k));
   animation: phoneIn calc(var(--milo-motion-spring-soft-ms) * 1.6) var(--milo-motion-ease-spring) var(--milo-motion-slow) both; }
@@ -63,7 +63,12 @@
 .milo::after { content: ''; position: absolute; left: 10%; right: 10%; bottom: -3%; height: 6%; border-radius: 50%; background: radial-gradient(closest-side, var(--milo-color-accent-glow), transparent); }
 @keyframes miloIn { from { opacity: 0; transform: translateX(-12%); } }
 @keyframes bob { 50% { transform: scaleY(0.985) translateY(0.6%); } }
-.reset { justify-self: center; }
+.tools { display: flex; align-items: center; justify-content: center; gap: var(--milo-space-m); }
+/* 主题切换：两段的小分段，选中是骨白实心 */
+.themes { display: inline-flex; padding: var(--milo-space-2xs); border-radius: var(--milo-radius-pill); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); }
+.themes button { cursor: pointer; border: 0; border-radius: var(--milo-radius-pill); padding: var(--milo-space-xs) var(--milo-space-m); background: transparent;
+  color: var(--milo-color-text-secondary); font: inherit; font-size: var(--milo-font-size-caption); transition: background var(--milo-motion-fast), color var(--milo-motion-fast); }
+.themes button[aria-pressed='true'] { background: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); font-weight: 700; }
 
 /* 窄一些的电脑屏：米洛让位，讲解收窄 */
 @media (max-width: 80rem) { .milo { display: none; } .page { gap: var(--milo-space-4xl); } }

@@ -47,7 +47,7 @@ export function PlanPicker<V extends string>({ plans, value, onChange, state }: 
   const idx = Math.max(0, plans.findIndex((p) => p.id === value));
   const move = (d: number) => onChange?.(plans[(idx + d + plans.length) % plans.length].id);
   return (
-    <div className={s.plans} role="radiogroup" aria-label="选择方案" style={{ '--n': plans.length, '--i': idx } as CSSProperties}
+    <div className={s.plans} data-on-thumb role="radiogroup" aria-label="选择方案" style={{ '--n': plans.length, '--i': idx } as CSSProperties}
       onKeyDown={(e) => {
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); move(1); }
         if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); move(-1); }

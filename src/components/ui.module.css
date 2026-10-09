@@ -28,7 +28,7 @@
 .tag_neutral { background: var(--milo-color-bg-raised); color: var(--milo-color-text-secondary); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
 .tag_strong { background: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); font-weight: 700; }
 .tag_outline { color: var(--milo-color-text-secondary); outline: var(--milo-stroke-hairline) dashed var(--milo-color-line-strong); outline-offset: calc(var(--milo-stroke-hairline) * -1); }
-.tag_accent { color: var(--milo-color-accent-default); font-weight: 700; box-shadow: inset 0 0 0 var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-color-accent-default) 70%, transparent); }
+.tag_accent { color: var(--milo-color-accent-ink); font-weight: 700; box-shadow: inset 0 0 0 var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-color-accent-ink) 70%, transparent); }
 .tag_danger { color: var(--milo-color-feedback-danger); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-feedback-danger); }
 
 .banner { display: flex; align-items: center; gap: var(--milo-space-m); padding: var(--milo-space-m) var(--milo-space-l); border-radius: var(--milo-radius-m);

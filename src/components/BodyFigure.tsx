@@ -64,14 +64,16 @@ export const DEFAULT_LOOK = { contour: 'soft', fill: 'metal', scan: 'molten' } a
 export function BodyFigure({ gender, view, stats, focus, height, width, fit, onAnchors, relativeTo, onPick }: {
   gender: 'male' | 'female'; view: 'front' | 'back'; stats: Map<string, HeadStat>; focus: string | null; height: number;
   /** 外框宽：变了要重量锚点（不参与绘制） */ width?: number;
-  /** 可用宽度（2026-10-10 用户：左缘要贴页面边距、手要碰到胶囊）：给了就不用固定的 ratio/figure-crop，
-   *  按「露出宽 = 可用宽」反算从左裁多少——左缘落在页面边距、右缘（手）落在胶囊列起点；裁切量夹在 [FIT_MIN, FIT_MAX] 里，保证还是半身 */ fit?: number;
+  /** 可用宽度（容量页，2026-10-10 用户）：给了就不用固定的 ratio/figure-crop，改成**裁到刚好露出完整腹肌**——
+   *  裁切线 = 正面腹肌左边缘再让出半个左缘渐隐（正反面同一个比例，切换不跳）；人体左对齐贴页面边距。
+   *  屏幕窄、这样露出的宽度超过 fit 时，再多裁一点让手刚好碰到胶囊列；裁切量夹在 [FIT_MIN, FIT_MAX] 里 */ fit?: number;
   onAnchors: (a: Anchors) => void; relativeTo: React.RefObject<HTMLElement | null>;
   /** 轻点某块肌肉（只有带 data-head 的肌头可点；其余部分不接触摸，页面照常滚动） */
   onPick?: (id: string) => void;
 }) {
   const [data, setData] = useState<BodyMap | null>(null);
   const [bb, setBb] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const [absAt, setAbsAt] = useState<number | null>(null);   // 正面腹肌左边缘在包围盒里的位置（0–1）
   const svg = useRef<SVGSVGElement>(null);
   const thermal = useContext(BodyRender), fid = useId().replace(/[^a-zA-Z0-9-]/g, '');
   useEffect(() => { let on = true; setBb(null); load(gender).then((d) => on && setData(d)); return () => { on = false; }; }, [gender, view]);
@@ -82,13 +84,31 @@ export function BodyFigure({ gender, view, stats, focus, height, width, fit, onA
     const b = svg.current.getBBox();
     setBb({ x: b.x, y: b.y, width: b.width, height: b.height });
   }, [data, bb]);
+  // 腹肌位置：用正面的路径量（背面没有腹肌，用同一个比例）；临时挂一张看不见的 svg 量完就删
+  useLayoutEffect(() => {
+    if (!data || !fit || absAt != null) return;
+    const ns = 'http://www.w3.org/2000/svg', tmp = document.createElementNS(ns, 'svg');
+    tmp.setAttribute('style', 'position:absolute;visibility:hidden;width:0;height:0');
+    const add = (keys: string[]) => { const g = document.createElementNS(ns, 'g'); keys.forEach((k) => (data.front[k]?.paths ?? []).forEach((p) => { const e = document.createElementNS(ns, 'path'); e.setAttribute('d', p.d); g.appendChild(e); })); tmp.appendChild(g); return g; };
+    const all = add(Object.keys(data.front)), abs = add(['upper-abdominals', 'lower-abdominals']);
+    document.body.appendChild(tmp);
+    try { const a = all.getBBox(), m = abs.getBBox(); if (a.width && m.width) setAbsAt((m.x - a.x) / a.width); } catch { /* jsdom 没有 getBBox */ }
+    tmp.remove();
+  }, [data, fit, absAt]);
   const vb = useMemo(() => {
     if (!bb) return null;
     const pad = bb.height * 0.004, h = bb.height + pad * 2;
-    const crop = fit ? Math.min(FIT_MAX, Math.max(FIT_MIN, 1 - ((fit / height) * h - pad) / bb.width)) : T['ratio/figure-crop'];
+    let crop: number = T['ratio/figure-crop'];
+    if (fit) {
+      const right = bb.x + bb.width + pad, fade = T['ratio/figure-fade'] / 2;
+      // 腹肌左边缘落在左缘渐隐的一半处（再往外就露出腹斜肌，再往里腹肌被渐隐吃掉）：x0 + fade·(right − x0) = 腹肌左缘
+      const abs = absAt == null ? crop : ((bb.x + bb.width * absAt - fade * right) / (1 - fade) - bb.x) / bb.width;
+      const tight = 1 - ((fit / height) * h - pad) / bb.width;   // 手刚碰到胶囊的裁切量
+      crop = Math.min(FIT_MAX, Math.max(FIT_MIN, abs, tight));
+    }
     const x0 = bb.x + bb.width * crop;
     return [x0, bb.y - pad, bb.x + bb.width - x0 + pad, h];
-  }, [bb, fit, height]);
+  }, [bb, fit, height, absAt]);
 
   // 锚点：每个肌头在可见部分里面积最大的一块的中心
   useLayoutEffect(() => {

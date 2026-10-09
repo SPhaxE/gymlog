@@ -1,13 +1,13 @@
 .kpi { display: flex; align-items: baseline; gap: var(--milo-space-l); color: var(--milo-color-text-secondary); }
 /* 页头 + 人体与胶囊一起滚动；胶囊列放不下时才滚（BodyPage 给 stage 设最小高度） */
 .scroll { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; }
-.stage { position: relative; flex: 1 0 auto; margin: var(--milo-space-m) 0 var(--nav-clear); touch-action: pan-y; } /* 横向滑留给切正反面 */
+.stage { position: relative; flex: 1 0 auto; margin: var(--milo-space-m) var(--milo-size-gutter) var(--nav-clear); touch-action: pan-y; } /* 在页面边距里；横向滑留给切正反面 */
 /* 人体裁切框：左右各留页面边距，越界部分剪掉（同 V1 body-left-boundary-clip） */
-.figureClip { position: absolute; top: 0; bottom: 0; left: var(--milo-size-gutter); right: var(--milo-size-gutter); overflow: hidden; pointer-events: none;
+.figureClip { position: absolute; top: 0; bottom: 0; left: 0; right: 0; overflow: hidden; pointer-events: none;
   isolation: isolate; z-index: 0; } /* 自成一层：抽卡时两张卡的 z-index 只在这里面比，不会跑到引线和胶囊上面 */
 /* 换卡（2026-10-06 用户：所有更换都从左往右）：新卡从左边滑进来、盖在上面；旧卡在下面往右退、淡出 */
-.card, .cardWait, .cardIn, .cardOut { position: absolute; inset: 0; display: flex; justify-content: safe flex-end; }
-.card > *, .cardWait > *, .cardIn > *, .cardOut > * { flex: none; } /* 右缘由 BodyPage 设到胶囊列起点：人体靠右，放不下退回左对齐 */
+.card, .cardWait, .cardIn, .cardOut { position: absolute; inset: 0; display: flex; }
+.card > *, .cardWait > *, .cardIn > *, .cardOut > * { flex: none; } /* 人体左对齐贴页面边距；右缘由 BodyPage 设到胶囊列起点（裁到露出完整腹肌，窄屏再多裁，手不越过胶囊） */
 .cardWait { opacity: 0; }
 .cardIn { z-index: 2; animation: cardIn var(--milo-motion-spring-ms) var(--milo-motion-ease-spring) both; }
 .cardOut { z-index: 1; animation: cardOut var(--milo-motion-spring-ms) var(--milo-motion-ease-standard) both; }
@@ -15,3 +15,7 @@
 @keyframes cardOut { to { opacity: 0; transform: translateX(28%); } }
 @media (prefers-reduced-motion: reduce) { .cardIn, .cardOut { animation: none; } }
 .big { display: flex; align-items: baseline; justify-content: space-between; color: var(--milo-color-text-primary); }
+/* 浅色模式：舞台是一块深色「热成像观察窗」（2026-10-10）——人体的金属渐变、熔流、胶囊都是为暗底调的，放在纸白上会糊成一团暗影。
+   底色直接画在舞台上（不是伪元素）：里面的字算对比度时，背景就是这块深色 */
+:root[data-theme='light'] .stage { border-radius: var(--milo-radius-l); box-shadow: 0 var(--milo-space-s) var(--milo-space-2xl) var(--milo-prim-black-a16); /* 舞台自己是深色岛，阴影按纸白页面取浅的 */
+  background: radial-gradient(120% 80% at 30% 40%, var(--milo-color-bg-raised), transparent 70%), var(--milo-color-bg-base); }

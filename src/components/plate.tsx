@@ -87,8 +87,9 @@ type RGB = [number, number, number];
 const toRgb = (hex: string): RGB => { const h = hex.trim().replace('#', '') || '0'; const n = parseInt(h.length === 3 ? h.split('').map((c) => c + c).join('') : h.slice(0, 6), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
 /** 颜色 + 不透明度 → 8 位十六进制（画布认这个写法；数值全来自 Token） */
 const tint = (c: RGB, a: number) => `#${[...c, Math.round(Math.max(0, Math.min(1, a)) * 255)].map((x) => x.toString(16).padStart(2, '0')).join('')}`;
-function palette() {
-  const cs = getComputedStyle(document.documentElement), v = (k: string) => toRgb(cs.getPropertyValue(k));
+/** 颜色从钢板自己身上读：钢板是局部深色主题（data-theme），浅色模式下页面底是纸白、钢板这里还是深色 */
+function palette(el: Element) {
+  const cs = getComputedStyle(el), v = (k: string) => toRgb(cs.getPropertyValue(k));
   return { hot: v('--milo-prim-lime-300'), lime: v('--milo-prim-lime-500'), deep: v('--milo-prim-lime-900'), base: v('--milo-color-bg-base'), dust: v('--milo-prim-gray-900') };
 }
 /** 光源在屏幕上的位置（视口坐标，固定不动）：屏幕左上角附近。板在它右下方，光束朝右下打；页面往上滚，板升到光源上方，光束慢慢转成朝右、朝右上。
@@ -133,7 +134,7 @@ export function SteelPlate({ months, label = '近 3 个月训练', selected, onS
     const el = fig.current!, bc = back.current!, fc = front.current!;
     // 画不了（测试环境没有画布、或浏览器拒绝）就不点灯：钢板照样能看、能拖
     if (!bc.getContext('2d') || !fc.getContext('2d') || typeof ResizeObserver === 'undefined') return;
-    const pal = palette(), dpr = Math.min(2, window.devicePixelRatio || 1);
+    const pal = palette(el), dpr = Math.min(2, window.devicePixelRatio || 1);
     const still = dense || !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const beams = document.createElement('canvas'), dust = document.createElement('canvas');
     let W = 0, H = 0, raf = 0, last = 0, visible = true;
@@ -285,7 +286,8 @@ export function SteelPlate({ months, label = '近 3 个月训练', selected, onS
           </> : <span className="milo-text-caption">{lit ? '按住钢板横向拖，或点一个孔，看那天练了什么' : '练完第一次，这里会冲出第一个孔'}</span>}
         </div>
       )}
-      <figure ref={fig} className={cx(s.plate, live && s.live, press && s.pressing)} role={live ? 'slider' : 'img'} tabIndex={live ? 0 : undefined}
+      {/* 钢板是实物：浅色模式下也是一块深色钢板（局部深色主题 data-theme），像一块真钢板放在纸上；上面的读数行跟页面主题 */}
+      <figure ref={fig} data-theme="dark" className={cx(s.plate, live && s.live, press && s.pressing)} role={live ? 'slider' : 'img'} tabIndex={live ? 0 : undefined}
         aria-label={`${label}：练了 ${n} 天`} aria-valuetext={live && day ? `${day.title}，${day.value} ${day.unit}` : undefined}
         aria-valuemin={live ? 0 : undefined} aria-valuemax={live ? Math.max(0, g.holes.length - 1) : undefined}
         aria-valuenow={live ? Math.max(0, [...g.holes].sort((a, b) => a.t - b.t).findIndex((p) => p.t === selected)) : undefined}

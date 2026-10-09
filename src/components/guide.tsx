@@ -63,9 +63,10 @@ export function GuideVideo({ player, src, label }: { player: Player; src: string
         {src && !msg && <video ref={video} src={src} muted loop playsInline autoPlay={!reduced()} preload="auto" aria-label={label} className={st === 'ready' ? s.clip : s.clipHidden}
           onLoadedMetadata={(e) => setDur(e.currentTarget.duration)} onLoadedData={() => setSt('ready')} onError={() => setSt('error')} />}
         {msg && <div className={s.msg}><Icon name={msg[0]} /><b className="milo-text-body-strong">{msg[1]}</b><span className="milo-text-caption">按下方文字要领做</span></div>}
-        <figcaption className={cx('milo-text-micro', s.credit)}>示范：<a href="https://musclewiki.com" target="_blank" rel="noreferrer">MuscleWiki</a></figcaption>
         {!msg && <span className={s.track} aria-hidden="true" style={{ '--a': player.cur / n, '--w': 1 / n } as CSSProperties}><i /></span>}
       </div>
+      {/* 署名在卡下面右对齐（卡里裁了圆角，链接的命中区补不到 48） */}
+      <figcaption className={cx('milo-text-micro', s.credit)}>示范：<a href="https://musclewiki.com" target="_blank" rel="noreferrer">MuscleWiki</a></figcaption>
     </figure>
   );
 }

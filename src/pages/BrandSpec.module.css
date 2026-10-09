@@ -1,6 +1,6 @@
 .page { display: grid; gap: var(--milo-space-4xl); color: var(--milo-color-text-primary); }
 .muted { color: var(--milo-color-text-secondary); }
-.lime { color: var(--milo-color-accent-default); }
+.lime { color: var(--milo-color-accent-ink); }
 .section { display: grid; gap: var(--milo-space-l); }
 .secHead { display: grid; gap: var(--milo-space-xs); border-top: var(--milo-stroke-hairline) solid var(--milo-color-line-default); padding-top: var(--milo-space-l); }
 
@@ -46,7 +46,7 @@
   padding: var(--milo-space-xl) var(--milo-space-l); border-radius: var(--milo-radius-xl); background: var(--milo-color-bg-sheet); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
 .rewardArt { display: grid; place-items: center; padding-top: var(--milo-space-xl); --mascot-unit: calc(var(--milo-stroke-hairline) * 0.4); }
 .gain { font-family: var(--milo-font-number); color: var(--milo-color-text-secondary); }
-.gain b { font-size: var(--milo-font-size-m); color: var(--milo-color-accent-default); }
+.gain b { font-size: var(--milo-font-size-m); color: var(--milo-color-accent-ink); }
 .cta { display: grid; place-items: center; width: 100%; height: var(--milo-size-button-h); margin-top: var(--milo-space-s); border-radius: var(--milo-radius-pill); background: var(--milo-color-accent-default); color: var(--milo-color-text-on-accent); font-weight: 700; }
 .icon64 { display: grid; place-items: center; width: calc(var(--milo-size-hit-min) * 1.33); height: calc(var(--milo-size-hit-min) * 1.33); border-radius: 22%; background: var(--milo-prim-gray-150); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-prim-gray-300); }
 .checkCol { display: grid; gap: var(--milo-space-l); }

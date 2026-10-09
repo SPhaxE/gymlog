@@ -9,13 +9,15 @@
 .clipHidden { position: absolute; opacity: 0; }
 .msg { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: var(--milo-space-xs); text-align: center; color: var(--milo-color-text-secondary); }
 .msg b { color: var(--milo-color-text-primary); }
-.credit { position: absolute; right: var(--milo-space-m); bottom: var(--milo-space-s); color: var(--milo-color-text-secondary); }
-.credit a { color: inherit; }
+.video { display: grid; gap: var(--milo-space-xs); }
+.credit { justify-self: end; color: var(--milo-color-text-secondary); }
+.credit a { position: relative; color: inherit; }
+.credit a::after { content: ''; position: absolute; inset: calc((var(--milo-space-l) + var(--milo-space-2xs)) * -1) calc(var(--milo-space-s) * -1); }  /* 命中区补到 48 高 */
 /* 底边段落进度线（2 号）：当前一步那一段的位置，段内按播放进度长出来 */
 .track { position: absolute; left: 0; right: 0; bottom: 0; height: var(--milo-stroke-focus); }
 .track i { position: absolute; top: 0; bottom: 0; left: calc(var(--a) * 100%); width: calc(var(--w) * 100%); transform-origin: left; transform: scaleX(var(--gs, 0));
   background: var(--milo-color-text-primary); }
-.cue { margin: 0; padding-left: var(--milo-space-m); border-left: var(--milo-space-xs) solid var(--milo-color-accent-default); color: var(--milo-color-text-primary); }
+.cue { margin: 0; padding-left: var(--milo-space-m); border-left: var(--milo-space-xs) solid var(--milo-color-accent-ink); color: var(--milo-color-text-primary); }
 /* 分步：缩略图在左（16:9）、文字在右；行 ≥ 56，细线分隔 */
 .steps { margin: 0; padding: 0; list-style: none; display: grid; border-top: var(--milo-stroke-hairline) solid var(--milo-color-line-default); }
 .steps li { border-bottom: var(--milo-stroke-hairline) solid var(--milo-color-line-default); }

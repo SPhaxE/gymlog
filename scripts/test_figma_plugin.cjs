@@ -99,6 +99,7 @@ function makeFigma(state, opts) {
   function Collection(name) {
     const c = { id: id('VariableCollectionId'), name, modes: [{ modeId: id('mode'), name: 'Mode 1' }], hiddenFromPublishing: false };
     c.renameMode = (mid, n) => { const m = c.modes.find((x) => x.modeId === mid); if (!m) fail('renameMode：模式不存在'); m.name = n; };
+    c.addMode = (n) => { if (c.modes.some((x) => x.name === n)) fail('addMode：重名'); const m = { modeId: id('mode'), name: n }; c.modes.push(m); return m.modeId; };
     state.collections.push(c);
     return c;
   }
@@ -343,6 +344,7 @@ const sectionOf = (st, name) => st.pageChildren.filter((n) => n.type === 'SECTIO
   let r = await run(st, { command: 'foundations' });
   check(/^慢牛 Milo Foundations 已导入/.test(r.msg), '插件正常结束：' + r.msg);
   check(st.collections.length === 2 && st.collections.every((c) => c.modes[0].name === 'Dark'), '两个变量集合，模式名 Dark');
+  check(st.collections.some((c) => c.modes.map((m) => m.name).join() === 'Dark,Light'), '语义集合有 Dark / Light 两个模式（浅色主题）');
   check(st.variables.length === nVars, '变量数 = tokens.json 里的条目数（' + nVars + '）');
   check(st.variables.filter((v) => v.name.indexOf('color/') === 0 && v.variableCollectionId === st.collections[1].id).every((v) => Object.values(v.valuesByMode)[0].type === 'VARIABLE_ALIAS'), '语义色全部是原始色的别名');
   check(st.styles.length === nStyles && st.styles.every((s) => s.name.indexOf('Milo/') === 0), '样式数 = ' + nStyles + '，都带 Milo/ 前缀');

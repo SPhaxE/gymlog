@@ -24,11 +24,16 @@ function rgba(hex) {
 }
 const cssName = (prefix, name) => 'var(--milo-' + prefix + name.replace(/\//g, '-') + ')';
 
-async function collection(name, hidden) {
+async function collection(name, hidden, extraModes) {
   const all = await figma.variables.getLocalVariableCollectionsAsync();
   let c = all.find((x) => x.name === name);
   if (!c) c = figma.variables.createVariableCollection(name);
   if (c.modes[0].name !== T.meta.mode) c.renameMode(c.modes[0].modeId, T.meta.mode);
+  // 浅色（2026-10-10）：语义变量多一个 Light 模式；免费版 Figma 每个集合只能有 1 个模式，加不了就提示，浅色只在代码里
+  for (const m of extraModes || []) {
+    if (c.modes.some((x) => x.name === m)) continue;
+    try { c.addMode(m); } catch (e) { warn('加不了「' + m + '」模式（' + e.message + '）：多半是免费版 Figma 每个集合只能有 1 个模式；浅色主题仍在代码里（tokens.css 的 [data-theme=light]）'); }
+  }
   if (hidden) { try { c.hiddenFromPublishing = true; } catch (e) { /* 旧版本没有这个属性 */ } }
   return c;
 }
@@ -45,6 +50,7 @@ async function upsertVariables(coll, defs) {
     if (!v) { v = figma.variables.createVariable(d.name, coll, d.type); report.created++; } else report.updated++;
     byName.delete(d.name);
     v.setValueForMode(modeId, d.value);
+    for (const m of coll.modes.slice(1)) v.setValueForMode(m.modeId, m.name === 'Light' && d.valueLight !== undefined ? d.valueLight : d.value);
     v.description = d.desc || '';
     try { v.scopes = d.scopes; } catch (e) { warn('变量 ' + d.name + ' 的 scopes 设置失败：' + e.message); }
     try { v.setVariableCodeSyntax('WEB', d.css); } catch (e) { /* 可选 */ }

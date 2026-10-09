@@ -1,12 +1,12 @@
 /* 增长层组件。荧光只给「得到」的东西（进账、点亮、Pro），其余是骨白与灰；全部用 Token */
 .muted { color: var(--milo-color-text-secondary); }
-.plus { color: var(--milo-color-accent-default); }
+.plus { color: var(--milo-color-accent-ink); }
 .minus { color: var(--milo-color-text-primary); }
 .pro { display: inline-block; padding: var(--milo-space-2xs) var(--milo-space-xs); border-radius: var(--milo-radius-pill); font: 700 var(--milo-font-size-min) / 1.2 var(--milo-font-number);
   color: var(--milo-color-text-on-accent); background: linear-gradient(110deg, var(--milo-prim-lime-500) 35%, var(--milo-prim-bone-100) 50%, var(--milo-prim-lime-500) 65%) 0 0 / 300% 100%;
   animation: sheen calc(var(--milo-motion-slow) * 6) linear infinite; }
 .chip { display: inline-block; padding: var(--milo-space-2xs) var(--milo-space-xs); border-radius: var(--milo-radius-pill); font: 700 var(--milo-font-size-min) / 1.2 var(--milo-font-ui);
-  color: var(--milo-color-accent-default); background: var(--milo-prim-lime-500-a13); }
+  color: var(--milo-color-accent-ink); background: var(--milo-prim-lime-500-a13); }
 @keyframes sheen { to { background-position: -300% 0; } }
 
 /* ---------- 牛龄徽章 ---------- */
@@ -17,7 +17,7 @@
 .badge { display: flex; align-items: center; gap: var(--milo-space-m); color: var(--milo-color-text-primary); }
 .badgeHead { position: relative; display: grid; place-items: center; width: calc(var(--milo-space-5xl) * 1.5); aspect-ratio: 1; border-radius: 50%;
   background: radial-gradient(circle at 50% 60%, var(--milo-prim-lime-500-a33), transparent 70%), var(--milo-color-bg-raised);
-  box-shadow: 0 0 0 var(--milo-stroke-focus) var(--milo-color-accent-default), 0 0 var(--milo-space-l) var(--milo-prim-lime-500-a33); }
+  box-shadow: 0 0 0 var(--milo-stroke-focus) var(--milo-color-accent-ink), 0 0 var(--milo-space-l) var(--milo-prim-lime-500-a33); }
 .badgeHeadImg { display: block; width: 100%; height: 100%; }
 .badgeText { display: grid; gap: var(--milo-space-2xs); }
 .badgeText b { line-height: 1; }
@@ -93,7 +93,7 @@
 .week span { margin-left: var(--milo-space-xs); }
 .streakLine { display: flex; flex-wrap: wrap; align-items: center; gap: var(--milo-space-2xs); margin: 0; color: var(--milo-color-text-secondary); }
 .st_zero .streakNum b { color: var(--milo-color-text-disabled); }
-.st_kept .streakNum b, .st_milestone .streakNum b { color: var(--milo-color-accent-default); }
+.st_kept .streakNum b, .st_milestone .streakNum b { color: var(--milo-color-accent-ink); }
 .st_risk { box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-feedback-danger); }
 .st_risk .streakLine { color: var(--milo-color-feedback-danger); }
 .st_frozen .week i.on { background: var(--milo-prim-bone-100); }
@@ -124,12 +124,12 @@
   mask: radial-gradient(circle var(--notch) at calc(var(--milo-space-5xl) * 1.6) 0, transparent 98%, black) top / 100% 51% no-repeat, radial-gradient(circle var(--notch) at calc(var(--milo-space-5xl) * 1.6) 100%, transparent 98%, black) bottom / 100% 51% no-repeat; }
 .stub { display: grid; place-items: center; align-self: stretch; width: calc(var(--milo-space-5xl) * 1.6); flex: none; margin: calc(var(--milo-space-m) * -1) 0;
   align-content: center; gap: var(--milo-space-2xs);
-  border-right: var(--milo-stroke-focus) dashed var(--milo-color-bg-base); color: var(--milo-color-accent-default); background: var(--milo-color-bg-raised-2); border-radius: var(--milo-radius-m) 0 0 var(--milo-radius-m); }
+  border-right: var(--milo-stroke-focus) dashed var(--milo-color-bg-base); color: var(--milo-color-accent-ink); background: var(--milo-color-bg-raised-2); border-radius: var(--milo-radius-m) 0 0 var(--milo-radius-m); }
 /* 票根：道具图标（标志变体）+ 面额 */
 .stubGlyph { display: block; width: var(--milo-space-3xl); height: auto; overflow: visible; }
 .couponBody { display: grid; gap: var(--milo-space-2xs); flex: 1; }
 .couponBody > span:not(.plus) { color: var(--milo-color-text-secondary); }
-.couponState { color: var(--milo-color-accent-default); }
+.couponState { color: var(--milo-color-accent-ink); }
 .couponUse { position: relative; display: inline-flex; align-items: center; gap: var(--milo-space-2xs); min-height: var(--milo-size-hit-min); padding: 0 var(--milo-space-xs); border: 0; background: none; color: var(--milo-color-text-primary); font-weight: 700; }
 .cp_used, .cp_expired { color: var(--milo-color-text-disabled); }
 .cp_used .stub, .cp_expired .stub { background: var(--milo-color-data-track); color: var(--milo-color-text-disabled); }
@@ -150,7 +150,7 @@
 .kHead h2, .kHead p { margin: 0; }
 .how { display: grid; gap: var(--milo-space-xs); margin: 0; padding: 0; list-style: none; }
 .how li { display: flex; gap: var(--milo-space-s); align-items: baseline; }
-.how b { color: var(--milo-color-accent-default); }
+.how b { color: var(--milo-color-accent-ink); }
 
 /* ---------- 商品卡 ---------- */
 .product { display: flex; gap: var(--milo-space-m); width: 100%; padding: var(--milo-space-s); border: 0; border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised); color: var(--milo-color-text-primary); font: inherit; text-align: left; }
@@ -169,8 +169,8 @@
 
 /* ---------- Pro 标记 ---------- */
 .proBadge { display: inline-flex; align-items: center; gap: var(--milo-space-2xs); padding: var(--milo-space-2xs) var(--milo-space-s); border-radius: var(--milo-radius-pill);
-  font: 900 var(--milo-font-size-min) / 1.2 var(--milo-font-number); letter-spacing: 0.08em; color: var(--milo-color-accent-default);
-  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-accent-default); }
+  font: 900 var(--milo-font-size-min) / 1.2 var(--milo-font-number); letter-spacing: 0.08em; color: var(--milo-color-accent-ink);
+  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-accent-ink); }
 .proActive { color: var(--milo-color-text-on-accent); background: var(--milo-color-accent-default); }
 
 /* ---------- 付费墙 ---------- */
@@ -188,7 +188,7 @@
 .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--milo-space-xs); }
 .plan { position: relative; display: grid; gap: var(--milo-space-2xs); justify-items: center; padding: var(--milo-space-m) var(--milo-space-2xs); border: 0; border-radius: var(--milo-radius-l); font: inherit;
   color: var(--milo-color-text-primary); background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
-.planOn { background: var(--milo-prim-lime-500-a13); box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-accent-default), 0 0 var(--milo-space-l) var(--milo-prim-lime-500-a33); }
+.planOn { background: var(--milo-prim-lime-500-a13); box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-accent-ink), 0 0 var(--milo-space-l) var(--milo-prim-lime-500-a33); }
 .save { position: absolute; top: calc(var(--milo-space-s) * -1); padding: var(--milo-space-2xs) var(--milo-space-xs); border-radius: var(--milo-radius-pill);
   font: 700 var(--milo-font-size-min) / 1.2 var(--milo-font-ui); color: var(--milo-color-text-on-accent); background: var(--milo-color-accent-default); }
 .paySuccess { justify-items: center; text-align: center; }

@@ -96,15 +96,15 @@
 .ageRange { width: 100%; accent-color: var(--milo-color-accent-default); }
 .curve { width: 100%; height: auto; overflow: visible; font-family: var(--milo-font-ui); }
 .curveGrid { stroke: var(--milo-color-line-default); stroke-width: 0.5; }
-.curveNow { stroke: var(--milo-color-accent-default); stroke-width: 0.8; stroke-dasharray: 2 2; opacity: 0.7; }
+.curveNow { stroke: var(--milo-color-accent-ink); stroke-width: 0.8; stroke-dasharray: 2 2; opacity: 0.7; }
 .curveTick { fill: var(--milo-color-text-secondary); }
 .curveKey { fill: var(--milo-color-text-secondary); }
 .curveMid, .curveNov, .curveAdv { fill: none; stroke-width: 1.6; stroke-linejoin: round; }
-.curveMid { stroke: var(--milo-color-accent-default); }
+.curveMid { stroke: var(--milo-color-accent-ink); }
 .curveNov { stroke: var(--milo-prim-bone-100); }
 .curveAdv { stroke: var(--milo-prim-gray-600); }
-.curveTarget { fill: var(--milo-color-bg-raised); stroke: var(--milo-color-accent-default); stroke-width: 0.8; }
-.kMid { fill: var(--milo-color-accent-default); } .kNov { fill: var(--milo-prim-bone-100); } .kAdv { fill: var(--milo-prim-gray-600); }
+.curveTarget { fill: var(--milo-color-bg-raised); stroke: var(--milo-color-accent-ink); stroke-width: 0.8; }
+.kMid { fill: var(--milo-color-accent-ink); } .kNov { fill: var(--milo-prim-bone-100); } .kAdv { fill: var(--milo-prim-gray-600); }
 
 /* 可滚演示（回到顶端、钢板）：整屏一个滚动区（页头 + 内容一起滚） */
 .headerDemoScroll { flex: 1; min-height: 0; overflow: auto; }

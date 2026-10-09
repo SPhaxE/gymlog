@@ -7,7 +7,7 @@
 .dot_trained { background: var(--milo-color-control-selected); box-shadow: 0 0 0 var(--milo-stroke-hairline) var(--milo-color-control-selected); }
 .dot_out { background: transparent; }
 .dot_future { opacity: var(--milo-opacity-disabled); }
-.dot_today { background: var(--milo-color-bg-base); box-shadow: 0 0 0 var(--milo-stroke-focus) var(--milo-color-accent-default); }
+.dot_today { background: var(--milo-color-bg-base); box-shadow: 0 0 0 var(--milo-stroke-focus) var(--milo-color-accent-ink); }
 
 /* E2 环中数字 */
 .ringRow { display: flex; align-items: center; gap: var(--milo-space-m); color: var(--milo-color-text-secondary); }

@@ -1,11 +1,11 @@
 /** 我的（P11，ia §1.11 / §1.14 / §1.15）：档案、成长、导航设置、数据、关于。
  *  五层：
  *  - 战略：用户在这里回答三件事——我现在长到哪儿了（牛龄 · 连胜 · 牛劲）、我的档案对不对（改一项，处方跟着变）、我的数据我做主（导出 / 载入示例 / 清除）。
- *  - 范围：成长卡 + 档案四格（经验 · 时长 · 器械 · 体型，含可选体重）+ 消息 + 导航三项设置（进度环 · 休息描边 · 结束提示）+ 数据（载入示例 · 导出 CSV · 清除）+ 关于。
+ *  - 范围：成长卡 + 档案四格（经验 · 时长 · 器械 · 体型，含可选体重）+ 消息 + 外观（主题：跟随系统 / 深色 / 浅色，2026-10-10）+ 导航三项设置（进度环 · 休息描边 · 结束提示）+ 数据（载入示例 · 导出 CSV · 清除）+ 关于。
  *    「钱包 · 商城」一行（6f：牛劲余额 · 可用卡券数，进钱包，钱包里去商城）；「Milo Pro」一行（6g，线框 prohub W2 三态：未开通 → 付费墙 /pro，试用中 / 已开通 → 会员中心 /me/pro）。
  *    数据里「演示：会员状态」开关（ia §1.17：会员 / 非会员两种状态在这里切换展示；打开 = 开通年度，关掉 = 切回免费，已得的不收回）。
  *  - 结构：Tab 根页（导航「我的」选中）；整页一个滚动区；子页：牛龄 /me/level、钱包 /me/wallet（→ 商城 /shop）、消息 /me/messages；改档案走底部面板（点哪格改哪项）。
- *  - 框架：页头（跟着滑走）→ 成长卡（第一屏主角）→ 档案四格 → 消息 → 导航 → 数据 → 关于。没有主操作按钮（设置页）；面板里的「保存」在拇指区。
+ *  - 框架：页头（跟着滑走）→ 成长卡（第一屏主角）→ 档案四格 → 消息 → 外观 → 导航 → 数据 → 关于。没有主操作按钮（设置页）；面板里的「保存」在拇指区。
  *  - 成长卡那句话：连胜快断的这周换成「这周快断了：还差 N 次，只剩 M 天」（6g 补），点卡照常进牛龄页，那里给出口。
  *  - 表现：荧光只有成长卡的进度条一处；危险操作（清除）用危险色，载入 / 清除都先二次确认；设置的开关立即生效、不需要保存。
  *  设计过程见 design/hifi/me/（线框 me2 W2 成长卡做主角；Stitch 第 1 轮 m6）。 */
@@ -18,6 +18,7 @@ import { saveTextFile } from '../data/exportFile';
 import { growthOf, messagesOf, riskOf, unreadOf } from '../data/me';
 import { mergeProfile, profileError, profileFacts, updateProfile } from '../data/profile';
 import { setSettings } from '../data/settings';
+import { setThemePref, useThemePref, type ThemePref } from '../styles/theme';
 import { DEFAULT_PROFILE, demoState, store, useStore } from '../data/store';
 import { activate, cancel, dayText, proPeriods, proStatus, trialUsed, usePro } from '../data/pro';
 import { useSource } from '../data/useSource';
@@ -31,6 +32,8 @@ import type { Tab } from '../components';
 import s from './MePage.module.css';
 import { usePageNav } from '../shell/pageNav';
 
+/** 外观（2026-10-10 加浅色）：跟随系统 / 深色 / 浅色 */
+const THEMES: readonly (readonly [ThemePref, string, string])[] = [['system', '跟随系统', '手机切深浅色时一起切'], ['dark', '深色', '暖黑底、荧光点缀（默认）'], ['light', '浅色', '纸白底、深一档的荧光']];
 const REST_END = [['vibrate', '描边 + 振动', '休息结束时，选中项变成对勾，手机振一下'], ['outline', '仅描边', '只有结束态（描边 / 对勾），不振动']] as const;
 
 export function MePage({ scenario, now, onTab }: { scenario?: string; now: number; onTab?: (tab: Tab, path: string) => void }) {
@@ -53,6 +56,8 @@ export function MePage({ scenario, now, onTab }: { scenario?: string; now: numbe
   const facts = profileFacts(profile);
   const [edit, setEdit] = useState<ProfileField | null>(null);
   const [restSheet, setRestSheet] = useState(false);
+  const [themeSheet, setThemeSheet] = useState(false);
+  const themePref = useThemePref();
   const [confirm, setConfirm] = useState<'load' | 'clear' | null>(null);
   const cur = g.streak.current, empty = src.history.length === 0, sets = csvSetCount(src.history), risk = riskOf(g, now);
 
@@ -105,6 +110,13 @@ export function MePage({ scenario, now, onTab }: { scenario?: string; now: numbe
               trailing={unread > 0 ? <Tag tone="strong">{unread} 条新</Tag> : undefined} />
           </List></div>
 
+          <section className={s.group} aria-label="外观">
+            <SectionLabel>外观</SectionLabel>
+            <div className={s.card}><List>
+              <ListRow kind="nav" title="主题" detail="浅色在户外、强光下更好读" onClick={() => setThemeSheet(true)} trailing={<span className="milo-text-caption">{THEMES.find(([k]) => k === themePref)![1]}</span>} />
+            </List></div>
+          </section>
+
           <section className={s.group} aria-label="导航">
             <SectionLabel>导航</SectionLabel>
             <div className={s.card}><List>
@@ -136,6 +148,15 @@ export function MePage({ scenario, now, onTab }: { scenario?: string; now: numbe
       </div>
 
       {edit && <ProfileSheet field={edit} profile={profile} training={!!st.active} onSave={save} onClose={() => setEdit(null)} />}
+      {themeSheet && (
+        <Sheet title="主题" meta="立即生效；只记在这台手机上" onClose={() => setThemeSheet(false)}>
+          <div className={s.sheetBody}>
+            <OptionGroup label="主题">
+              {THEMES.map(([k, t, d]) => <OptionCard key={k} title={t} detail={d} selected={themePref === k} onClick={() => { setThemePref(k); setThemeSheet(false); }} />)}
+            </OptionGroup>
+          </div>
+        </Sheet>
+      )}
       {restSheet && (
         <Sheet title="休息结束提示" meta="组间休息倒计时走完时" onClose={() => setRestSheet(false)}>
           <div className={s.sheetBody}>

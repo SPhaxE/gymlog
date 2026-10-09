@@ -41,7 +41,7 @@
   border-bottom: var(--milo-stroke-hairline) solid var(--milo-color-line-default); font-size: var(--milo-font-size-caption); }
 .bar { position: relative; height: var(--milo-space-2xs); border-radius: var(--milo-radius-pill); background: var(--milo-color-line-default); overflow: hidden; }
 .bar::after { content: ''; position: absolute; inset: 0; transform-origin: left; transform: scaleX(var(--p)); border-radius: inherit;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--milo-prim-bone-100) 35%, transparent), var(--milo-prim-bone-100) 85%, var(--milo-color-accent-default));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--milo-color-data-fill) 35%, transparent), var(--milo-color-data-fill) 85%, var(--milo-color-accent-default));
   animation: fill calc(var(--milo-motion-slow) * 3) var(--milo-motion-ease-standard) both; }
 @keyframes fill { from { transform: scaleX(0); } }
 

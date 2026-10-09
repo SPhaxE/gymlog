@@ -28,7 +28,7 @@ ap.add_argument('--pace', type=float, default=float(os.environ.get('GATE_PACE', 
 ap.add_argument('--timeout', type=int, default=8000, help='单步等待上限（毫秒）；卡住的步骤 8 秒就报错，不再等 30 秒')
 args = ap.parse_args()
 SIZES = {360: (360, 800), 412: (412, 915)}
-ALL = ['flow', 'story', 'deload', 'gains', 'log', 'me', 'shop', 'pro', 'demo']
+ALL = ['flow', 'story', 'deload', 'gains', 'log', 'me', 'shop', 'pro', 'light', 'demo']
 only = [x for x in args.only.split(',') if x] or ALL
 if any(x not in ALL for x in only): sys.exit(f'--only 只能是 {",".join(ALL)}')
 
@@ -64,7 +64,7 @@ if not args.worker and not args.serial:
         return job, pr.returncode, pr.stdout + pr.stderr
     took = {}
     # 最慢的先跑，墙钟时间 ≈ 最慢那一份
-    slow = ['flow', 'gains', 'log', 'shop', 'me', 'pro', 'story', 'deload', 'demo']
+    slow = ['flow', 'gains', 'log', 'shop', 'me', 'pro', 'light', 'story', 'deload', 'demo']
     jobs = sorted(jobs, key=lambda j: slow.index(j[0]) if j[0] in slow else 99)
     with ThreadPoolExecutor(max_workers=max(2, os.cpu_count() or 2)) as ex:
         results = list(ex.map(one, jobs))
@@ -333,7 +333,7 @@ def gains_checks(b, w, h):
     fig = pg.evaluate("""() => { const f = document.querySelector('svg[class*=_thermal_]').getBoundingClientRect(), st = f && document.querySelector('[class*=_figureClip_]').getBoundingClientRect();
       const cap = Math.min(...[...document.querySelectorAll('[role=option]')].map((e) => e.getBoundingClientRect().left));
       return { f: [f.left, f.top, f.right, f.bottom].map(Math.round), st: [st.left, st.top, st.right, st.bottom].map(Math.round), cap: Math.round(cap) }; }""")
-    ok(fig['f'][1] >= fig['st'][1] - 1 and fig['f'][3] <= fig['st'][3] + 1 and abs(fig['f'][0] - fig['st'][0]) <= 1 and abs(fig['f'][2] - fig['cap']) <= 2, f'{tag} 容量：人体左缘贴页面边距、右缘贴胶囊列左缘、头到脚都在舞台里 {fig}')
+    ok(fig['f'][1] >= fig['st'][1] - 1 and fig['f'][3] <= fig['st'][3] + 1 and abs(fig['f'][0] - fig['st'][0]) <= 1 and fig['f'][2] <= fig['cap'] + 2, f'{tag} 容量：人体左缘贴页面边距、裁到露出完整腹肌、手不越过胶囊列、头到脚都在舞台里 {fig}')
     ok(pg.locator('svg[class*=_leaders_]').count() == 0, f'{tag} 容量：常态不画引线')
     cb = pg.locator('[role=option]').nth(3).bounding_box(); pg.mouse.move(cb['x'] + cb['width'] / 2, cb['y'] + cb['height'] / 2); pg.mouse.down()
     until(pg, "() => document.querySelectorAll('svg[class*=_leaders_] polyline').length > 0", 2500); pg.wait_for_timeout(200)
@@ -488,7 +488,7 @@ CONTRAST = r"""() => {
   const seen = new Set();
   while (walker.nextNode()) {
     const t = walker.currentNode; if (!t.textContent.trim()) continue; const el = t.parentElement; if (!el || seen.has(el)) continue; seen.add(el);
-    if (el.closest('svg') || el.closest('[aria-hidden=true]') || el.closest('nav')) continue;  // 导航选中项的字在骨白滑块上（滑块是兄弟元素，不是祖先），这里算不准，另有截图核对
+    if (el.closest('svg') || el.closest('[aria-hidden=true]') || el.closest('nav') || el.closest('[data-on-thumb]')) continue;  // [data-on-thumb]：同导航，选中项的字在兄弟元素「滑块」上（会员方案选择）  // 导航选中项的字在骨白滑块上（滑块是兄弟元素，不是祖先），这里算不准，另有截图核对
     const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || +cs.opacity === 0) continue;
     const r = el.getBoundingClientRect(); if (r.width === 0 || r.bottom < 0 || r.top > innerHeight) continue;
     let fg = parse(cs.color); if (!fg) continue;
@@ -503,6 +503,42 @@ CONTRAST = r"""() => {
   }
   return out;
 }"""
+
+def light_checks(b, w, h):
+    """浅色主题（2026-10-10，DESIGN §1.5）：各页 ?theme=light 下 html 是浅色、文字对比度达标、无横向溢出、命中区 ≥ 48；
+    深色岛（容量页观察窗、钢板、故事）仍是深色；「我的 → 外观」切换立即生效、刷新后还在、切回深色。"""
+    tag = f'{w}×{h}'
+    pg = b.new_page(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True)
+    pg.on('pageerror', lambda e: errors.append(f'{tag} light pageerror: {e}'))
+    for path in ('/today', '/body', '/gains', '/gains/barbell-bench-press-4', '/log', '/me', '/me/level', '/me/messages', '/me/wallet', '/me/pro', '/pro', '/shop', '/shop/item/belt-10', '/shop/guide/belt', '/exercise/barbell-bench-press-4'):
+        pg.goto(f'{args.base}{path}?scenario=plain-prescription&theme=light'); pg.wait_for_selector('main'); pg.wait_for_timeout(1100)
+        ok(pg.evaluate('document.documentElement.dataset.theme') == 'light', f'{tag} 浅色·{path}：html 是浅色')
+        ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} 浅色·{path}：无横向溢出')
+        low = pg.evaluate(CONTRAST)
+        ok(not low, f'{tag} 浅色·{path}：文字对比度都达标 {low[:3]}')
+        small = audit(pg); ok(not small, f'{tag} 浅色·{path}：命中区都 ≥ 48 {small[:3]}')
+        if path == '/body':
+            ok(pg.evaluate("document.querySelector('[class*=_stage_]').dataset.theme") == 'dark', f'{tag} 浅色·容量：人体舞台是深色观察窗（局部深色主题）')
+            bgc = pg.evaluate("getComputedStyle(document.querySelector('[class*=_stage_]')).backgroundColor")
+            ok(bgc.startswith('rgb(1') or bgc.startswith('rgb(2'), f'{tag} 浅色·容量：观察窗是深色底 {bgc}')
+        if path == '/log':
+            ok(pg.evaluate("document.querySelector('figure[data-theme=dark]') !== null"), f'{tag} 浅色·记录：钢板本体是深色（实物）')
+    if not args.no_shots and w == 360: pg.screenshot(path=os.path.join(OUT, 'light-last.png'))
+    # 故事引导固定深色
+    pg.goto(f'{args.base}/'); pg.evaluate('localStorage.clear()'); pg.goto(f'{args.base}/onboarding?theme=light'); pg.wait_for_selector('main'); pg.wait_for_timeout(800)
+    ok(pg.evaluate("document.querySelector('main').dataset.theme") == 'dark', f'{tag} 浅色·故事引导：画面固定深色')
+    # 「我的 → 外观」：选浅色立即生效、刷新还在；选回深色
+    pg.goto(f'{args.base}/me?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(800)
+    ok(pg.evaluate('document.documentElement.dataset.theme') == 'dark', f'{tag} 外观：默认深色')
+    pg.get_by_role('button', name=re.compile('^主题')).click(); pg.wait_for_timeout(600)
+    pg.get_by_role('dialog', name='主题').get_by_role('radio', name=re.compile('^浅色')).click(); pg.wait_for_timeout(700)
+    ok(pg.evaluate('document.documentElement.dataset.theme') == 'light' and pg.evaluate("localStorage.getItem('milo-theme')") == 'light', f'{tag} 外观：选浅色立即生效并记住')
+    pg.reload(); pg.wait_for_selector('h1'); pg.wait_for_timeout(600)
+    ok(pg.evaluate('document.documentElement.dataset.theme') == 'light', f'{tag} 外观：刷新后还是浅色')
+    pg.get_by_role('button', name=re.compile('^主题')).click(); pg.wait_for_timeout(600)
+    pg.get_by_role('dialog', name='主题').get_by_role('radio', name=re.compile('^深色')).click(); pg.wait_for_timeout(700)
+    ok(pg.evaluate('document.documentElement.dataset.theme') == 'dark' and pg.evaluate("localStorage.getItem('milo-theme')") is None, f'{tag} 外观：切回深色（默认值不另存）')
+    pg.close()
 
 def log_checks(b, w, h):
     """记录页（P07）：钢板上的孔数 = 练过的天数、板的节点数、固定光源下的亮暗与光束、拖动吸附与读数、减少动态效果下静止、周合计自洽、更早的训练、空态；"""
@@ -1102,7 +1138,7 @@ with sync_playwright() as p:
     b.new_page = new_page
     CHECKS = {'flow': lambda W, H, w: run(b, W, H, w == 360), 'story': lambda W, H, w: story_checks(b, W, H), 'deload': lambda W, H, w: deload_checks(b, W, H),
               'gains': lambda W, H, w: gains_checks(b, W, H), 'log': lambda W, H, w: log_checks(b, W, H), 'me': lambda W, H, w: me_checks(b, W, H),
-              'shop': lambda W, H, w: shop_checks(b, W, H), 'pro': lambda W, H, w: pro_checks(b, W, H)}
+              'shop': lambda W, H, w: shop_checks(b, W, H), 'pro': lambda W, H, w: pro_checks(b, W, H), 'light': lambda W, H, w: light_checks(b, W, H)}
     for c, w in jobs:
         W, H = SIZES[w]
         if c in CHECKS: guarded(f'{c} · {w}', CHECKS[c], W, H, w)

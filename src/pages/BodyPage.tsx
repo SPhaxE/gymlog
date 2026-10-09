@@ -4,7 +4,7 @@
  *  - 范围：近 7 天合计 + 热力人体（正面 / 背面、男 / 女）+ 容量胶囊（长按放大、轻点看肌头详情）。
  *  - 结构：Tab 根页；肌头详情是浮在页面上的面板（FluidPanel），由被点的胶囊原地长出来（M02 流体胶囊形变，2026-10-09 走查 1 #29）。
  *  - 框架：页头（切换器在右）→ 合计与图例 → 舞台（人体 + 胶囊列；按住放大时才有一条引线）；没有主按钮。
- *  - 表现：半身人体（从左裁掉 ratio/figure-crop、左缘渐隐，高度撑满舞台）往右摆到手刚碰到胶囊列左缘（走查 1 #12；放不下时退回左对齐）；
+ *  - 表现：半身人体（从左裁掉 ratio/figure-crop、左缘渐隐，高度撑满舞台）左缘贴页面边距、裁到刚好露出完整腹肌（2026-10-10 用户；窄屏再多裁一点，手不越过胶囊列）；
  *    常态胶囊缩小 1/3（少挡人体）、不画引线；放大的那颗背后泛光，确认放大后才从它折一条线到肌头；人体区左右滑 = 切正反面（往左背面、往右正面）。
  *  切换人体是「换卡」（2026-10-06 用户：所有更换都从左往右）：新卡从左边滑进来盖在上面，旧卡往右退、淡出；
  *  新卡量完锚点才滑进来，引线先收、到位后从人体往胶囊（左 → 右）重新描出。全程都在人体自己那一层里（figureClip 隔离层叠），
@@ -76,7 +76,8 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
     if (initialFocus && ids.length && mag == null) { const i = ids.indexOf(initialFocus); if (i >= 0) setMag(i); }
   }, [ids, initialFocus]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const g = T['size/gutter'], contentW = box.w - 2 * g;
+  // 舞台自己就在页面边距里（左右各留 size/gutter），坐标从舞台左缘算起
+  const g = 0, contentW = box.w;
   // 胶囊列的最小高度：每颗都按静止上限排开（再矮就挤得看不清），屏幕放不下时页面滚动
   const railMin = ids.length ? ids.length * T['size/capsule-rest-max-h'] + (ids.length - 1) * T['size/capsule-gap'] : 0;
   const openSheet = useCallback((id: string) => {
@@ -139,9 +140,10 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
         <TierLegend />
       </PageHeader>
 
-      <div ref={stage} className={s.stage} style={{ minHeight: railMin }} onPointerDown={swipeDown} onPointerUp={swipeUp} onPointerCancel={() => { swipe.current = null; }}
+      {/* 热成像观察窗：人体、胶囊、引线永远在深色里（浅色模式下是一块深色面板，BodyPage.module.css） */}
+      <div ref={stage} className={s.stage} data-theme="dark" style={{ minHeight: railMin }} onPointerDown={swipeDown} onPointerUp={swipeUp} onPointerCancel={() => { swipe.current = null; }}
         onClickCapture={(e) => { if (swiped.current) { swiped.current = false; e.stopPropagation(); } }}>
-        {/* 人体只在内容区里（左缘 = 页面边距），不越过组件最外层；卡宽到胶囊列起点为止，人体靠右（手刚碰到胶囊） */}
+        {/* 人体只在内容区里（左缘 = 页面边距），不越过组件最外层；卡宽到胶囊列起点为止 */}
         <div className={s.figureClip}>
           {cards.map((c) => {
             const live = c === cur;

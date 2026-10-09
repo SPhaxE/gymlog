@@ -20,7 +20,7 @@
 @media (prefers-reduced-motion: reduce) { .halo { animation: none; } }
 .dot { fill: var(--milo-color-bg-base); stroke: var(--milo-color-text-secondary); stroke-width: var(--milo-stroke-focus); }
 .prDot { fill: var(--milo-color-control-selected); }
-.on { fill: var(--milo-color-bg-base); stroke: var(--milo-color-accent-default); stroke-width: var(--milo-stroke-ring-progress); }
+.on { fill: var(--milo-color-bg-base); stroke: var(--milo-color-accent-ink); stroke-width: var(--milo-stroke-ring-progress); }
 .rule { stroke: var(--milo-color-text-secondary); stroke-width: var(--milo-stroke-hairline); stroke-dasharray: var(--milo-stroke-ring-rest-gapdash); }
 .plot { touch-action: pan-y; cursor: ew-resize; }
 .dates { display: flex; justify-content: space-between; padding-right: var(--milo-space-3xl); color: var(--milo-color-text-secondary); }
@@ -47,7 +47,7 @@
 /* 走查 1 待选（tone=accent）：线和面积压成灰，末点与 PR 点用荧光——点缀级的主题色，不用骨白实心块 */
 .spark[data-tone='accent'] .line { stroke: var(--milo-color-line-strong); }
 .spark[data-tone='accent'] .area { fill: color-mix(in srgb, var(--milo-color-line-strong) 30%, transparent); }
-.spark[data-tone='accent'] .last, .spark[data-tone='accent'] .pr { fill: var(--milo-color-accent-default); filter: drop-shadow(0 0 var(--milo-space-2xs) var(--milo-color-accent-glow)); }
-.spark[data-tone='lime'] .line { stroke: var(--milo-prim-lime-700); }
-.spark[data-tone='lime'] .area { fill: color-mix(in srgb, var(--milo-prim-lime-900) 45%, transparent); }
-.spark[data-tone='lime'] .last, .spark[data-tone='lime'] .pr { fill: var(--milo-color-accent-default); filter: drop-shadow(0 0 var(--milo-space-2xs) var(--milo-color-accent-glow)); }
+.spark[data-tone='accent'] .last, .spark[data-tone='accent'] .pr { fill: var(--milo-color-accent-ink); filter: drop-shadow(0 0 var(--milo-space-2xs) var(--milo-color-accent-glow)); }
+.spark[data-tone='lime'] .line { stroke: var(--milo-color-data-spark-line); }
+.spark[data-tone='lime'] .area { fill: color-mix(in srgb, var(--milo-color-data-spark-area) 45%, transparent); }
+.spark[data-tone='lime'] .last, .spark[data-tone='lime'] .pr { fill: var(--milo-color-accent-ink); filter: drop-shadow(0 0 var(--milo-space-2xs) var(--milo-color-accent-glow)); }

@@ -55,7 +55,7 @@ export function StoryScreens({ onDone }: { onDone: () => void }) {
   };
 
   return (
-    <Screen label={`故事 第 ${i + 1} 幕，共 ${SCENES.length} 幕`}>
+    <Screen label={`故事 第 ${i + 1} 幕，共 ${SCENES.length} 幕`} theme="dark">
     <div ref={setHost} className={s.story} style={{ '--cam': sc.cam, ...(sc.sh ? { '--stage-h': sc.sh } : {}) } as CSSProperties}>
       <Backdrop />
       <div className={s.bars} aria-hidden="true">

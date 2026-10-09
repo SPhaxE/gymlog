@@ -9,11 +9,11 @@
 .still { cursor: default; }
 .figure path { vector-effect: non-scaling-stroke; stroke: var(--milo-color-bg-sheet); stroke-width: calc(var(--milo-stroke-focus) * 1.25); stroke-linejoin: round; transition: fill var(--milo-motion-fast) var(--milo-motion-ease-standard); }
 /* 轮廓线：只描边、不填色（素材里 body 的 fill 就是 none），在肌肉下面，颜色压暗、不抢选中 */
-.base path, .base line { fill: none; stroke: var(--milo-prim-gray-400); stroke-width: var(--milo-stroke-focus); stroke-linecap: round; }
-.neutral path { fill: var(--milo-prim-gray-200); }
-.muscle path { fill: var(--milo-prim-gray-400); }
-.pressed path { fill: var(--milo-prim-gray-600); }
-.dim path { fill: var(--milo-prim-gray-600); }
+.base path, .base line { fill: none; stroke: var(--milo-color-picker-outline); stroke-width: var(--milo-stroke-focus); stroke-linecap: round; }
+.neutral path { fill: var(--milo-color-picker-neutral); }
+.muscle path { fill: var(--milo-color-picker-muscle); }
+.pressed path { fill: var(--milo-color-picker-dim); }
+.dim path { fill: var(--milo-color-picker-dim); }
 .lit path { fill: var(--milo-color-text-primary); }
 .sr { position: absolute; width: var(--milo-stroke-hairline); height: var(--milo-stroke-hairline); overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .figure path { transition: none; } }

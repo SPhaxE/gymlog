@@ -140,7 +140,7 @@ export function RewardCard({ reward, pro, queued = 0, still, onClaim }: { reward
   }
 
   return (
-    <div className={cx(s.card, still && s.still)} data-kind={reward.kind} data-tier={tier} data-milo={stage === 'milo' || undefined}
+    <div className={cx(s.card, still && s.still)} data-theme="dark" data-kind={reward.kind} data-tier={tier} data-milo={stage === 'milo' || undefined}
       style={{ '--t0': t0 } as CSSProperties} role="dialog" aria-modal="true" aria-label={`${REWARD_NAME[reward.kind]}：${typeof headline === 'string' ? headline : line}`}>
       <span className={cx(s.border, s.loop)} aria-hidden="true" />
       <div className={s.stageArea}>
@@ -194,7 +194,7 @@ function RewardLayer({ reward, pro, queued, onClose }: { reward: Reward; pro?: b
     return () => timers.forEach(clearTimeout);
   }, [reward.kind, tier]);
   return (
-    <div ref={ref} className={cx(s.layer, done && s.done)} data-tier={tier} data-milo={(reward.kind === 'stage' ? reward.to : reward.stage) === 'milo' || undefined}
+    <div ref={ref} className={cx(s.layer, done && s.done)} data-theme="dark" data-tier={tier} data-milo={(reward.kind === 'stage' ? reward.to : reward.stage) === 'milo' || undefined}
       style={{ '--t0': reward.kind === 'stage' ? 6 : 2 } as CSSProperties}
       onClick={() => { if (!done) setDone(true); }}>
       <span className={s.bloom} aria-hidden="true" />

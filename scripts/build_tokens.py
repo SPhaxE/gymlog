@@ -112,29 +112,40 @@ def main():
     for k, v in prim.items():
         hex_rgba(v)
     sem = T['semantic']['color']
-    col = {}
+    # 两套主题：ref = 深色，light = 浅色（2026-10-10）；每个语义色两边都要有
+    MODES = {'dark': 'ref', 'light': 'light'}
+    cols = {m: {} for m in MODES}
     for k, v in sem.items():
-        if v['ref'] not in prim:
-            errs.append(f'语义色 {k} 引用了不存在的原始色 {v["ref"]}')
-            continue
-        col[k] = hex_rgba(prim[v['ref']])
+        for m, key in MODES.items():
+            if key not in v:
+                errs.append(f'语义色 {k} 缺少 {m} 主题的映射（{key}）')
+            elif v[key] not in prim:
+                errs.append(f'语义色 {k} 的 {m} 引用了不存在的原始色 {v[key]}')
+            else:
+                cols[m][k] = hex_rgba(prim[v[key]])
+    col = cols['dark']
     names = list(prim) + list(sem) + list(T['number']) + list(T['string'])
     for n in names:
         if BAD_NAME_CHARS & set(n):
             errs.append(f'变量名 {n} 含 Figma 不接受的字符（. {{ }} $）')
-    base = col.get('bg/base')
-    # 对比度：带透明度的颜色先合成到 bg/base 上再算
-    rows = []
-    for fg, bg, need, note in T['contrast']:
-        if fg not in col or bg not in col:
-            errs.append(f'对比度检查引用了不存在的语义色：{fg} / {bg}')
-            continue
-        b = over(col[bg], base) if col[bg][3] < 1 else col[bg]
-        f = over(col[fg], b) if col[fg][3] < 1 else col[fg]
-        r = ratio(f, b)
-        rows.append((fg, bg, r, need, note))
-        if r + 1e-9 < need:
-            errs.append(f'对比度不达标：{fg} on {bg} = {r:.2f}:1 < {need}:1（{note}）')
+    # 对比度：带透明度的颜色先合成到 bg/base 上再算；两套主题都查（第 5 项写了主题名的只查那一套）
+    rows, rows_all = [], []
+    for m in MODES:
+        c, base = cols[m], cols[m].get('bg/base')
+        for fg, bg, need, note, *only in T['contrast']:
+            if only and only[0] != m:
+                continue
+            if fg not in c or bg not in c:
+                errs.append(f'对比度检查引用了不存在的语义色：{fg} / {bg}')
+                continue
+            b = over(c[bg], base) if c[bg][3] < 1 else c[bg]
+            f = over(c[fg], b) if c[fg][3] < 1 else c[fg]
+            r = ratio(f, b)
+            rows_all.append((m, fg, bg, r, need, note))
+            if m == 'dark':
+                rows.append((fg, bg, r, need, note))
+            if r + 1e-9 < need:
+                errs.append(f'对比度不达标（{m}）：{fg} on {bg} = {r:.2f}:1 < {need}:1（{note}）')
     nums = T['number']
     for s in T['textStyles']:
         for key in ('family', 'size'):
@@ -152,8 +163,8 @@ def main():
             if ref not in prim:
                 errs.append(f'填充样式 {s["name"]} 的渐变引用了不存在的原始色 {ref}')
     print('对比度：')
-    for fg, bg, r, need, note in rows:
-        print(f'  {"✓" if r + 1e-9 >= need else "✗"} {r:5.2f}:1 ≥ {need:<3}  {fg} on {bg}  · {note}')
+    for m, fg, bg, r, need, note in rows_all:
+        print(f'  {"✓" if r + 1e-9 >= need else "✗"} [{m:5s}] {r:5.2f}:1 ≥ {need:<3}  {fg} on {bg}  · {note}')
     if errs:
         print('\n校验失败：', *errs, sep='\n  ✗ ')
         return 1
@@ -175,7 +186,8 @@ def main():
         if g == 'male':
             lists = {v: bodymap.muscles(d, v) for v in ('front', 'back')}
     icons = {k: f'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="{d}" fill="#000" fill-rule="evenodd"/></svg>' for k, d in ICONS.items()}
-    data = {'tokens': T, 'contrast': [[fg, bg, round(r, 2), need, note] for fg, bg, r, need, note in rows], 'images': textures(col), 'build': build,
+    data = {'tokens': T, 'contrast': [[fg, bg, round(r, 2), need, note] for fg, bg, r, need, note in rows],
+            'contrastLight': [[fg, bg, round(r, 2), need, note] for m, fg, bg, r, need, note in rows_all if m == 'light'], 'images': textures(col), 'build': build,
             'bodymap': bm, 'bodymapMuscles': lists, 'icons': icons, 'p06': json.load(open(P06_DATA, encoding='utf-8'))}
     src = '\n'.join(open(p, encoding='utf-8').read() for p in PLUGIN_SRCS)
     if '__MILO_DATA__' not in src:
@@ -184,11 +196,13 @@ def main():
     banner = '// 由 scripts/build_tokens.py 从 design/tokens/tokens.json 生成，勿手改。改值请改 tokens.json 再重新生成。\n'
     open(PLUGIN_OUT, 'w', encoding='utf-8').write(banner + src.replace('__MILO_DATA__', json.dumps(data, ensure_ascii=False)))
 
-    css = ['/* 由 scripts/build_tokens.py 从 design/tokens/tokens.json 生成，勿手改。初版只有深色。 */', ':root {']
+    css = ['/* 由 scripts/build_tokens.py 从 design/tokens/tokens.json 生成，勿手改。',
+           '   两套主题：:root 默认深色；<html data-theme="light"> 切浅色。任意元素加 data-theme="dark|light" 就是一块局部主题（如容量页人体的深色观察窗）。 */', ':root {']
     for k, v in prim.items():
         css.append(f'  --milo-prim-{k}: {v};')
-    for k, v in sem.items():
-        css.append(f'  --milo-color-{k.replace("/", "-")}: var(--milo-prim-{v["ref"]});')
+    def semantic(key):
+        return [f'  --milo-color-{k.replace("/", "-")}: var(--milo-prim-{v[key]});' for k, v in sem.items()]
+    css += semantic('ref')
     for k, v in nums.items():
         val = v['value']
         if k.startswith('opacity/') or k.startswith('ratio/'):
@@ -209,6 +223,8 @@ def main():
             css.append(f'  --milo-motion-ease-{name}: {ease};')
             css.append(f'  --milo-motion-{name}-ms: {ms}ms;')
     css.append('}')
+    css += [":root, [data-theme='dark'] { color-scheme: dark; }", "[data-theme='dark'] {", *semantic('ref'), '}']
+    css += ["[data-theme='light'] {", '  color-scheme: light;', *semantic('light'), '}']
     # 文字样式 → 类名（与 Figma 的 Milo/ 文字样式一一对应）：.milo-text-number-hero 等
     weight = {'Regular': 400, 'Medium': 500, 'SemiBold': 600, 'Bold': 700, 'ExtraBold': 800, 'Black': 900}
     for d in T['textStyles']:

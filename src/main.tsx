@@ -9,7 +9,9 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { installGrain } from './components/atmosphere';
+import { installTheme } from './styles/theme';
 
+installTheme();
 installGrain();
 
 createRoot(document.getElementById('root')!).render(
