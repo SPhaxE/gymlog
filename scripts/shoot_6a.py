@@ -494,9 +494,13 @@ CONTRAST = r"""() => {
     let fg = parse(cs.color); if (!fg) continue;
     // 描边无填充的字（增量页「下次」的数，2026-10-09）：按描边的颜色算
     if (fg[3] === 0 && parseFloat(cs.webkitTextStrokeWidth) > 0) { fg = parse(cs.webkitTextStrokeColor); if (!fg) continue; }
+    // 渐变字（color 透明 + background-clip: text，奖励弹窗的升段大字，2026-10-10）：按渐变里每个不透明色标算，取最差的
+    let stops = [fg];
+    if (fg[3] === 0) for (let e = el; e; e = e.parentElement) { const s = getComputedStyle(e); if (((s.backgroundClip || '') + (s.webkitBackgroundClip || '')).includes('text') && s.backgroundImage.includes('gradient')) { stops = [...s.backgroundImage.matchAll(/rgba?\([^)]+\)/g)].map((m) => parse(m[0])).filter((c) => c[3] >= 0.9); break; } }
+    if (!stops.length) continue;
     let op = 1; for (let e = el; e; e = e.parentElement) op *= +getComputedStyle(e).opacity;
-    const bg = bgOf(el); fg = blend([fg[0], fg[1], fg[2], fg[3] * op], bg);
-    const L1 = lum(fg), L2 = lum(bg), ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+    const bg = bgOf(el);
+    const ratio = Math.min(...stops.map((c) => { const f = blend([c[0], c[1], c[2], c[3] * op], bg), L1 = lum(f), L2 = lum(bg); return (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05); }));
     const size = parseFloat(cs.fontSize), bold = +cs.fontWeight >= 600, large = size >= 24 || (size >= 18.66 && bold);
     const need = large ? 3 : 4.5;
     if (ratio < need) out.push([+ratio.toFixed(2), need, size, t.textContent.trim().slice(0, 24), el.className.toString().slice(0, 40)]);
@@ -554,6 +558,21 @@ def light_checks(b, w, h):
         isl = pg.evaluate(ISLANDS); ok(not isl, f'{tag} 浅色·故事第 {k} 幕：没有局部深色岛 {isl[:3]}')
         lum = pg.evaluate(BG_LUM, '[class*=_story_]'); ok(lum is not None and lum > 0.8, f'{tag} 浅色·故事第 {k} 幕：底是浅色（亮度 {lum}）')
         low = pg.evaluate(CONTRAST); ok(not low, f'{tag} 浅色·故事第 {k} 幕：文字对比度都达标 {low[:3]}')
+    # 奖励弹窗（只在 360 那一份跑）：结算流程门禁里只打 1 组、不出奖励，所以用 /playground 的定格卡和「奖励演示」里真弹出来的弹窗；对比度只算卡里的字、不按视口裁
+    if w == 360:
+        pg.goto(f'{args.base}/playground?theme=light'); pg.wait_for_selector('section#RewardCard'); pg.wait_for_timeout(1500)
+        cards = pg.locator('section#RewardCard [role=dialog][data-kind]')
+        n_cards = cards.count(); ok(n_cards == 12, f'{tag} 浅色·奖励：定格卡 12 张（{n_cards}）')
+        for i in range(n_cards):
+            c = cards.nth(i); c.scroll_into_view_if_needed(); pg.wait_for_timeout(120)
+            ok(c.evaluate("(e) => !e.closest('[data-theme]:not(html)')"), f'{tag} 浅色·奖励定格 #{i}：不是深色岛')
+            low = c.evaluate(CONTRAST_IN); ok(not low, f'{tag} 浅色·奖励定格 #{i} {c.get_attribute("data-kind")}：文字对比度都达标 {low[:3]}')
+        demo = pg.locator('[aria-label="奖励演示"]')
+        for name in ('升段', '升段 · Milo', '破纪录', '连胜里程碑', '升级', '周期完成'):
+            demo.scroll_into_view_if_needed(); demo.get_by_role('button', name=name, exact=True).click(); pg.wait_for_timeout(400)
+            layer = pg.locator('[class*=_layer_][data-tier]'); layer.click(position={'x': 5, 'y': 5}); pg.wait_for_timeout(900)   # 点一下跳到定格
+            low = layer.evaluate(CONTRAST_IN); ok(not low, f'{tag} 浅色·奖励弹窗「{name}」：文字对比度都达标 {low[:3]}')
+            layer.get_by_role('button', name='收下').click(); pg.wait_for_timeout(500)
     # /demo 外壳（电脑版，只在 360 那一份跑）：手机下面的「浅色」整页一起切，手机里也是浅色
     if w == 360:
         d = b.new_page(viewport={'width': 1440, 'height': 900})
@@ -1155,6 +1174,9 @@ def pro_checks(b, w, h):
     ok(pg.get_by_role('heading', name='练得更聪明一点').count() == 1 and pg.get_by_role('table', name='免费与 Pro 对比').count() == 1, f'{tag} 新用户：讲不出「你的」，退回通用对比表')
     page_ok('paywall-new')
     pg.close()
+
+# 同 CONTRAST，但范围收到一个元素里（奖励卡）、不按视口裁
+CONTRAST_IN = CONTRAST.replace("() => {", "(root) => {", 1).replace("document.createTreeWalker(document.body,", "document.createTreeWalker(root,").replace("if (r.width === 0 || r.bottom < 0 || r.top > innerHeight) continue;", "if (r.width === 0) continue;")
 
 def guarded(name, fn, *a):
     """一个类别中途抛错（等不到元素、超时）不拖垮后面的：记一条，写明卡在这个脚本的哪一行"""

@@ -18,10 +18,11 @@
 .raised { background-color: var(--milo-color-bg-raised-2); }
 .plain { background-color: transparent; color: var(--milo-color-text-secondary); }
 
-/* M06 弥散光晕边框：外层 1.6 宽的圆锥渐变环慢转，背后一层模糊光晕呼吸 */
+/* M06 弥散光晕边框：外层 1.6 宽的圆锥渐变环慢转，背后一层模糊光晕呼吸。
+   环上那道高光（--glow-hi）是荧光面上的亮点：深色是正文骨白，浅色固定纸白（2026-10-10 全局浅色：正文色在浅色里是墨黑，会转成一道黑弧） */
 @property --glow-angle { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
-.glow { position: relative; display: block; border-radius: var(--milo-radius-pill); padding: var(--milo-stroke-focus); isolation: isolate;
-  background: conic-gradient(from var(--glow-angle), transparent 0 55%, var(--milo-color-accent-default) 75%, var(--milo-color-text-primary) 80%, transparent 95%);
+.glow { --glow-hi: var(--milo-color-text-primary); position: relative; display: block; border-radius: var(--milo-radius-pill); padding: var(--milo-stroke-focus); isolation: isolate;
+  background: conic-gradient(from var(--glow-angle), transparent 0 55%, var(--milo-color-accent-default) 75%, var(--glow-hi) 80%, transparent 95%);
   animation: glowSpin calc(var(--milo-motion-slow) * 12) linear infinite; }
 .glowS { display: inline-block; }
 .glow::after { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: var(--milo-color-accent-glow); filter: blur(var(--milo-space-l));
@@ -30,3 +31,4 @@
 @keyframes glowSpin { to { --glow-angle: 360deg; } }
 @keyframes glowBreathe { 50% { opacity: 0.45; transform: scale(1.03); } }
 @media (prefers-reduced-motion: reduce) { .glow, .glow::after { animation: none; } }
+[data-theme='light'] .glow { --glow-hi: var(--milo-prim-paper-50); }
