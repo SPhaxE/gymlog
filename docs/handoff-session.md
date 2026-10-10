@@ -2,98 +2,114 @@
 
 > 新窗口请先完整读完本文件，再开始工作。遇到 Open Questions 里的问题先问我，不要自行决定。
 
-_Updated: 2026-10-10（第二窗口）_
+_Updated: 2026-10-11 01:35（作品集 · 规划窗口 → 搭建窗口）_
 
 ## 1. Goal
-**把「进入作品集之前」剩下的事做完**，然后开作品集。用户 2026-10-10：「进入作品集之前，我们还有哪些要做的，交给下个窗口。」
-完成标准：§2 的待办全部打勾（或用户明确划掉）；`HANDOFF.md`、`docs/portfolio-handoff.md` 与现状一致；作品集要用的截图 / 录屏是最新的。
+**按规格把慢牛 Milo 作品集做出来**：22 张 1920 × 1080 的 SVG（能导入 Figma 手调）+ 合并 PDF。
+规格：**`docs/superpowers/specs/2026-10-11-portfolio-design.md`**（用户已看过结构并同意转搭建；先完整读它，再读 `docs/portfolio-handoff.md` 对接汇报）。
+完成标准：`portfolio/out/svg/` 22 张全部通过 `check.py`；PNG 预览与 PDF 生成；用户逐页验收通过。
 
 ## 2. Current State
-已完成（全部在 `main`，线上 /demo 已是 `baa6397`）：
-- [x] 浅色分支合进 main；**浅色荧光焦点**（深色是荧光的焦点，浅色仍是荧光：荧光笔 / 荧光块 / 荧光 + 细黑边，`global.css` 的 `--fluo-*`）+ **浅色走查**（去荧光雾、建档选中卡、Pro 方案分段、增量持平段与组头）；门禁加跨主题荧光焦点比对（`shoot_6a.py` 的 `LIME_SCAN`）。DESIGN §1.5 第 9、10 条
-- [x] **性能巡检**：钢板光束静态化 + 浮尘单独一层、光束先叠加后整张模糊一次（打开记录页长任务 9.4 → 1.4 秒 @4×降速，静置 25 → 59 帧）；同心环粒子 1 倍分辨率（增量页静置 30 → 48 帧）。视效不变
-- [x] **`docs/UIUX-AI协作工作流.md`**：通用、精简、无项目举例、无版本之分（用户要求）；以后新坑 / 新优化都按普适写法回写进去
-
-**进入作品集之前还要做的（按建议顺序）**：
-- [ ] **A. 用户验收浅色最新效果**（荧光焦点 + 走查；改前改后对照图已推给用户，用户还没回）——有意见先改
-- [ ] **B. 用户最后审查一遍 → 打 APK 真机走查**（用户 2026-10-07 定：真机体检改为「用户最后审查一遍后打包 APK 走查」）。APK 由 CI 自动打在 `main` 的 `apk/milo-debug.apk`。顺带看一直没验的：放大镜跟手帧率、Android 返回键在训练中 / 改数面板、360 × 640 矮屏训练中一屏几组、小米 15 上浅色阴影 / 模糊的性能。用户若出批注 → 按协作工作流 §3.3（参考 `docs/walkthrough-1.md`）
-- [ ] **C.（可选）性能第二轮**：首页、容量页静置 CPU 仍约 60%（4×降速、无 GPU 的相对值），来自流体背景 + 主角卡心跳光 + 容量人体熔流等持续动效；只做不降视效的优化（协作工作流 §5「性能与降级」）。用户没要求，先问做不做
-- [x] **D. 文档对齐现状**（本窗口完成）：`HANDOFF.md` 还写着「2026-10-09 走查 1 进行中」「浅色人体默认 L1」等过时内容 → 改成现状（走查 1 完成、浅色 L2d + C3、荧光焦点、性能巡检、协作工作流）；`docs/portfolio-handoff.md` 的数字与浅色段落更新（门禁 1262 项；浅色经历的几轮与最终规则；「AI 协作」一段可用协作工作流当底稿）
-- [x] **E. 重拍作品集素材**（本窗口：`screenshots/theme/` 12 对 + `theme-pairs.png` 按最新代码重拍，脚本进了仓库 `scripts/shoot_theme.py`；深色逐像素未变，所以 `stage4/5` 深色录屏仍与现状一致；浅色录屏等用户要再补）。原文：`screenshots/theme/`（深浅成对图）是浅色治理前拍的 → 按最新代码重拍并推给用户；视需要补浅色录屏（MP4）；核对 `screenshots/walkthrough-1/stage4-motion.mp4`、`stage5-*` 是否仍与现状一致
-- [x] **G. 深浅切换（用户 2026-10-10 追加，强制）**：已上线——只留「我的 → 主题」一个入口（/demo 外壳按钮去掉）；液态转场 `src/components/themeSwap.ts`：照用户给的 AE 熔流拆解拆成**走向 R（晕开 / 漫上 / 垂落 / 交汇）× 渐变 G（熔流 / 淬火 / 余温 / 墨晕）**两轴，WebGL；**一开始就换主题，旧页面快照（View Transitions）随色带擦掉，色带后面透出正在渲染的新页面**（用户：不能把页面整个挡住）。方案台 `/preview#swap` 自由组合 + 两行逐组对照。**用户选定 R1 晕开 × G1 熔流，起点 = 手指点的「深色 / 浅色」**（键盘操作时从焦点按钮中心），落选留方案台
-- [x] **G2. 转场性能**（用户：「/preview 切换很卡」）：擦除不再每帧改 `<html>` 上的继承变量（3 万节点每帧 240 ms）→ 伪元素自己的注册属性 + 浏览器动画；压共享名从后代选择器（切一次 82 ms）改成脚本摘名；着色器两遍（1/3 分辨率方向场、16 位编码）；WebGL 预热复用；Token 颜色直接查表；开扫前等页面安静。容器里测：方案台单台手机帧数 9 → 24、四格一起播 6 → 21、App 7 → 18。门禁 19 / 19 已过
-- [x] **H. 浅色人体换成 L2a 轻盈**（用户 2026-10-10 最后调整；L2d 留方案台标「旧默认」；`screenshots/theme/` 已按 L2a 重拍）
-- [x] **B 的打包部分**：安卓图标换成「递增条牛头」（`scripts/app_icon.py`），APK 已打（`apk/milo-debug.apk`，源提交 `d419d8e`）；真机走查交给用户
-- [x] **F. 作品集开工前问用户 4 件事**（用户 2026-10-10 答：PDF、画幅不限可 16:9 或竖版长画幅；常用安卓机样机；深色主题；内页由用户另开窗口安排，这边只出对接汇报 = `docs/portfolio-handoff.md`）。原文：（`docs/portfolio-handoff.md` §8）：载体（网站 / Behance / PDF，尺寸篇幅）、iOS 样机用哪代 iPhone（安卓用小米 15 真机框）、封面深 / 浅 / 并排、要不要单讲 AI 协作
+- [x] App 定稿、APK 真机验收通过（用户 2026-10-10 / 10-11）；App 阶段的旧交接在 git 历史里（`git log -- docs/handoff-session.md`）
+- [x] 作品集结构定稿：22 页（规格 §2），视觉体系（§1），素材渲染（§3），动效四种静态呈现（§4），AI / 工具少量提及（§5），封面 AIGC（§6），制作与交付（§7）
+- [x] Pixel 8 官方样机框已入库：`portfolio/assets/device/pixel_8/`（来源、合成方法见同目录 README）
+- [x] 封面 AIGC 提示词已给用户（附录）；**用户会把图直接放进仓库 `docs/`**
+- [ ] 写实施计划（`docs/superpowers/plans/2026-10-11-portfolio.md`），按 §11 的顺序
+- [ ] 搭脚手架：`portfolio/lib/pf.py`、`shoot/`、`render.py`、`check.py`
+- [ ] 渲染素材：15 个 App 屏（Pixel 8 参数 + 安全区 + 状态栏）、方案台 / 组件库 / 规范截图、动效帧
+- [ ] 三张定调页 P01、P09、P21 → 推给用户拍板
+- [ ] 其余 19 页按页序 → 每页自检 → 推 `main`
+- [ ] 合并 PDF、总览图，交用户验收
 
 ## 3. Active Files
-- `docs/UIUX-AI协作工作流.md` — 通用工作流（§3 逐页、§3.3 真机走查、§5 性能、§6 门禁、§8 会话）
-- `docs/portfolio-handoff.md` — 作品集交接（§1 九段叙事、§8 开工前问题）
-- `HANDOFF.md` — 项目级交接（待更新，见 D）
-- `docs/DESIGN.md` §1.5 — 主题与浅色规则
-- `src/styles/global.css` — 浅色 `--depth-*`、`--fluo-*`
-- `src/components/plate.tsx` — 钢板：光束静态层 `front` + 浮尘层 `motesRef`；光束先画进 `raw` 再整张模糊进 `beams`
-- `src/components/particles.tsx` — `ParticleField soft`（OrbitPlate 用 1 倍分辨率）
-- `scripts/shoot_6a.py`（门禁，含 `LIME_SCAN`）、`scripts/regress_dark.py`（深色逐像素回归）
+- `docs/superpowers/specs/2026-10-11-portfolio-design.md` — 作品集规格（唯一依据）
+- `docs/portfolio-handoff.md` — 素材清单（§2）、可写进页面的数字（§3.2）、讲点（§4）、过程叙事（§5）、浅色 / Token 要点（§6）
+- `docs/brief.md` — 定位、用户、命名、增长层原则、决定记录（时间轴数字从这里取）
+- `docs/DESIGN.md` §1（荧光规矩）、§2（字体字阶）、§7（动效、弹簧参数、性能数字）、§9.7（8motions 落点）
+- `docs/walkthrough-1.md` — 走查 1：27 项 → 9 组 → 5 阶段
+- `design/tokens/tokens.json` — 作品集配色直接取原色（`gray-*`、`bone-*`、`lime-*`、`paper-*`）
+- `screenshots/portfolio/android/` — 现成 15 张深色屏（1082 × 2402，**没有状态栏、没让出挖孔**，规格要求重新渲染）
+- `screenshots/brand/`、`design/brand/story/M1.png`、`design/brand/app-icon.png`、`screenshots/wireframes/`、`screenshots/hifi/`、`screenshots/stage3/00-compare.png`、`screenshots/theme/`、`screenshots/icon-grid/board.png`、`screenshots/growth/*.gif`
+- `scripts/shoot_theme.py --android` — 现成的 Pixel 尺寸截图脚本，可当 `portfolio/shoot/` 的起点
 
-## 4. Changes Made（第二窗口）
-- 深浅切换唯一入口 + 液态转场（第一版纯色 W1–W4 → 用户「没有渐变」→ 第二版 R × G 两轴 → 用户「白色区域要能透出后面的页面」→ 透出模式）；Token `motion/theme-in/hold/out`；/playground `LiquidSwap`；门禁改 /demo 与「我的 → 主题」两段
-- D：`HANDOFF.md` §0、`docs/portfolio-handoff.md`（数字、浅色最终规则、AI 协作底稿指引）、DESIGN §1.5、ia「外观」、协作工作流坑表 +2 条
-- E：`scripts/shoot_theme.py` 重拍深浅成对图
+## 4. Changes Made（规划窗口）
+- `docs/superpowers/specs/2026-10-11-portfolio-design.md`：新建，22 页结构与全部约定
+- `portfolio/assets/device/pixel_8/`：Pixel 8 机框（`back.webp` 机身 1187 × 2513、`mask.webp` 圆角与挖孔、`layout` 屏幕位置 (49, 55)）+ README
+- 本文件：改写为作品集搭建交接
 
-## 4b. Changes Made（第一窗口）
-- `d07ffd0` 浅色荧光焦点 + 走查；门禁跨主题比对
-- `baa6397` 性能巡检（钢板、粒子）；`docs/UIUX-AI协作工作流.md` 通用精简版
-- 本提交：本交接
-
-## 5. Decisions & Rationale
-- 荧光 = 各页焦点点缀色（用户）；浅色墨黑只对位深色的骨白实心（选中 / 确认 / 一次性强标）
-- 浅色流体背景去掉荧光雾（实测页边偏色 3 → 12）；导航滑块浅色保留浅凹槽（用户选）
-- 性能只做视效不变的优化；主包大头是 react-dom / router，没拆
-- 协作工作流：用户要求不对比、无版本、不举项目例子、普适简洁（给 AI 读省上下文）；用户最初的模板原文留在 `docs/workflow.md` 附录作出处
+## 5. Decisions & Rationale（用户 2026-10-11）
+- **SVG 为载体**：方便导入 Figma 手调；PDF 由 SVG 合成。文字保持 `<text>`，光晕 / 模糊 / 颗粒先烘进 PNG 图层，只用 `clipPath`，不用 `foreignObject`、CSS、滤镜
+- **视觉不受 Milo App 规范限制**：以 Milo 配色 / 字体 / 材质为底，版面可以更大胆（荧光可多处，每页一个主焦点）
+- **页头**沿用食律「眉题 + 专题名 + 主张句」，允许变体（压图、封面无页头）
+- **样机 Pixel 8**（Claude 定）：与截图同为 20:9；Android Studio 官方素材，真实机型框
+- **不用真机、不录屏**：所有屏幕和动效帧都在容器里按 Pixel 8 参数渲染
+- **动效四种静态呈现**（Claude 定）：刻度帧序列 / 叠影 / 曲线挂帧 / 切片拼合，外加二维码到线上 `/demo`
+- **AI 与工具可以少量提及**：用户岗位预期接受 vibe coding，展示工具面有好处；只在 P02、P18、P20
+- **命名只讲**：「慢慢变牛。」+ 慢牛 ↔ Milo 谐音 + 健美祖师爷米洛扛小牛的典故；**删掉股市慢牛、力量之牛**
+- **22 页原则上没问题**（用户担心偏多，但认为必要就保留）
+- 竞品只写品类、不点名具体产品（brief 规定核实前不写进对外文案）
+- 封面两版都出：纯样机版 + AIGC 实拍版（用户出图后）
 
 ## 6. Failed Attempts / 坑
-- 截转场动画：Playwright `clock.install()` 后时间仍在走，要 `pause_at` 再 `run_for`；View Transitions 的 CSS 动画还要 CDP `Animation.setPlaybackRate 0` 冻住；无头 + SwiftShader 截一张图约 1.4 秒，比转场还长
-- 主题转场期间页面上平时带共享名（`sharedName`）的元素会变成单独的组、不跟着擦——转场里用 `html[data-vt='theme'] *:not([data-swap-vt]) { view-transition-name: none !important }` 压掉
-- **核对线上不要比文件名哈希**（构建把提交号打进包里，本地哈希必然 ≠ 线上）：`js=$(curl -s https://gymlog-taupe.vercel.app/demo | grep -o 'assets/index-[^"]*\.js' | head -1); curl -s https://gymlog-taupe.vercel.app/$js | grep -c <短提交号>`
-- 门禁跨主题比对的误报（动画相位、`currentColor` 边框、荧光底里的墨字）已在 `LIME_SCAN` 处理；「浮尘在飘」要对钢板两张画布一起取哈希
+- 现成截图直接套 Pixel 8：**挖孔压住「正面 / 背面」分段控件**（规划窗口试贴确认）→ 渲染时注入 `--safe-area-inset-top`（App 在 `global.css` 收成 `--safe-top`，`Screen.module.css` 的 `.frame` 用它），再叠一条按 Android 14 规格画的状态栏
+- Android 官方「Device Art Generator」网页已拿不到机框；可用的是 googlesource 上 Android Studio 的 `device-art-resources/<机型>/`（`?format=TEXT` 返回 base64），容器能访问
+- 截转场中间帧：Playwright `clock.install()` 后时间仍在走，要 `pause_at` 再 `run_for`；View Transitions 还要 CDP `Animation.setPlaybackRate 0` 冻住；无头 + SwiftShader 截一张约 1.4 秒（旧 handoff §6）
+- 无头 Chromium 没有 H.264：动作要领页的示范视频用 `scripts/shoot_theme.py` 里现成的 webm 路由处理
 - `pkill -f` 会杀掉自己的 shell → `for p in $(pgrep -f '^node.*vite preview'); do kill $p; done`
-- 读其他窗口记录（`list_events`）很费上下文，只挑关键窗口读
-- 无头 Chromium 没有 H.264；容器无 GPU，性能绝对值偏高，只看相对值
+- 渲染 SVG 成 PNG / PDF 时，Chromium 要能找到三套字体：用 `node_modules/@fontsource*` 的字体文件写 `@font-face` 包一层 HTML 再渲染；字体没加载上要报错退出（食律踩过）
 
 ## 7. Constraints
-- 见 `CLAUDE.md`：中文、结论先行、只报结果；不写死 px / ms / hex；命中区 ≥ 48；`/playground`、`/demo` 同步；方案台旧方案不删；要拍板的图用 `SendUserFile` 推；门禁后台跑、做完再跑
-- **深色一像素不许变**：Token 只改 `light`，CSS 只写 `[data-theme='light'] …`，改完跑 `scripts/regress_dark.py`
-- 浅色：不写描边用 `--depth-*`；深色是荧光的浅色也是荧光（`--fluo-*`）；主视觉只有白 / 荧光 / 黑
-- 作品集：真实 iOS / 安卓样机；展示过程；动效录屏
-- 每次推 main 顺手更新本文件；逼近上下文极限才换窗口
+- 中文、结论先行、只报结果；对外文案写「Milo」，只在介绍时写「米洛（Milo）」
+- **页上数字只从仓库取**（handoff §3.2、brief、DESIGN、walkthrough-1），不手写新数字；性能数字要带测量条件的脚注
+- 界面一律是 App 真渲染，不画假界面；MuscleWiki 素材保留署名与水印；演示商家、品牌全是虚构
+- AIGC 图只取光影和构图，图里的文字不可信；屏幕绿幕抠掉换真屏
+- 需要用户拍板的图（定调页、样机、每页成品）一律用 `SendUserFile` 推到窗口
+- 需要用户手动测的地方给可直接复制的命令
+- 推 `main` 直接推、不开 PR；推完顺手更新本文件
+- 不动 App 本体（`src/`）；作品集只往 `portfolio/` 和 `docs/` 写。若为渲染需要加地址参数，只加不改行为，并跑 `npm run check`
 
 ## 8. How to Verify
 ```bash
-npm ci && npm run check                         # tsc + 400 单测 + 写死值 + 构建
-npm run build && npx vite preview --port 4173 --host 127.0.0.1 &
-python3 scripts/shoot_6a.py --no-shots --base http://127.0.0.1:4173     # 全套门禁（后台，约 5 分钟，19 份 / 1269 项）
-# 深色回归：git worktree 出改动前提交 → 软链 node_modules → build → 两个 vite preview --outDir → regress_dark.py shoot ×2 → compare
+npm ci && npm run build && npx vite preview --port 4173 --host 127.0.0.1 &
+pip install playwright pillow qrcode pypdf --break-system-packages   # Chromium 已在 /opt/pw-browsers，不要 playwright install
+python3 portfolio/shoot/app.py --base http://127.0.0.1:4173           # 渲染 App 屏（待建）
+python3 portfolio/pages/gen01.py                                      # 出一页 SVG（待建）
+python3 portfolio/check.py portfolio/out/svg                          # 自检（待建）
+python3 portfolio/render.py --png --pdf                               # 预览与合并 PDF（待建）
 ```
-- 当前状态：check 全绿（401 单测）；门禁 19 / 19、1269 项；深色页面没动（只去掉了 /demo 外壳的深浅按钮）；线上 /demo = 本次提交
-- 性能测量（脚本没进仓库）：Playwright + CDP `Emulation.setCPUThrottlingRate 4`，每页量 FCP、加载长任务、静置 4 秒帧率 / 长任务 / `Performance.getMetrics` TaskDuration；热点用 `Profiler` 采样
+- 当前状态：只有规格和样机框，脚手架都还没建
 
 ## 9. Environment State
-- **Stitch 密钥：仓库根 `secrets/stitch.env`（.gitignore，不进提交）；新容器里没有——用户 2026-10-10 给过原文，以后不再向用户要；可建议用户配成云环境密钥**
-- Branch：工作分支 `claude/eager-faraday-cnvnxs`，内容 = `main`；发布推 `main`
+- **Stitch 密钥：仓库根 `secrets/stitch.env`（.gitignore，不进提交）；新容器里没有——用户 2026-10-10 给过原文，以后不再向用户要；作品集阶段一般用不到**
+- Branch：`main`（规划窗口直接在 main 上提交）
 - Uncommitted changes：无
-- Running services：新容器没有，自己起 `vite preview`
-- Env：Chromium `/opt/pw-browsers/chromium`；Python Playwright 先 `pip install playwright`；GitHub 只能用 `mcp__github__*`
+- Running services：无，自己起 `vite preview`
+- 线上演示：https://gymlog-taupe.vercel.app/demo （二维码指向这里）
+- Env：Chromium `/opt/pw-browsers/chromium`；容器网络能访问 npm、googlesource；Google Fonts 访问不了（字体用 `node_modules/@fontsource*`）
 
 ## 10. Open Questions
-- 浅色最新效果（荧光焦点 + 走查）通过了吗？（A）
-- 什么时候做最后审查 + APK 真机走查？（B）
-- 性能第二轮要不要做？（C）
-- 作品集 4 问（F），作品集开工时再问
+- 用户的 AIGC 封面图放进 `docs/` 后用哪一张（A 手持 / B 静物）——出了再问
+- 三张定调页出来后，整体风格是否通过（P01、P09、P21）
 
 ## 11. Specific Next Steps
-1. 先问 §10 前三条。
-2. 全部做完，进入作品集阶段：作品集窗口先读 `docs/portfolio-handoff.md`（对接汇报）。真机走查用户自己装 APK 看，有批注再回来改。
-3. 按用户对 A / B / C 的回答做；B 若出批注按协作工作流 §3.3。
-4. 都完了问 F，开作品集（先读 `docs/portfolio-handoff.md`）。
-5. 每次推 main 顺手更新本文件；推后在线上包里搜提交号确认上线。
+1. 读规格全文 + `docs/portfolio-handoff.md`；用 superpowers 的 writing-plans 写实施计划到 `docs/superpowers/plans/2026-10-11-portfolio.md`，推 `main`
+2. 建 `portfolio/lib/pf.py`：颜色（从 tokens.json 读）、字阶白名单、`header()`（三种变体）、`phone(screen, x, y, scale, rot)`（机身 PNG 层 + 屏幕 `<image>` + `clipPath`）、`callout()`、`filmstrip()`、`onion()`、`curve_frames()`、`slit_scan()`、`footer()`、`embed()`（2 倍、能用 JPEG 用 JPEG）
+3. 建 `portfolio/shoot/app.py`：412 × 915 @2.625、深色、注入安全区、叠状态栏，出 15 屏到 `portfolio/assets/screens/`；先出 body.png 套 Pixel 8 推给用户确认挖孔与状态栏
+4. 建 `portfolio/render.py`（字体包装 HTML → PNG / PDF）与 `check.py`
+5. 做 P01、P09、P21 三张定调页 → `SendUserFile` 推 PNG → 等用户定调
+6. 定调后按页序做其余 19 页；动效页前先建 `portfolio/shoot/motion.py`（冻结时钟逐帧），截方案台 `/preview` 各组、`/playground`、`/spec`
+7. 全部完成：合并 PDF + 22 页总览图，推给用户验收
+
+---
+
+## 附录：封面 AIGC 提示词（已发给用户）
+
+屏幕必须纯 #00FF00（抠掉贴真屏），16:9，最高清；图里的文字一律不用。
+
+```
+A: Photorealistic close-up of a hand with light chalk dust holding a Google Pixel 8 smartphone (Obsidian black) in portrait orientation, screen facing the camera. The screen is a perfectly flat, uniform pure #00FF00 green, no reflections, no glare, no UI, no text. Background: dim industrial gym in warm near-black tones, out-of-focus barbell and black iron weight plates, a single lime-yellow rim light from the upper right, subtle film grain, shallow depth of field, cinematic low-key lighting. 16:9 landscape; phone on the right third, large empty dark area on the left for typography. No logos, no text, no watermarks.
+```
+
+```
+B: Photorealistic still life, a Google Pixel 8 smartphone (Obsidian black) lying face-up at a slight 3/4 angle on a stack of matte black iron weight plates, chalk dust on the plates. The screen is a perfectly flat, uniform pure #00FF00 green, no reflections, no UI, no text. Warm near-black background, one soft lime-yellow light grazing the plate edges from the upper right, subtle film grain, shallow depth of field, cinematic low-key lighting. 16:9 landscape; subject on the right half, empty dark negative space on the left for typography. No logos, no text, no watermarks.
+```

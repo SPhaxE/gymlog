@@ -90,7 +90,7 @@
 
 - 用途：P01 主图的实拍感版本（另一个版本只用样机，两版都出）。
 - 规范：Pixel 8 黑色机身，**屏幕纯 #00FF00、无反光**，便于四点拟合贴真屏；画面里的文字不可信，只取光影与构图。
-- 提示词由 Claude 在实施开始时给出，用户出图后放进 `portfolio/assets/aigc/`。
+- 提示词已给（A 手持 / B 静物，原文见 `docs/handoff-session.md` 附录）；**用户把出好的图直接放进仓库 `docs/` 下**（2026-10-11），搭建窗口自己找出来（`git log --diff-filter=A --name-only -- docs | grep -iE '\.(png|jpe?g|webp)$'`），复制到 `portfolio/assets/aigc/` 再用。
 
 ## 7. 制作与交付
 
