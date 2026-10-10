@@ -21,6 +21,8 @@ _Updated: 2026-10-10 23:30_
 - [x] 文档：DESIGN §1.5 第 9、10 条，brief 决定记录，`/playground` 说明（Coupon、PlanPicker、PropGlyph、FluidBackdrop、Nav、OptionCard、RewardCard）
 - [ ] 用户看浅色新效果（只告诉了改了什么、线上能看）
 - [ ] 用户在小米 15 上复查浅色性能（卡片带阴影；浅色流体背景现在不跑循环了，应更省）
+- [x] **工作流模板 v2.0**：`docs/uiux-ai-workflow-v2.md`（用户 2026-10-10：把 Milo 踩过的坑、优化思路整理进 UIUX-AI 工作流模板，「这一部分与 App 是并重的」）；`docs/workflow.md` 顶部、`CLAUDE.md` / `AGENTS.md` 指向它；v1.4 原文仍在 `docs/workflow.md` 附录（用户上传的「最初版本」与它逐字一致）
+- [ ] 用户看工作流 v2，有补充再回写（以后新坑 / 新优化都回写进 v2）
 - [ ] 作品集（暂不考虑）
 
 ## 3. Active Files
@@ -45,7 +47,7 @@ _Updated: 2026-10-10 23:30_
 - 曲线页罩层（`.tail`）：深色里罩层的点和主图同色无所谓；浅色里它的墨黑菱形盖住了荧光选中点 → 浅色隐藏罩层的点（主图里同一位置的点露出来）。
 
 ## 6. Failed Attempts / 踩过的坑
-- **Vercel 没部署**：CI 构建完会自动推一个只改 apk 的提交（`apk: debug 构建 … [skip ci]`），`vercel.json` 的 `ignoreCommand` 让 Vercel 跳过它，而它前面那个真提交的部署被取消 → 线上停在旧版本。推 `main` 前 `git fetch origin main && git merge --ff-only origin/main`（让有内容的提交在最上面），推完核对线上 bundle 哈希。
+- **核对线上别比哈希**：构建时会把提交号打进包里（「我的 → 版本」），线上包的文件名哈希永远不等于本地构建的——核对方法是在线上的 `index-*.js` 里搜这次的短提交号（`curl -s <站点>/assets/index-*.js | grep -o <sha>`）。本轮一度误判「Vercel 没部署」就是比了哈希；实际 `d07ffd0` 推后约 4 分钟就上线了。CI 推的 apk 提交被 `ignoreCommand` 跳过是正常的。
 - 审计脚本里 `border*Color` / `outlineColor` 跟 `currentColor`，会重复报；只看 `color / backgroundColor / fill / stroke / boxShadow / backgroundImage / filter`。荧光块里的字（墨黑）会被报成「丢了荧光」，要看往上几层有没有荧光底（门禁里查 4 层）。
 - DOM 比对看不见遮挡：曲线选中点在 DOM 里是荧光，但被上面一层罩住——要配合截图看。
 - 上一窗口的坑仍有效：`pkill -f` 会杀自己；`/playground` 浅色重绘很重（门禁等待 ≥ 30–60 秒）；回归噪声（休息倒计时弧、钢板光源、/playground 个别格）；`color-mix` 百分比不能 > 100；无头 Chromium 没有 H.264（动作页「示范加载失败」是这个原因）；新容器 `pip install playwright`。
@@ -80,10 +82,11 @@ python3 scripts/regress_dark.py compare /tmp/r_base /tmp/r_cand        # 页面�
 - Env：Chromium `/opt/pw-browsers/chromium`；Python Playwright 先 `pip install playwright`；Pillow、numpy 在；GitHub 只能用 `mcp__github__*`
 
 ## 10. Open Questions
+- 工作流 v2 有没有要补的
 - 浅色新效果用户还没看（荧光焦点 + 走查）；有意见再按 §7 的规矩改
 - 作品集：用户说暂不考虑（`docs/portfolio-handoff.md` §8 的问题等用户重提再问）
 
 ## 11. Specific Next Steps
 1. 等用户对浅色的反馈；改动只写 `light` Token / `[data-theme='light']` 规则，深色是荧光的浅色也要荧光（`--fluo-*`）。
 2. 改完：`npm run check` → `regress_dark.py` 深色回归 → 最后一次性跑门禁全套（含浅色荧光焦点比对）。
-3. 推 `main` 前先 `git merge --ff-only origin/main`，推完核对线上 /demo 的 bundle 哈希是新的；只告诉用户「改了什么、线上能看了」。
+3. 推 `main` 前先 `git merge --ff-only origin/main`，推完在线上 `index-*.js` 里搜这次的短提交号确认已部署；只告诉用户「改了什么、线上能看了」。
