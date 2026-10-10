@@ -569,8 +569,8 @@ export const CATALOG: Entry[] = [
     },
   },
   {
-    name: 'BodyFigure', group: '容量', desc: 'MuscleWiki 真实路径的人体。半身：从左裁掉 ratio/figure-crop、左缘渐隐（容量页与故事动画同一个版式）。三层视效（2026-10-07 方案台选定，DEFAULT_LOOK）：O2 柔光描边（轮廓一圈模糊淡光）+ F1 金属渐变（灰阶 → 湍流扭曲 + 模糊 → 暗 / 橄榄 / 荧光 / 骨白热色带，下缘白热亮边 + 外发光 + 颗粒，越热越亮）+ S9 熔流（亮带往上流过湍流扭曲场，越热越快；滚出屏幕暂停）。减少动态效果时全静止。浅色（2026-10-10 全局浅色）：不再是深色观察窗，人体直接画在纸白上、跟随所在元素的主题；按 LightLook 方案画（L1 深绿热 · L2 荧光热 · L3 银金属 · L4 墨印，待用户选，默认 L1）——色带冷 = 纸白、热 = 深色，唇边 / 内缘从提亮改压暗 + 上沿纸白高光，熔流和柔光描边从 screen 改 multiply；只有 O2 / F1 / S9 有浅色版，其余方案是深色存档。look 轴：theme = 跟随页面主题，L1–L4 = 这一格固定浅色。其余方案与旧默认见 /preview 方案台（L 组 4 格 + 全热度对照）。',
-    axes: { look: ['theme', 'L1', 'L2', 'L3', 'L4'], view: ['front', 'back'], sex: ['male', 'female'] }, rows: ['look', 'sex'], cols: 'view', size: 'm',
+    name: 'BodyFigure', group: '容量', desc: 'MuscleWiki 真实路径的人体。半身：从左裁掉 ratio/figure-crop、左缘渐隐（容量页与故事动画同一个版式）。三层视效（2026-10-07 方案台选定，DEFAULT_LOOK）：O2 柔光描边（轮廓一圈模糊淡光）+ F1 金属渐变（灰阶 → 湍流扭曲 + 模糊 → 暗 / 橄榄 / 荧光 / 骨白热色带，下缘白热亮边 + 外发光 + 颗粒，越热越亮）+ S9 熔流（亮带往上流过湍流扭曲场，越热越快；滚出屏幕暂停）。减少动态效果时全静止。浅色（2026-10-10 全局浅色）：不再是深色观察窗，人体直接画在纸白上、跟随所在元素的主题；按 LightLook 方案画（L1 深绿热 · L2 荧光热 · L3 银金属 · L4 墨印；2026-10-10 用户选定 L2 的配色，默认 L2，再出 4 个变体 L2a 轻盈 · L2b 金属 · L2c 形体靠影 · L2d 磨砂待选）——色带冷 = 纸白、热 = 深色，唇边 / 内缘从提亮改压暗 + 上沿纸白高光，熔流和柔光描边从 screen 改 multiply；只有 O2 / F1 / S9 有浅色版，其余方案是深色存档。浅色描边不用墨（LightContour：C1 中绿线 · C2 灰绿线 · C3 磨砂白线 · C4 柔影 · C5 无描边），胶囊描边、引线、量尺刻度也跟人体方案走（CapsuleRail / TierLegend，lightToneVars）。look 轴：theme = 跟随页面主题，其余 = 这一格固定浅色。其余方案与旧默认见 /preview 方案台（L2 变体、描边 C、L 组 + 全热度对照）。',
+    axes: { look: ['theme', 'L1', 'L2', 'L3', 'L4', 'L2a', 'L2b', 'L2c', 'L2d'], view: ['front', 'back'], sex: ['male', 'female'] }, rows: ['look', 'sex'], cols: 'view', size: 'm',
     skip: (p) => p.look !== 'theme' && p.sex === 'female',
     render: (p, f) => p.look === 'theme' ? <FigureCell view={p.view as 'front'} sex={p.sex as 'male'} f={f} />
       : <div className={s.lightCell} data-theme="light"><LightLook.Provider value={p.look as LightLookKind}><FigureCell view={p.view as 'front'} sex={p.sex as 'male'} f={f} /></LightLook.Provider></div>,

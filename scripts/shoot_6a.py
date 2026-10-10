@@ -552,15 +552,15 @@ def light_checks(b, w, h):
             px = [im.getpixel((int(x * sx), int(y * sx))) for x, y in pts if 2 < y < h - 2]
             ok(px and all(max(abs(a - b) for a, b in zip(c, lime)) <= 3 for c in px), f'{tag} 浅色·记录：孔里露出平涂荧光底板 {lime}（{len(px)} 个孔 {px[:2]}）')
     if not args.no_shots and w == 360: pg.screenshot(path=os.path.join(OUT, 'light-last.png'))
-    # 故事 8 幕：浅色水墨，页里没有深色岛，底是浅色，字对比度达标（每幕等到字都出来、又赶在自动翻页之前）
+    # 故事 8 幕：浅色下也是深色（2026-10-10 用户：App 默认深色、首次引导永远先是深色，浅色水墨封存）——整屏是唯一允许的深色岛，底是深色，字对比度达标
     for k, wait in ((1, 4200), (2, 2600), (3, 8800), (4, 4300), (5, 1800), (6, 6900), (7, 6200), (8, 3800)):
         pg.goto(f'{args.base}/'); pg.evaluate('localStorage.clear()'); pg.goto(f'{args.base}/onboarding?scene={k}&theme=light'); pg.wait_for_selector('main'); pg.wait_for_timeout(wait)
-        isl = pg.evaluate(ISLANDS); ok(not isl, f'{tag} 浅色·故事第 {k} 幕：没有局部深色岛 {isl[:3]}')
-        lum = pg.evaluate(BG_LUM, '[class*=_story_]'); ok(lum is not None and lum > 0.8, f'{tag} 浅色·故事第 {k} 幕：底是浅色（亮度 {lum}）')
+        isl = pg.evaluate(ISLANDS); ok(len(isl) == 1 and 'main' in str(isl[0]).lower(), f'{tag} 浅色·故事第 {k} 幕：只有整屏一块深色岛（封存浅色水墨）{isl[:3]}')
+        lum = pg.evaluate(BG_LUM, '[class*=_story_]'); ok(lum is not None and lum < 0.2, f'{tag} 浅色·故事第 {k} 幕：底是深色（亮度 {lum}）')
         low = pg.evaluate(CONTRAST); ok(not low, f'{tag} 浅色·故事第 {k} 幕：文字对比度都达标 {low[:3]}')
     # 奖励弹窗（只在 360 那一份跑）：结算流程门禁里只打 1 组、不出奖励，所以用 /playground 的定格卡和「奖励演示」里真弹出来的弹窗；对比度只算卡里的字、不按视口裁
     if w == 360:
-        pg.goto(f'{args.base}/playground?theme=light'); pg.wait_for_selector('section#RewardCard'); pg.wait_for_timeout(1500)
+        pg.goto(f'{args.base}/playground?theme=light'); pg.wait_for_selector('section#RewardCard', timeout=30000); pg.wait_for_timeout(1500)
         cards = pg.locator('section#RewardCard [role=dialog][data-kind]')
         n_cards = cards.count(); ok(n_cards == 12, f'{tag} 浅色·奖励：定格卡 12 张（{n_cards}）')
         for i in range(n_cards):

@@ -83,4 +83,4 @@ li.listRow + li.listRow::before, .rowItem + .rowItem::before, li.listRow + .rowI
 .heat { display: flex; align-items: center; gap: var(--milo-space-s); font-size: var(--milo-font-size-min); color: var(--milo-color-text-secondary); }
 .heat em { font-style: normal; margin-left: auto; }
 .heatBar { position: relative; flex: 0 1 calc(var(--milo-size-screen-w) * 0.36); height: var(--milo-space-s); border-radius: var(--milo-radius-pill); }
-.heatBar b { position: absolute; top: calc(var(--milo-space-2xs) * -1); bottom: calc(var(--milo-space-2xs) * -1); width: var(--milo-stroke-hairline); background: var(--milo-color-text-primary); }
+.heatBar b { position: absolute; top: calc(var(--milo-space-2xs) * -1); bottom: calc(var(--milo-space-2xs) * -1); width: var(--milo-stroke-hairline); background: var(--tick, var(--milo-color-text-primary)); }

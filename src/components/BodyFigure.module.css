@@ -77,7 +77,7 @@
 /* ---------- 描边四方案（ContourVariant）：都比默认的描出 + 游光安静 ---------- */
 .cHair path { fill: none; stroke: color-mix(in srgb, var(--milo-prim-lime-300) 24%, transparent); stroke-width: calc(var(--milo-stroke-hairline) * 0.6); }
 .cSoft path { fill: none; stroke: color-mix(in srgb, var(--milo-prim-lime-500) 26%, transparent); stroke-width: calc(var(--milo-stroke-hairline) * 1.6); }
-.cSoftInk path { fill: none; stroke: color-mix(in srgb, var(--ink) calc(var(--ink-a) * 100%), transparent); stroke-width: calc(var(--milo-stroke-hairline) * 1.1); }
+.cSoftInk path { fill: none; stroke: color-mix(in srgb, var(--ink) calc(var(--ink-a) * 100%), transparent); stroke-width: calc(var(--milo-stroke-hairline) * var(--w, 1.1)); }
 .cDot path { fill: none; stroke: color-mix(in srgb, var(--milo-prim-lime-300) 40%, transparent); stroke-width: calc(var(--milo-stroke-hairline) * 0.9); stroke-linecap: round; stroke-dasharray: 0.1 calc(var(--milo-stroke-hairline) * 3); }
 .cRimFlood { flood-color: var(--milo-prim-lime-300); flood-opacity: 0.4; }
 /* 外缘描边里用轮廓路径补上头部（头只有轮廓、没有肌肉路径），只作剪影用 */

@@ -13,7 +13,7 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import type { HeadStat } from '../engine';
 import { T } from '../styles/tokens.gen';
-import { useLightLook, type Anchors } from './BodyFigure';
+import { lightToneVars, useLightLook, type Anchors } from './BodyFigure';
 import { capsuleLayout, indexAt, type CapBox } from './capsuleLayout';
 import { sharedName } from './motion';
 import { BodyRender, heatCss, heatOf } from './thermal';
@@ -60,7 +60,7 @@ export function CapsuleRail({ ids, stats, anchors, width, height, left, right, m
   const still = capsuleLayout(n, height, left, right, null);
   const span = still.caps.length ? still.caps[n - 1].y + still.caps[n - 1].h : height;
   const g = useRef<{ x: number; y: number; timer: number; on: boolean } | null>(null);
-  const rail = useRef<HTMLDivElement>(null), hit = useRef<HTMLDivElement>(null);
+  const rail = useRef<HTMLDivElement>(null), hit = useRef<HTMLDivElement>(null), look = useLightLook(rail);
   const lead = useLeader(mag != null && !preview ? ids[Math.round(mag)] ?? null : null);
   const fAt = (clientY: number) => indexAt(clientY - rail.current!.getBoundingClientRect().top - still.top, span, n);
 
@@ -106,8 +106,8 @@ export function CapsuleRail({ ids, stats, anchors, width, height, left, right, m
         if (!a || !c) return null;
         const cy = top + c.y + c.h / 2, kx = c.x - T['space/l'];
         return (
-          <svg className={`${s.leaders} ${lead.out ? s.leadersOut : ''}`} width={width} height={height} aria-hidden="true">
-            <g key={lead.id} className={s.leaderOn}>
+          <svg className={`${s.leaders} ${lead.out ? s.leadersOut : ''}`} style={lightToneVars(look)} width={width} height={height} aria-hidden="true">
+            <g key={lead.id} className={`${s.leaderOn} ${look ? s.leaderLight : ''}`}>
               <polyline points={`${c.x},${cy} ${kx},${cy} ${a[0]},${a[1]}`} pathLength={1} />
               <circle cx={a[0]} cy={a[1]} r={T['stroke/ring-progress']} />
             </g>
@@ -151,7 +151,7 @@ export function Capsule({ h, c, top = 0, standalone, shared }: { h: HeadStat; c:
   const ref = useRef<HTMLDivElement>(null), look = useLightLook(ref);
   return (
     <div ref={ref} className={`${c.focus ? s.focus : none ? s.none : s.cap} ${standalone ? s.standalone : ''}`} data-id={h.id} role="option" aria-selected={c.focus}
-      style={{ left: c.x, top: top + c.y, width: c.w, height: c.h, ['--w' as string]: c.weight, ...(shared ? sharedName('fluid', h.id) : {}) }}>
+      style={{ left: c.x, top: top + c.y, width: c.w, height: c.h, ['--w' as string]: c.weight, ...lightToneVars(look), ...(shared ? sharedName('fluid', h.id) : {}) }}>
       {!c.focus && !none && <div className={`${s.gauge} ${h.sets7d > h.mrv && !thermal ? s.gaugeOver : ''}`}
         style={{ width: `${fill}%`, ...(thermal ? { background: heatCss(heatOf(h), look ? look.ramp.slice(0, 5) : thermal.palette), opacity: 0.55 } : {}) }} />}
       {c.focus ? <FocusBody h={h} /> : (

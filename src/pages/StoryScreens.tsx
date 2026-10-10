@@ -3,7 +3,8 @@
  *  - 背景是远 / 中 / 近三层场景（用户出图，scripts/story_png.py 抠图），前 6 幕同一个镜头左右平移（视差）；人物是米洛 6 个姿势。
  *  - 刻度尺、天数、曲线、阶梯、碎屑、产品小样都是代码生成；产品小样用真组件（胶囊、处方卡）。
  *  - 减少动态效果：每幕直接到最后一帧，互动换成按钮；故事不记进度（杀进程回第 1 幕）。?scene=N 从第 N 幕开始（截图用）。
- *  - 主题（2026-10-10 全局浅色）：不再固定深色，跟全局主题走；浅色下三层场景、拱门、米洛用代码处理成纸上的淡墨（样式末尾「浅色水墨」），不出新素材。 */
+ *  - 主题：固定深色（2026-10-10 用户：App 默认深色，首次引导永远先看到深色，浅色下的引导动画没必要，先封存）。
+ *    封存的「浅色水墨」（三层场景、拱门、米洛在纸上的淡墨处理）还在样式末尾，选择器是 [data-story-ink]、没有任何元素带这个属性；要重新启用：Screen 去掉 theme="dark"、给 .story 加 data-story-ink。 */
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { BodyFigure, Button, CapsuleRail, Lockup, LogoGlyph, Mascot, PrescriptionHero, Screen, type Anchors } from '../components';
@@ -56,7 +57,7 @@ export function StoryScreens({ onDone }: { onDone: () => void }) {
   };
 
   return (
-    <Screen label={`故事 第 ${i + 1} 幕，共 ${SCENES.length} 幕`}>
+    <Screen label={`故事 第 ${i + 1} 幕，共 ${SCENES.length} 幕`} theme="dark">
     <div ref={setHost} className={s.story} style={{ '--cam': sc.cam, ...(sc.sh ? { '--stage-h': sc.sh } : {}) } as CSSProperties}>
       <Backdrop />
       <div className={s.bars} aria-hidden="true">

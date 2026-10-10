@@ -204,28 +204,28 @@
 @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
 /* ---------- 浅色水墨（2026-10-10 全局浅色，用户拍板：用代码处理，不出新素材）----------
-   故事不再固定深色，跟全局主题走；下面这些只在浅色生效（[data-theme='light'] 祖先，方案台 / Playground 单格也算），深色一像素不变。
+   故事不再固定深色，跟全局主题走；下面这些只在浅色生效（[data-story-ink] 祖先，方案台 / Playground 单格也算），深色一像素不变。
    夜空（远景，不透明）收起来，换一张纸白 → paper-100 的天；中景 / 近景 / 拱门反相成浅灰、正片叠底、压低透明度 = 纸上的淡墨剪影；
    米洛（浅色骨白，纸上会化掉）加一圈很细的墨边；入场从「暗处走出来」改成透明度入场；滤色发光改成普通叠放的荧光淡光。 */
-[data-theme='light'] .story { --ink-edge: drop-shadow(0 0 calc(var(--milo-stroke-hairline) * 0.6) color-mix(in srgb, var(--milo-color-brand-mark) 70%, transparent)); }
-[data-theme='light'] .backdrop { background: linear-gradient(var(--milo-color-bg-base), var(--milo-prim-paper-100)); }
-[data-theme='light'] .far { visibility: hidden; }
-[data-theme='light'] .mid, [data-theme='light'] .near { filter: grayscale(1) invert(1); mix-blend-mode: multiply; opacity: 0.6; }
-[data-theme='light'] .arch { filter: grayscale(1) invert(1); mix-blend-mode: multiply; opacity: 0.7;
+[data-story-ink] .story { --ink-edge: drop-shadow(0 0 calc(var(--milo-stroke-hairline) * 0.6) color-mix(in srgb, var(--milo-color-brand-mark) 70%, transparent)); }
+[data-story-ink] .backdrop { background: linear-gradient(var(--milo-color-bg-base), var(--milo-prim-paper-100)); }
+[data-story-ink] .far { visibility: hidden; }
+[data-story-ink] .mid, [data-story-ink] .near { filter: grayscale(1) invert(1); mix-blend-mode: multiply; opacity: 0.6; }
+[data-story-ink] .arch { filter: grayscale(1) invert(1); mix-blend-mode: multiply; opacity: 0.7;
   mask-image: radial-gradient(ellipse 60% 58% at 50% 52%, black 55%, transparent 100%); }
-[data-theme='light'] .fig { filter: var(--ink-edge); }
-[data-theme='light'] .in_walk { animation-name: walkInInk; }
-[data-theme='light'] .laurel { animation-name: walkInInk, laurelInk; }
+[data-story-ink] .fig { filter: var(--ink-edge); }
+[data-story-ink] .in_walk { animation-name: walkInInk; }
+[data-story-ink] .laurel { animation-name: walkInInk, laurelInk; }
 @keyframes walkInInk { from { opacity: 0; transform: translateX(-45%); } 60% { opacity: 1; } to { transform: none; } }
 @keyframes laurelInk { 0%, 100% { filter: var(--ink-edge); } 40% { filter: var(--ink-edge) drop-shadow(0 0 var(--milo-space-l) var(--milo-color-accent-glow)); } }
 /* 拱门里的光：反相后门洞是灰的，叠一团纸白的芯（= 光）+ 荧光淡边；扫光压到 glow-ring，纸上不糊成一片绿 */
-[data-theme='light'] .archLight { mix-blend-mode: normal; background: radial-gradient(ellipse at 50% 80%, var(--milo-prim-paper-50), var(--milo-color-accent-glow) 50%, transparent 75%); }
-[data-theme='light'] .sweep { mix-blend-mode: normal; background-image: linear-gradient(105deg, transparent 35%, var(--milo-color-accent-glow-ring) 50%, transparent 65%); }
-[data-theme='light'] .dot { stroke: var(--milo-color-accent-ink); stroke-width: 1.5; }
-[data-theme='light'] .curve { box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
-[data-theme='light'] .pCard { box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default), 0 var(--milo-space-xs) var(--milo-space-xl) var(--milo-color-shadow-float); }
-[data-theme='light'] .finger { box-shadow: 0 var(--milo-space-xs) var(--milo-space-m) var(--milo-color-shadow-float); }
-[data-theme='light'] .ageOff { filter: brightness(0) invert(0.75); }
+[data-story-ink] .archLight { mix-blend-mode: normal; background: radial-gradient(ellipse at 50% 80%, var(--milo-prim-paper-50), var(--milo-color-accent-glow) 50%, transparent 75%); }
+[data-story-ink] .sweep { mix-blend-mode: normal; background-image: linear-gradient(105deg, transparent 35%, var(--milo-color-accent-glow-ring) 50%, transparent 65%); }
+[data-story-ink] .dot { stroke: var(--milo-color-accent-ink); stroke-width: 1.5; }
+[data-story-ink] .curve { box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
+[data-story-ink] .pCard { box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default), 0 var(--milo-space-xs) var(--milo-space-xl) var(--milo-color-shadow-float); }
+[data-story-ink] .finger { box-shadow: 0 var(--milo-space-xs) var(--milo-space-m) var(--milo-color-shadow-float); }
+[data-story-ink] .ageOff { filter: brightness(0) invert(0.75); }
 
 /* 减少动态效果：动画直接跳到最后一帧（时长压到最短、没有延迟），只剩淡入 */
 @media (prefers-reduced-motion: reduce) {

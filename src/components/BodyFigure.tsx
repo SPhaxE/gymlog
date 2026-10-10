@@ -5,7 +5,7 @@
  *  动的东西都在这一层，下面带滤镜的热像层静止不重画。
  *  量完锚点后通过 onAnchors 交给胶囊列画引线（坐标相对 relativeTo）。
  *  2026-10-10 全局浅色：人体跟随自己所在的主题（不再是深色观察窗），浅色时按 LightLook 方案换色带、把提亮的层改成压暗（见 LIGHT_LOOKS）。 */
-import { createContext, useContext, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { createContext, useContext, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from 'react';
 import type { HeadStat } from '../engine';
 import { useElementTheme } from '../styles/theme';
 import { T } from '../styles/tokens.gen';
@@ -66,11 +66,58 @@ export const DEFAULT_LOOK = { contour: 'soft', fill: 'metal', scan: 'molten' } a
 /** 浅色人体 L 组（2026-10-10 全局浅色，用户：在 F1 金属渐变 + S9 熔流的基础上做 4 个浅色方案，放进 /preview 方案台选）。
  *  只在人体所在的主题是浅色时生效（useElementTheme：最近的 [data-theme]，没有就是全局）；深色走原来的代码路径，逐像素不变。
  *  纸白上的「浅色金属 + 熔流」：Colorama 换成「冷 = 纸白、热 = 深色」的色带；唇边 / 内缘从提亮改成压暗（金属下沿的影子，冷肌肉也有形）；
- *  颗粒改墨色低透明；熔流从 screen 改 multiply（渐变反相：冷 = 白，白在 multiply 下不起作用），最深处是 moltenTint；柔光描边改 multiply + contourInk。
+ *  颗粒改墨色低透明；熔流从 screen 改 multiply（渐变反相：冷 = 白，白在 multiply 下不起作用），最深处是 moltenTint；柔光描边按 LIGHT_CONTOURS（multiply 压暗，或 frost 的白线）。
  *  只有默认三层（O2 柔光 + F1 金属 + S9 熔流）有浅色版，其余描边 / 填充 / S 层方案是深色存档。
- *  ramp / moltenTint 是原色名（构建期从 tokens.json 取值，同 thermal.ts），contourInk 是语义色名；
+ *  ramp / moltenTint 是原色名（构建期从 tokens.json 取值，同 thermal.ts）；
  *  胶囊量尺和图例在浅色里用 ramp 的前 5 段（同深色：金属色带前 5 段 = 图例的荧光色板）。 */
-export type LightLookKind = 'L1' | 'L2' | 'L3' | 'L4';
+export type LightLookKind = 'L1' | 'L2' | 'L3' | 'L4' | 'L2a' | 'L2b' | 'L2c' | 'L2d';
+/** 浅色柔光描边的做法（2026-10-10 用户：浅色下人体描边不想用深色，要方案）。每个方案是一整套：线色 + 透明度 + 模糊 + 线宽 + 混合模式（multiply = 压暗、normal = 白线），可选一道下沿的影子。
+ *  前四个（ink / ink-soft / ink-heavy / deep）是 L1–L4 原来的墨线 / 深绿线，留着对照；用户要的非深色方案是 green / sage / frost / shade / none。 */
+export type LightContourKind = 'ink' | 'ink-soft' | 'ink-heavy' | 'deep' | 'green' | 'sage' | 'frost' | 'shade' | 'none';
+export interface LightContourSpec {
+  /** 线色（CSS 颜色，只用 Token） */ color: string; alpha: number;
+  /** 模糊半径（× 人体高的 1%） */ blur: number;
+  /** 线宽（× hairline） */ width: number;
+  blend: 'multiply' | 'normal';
+  /** 线下沿的一道影子（白线要靠它托出来） */ shadow?: { color: string; alpha: number; dy: number };
+}
+const mix = (a: string, pct: number, b: string) => `color-mix(in srgb, var(--milo-prim-${a}) ${pct}%, var(--milo-prim-${b}))`;
+export const LIGHT_CONTOURS: Record<LightContourKind, LightContourSpec> = {
+  ink: { color: 'var(--milo-color-brand-mark)', alpha: 0.45, blur: 0.1, width: 1.1, blend: 'multiply' },
+  'ink-soft': { color: 'var(--milo-color-brand-mark)', alpha: 0.35, blur: 0.1, width: 1.1, blend: 'multiply' },
+  'ink-heavy': { color: 'var(--milo-color-brand-mark)', alpha: 0.8, blur: 0.1, width: 1.1, blend: 'multiply' },
+  deep: { color: 'var(--milo-color-accent-ink)', alpha: 0.45, blur: 0.1, width: 1.1, blend: 'multiply' },
+  // 中绿线：深绿掺荧光，是荧光家族里的线，不是墨
+  green: { color: mix('lime-750', 40, 'lime-600'), alpha: 0.7, blur: 0.1, width: 1.1, blend: 'multiply' },
+  // 灰绿线：纸的暖灰掺一点深绿，淡、有点烟熏，比墨轻得多
+  sage: { color: mix('paper-300', 55, 'lime-750'), alpha: 0.6, blur: 0.12, width: 1.1, blend: 'multiply' },
+  // 磨砂白线：纸白的细线 + 下沿一道很淡的绿影，像磨砂玻璃 / 压纹
+  frost: { color: 'var(--milo-prim-paper-50)', alpha: 0.95, blur: 0.08, width: 1.3, blend: 'normal', shadow: { color: 'var(--milo-prim-lime-750)', alpha: 0.42, dy: 0.5 } },
+  // 柔影：没有清晰的线，只有一圈宽而淡的深绿影，形体靠阴影不靠线
+  shade: { color: 'var(--milo-prim-lime-750)', alpha: 0.2, blur: 0.4, width: 2, blend: 'multiply' },
+  // 无描边：只剩填充自己的唇边 / 内缘
+  none: { color: 'transparent', alpha: 0, blur: 0, width: 1, blend: 'multiply' },
+};
+/** 方案台 / 自由组合里供挑的非深色描边（前面的墨线 / 深绿线是 L1–L4 原来的，留着对照） */
+export const LIGHT_CONTOUR_PICKS: LightContourKind[] = ['ink', 'green', 'sage', 'frost', 'shade', 'none'];
+export const LightContour = createContext<LightContourKind | null>(null);
+
+/** 浅色里胶囊 / 引线 / 刻度的色调（2026-10-10 用户：整体深色太多，引导线、胶囊描边也是）：
+ *  胶囊描边 line、焦点引线 leader（带一圈纸白光边，压在荧光肌肉上也读得出）、量尺刻度 tick、胶囊额外的影子 fx。深色不走这里，保持语义色原样。 */
+export interface LightTone { line: string; leader: string; tick: string; fx?: string }
+const TONES = {
+  // 荧光细边：胶囊描边是一圈很淡的荧光绿，引线中绿
+  lime: { line: 'color-mix(in srgb, var(--milo-prim-lime-600) 70%, transparent)', leader: mix('lime-750', 45, 'lime-600'), tick: mix('lime-750', 50, 'lime-600') },
+  // 纸边：最淡的暖灰细边，引线深一点的绿
+  paper: { line: 'var(--milo-prim-paper-200)', leader: mix('lime-750', 60, 'lime-600'), tick: 'var(--milo-prim-ink-500)' },
+  // 无边：不描边，靠一点点影子浮起来
+  quiet: { line: 'transparent', leader: mix('lime-750', 50, 'lime-600'), tick: mix('lime-750', 55, 'lime-600'),
+    fx: '0 var(--milo-space-2xs) var(--milo-space-s) color-mix(in srgb, var(--milo-prim-ink-900) 9%, transparent)' },
+  // 磨砂：纸白细边 + 一点绿影
+  frost: { line: 'var(--milo-prim-paper-50)', leader: mix('lime-750', 50, 'lime-600'), tick: mix('lime-750', 50, 'lime-600'),
+    fx: '0 var(--milo-space-2xs) var(--milo-space-s) color-mix(in srgb, var(--milo-prim-lime-750) 18%, transparent)' },
+} satisfies Record<string, LightTone>;
+
 export interface LightLookSpec {
   /** Colorama 色带：冷 → 热，6 个原色 */ ramp: string[];
   /** 唇边（下缘月牙）/ 整圈内缘的 slope：< 1 是压暗 */ lip: number; edge: number;
@@ -78,26 +125,43 @@ export interface LightLookSpec {
   /** 外发光透明度（乘在深色的 0.9 / 0.7 上） */ glow: number;
   /** 上沿纸白高光的透明度（金属受光面） */ sheen: number;
   /** 熔流：最深处的颜色（原色名）与强度（0–1） */ moltenTint: string; molten: number;
-  /** 柔光描边：语义色名 + 透明度 */ contourInk: string; contourAlpha: number;
+  /** 默认的柔光描边（方案台自由组合可以换，见 LightContour） */ contour: LightContourKind;
+  /** 胶囊 / 引线 / 刻度的色调 */ tone: LightTone;
   /** 图例读法（读屏） */ legend: string;
 }
+const L2_RAMP = ['paper-100', 'lime-300', 'lime-500', 'lime-550', 'lime-600', 'lime-700'];
 export const LIGHT_LOOKS: Record<LightLookKind, LightLookSpec> = {
   // 深绿热：中段就进深绿（和荧光热一眼分开），最热到荧光墨；深绿流纹、深绿描边
-  L1: { ramp: ['paper-100', 'lime-600', 'lime-750', 'lime-ink', 'lime-ink', 'ink-900'], lip: 0.62, edge: 0.78, grain: 0.07, glow: 0.22, sheen: 0.8, moltenTint: 'lime-750', molten: 0.9, contourInk: 'accent-ink', contourAlpha: 0.45, legend: '越深越热' },
-  // 荧光热：越饱和越热，最热仍是荧光；荧光撑不起形体，墨色描边给轮廓
-  L2: { ramp: ['paper-100', 'lime-300', 'lime-500', 'lime-550', 'lime-600', 'lime-700'], lip: 0.7, edge: 0.82, grain: 0.06, glow: 0.35, sheen: 0.7, moltenTint: 'lime-600', molten: 1, contourInk: 'brand-mark', contourAlpha: 0.45, legend: '越绿越热' },
+  L1: { ramp: ['paper-100', 'lime-600', 'lime-750', 'lime-ink', 'lime-ink', 'ink-900'], lip: 0.62, edge: 0.78, grain: 0.07, glow: 0.22, sheen: 0.8, moltenTint: 'lime-750', molten: 0.9, contour: 'deep', tone: TONES.paper, legend: '越深越热' },
+  // 荧光热（2026-10-10 用户选定这套配色）：越饱和越热，最热仍是荧光；荧光撑不起形体，墨色描边给轮廓
+  L2: { ramp: L2_RAMP, lip: 0.7, edge: 0.82, grain: 0.06, glow: 0.35, sheen: 0.7, moltenTint: 'lime-600', molten: 1, contour: 'ink', tone: TONES.paper, legend: '越绿越热' },
   // 银金属：冷段银灰、热段转绿；高光和下缘影子都最强，金属感最重
-  L3: { ramp: ['paper-200', 'paper-300', 'ink-500', 'lime-550', 'lime-750', 'lime-ink'], lip: 0.42, edge: 0.62, grain: 0.08, glow: 0.25, sheen: 1, moltenTint: 'ink-600', molten: 0.85, contourInk: 'brand-mark', contourAlpha: 0.35, legend: '越绿越热' },
+  L3: { ramp: ['paper-200', 'paper-300', 'ink-500', 'lime-550', 'lime-750', 'lime-ink'], lip: 0.42, edge: 0.62, grain: 0.08, glow: 0.25, sheen: 1, moltenTint: 'ink-600', molten: 0.85, contour: 'ink-soft', tone: TONES.paper, legend: '越绿越热' },
   // 墨印：版画——平涂、不反光（没有高光、下缘几乎不压暗），墨线更实、颗粒更重
-  L4: { ramp: ['paper-50', 'ink-500', 'ink-600', 'lime-750', 'ink-900', 'ink-900'], lip: 0.85, edge: 0.6, grain: 0.18, glow: 0, sheen: 0, moltenTint: 'ink-900', molten: 0.75, contourInk: 'brand-mark', contourAlpha: 0.8, legend: '越深越热' },
+  L4: { ramp: ['paper-50', 'ink-500', 'ink-600', 'lime-750', 'ink-900', 'ink-900'], lip: 0.85, edge: 0.6, grain: 0.18, glow: 0, sheen: 0, moltenTint: 'ink-900', molten: 0.75, contour: 'ink-heavy', tone: TONES.paper, legend: '越深越热' },
+  // —— L2 的四个变体（2026-10-10 用户：配色定 L2，效果还不满意，再出四个；整体去深色：描边、胶囊边、引线都不用墨）——
+  // 轻盈：冷肌肉更白、最热也不压深；暗边几乎不压；中绿细线 + 荧光细边的胶囊
+  L2a: { ramp: ['paper-50', 'lime-300', 'lime-500', 'lime-500', 'lime-550', 'lime-600'], lip: 0.88, edge: 0.94, grain: 0.04, glow: 0.45, sheen: 0.9, moltenTint: 'lime-600', molten: 0.85, contour: 'green', tone: TONES.lime, legend: '越绿越热' },
+  // 金属：同一条荧光色带，高光和下缘压暗拉到 L3 的强度，灰绿的线；金属感最重
+  L2b: { ramp: L2_RAMP, lip: 0.5, edge: 0.7, grain: 0.08, glow: 0.25, sheen: 1, moltenTint: 'lime-700', molten: 1, contour: 'sage', tone: TONES.paper, legend: '越绿越热' },
+  // 形体靠影：不画清晰的线，一圈宽而淡的深绿影托出肌肉分界；胶囊没有描边，只有一点影子
+  L2c: { ramp: ['paper-50', 'lime-300', 'lime-500', 'lime-550', 'lime-600', 'lime-700'], lip: 0.72, edge: 0.86, grain: 0.06, glow: 0.3, sheen: 0.5, moltenTint: 'lime-600', molten: 1, contour: 'shade', tone: TONES.quiet, legend: '越绿越热' },
+  // 磨砂：纸白细线 + 下沿绿影，像磨砂玻璃 / 压纹；胶囊是纸白细边
+  L2d: { ramp: ['paper-50', 'lime-300', 'lime-500', 'lime-550', 'lime-600', 'lime-700'], lip: 0.8, edge: 0.9, grain: 0.05, glow: 0.4, sheen: 1, moltenTint: 'lime-600', molten: 0.9, contour: 'frost', tone: TONES.frost, legend: '越绿越热' },
 };
 export const LightLook = createContext<LightLookKind | null>(null);
-/** 浅色人体的默认方案（用户选定前先用 L1；选定后改这一行，落选的留在方案台） */
-export const DEFAULT_LIGHT_LOOK: LightLookKind = 'L1';
+/** 浅色人体的默认方案（2026-10-10 用户选定 L2 的配色；4 个变体 L2a–d 待选，选定后改这一行，落选的留在方案台） */
+export const DEFAULT_LIGHT_LOOK: LightLookKind = 'L2';
 /** 元素在浅色里：返回所选浅色方案（LightLook 上下文没给就是 DEFAULT_LIGHT_LOOK）；在深色里返回 null。胶囊量尺、图例也用它跟着换色带 */
 export function useLightLook(ref: RefObject<Element | null>): LightLookSpec | null {
   const look = useContext(LightLook) ?? DEFAULT_LIGHT_LOOK;
   return useElementTheme(ref) === 'light' ? LIGHT_LOOKS[look] : null;
+}
+/** 胶囊 / 引线 / 刻度的色调变量（--cap-line / --cap-fx / --leader / --tick）；深色返回 undefined，样式落回语义色 */
+export function lightToneVars(look: LightLookSpec | null): CSSProperties | undefined {
+  if (!look) return undefined;
+  const { line, leader, tick, fx } = look.tone;
+  return { '--cap-line': line, '--leader': leader, '--tick': tick, ...(fx ? { '--cap-fx': fx } : {}) } as CSSProperties;
 }
 
 export function BodyFigure({ gender, view, stats, focus, height, width, fit, onAnchors, relativeTo, onPick }: {
@@ -266,12 +330,13 @@ function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pi
  *  整层 mix-blend-mode: screen（只提亮、不盖住热像）、不接触摸；减少动态效果时只留静止的轮廓。 */
 function ThermalLight({ box, height, width, v, fid, noBeam, contour: kind, look }: { box: number[]; height: number; width: number; v: Record<string, Part>; fid: string; noBeam?: boolean; contour?: Exclude<ContourFxKind, 'glow'> | null; look: LightLookSpec | null }) {
   const [x, y, bw, bh] = box, unit = bh / 100;
-  // 浅色：只有柔光描边有浅色版——整层改 multiply（只压暗），线用方案的墨色 / 深绿低透明
-  const ink = look && kind === 'soft' ? look : null;
+  // 浅色：只有柔光描边有浅色版——线色、混合模式按所选描边方案（LightContour；没选就是人体方案自己的）：multiply 只压暗，frost 是普通叠放的白线
+  const pick = useContext(LightContour);
+  const ink = look && kind === 'soft' ? LIGHT_CONTOURS[pick ?? look.contour] : null;
   const silhouette = Object.keys(v).filter((k) => k !== 'body').flatMap((k) => (v[k].paths ?? []).map((p, i) => <path key={k + i} d={p.d} />));
   const contour = (v.body?.paths ?? []).map((p, i) => <path key={i} d={p.d} />);
   return (
-    <svg className={`${s.light} ${s.lightHalf}${ink ? ` ${s.lightInk}` : ''}`} viewBox={box.join(' ')} width={width} height={height} preserveAspectRatio="xMinYMin meet" aria-hidden="true">
+    <svg className={`${s.light} ${s.lightHalf}${ink?.blend === 'multiply' ? ` ${s.lightInk}` : ''}`} viewBox={box.join(' ')} width={width} height={height} preserveAspectRatio="xMinYMin meet" aria-hidden="true">
       <defs>
         <clipPath id={`c${fid}`}>{silhouette}</clipPath>
         <mask id={`r${fid}`} maskUnits="userSpaceOnUse" x={x} y={y} width={bw} height={bh}><rect className={s.reveal} x={x} y={y} width={bw} height={bh} fill="white" /></mask>
@@ -522,15 +587,18 @@ function ThemeFx({ kind, box, height, width, v, fid, heat, look }: { kind: 'pump
 
 /** 描边的四个方案（ContourFxKind）：都是静态的，只换线的样子，不再描出 / 游光 */
 function ContourVariant({ kind, contour, silhouette, fid, unit, ink }: { kind: Exclude<ContourFxKind, 'glow'>; contour: ReactNode; silhouette: ReactNode; fid: string; unit: number;
-  /** 浅色柔光描边（multiply 层里）：线色 = 方案的 contourInk、透明度 contourAlpha */ ink?: LightLookSpec | null }) {
+  /** 浅色柔光描边：线色 / 透明度 / 模糊 / 线宽 / 影子，见 LIGHT_CONTOURS */ ink?: LightContourSpec | null }) {
   if (kind === 'hair') return <g className={s.cHair}>{contour}</g>;
   if (kind === 'dot') return <g className={s.cDot}>{contour}</g>;
   if (kind === 'soft') return (
     <>
       {/* 浅色：深色线一模糊就像失焦（深色里的模糊亮线读起来是光），所以只留一点点柔 */}
-      <defs><filter id={`cs${fid}`} x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation={unit * (ink ? 0.1 : 0.35)} /></filter></defs>
+      <defs><filter id={`cs${fid}`} x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation={unit * (ink ? ink.blur : 0.35)} /></filter></defs>
       {ink
-        ? <g className={s.cSoftInk} filter={`url(#cs${fid})`} style={{ '--ink': `var(--milo-color-${ink.contourInk})`, '--ink-a': ink.contourAlpha } as React.CSSProperties}>{contour}</g>
+        ? ink.alpha > 0 && <>
+          {ink.shadow && <g className={s.cSoftInk} filter={`url(#cs${fid})`} transform={`translate(0 ${unit * ink.shadow.dy})`} style={{ '--ink': ink.shadow.color, '--ink-a': ink.shadow.alpha, '--w': ink.width } as CSSProperties}>{contour}</g>}
+          <g className={s.cSoftInk} filter={`url(#cs${fid})`} style={{ '--ink': ink.color, '--ink-a': ink.alpha, '--w': ink.width } as CSSProperties}>{contour}</g>
+        </>
         : <g className={s.cSoft} filter={`url(#cs${fid})`}>{contour}</g>}
     </>
   );

@@ -7,9 +7,10 @@
 @keyframes leaderDot { from { opacity: 0; } }
 @keyframes leaderFade { to { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .leaders polyline, .leaders circle, .leadersOut { animation: none; } }
-/* 引线是荧光当线：accent-ink（深色里就是荧光，浅色里深一档绿，2026-10-10 全局浅色） */
-.leaderOn polyline { fill: none; stroke: var(--milo-color-accent-ink); stroke-width: var(--milo-stroke-focus); stroke-linejoin: round; stroke-linecap: round; }
-.leaderOn circle { fill: var(--milo-color-accent-ink); }
+/* 引线是荧光当线：accent-ink（深色里就是荧光，浅色里深一档绿，2026-10-10 全局浅色）；浅色里用人体方案给的中绿 --leader（不再是深绿），外面一圈纸白光边，压在荧光肌肉上也读得出 */
+.leaderOn polyline { fill: none; stroke: var(--leader, var(--milo-color-accent-ink)); stroke-width: var(--milo-stroke-focus); stroke-linejoin: round; stroke-linecap: round; }
+.leaderOn circle { fill: var(--leader, var(--milo-color-accent-ink)); }
+.leaderLight polyline, .leaderLight circle { filter: drop-shadow(0 0 var(--milo-stroke-hairline) var(--milo-prim-paper-50)) drop-shadow(0 0 var(--milo-stroke-hairline) var(--milo-prim-paper-50)); }
 .rail { position: absolute; inset: 0; pointer-events: none; -webkit-user-select: none; user-select: none; }
 /* 手势层：胶囊列静止宽度、整列高；竖向滑动交给页面滚动，按住才进放大镜（见 CapsuleRail.tsx） */
 .hit { position: absolute; top: 0; bottom: 0; touch-action: pan-y; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
@@ -17,7 +18,7 @@
 /* 胶囊：--w 是放大权重（0–1），字号在 Caption 与 Heading 之间插值 */
 .cap, .none, .focus {
   position: absolute; overflow: hidden; display: flex; flex-direction: column; justify-content: center; padding: 0 var(--milo-space-s); line-height: 1; /* 常态只有 20 高（2026-10-06 缩 1/3） */
-  border-radius: var(--milo-radius-pill); background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default);
+  border-radius: var(--milo-radius-pill); background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--cap-line, var(--milo-color-line-default)), var(--cap-fx, 0 0 0 transparent); /* 浅色：--cap-line / --cap-fx 由人体方案给（lightToneVars） */
   /* 几何不走 CSS 过渡：放大程度在 JS 里逐帧补间，胶囊和引线同一帧到位 */
 }
 .none { background: repeating-linear-gradient(135deg, var(--milo-color-bg-raised-2) 0 var(--milo-stroke-focus), var(--milo-color-bg-raised) var(--milo-stroke-focus) calc(var(--milo-space-xs) + var(--milo-stroke-hairline))); }

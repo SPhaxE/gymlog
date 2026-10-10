@@ -2,32 +2,30 @@
 
 > 新窗口请先完整读完本文件，再开始工作。遇到 Open Questions 里的问题先问我，不要自行决定。
 
-_Updated: 2026-10-10 09:30_
+_Updated: 2026-10-10 12:30_
 
 ## 1. Goal
-**全局浅色已完成并上线**（`docs/light-plan.md`，用户已批准）：浅色模式下没有任何深色块（容量人体、钢板、奖励弹窗、故事引导、/demo 外壳都跟主题走），深色模式逐像素不变。
-现在等用户在方案台 `/preview` 的「浅色人体 · L」里选 **L1–L4** 之一；选定后改 `src/components/BodyFigure.tsx` 的 `DEFAULT_LIGHT_LOOK`，落选的留在方案台。
-之后是**作品集**：先读 `docs/portfolio-handoff.md`（§3 已改成「真·全局浅色」的反转故事）。
+**全局浅色已完成并上线**（`docs/light-plan.md`）。2026-10-10 用户看完方案台：**配色选 L2**，但效果还不满意、整体深色太多（人体描边、引导线、胶囊描边）。本窗口做了：
+- 方案台新增 **L2 变体**（L2a 轻盈 / L2b 金属 / L2c 形体靠影 / L2d 磨砂）+ **浅色描边 C**（C0 墨线旧 · C1 中绿 · C2 灰绿 · C3 磨砂白 · C4 柔影 · C5 无描边），自由组合加 `?c=`；
+- 浅色下胶囊细边 / 引线 / 量尺刻度改成方案自己的调子（`LightLookSpec.tone` → `lightToneVars`），不再用墨 / 深绿；
+- **故事引导固定深色**（用户：App 默认深色、首次引导永远先看到深色，浅色水墨没必要）→ 水墨代码封存（选择器 `[data-story-ink]`），门禁改成查「整屏一块深色岛、底深、对比度达标」。
+范围只动容量页；全局的黑色选中态开关（正面 / 男、导航选中项）没动，等用户定。等用户在 L2a–d + C1–C5 里选；选定后改 `DEFAULT_LIGHT_LOOK`，并把选中的描边并进该变体默认。
+之后是**作品集**：先读 `docs/portfolio-handoff.md`。
 
 ## 2. Current State
-- [x] 走查 1 阶段 1–5；性能（各 Tab 页稳定 60 帧）；容量人体裁到露出完整腹肌
-- [x] 浅色模式第一版（语义色浅色映射、`<html data-theme>` 一键切、「我的 → 外观」）
-- [x] **真·全局浅色**（本窗口）：5 个局部深色岛全部去掉
-  - 人体：4 个浅色方案 L1 深绿热（默认）/ L2 荧光热 / L3 银金属 / L4 墨印，方案台 L 组 4 台手机 + 全热度对照，自由组合 `?l=`
-  - 钢板：浅色拉丝铝板、孔里平涂荧光、不打灯
-  - 奖励弹窗：纸白卡、荧光闪、深绿细边代替发白
-  - 故事：代码处理成浅色水墨（不出新素材）；/demo 整页一起切
-  - 小牛墨色细边、按钮光环高光、转场压暗等零碎
-  - /playground：人体加 L1–L4 固定浅色格、钢板加浅色格、说明补浅色；DESIGN §1.5、ia、brief、portfolio-handoff 同步
-- [ ] **用户选 L1–L4**（问用户，不要自己定）
+- [x] 走查 1 阶段 1–5；浅色模式；真·全局浅色（去掉 5 个深色岛）
+- [x] 用户选 L2 配色（`DEFAULT_LIGHT_LOOK = 'L2'`）；L1 / L3 / L4 落选留方案台
+- [x] L2 变体 4 个 + 浅色描边 6 个 + 胶囊 / 引线 / 刻度调子；故事固定深色；`npm run check` 全绿（400 项），门禁 light / story / log 通过
+- [ ] **用户选 L2a–d 之一 / 描边 C1–C5 之一**（问用户）
+- [ ] 黑色选中态开关（Segmented / Chip / 导航选中）浅色下是否也要换轻：问用户
 - [ ] 用户在小米 15 上复查性能
-- [ ] Stitch 密钥：这个容器里没有 `secrets/stitch.env`（用户 2026-10-10 说先不管）
+- [ ] Stitch 密钥：这个容器里没有 `secrets/stitch.env`（用户说先不管）
 - [ ] 作品集（`docs/portfolio-handoff.md` §8 的问题先问用户）
 
 ## 3. Active Files
 - `src/styles/theme.ts`：`useTheme()` 全局主题；**`useElementTheme(ref)`** 元素最近的 `[data-theme]`（方案台 / Playground 单格强制深浅用）
 - `design/tokens/tokens.json`：新增 `plate/steel-top|steel-bottom|hi|lo|label|hole`（深色值 = 原来代码用的原色）
-- `src/components/BodyFigure.tsx`：`LightLook` 上下文、`LIGHT_LOOKS`、**`DEFAULT_LIGHT_LOOK`**（用户选定后改这一行）、`useLightLook`；`thermal.ts` 的 `heatCss` 可传原色名数组、`tintMatrix`
+- `src/components/BodyFigure.tsx`：`LightLook` 上下文、`LIGHT_LOOKS`（含 L2a–d、`contour` / `tone`）、**`LIGHT_CONTOURS`**（浅色描边方案表）、`LightContour` 上下文、`lightToneVars`、**`DEFAULT_LIGHT_LOOK`**（用户选定后改这一行）、`useLightLook`；`CapsuleRail.module.css` / `ui.module.css` 读 `--cap-line` `--cap-fx` `--leader` `--tick`；`thermal.ts` 的 `heatCss` 可传原色名数组、`tintMatrix`
 - `src/components/plate.tsx`：浅色加 `.light` 类、不挂灯不画画布、`--plate-lo-k`
 - `src/components/Reward.module.css`、`Mascot.module.css`、`growth.module.css`、`Button.module.css`（`--glow-hi`）、`interactive.css`（`--vt-dim`）
 - `src/pages/StoryScreens.module.css`（浅色水墨）、`DemoPage.*`、`Screen.tsx`（删了 `theme` 属性）
@@ -78,11 +76,12 @@ python3 scripts/shoot_6a.py --no-shots --base http://127.0.0.1:4173          # �
 - Env: Chromium `/opt/pw-browsers/chromium`；Python Playwright 先 `pip install playwright`；`ffmpeg` 在（录屏转 mp4）
 
 ## 10. Open Questions
-- **浅色人体选 L1–L4 哪个？**（已推到方案台、汇报已发；用户没回复前默认 L1）
+- **L2a–d 选哪个？描边 C1–C5 选哪个？**（方案台 `/preview#light-v`、`#light-contour`；自由组合可混）
+- 黑色选中态开关浅色下要不要也换轻（全 App 范围）
 - 作品集：载体、样机机型、封面深 / 浅、要不要单独讲 AI 协作（`docs/portfolio-handoff.md` §8）
 - Stitch 密钥（用户说先不管）
 
 ## 11. Specific Next Steps
-1. 等用户选 L1–L4 → 改 `BodyFigure.tsx` 的 `DEFAULT_LIGHT_LOOK`、方案台标「选定」、DESIGN §1.5 记一笔、brief 决定记录加一行；落选的留在方案台。
-2. 用户若对某个浅色细节有意见（钢板休息圈深浅、奖励弹窗、故事水墨透明度等），改完照样跑深色回归。
+1. 等用户选 → 改 `DEFAULT_LIGHT_LOOK`，把选中的描边写进该变体的 `contour`，方案台标「选定」，DESIGN §1.5 / brief 记一笔；落选的留在方案台。
+2. 用户若要全局的黑色选中态也轻一点：Segmented / Chip / Nav 选中项的浅色处理，改完跑深色回归。
 3. 之后作品集：先问 `docs/portfolio-handoff.md` §8 的问题。

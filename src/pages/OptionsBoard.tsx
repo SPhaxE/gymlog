@@ -3,13 +3,13 @@
  *  原来 /preview 上的基础规范页挪到了 /spec。
  *  当前三组（都是容量页的人体）：描边 O、肌头内部容量 F、S 层动效；2026-10-07 用户选定 O2 + F1 + S9 为默认（DEFAULT_LOOK），
  *  每组的 0 号是第 7 轮的旧默认，留着对照。方案台本身也是作品集要展示的过程（用户 2026-10-07），选定后不删。
- *  最上面是「自由组合」（2026-10-07 用户）：三组各挑一个，右边是真实的容量页（带胶囊、可以点、可以切正反男女）；
+ *  最上面是「自由组合」（2026-10-07 用户）：三组各挑一个（浅色主题下再加浅色人体、浅色描边），右边是真实的容量页（带胶囊、可以点、可以切正反男女）；
  *  组合写在地址里（?o=hair&f=metal&s=molten），复制链接就能把这个组合发给别人。
  *  2026-10-10 全局浅色：新增「L 浅色人体」组（4 个浅色方案，每格固定浅色），自由组合加 ?l=（浅色主题下用哪个方案）；
  *  只有默认三层（O2 + F1 + S9）有浅色版，其余人体方案是深色存档——格子固定深色并写明「深色方案」。 */
 import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
-import { BodyFigure, Card, Chip, ContourFx, DEFAULT_LIGHT_LOOK, DEFAULT_LOOK, FillFx, Icon, LightLook, Num, GainLook, GrainGlow, ParticleField, ProductCard, ProductGrid, ScanFx, ShopTagLook, SteelPlate, dotMonths, type ContourFxKind, type GainLookKind, type GrainKind, type LightLookKind, type ShopTagLookKind, type FillFxKind, type ParticleKind, type PlateLook, type ScanFxKind } from '../components';
+import { BodyFigure, Card, Chip, ContourFx, DEFAULT_LIGHT_LOOK, DEFAULT_LOOK, FillFx, Icon, LightContour, LightLook, Num, GainLook, GrainGlow, ParticleField, ProductCard, ProductGrid, ScanFx, ShopTagLook, SteelPlate, dotMonths, type ContourFxKind, type GainLookKind, type GrainKind, type LightContourKind, type LightLookKind, type ShopTagLookKind, type FillFxKind, type ParticleKind, type PlateLook, type ScanFxKind } from '../components';
 import { IconStyleCtx, type IconStyle } from '../components/iconSets';
 import { bodyData } from '../data/demo';
 import type { HeadStat } from '../engine';
@@ -57,12 +57,31 @@ const SCAN: [ScanFxKind, string, string][] = [
   ['beam', 'S8 奥赛台顶光', '呼应记录页钢板的丁达尔光束：一盏顶光跟着光束左右摆，在每块肌肉上打出高光和下沿阴影，强化形体；光里有浮尘'],
   ['molten', 'S9 熔流', '只有「流」这一层：亮带一直往上流，穿过湍流扭曲场被搅成流纹；叠在任何 F 上，配 F1 金属渐变就是流动的熔融金属'],
 ];
-/** 浅色人体（2026-10-10 全局浅色，用户：在 F1 金属渐变 + S9 熔流的基础上做 4 个浅色方案）：每格是固定浅色的真实容量页（人体 + 胶囊 + 图例） */
+/** 浅色人体 L 组（2026-10-10 全局浅色，用户：在 F1 金属渐变 + S9 熔流的基础上做 4 个浅色方案）：每格是固定浅色的真实容量页（人体 + 胶囊 + 图例）。
+ *  2026-10-10 用户选定 L2 的配色，其余三个落选、留作存档；L2 再出 4 个变体（LIGHT_V） */
 const LIGHT: [LightLookKind, string, string][] = [
   ['L1', 'L1 深绿热', '纸白 → 浅荧光 → 深绿 → 荧光墨，越深越热（和「荧光字用深一档绿」同一个逻辑）；深绿流纹、深绿柔光描边'],
-  ['L2', 'L2 荧光热', '纸白 → 浅荧光 → 荧光，越饱和越热，最热仍是荧光；墨色柔光描边给形体，流纹是中绿'],
+  ['L2', 'L2 荧光热 · 配色选定', '纸白 → 浅荧光 → 荧光，越饱和越热，最热仍是荧光；墨色柔光描边给形体，流纹是中绿'],
   ['L3', 'L3 银金属', '冷段是银灰金属（纸灰 → 中灰），热段转荧光 → 深绿；上沿高光和下缘墨色细边最强，金属感最重'],
   ['L4', 'L4 墨印', '纸白 → 灰 → 墨，热段混一点深绿，像版画：平涂不反光、墨线更实、颗粒更重；墨色流纹，最克制'],
+];
+/** L2 的四个变体（2026-10-10 用户：配色选 L2，效果还不满意，再出四个；整体去深色——描边、胶囊边、引线都不用墨）：色带都是 L2 的荧光热，差在亮度 / 质感 / 描边 / 胶囊调 */
+const LIGHT_V: [LightLookKind, string, string][] = [
+  ['L2a', 'L2a 轻盈', '冷肌肉更白（纸白起步）、暗边几乎不压、外发光更足，整体最亮；中绿细线描边；胶囊是一圈淡荧光细边，引线中绿'],
+  ['L2b', 'L2b 金属', '同一条荧光色带，上沿高光拉满、下缘压暗到银金属的强度，金属感最重；灰绿细线；胶囊是最淡的暖灰边'],
+  ['L2c', 'L2c 形体靠影', '不画清晰的线，一圈宽而淡的深绿影托出肌肉分界，形体靠阴影；胶囊不描边、只有一点浮起来的影子'],
+  ['L2d', 'L2d 磨砂', '纸白的细线 + 下沿一道很淡的绿影，像磨砂玻璃 / 压纹，完全没有深色线；胶囊是纸白细边 + 一点绿影'],
+];
+const LIGHT_ALL = [...LIGHT_V, ...LIGHT];
+/** 浅色描边方案（2026-10-10 用户：浅色下人体描边不想用深色，给方案）。套在所选浅色人体上；「跟随变体」= 用各变体自己的默认描边 */
+const LIGHT_CONTOUR: [LightContourKind | 'auto', string, string][] = [
+  ['auto', '跟随方案', '各人体方案自己的默认描边（L2a 中绿、L2b 灰绿、L2c 柔影、L2d 磨砂白；L1–L4 是墨线 / 深绿线）'],
+  ['ink', 'C0 墨线 · 旧', '现在的做法：墨色细线 45%（对照用，就是用户说「不想用深色」的那种）'],
+  ['green', 'C1 中绿线', '深绿掺荧光的中绿细线 70%：荧光家族里的线，不是墨；压在荧光肌肉上是橄榄绿'],
+  ['sage', 'C2 灰绿线', '纸的暖灰掺一点深绿 60%：淡、有点烟熏，比墨轻得多；冷肌肉上也不跳'],
+  ['frost', 'C3 磨砂白线', '纸白细线 + 下沿一道很淡的绿影，像磨砂玻璃 / 压纹；完全没有深色，白线靠影子托出来'],
+  ['shade', 'C4 柔影', '没有清晰的线，只有一圈宽而淡的深绿影；形体靠阴影不靠线'],
+  ['none', 'C5 无描边', '什么线都不画，只剩填充自己的唇边 / 内缘；看没有描边时人体还立不立得住'],
 ];
 /** 人体格子：只有默认三层（O2 + F1 + S9）有浅色版，换了任何一层就是深色存档（格子固定深色） */
 const archived = (o: ContourFxKind, f: FillFxKind, sc: ScanFxKind) => o !== DEFAULT_LOOK.contour || f !== DEFAULT_LOOK.fill || sc !== DEFAULT_LOOK.scan;
@@ -175,7 +194,7 @@ function Composer({ now }: { now: number }) {
     const v = q.get(key) ?? def; return list.find(([k]) => k === v) ?? list.find(([k]) => k === def)!;
   };
   const set = (key: string, v: string, def: string) => { const n = new URLSearchParams(q); if (v === def) n.delete(key); else n.set(key, v); setQ(n, { replace: true }); };
-  const o = pickOf('o', CONTOUR, DEFAULT_LOOK.contour), f = pickOf('f', FILL, DEFAULT_LOOK.fill), sc = pickOf('s', SCAN, DEFAULT_LOOK.scan), l = pickOf('l', LIGHT, DEFAULT_LIGHT_LOOK);
+  const o = pickOf('o', CONTOUR, DEFAULT_LOOK.contour), f = pickOf('f', FILL, DEFAULT_LOOK.fill), sc = pickOf('s', SCAN, DEFAULT_LOOK.scan), l = pickOf('l', LIGHT_ALL, DEFAULT_LIGHT_LOOK), c = pickOf('c', LIGHT_CONTOUR, 'auto');
   const dark = archived(o[0], f[0], sc[0]), theme = useTheme();
   const row = <K extends string>(key: string, label: string, list: readonly (readonly [K, string, string])[], cur: readonly [K, string, string], def: K) => (
     <div className={s.ctlRow} role="group" aria-label={label}>
@@ -188,16 +207,17 @@ function Composer({ now }: { now: number }) {
     <section className={s.composer} aria-label="自由组合">
       <div className={s.ctl}>
         <h2 className="milo-text-heading">自由组合</h2>
-        <p className="milo-text-caption">三组各挑一个，右边是真实的容量页（胶囊可按、正反男女可切）。标「默认」的是线上容量页现在用的（O2 + F1 + S9）；组合写在地址栏里，复制链接就能分享。</p>
+        <p className="milo-text-caption">三组各挑一个（浅色主题下再加浅色人体、浅色描边），右边是真实的容量页（胶囊可按、正反男女可切）。标「默认」的是线上容量页现在用的（O2 + F1 + S9）；组合写在地址栏里，复制链接就能分享。</p>
         {row('o', '描边', CONTOUR, o, DEFAULT_LOOK.contour)}
         {row('f', '肌头内部容量', FILL, f, DEFAULT_LOOK.fill)}
         {row('s', 'S 层动效', SCAN, sc, DEFAULT_LOOK.scan)}
-        {row('l', '浅色人体', LIGHT, l, DEFAULT_LIGHT_LOOK)}
+        {row('l', '浅色人体', LIGHT_ALL, l, DEFAULT_LIGHT_LOOK)}
+        {row('c', '浅色描边', LIGHT_CONTOUR, c, 'auto')}
         <p className={`milo-text-caption ${s.ctlNote}`}>{dark ? '换了描边 / 填充 / S 层就是深色方案（只有 O2 + F1 + S9 有浅色版），右边固定深色。' : theme === 'light' ? '现在是浅色主题：右边按所选浅色方案画。' : '浅色人体在浅色主题下生效：地址加 ?theme=light，或在「我的 → 外观」切浅色。'}</p>
       </div>
-      <ContourFx.Provider value={o[0]}><FillFx.Provider value={f[0]}><ScanFx.Provider value={sc[0]}><LightLook.Provider value={l[0]}>
-        <div className={s.phone} data-theme={dark ? 'dark' : undefined}><Stage tall label="容量页 · 组合预览"><BodyPage key={`${o[1]}${f[1]}${sc[1]}${l[1]}`} scenario="plain-prescription" now={now} initialFocus={null} /></Stage></div>
-      </LightLook.Provider></ScanFx.Provider></FillFx.Provider></ContourFx.Provider>
+      <ContourFx.Provider value={o[0]}><FillFx.Provider value={f[0]}><ScanFx.Provider value={sc[0]}><LightLook.Provider value={l[0]}><LightContour.Provider value={c[0] === 'auto' ? null : c[0]}>
+        <div className={s.phone} data-theme={dark ? 'dark' : undefined}><Stage tall label="容量页 · 组合预览"><BodyPage key={`${o[1]}${f[1]}${sc[1]}${l[1]}${c[1]}`} scenario="plain-prescription" now={now} initialFocus={null} /></Stage></div>
+      </LightContour.Provider></LightLook.Provider></ScanFx.Provider></FillFx.Provider></ContourFx.Provider>
     </section>
   );
 }
@@ -210,9 +230,28 @@ export function OptionsBoard({ now }: { now: number }) {
         <p className="milo-text-caption">同一个人、同一份演示数据，待选方案并排实时渲染。选定后定为默认，旧默认和落选的留在这里；规范在 /spec，组件在 /playground。</p>
       </header>
       <Composer now={now} />
+      <section className={s.group} aria-label="L2 变体" id="light-v">
+        <h2 className="milo-text-heading">浅色人体 · L2 变体（2026-10-10，待选）</h2>
+        <p className="milo-text-caption">用户：配色选 L2，但效果还不满意、整体深色太多（人体描边、胶囊描边、量尺刻度、引导线）。四个变体色带都是 L2 的荧光热，差在亮度、金属质感、描边和胶囊 / 引线的调子——<b>浅色里描边、胶囊边、引线都不再用墨</b>。每格固定浅色，是真实的容量页：可以按住胶囊看引线。四个都不合适就用最上面的「自由组合」混：浅色人体 × 浅色描边。</p>
+        <div className={s.pairs}>{[LIGHT_V.slice(0, 2), LIGHT_V.slice(2)].map((pair) => (
+          <div key={pair[0][0]} className={`${s.phones} ${s.phonesWide}`}>{pair.map(([k, t, n]) => (
+            <figure key={k} className={s.cell} data-option={`light-${k}`}>
+              <LightLook.Provider value={k}><div className={s.phone} data-theme="light"><Stage tall label={`容量页 · ${t}`}><BodyPage scenario="plain-prescription" now={now} initialFocus={null} /></Stage></div></LightLook.Provider>
+              <figcaption><b className="milo-text-body-strong">{k === DEFAULT_LIGHT_LOOK ? `${t} · 默认` : t}</b><span className="milo-text-caption">{n}</span></figcaption>
+            </figure>
+          ))}</div>
+        ))}</div>
+        <p className="milo-text-caption">全热度对照：同一个人体把肌肉从未练排到超量，看整条色带。</p>
+        <div className={s.grid}>{LIGHT_V.map(([k, t]) => <Cell key={k} id={`light-spread-${k}`} title={`${t} · 全热度`} note="肌肉按顺序从未练排到 1.5 × 最大可恢复量，热度均匀铺开" light><LightLook.Provider value={k}><Figure now={now} spread /></LightLook.Provider></Cell>)}</div>
+      </section>
+      <section className={s.group} aria-label="浅色描边" id="light-contour">
+        <h2 className="milo-text-heading">浅色人体描边 · C（2026-10-10，待选）</h2>
+        <p className="milo-text-caption">用户：浅色下人体描边不想用深色。同一个人体（L2 配色），只换描边——C0 是现在的墨线，对照用；C1–C5 都不是深色。选定后可以套在任一变体上（自由组合「浅色描边」），或直接并进某个变体的默认。</p>
+        <div className={s.grid}>{LIGHT_CONTOUR.filter(([k]) => k !== 'auto').map(([k, t, n]) => <Cell key={k} id={`light-contour-${k}`} title={t} note={n} light><LightLook.Provider value="L2"><LightContour.Provider value={k as LightContourKind}><Figure now={now} /></LightContour.Provider></LightLook.Provider></Cell>)}</div>
+      </section>
       <section className={s.group} aria-label="浅色人体" id="light-body">
-        <h2 className="milo-text-heading">浅色人体 · L（2026-10-10 全局浅色，待选）</h2>
-        <p className="milo-text-caption">纸白底上的容量页：在选定的 O2 柔光 + F1 金属渐变 + S9 熔流上做浅色版——色带「冷 = 纸白、热 = 深色」，唇边和内缘从提亮改成压暗，熔流和柔光描边从 screen 改 multiply；胶囊量尺和图例跟着换色带。每格固定浅色（不跟页面主题）。选定前默认 L1，选定后定为默认，落选的留在这里。</p>
+        <h2 className="milo-text-heading">浅色人体 · L（2026-10-10 全局浅色，已选 L2 配色）</h2>
+        <p className="milo-text-caption">纸白底上的容量页：在选定的 O2 柔光 + F1 金属渐变 + S9 熔流上做浅色版——色带「冷 = 纸白、热 = 深色」，唇边和内缘从提亮改成压暗，熔流和柔光描边从 screen 改 multiply；胶囊量尺和图例跟着换色带。每格固定浅色（不跟页面主题）。2026-10-10 用户选定 L2 的配色（变体见上），L1 / L3 / L4 落选，留在这里。</p>
         <div className={s.pairs}>{[LIGHT.slice(0, 2), LIGHT.slice(2)].map((pair) => (
           <div key={pair[0][0]} className={`${s.phones} ${s.phonesWide}`}>{pair.map(([k, t, n]) => (
             <figure key={k} className={s.cell} data-option={`light-${k}`}>
