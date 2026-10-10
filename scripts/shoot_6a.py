@@ -538,7 +538,7 @@ def light_checks(b, w, h):
         # 荧光治理（2026-10-10，docs/light-fluo-plan.md）：页面底降一档（paper-100 ≈ 0.78）、荧光面有深绿细边、点缀是荧光芯、选中态不是大块墨黑
         pl = pg.evaluate(BG_LUM, 'main'); ok(pl is not None and 0.7 < pl < 0.85, f'{tag} 浅色·{path}：页面底是降一档的纸色（亮度 {pl}）')
         if path == '/today':
-            rim = pg.evaluate("() => { const b = [...document.querySelectorAll('button')].find((x) => /开始训练/.test(x.textContent)); if (!b) return null; const c = getComputedStyle(b); return { outline: c.outlineStyle, shadow: c.boxShadow.split('rgba').length - 1 + c.boxShadow.split('rgb(').length - 1 }; }")
+            rim = pg.evaluate("() => { const b = [...document.querySelectorAll('button')].find((x) => /开始训练/.test(x.textContent)); if (!b) return null; const c = getComputedStyle(b); return { outline: c.outlineStyle, shadow: (() => { let d = 0, n = c.boxShadow === 'none' ? 0 : 1; for (const ch of c.boxShadow) { if (ch === '(') d++; else if (ch === ')') d--; else if (ch === ',' && d === 0) n++; } return n; })() }; }")
             ok(rim and rim['outline'] == 'none' and rim['shadow'] >= 3, f'{tag} 浅色·首页：荧光主按钮靠阴影托起（≥ 3 层）、不描边 {rim}')
         if path == '/gains':
             seg = pg.evaluate(BG_LUM, "[class*=_seg_up_]"); ok(seg is not None and seg > 0.6, f'{tag} 浅色·增量：汇总条「涨」段不是墨黑块（亮度 {seg}）')
