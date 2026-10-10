@@ -55,6 +55,7 @@ _Updated: 2026-10-11 01:35（作品集 · 规划窗口 → 搭建窗口）_
 - Android 官方「Device Art Generator」网页已拿不到机框；可用的是 googlesource 上 Android Studio 的 `device-art-resources/<机型>/`（`?format=TEXT` 返回 base64），容器能访问
 - 截转场中间帧：Playwright `clock.install()` 后时间仍在走，要 `pause_at` 再 `run_for`；View Transitions 还要 CDP `Animation.setPlaybackRate 0` 冻住；无头 + SwiftShader 截一张约 1.4 秒（旧 handoff §6）
 - 无头 Chromium 没有 H.264：动作要领页的示范视频用 `scripts/shoot_theme.py` 里现成的 webm 路由处理
+- 每次推 `main`（哪怕只改文档）CI 都会打 APK 并自动提交一个 `apk: debug 构建` → 推之前先 `git fetch origin main && git rebase origin/main`，否则会被拒
 - `pkill -f` 会杀掉自己的 shell → `for p in $(pgrep -f '^node.*vite preview'); do kill $p; done`
 - 渲染 SVG 成 PNG / PDF 时，Chromium 要能找到三套字体：用 `node_modules/@fontsource*` 的字体文件写 `@font-face` 包一层 HTML 再渲染；字体没加载上要报错退出（食律踩过）
 
