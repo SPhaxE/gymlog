@@ -16,7 +16,7 @@ _Updated: 2026-10-10 12:30_
 - [x] 走查 1 阶段 1–5；浅色模式；真·全局浅色（去掉 5 个深色岛）
 - [x] 用户选 L2 配色（`DEFAULT_LIGHT_LOOK = 'L2'`）；L1 / L3 / L4 落选留方案台
 - [x] L2 变体 4 个 + 浅色描边 6 个 + 胶囊 / 引线 / 刻度调子；故事固定深色；`npm run check` 全绿（400 项），门禁 light / story / log 通过
-- [ ] **用户选 L2a–d 之一 / 描边 C1–C5 之一**（问用户）
+- [x] 用户选定 **L2d 磨砂 + C3 磨砂白线**（`DEFAULT_LIGHT_LOOK = 'L2d'`）
 - [ ] 黑色选中态开关（Segmented / Chip / 导航选中）浅色下是否也要换轻：问用户
 - [ ] 用户在小米 15 上复查性能
 - [ ] Stitch 密钥：这个容器里没有 `secrets/stitch.env`（用户说先不管）
@@ -76,12 +76,11 @@ python3 scripts/shoot_6a.py --no-shots --base http://127.0.0.1:4173          # �
 - Env: Chromium `/opt/pw-browsers/chromium`；Python Playwright 先 `pip install playwright`；`ffmpeg` 在（录屏转 mp4）
 
 ## 10. Open Questions
-- **L2a–d 选哪个？描边 C1–C5 选哪个？**（方案台 `/preview#light-v`、`#light-contour`；自由组合可混）
+- **浅色「脏点」治理的范围与顺序**（见 §11 第 1 条，等用户点头）
 - 黑色选中态开关浅色下要不要也换轻（全 App 范围）
 - 作品集：载体、样机机型、封面深 / 浅、要不要单独讲 AI 协作（`docs/portfolio-handoff.md` §8）
 - Stitch 密钥（用户说先不管）
 
 ## 11. Specific Next Steps
-1. 等用户选 → 改 `DEFAULT_LIGHT_LOOK`，把选中的描边写进该变体的 `contour`，方案台标「选定」，DESIGN §1.5 / brief 记一笔；落选的留在方案台。
-2. 用户若要全局的黑色选中态也轻一点：Segmented / Chip / Nav 选中项的浅色处理，改完跑深色回归。
-3. 之后作品集：先问 `docs/portfolio-handoff.md` §8 的问题。
+1. **浅色「不能脏」审计（已看过浅色截图，待用户点头）**：首页 / 容量 / 增量 / 记录 / 我的 浅色下的脏点——① 流体背景的荧光光斑叠在暖灰纸上发黄绿、像污渍（首页、容量、记录最明显）；② 记录页钢板是灰米色、孔灰，像脏铝板；③ 大块黑：增量汇总条（黑块 + 黑刻度）、选中的 Chip / Segmented / 导航选中项；④ 灰斜纹（未练胶囊、「该减重」条）。每项上方案台出 2–3 个方案，用户选后定默认；遵守五步（先线框 / 方案，再实现）。
+2. 作品集：先问 `docs/portfolio-handoff.md` §8 的问题。

@@ -150,8 +150,8 @@ export const LIGHT_LOOKS: Record<LightLookKind, LightLookSpec> = {
   L2d: { ramp: ['paper-50', 'lime-300', 'lime-500', 'lime-550', 'lime-600', 'lime-700'], lip: 0.8, edge: 0.9, grain: 0.05, glow: 0.4, sheen: 1, moltenTint: 'lime-600', molten: 0.9, contour: 'frost', tone: TONES.frost, legend: '越绿越热' },
 };
 export const LightLook = createContext<LightLookKind | null>(null);
-/** 浅色人体的默认方案（2026-10-10 用户选定 L2 的配色；4 个变体 L2a–d 待选，选定后改这一行，落选的留在方案台） */
-export const DEFAULT_LIGHT_LOOK: LightLookKind = 'L2';
+/** 浅色人体的默认方案（2026-10-10 用户选定 L2d 磨砂 + C3 磨砂白线，即 L2d 自己的默认描边；L1–L4、L2a–c 落选，留在方案台） */
+export const DEFAULT_LIGHT_LOOK: LightLookKind = 'L2d';
 /** 元素在浅色里：返回所选浅色方案（LightLook 上下文没给就是 DEFAULT_LIGHT_LOOK）；在深色里返回 null。胶囊量尺、图例也用它跟着换色带 */
 export function useLightLook(ref: RefObject<Element | null>): LightLookSpec | null {
   const look = useContext(LightLook) ?? DEFAULT_LIGHT_LOOK;
