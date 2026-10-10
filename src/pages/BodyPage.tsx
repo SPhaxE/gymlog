@@ -5,6 +5,7 @@
  *  - 结构：Tab 根页；肌头详情是浮在页面上的面板（FluidPanel），由被点的胶囊原地长出来（M02 流体胶囊形变，2026-10-09 走查 1 #29）。
  *  - 框架：页头（切换器在右）→ 合计与图例 → 舞台（人体 + 胶囊列；按住放大时才有一条引线）；没有主按钮。
  *  - 表现：半身人体（从左裁掉 ratio/figure-crop、左缘渐隐，高度撑满舞台）左缘贴页面边距、裁到刚好露出完整腹肌（2026-10-10 用户；窄屏再多裁一点，手不越过胶囊列）；
+ *    浅色模式下人体直接在纸白页面上（2026-10-10 全局浅色，不再是深色观察窗；配色见 BodyFigure 的 LightLook 浅色方案）；
  *    常态胶囊缩小 1/3（少挡人体）、不画引线；放大的那颗背后泛光，确认放大后才从它折一条线到肌头；人体区左右滑 = 切正反面（往左背面、往右正面）。
  *  切换人体是「换卡」（2026-10-06 用户：所有更换都从左往右）：新卡从左边滑进来盖在上面，旧卡往右退、淡出；
  *  新卡量完锚点才滑进来，引线先收、到位后从人体往胶囊（左 → 右）重新描出。全程都在人体自己那一层里（figureClip 隔离层叠），
@@ -140,8 +141,8 @@ export function BodyPage({ scenario, now, initialFocus, onTab }: { scenario?: st
         <TierLegend />
       </PageHeader>
 
-      {/* 热成像观察窗：人体、胶囊、引线永远在深色里（浅色模式下是一块深色面板，BodyPage.module.css） */}
-      <div ref={stage} className={s.stage} data-theme="dark" style={{ minHeight: railMin }} onPointerDown={swipeDown} onPointerUp={swipeUp} onPointerCancel={() => { swipe.current = null; }}
+      {/* 舞台跟随全局主题（2026-10-10 全局浅色：去掉深色观察窗；浅色人体按 LightLook 方案画，见 BodyFigure） */}
+      <div ref={stage} className={s.stage} style={{ minHeight: railMin }} onPointerDown={swipeDown} onPointerUp={swipeUp} onPointerCancel={() => { swipe.current = null; }}
         onClickCapture={(e) => { if (swiped.current) { swiped.current = false; e.stopPropagation(); } }}>
         {/* 人体只在内容区里（左缘 = 页面边距），不越过组件最外层；卡宽到胶囊列起点为止 */}
         <div className={s.figureClip}>

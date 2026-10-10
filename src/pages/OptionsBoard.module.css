@@ -45,6 +45,9 @@
 
 /* 增量配色：几台真实的增量页并排；商城标：一格放 4 件商品 */
 .phones { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--milo-space-5xl) * 6), 1fr)); gap: var(--milo-space-l); }
+/* L 浅色人体：一列至少一台手机宽，手机不叠到旁边那格上；不吸顶（吸顶的手机滚动时会盖住自己下面的说明） */
+.phonesWide { grid-template-columns: repeat(auto-fill, minmax(var(--milo-size-screen-w), 1fr)); }
+.phonesWide .phone { position: static; }
 .shopDemo { position: absolute; inset: 0; overflow-y: auto; padding: var(--milo-space-s); background: var(--milo-color-bg-base); }
 .gCard { background: radial-gradient(80% 70% at 0% 100%, color-mix(in srgb, var(--milo-prim-bone-500) 12%, transparent), transparent 70%), var(--milo-color-bg-raised); }
 /* H0 旧默认（2026-10-04 A4 原样）：CSS 径向渐变 + 放大的颗粒贴图，只在光里 */
@@ -53,3 +56,5 @@
 .h0::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit;
   background-image: var(--grain); background-size: calc(var(--milo-space-5xl) * 3.333); mix-blend-mode: overlay; opacity: calc(var(--milo-opacity-grain) * 2.5);
   -webkit-mask: radial-gradient(110% 95% at 95% 0%, black, transparent 70%); mask: radial-gradient(110% 95% at 95% 0%, black, transparent 70%); }
+/* 局部主题的格子（L 组固定浅色、深色存档固定深色）：字色要在格子里重新取一次——color 继承的是外面主题算好的值 */
+.phone[data-theme], .stage[data-theme] { color: var(--milo-color-text-primary); }

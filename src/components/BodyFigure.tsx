@@ -3,11 +3,13 @@
  *  半身：按包围盒从左裁掉 ratio/figure-crop（露出约 58%），左缘再加 ratio/figure-fade 宽的渐隐，裁切读起来是有意的暗角，不是一刀切。
  *  热成像上面再叠一层「光」（ThermalLight，混合模式 screen）：浅荧光轮廓从下往上描出、一道细光沿轮廓游走、扫描光带周期性从下往上扫过人体——
  *  动的东西都在这一层，下面带滤镜的热像层静止不重画。
- *  量完锚点后通过 onAnchors 交给胶囊列画引线（坐标相对 relativeTo）。 */
-import { createContext, useContext, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+ *  量完锚点后通过 onAnchors 交给胶囊列画引线（坐标相对 relativeTo）。
+ *  2026-10-10 全局浅色：人体跟随自己所在的主题（不再是深色观察窗），浅色时按 LightLook 方案换色带、把提亮的层改成压暗（见 LIGHT_LOOKS）。 */
+import { createContext, useContext, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
 import type { HeadStat } from '../engine';
+import { useElementTheme } from '../styles/theme';
 import { T } from '../styles/tokens.gen';
-import { BodyRender, heatOf, rampTables, tables } from './thermal';
+import { BodyRender, heatOf, primRgb, rampTables, tables, tintMatrix } from './thermal';
 import s from './BodyFigure.module.css';
 
 type Path = { d: string; strokeWidth?: number };
@@ -60,6 +62,43 @@ export const FillFx = createContext<FillFxKind | null>(null);
 /** 容量人体的默认三层（2026-10-07 用户在 /preview 方案台选定：O2 柔光 + F1 金属渐变 + S9 熔流）。
  *  三个 context 不给值（null）就用这里；原来的默认留成可选项：描边 glow（浅荧光描出 + 游光）、填充 thermal（热成像）、S 层 band（扫描光带）。 */
 export const DEFAULT_LOOK = { contour: 'soft', fill: 'metal', scan: 'molten' } as const satisfies { contour: ContourFxKind; fill: FillFxKind; scan: ScanFxKind };
+
+/** 浅色人体 L 组（2026-10-10 全局浅色，用户：在 F1 金属渐变 + S9 熔流的基础上做 4 个浅色方案，放进 /preview 方案台选）。
+ *  只在人体所在的主题是浅色时生效（useElementTheme：最近的 [data-theme]，没有就是全局）；深色走原来的代码路径，逐像素不变。
+ *  纸白上的「浅色金属 + 熔流」：Colorama 换成「冷 = 纸白、热 = 深色」的色带；唇边 / 内缘从提亮改成压暗（金属下沿的影子，冷肌肉也有形）；
+ *  颗粒改墨色低透明；熔流从 screen 改 multiply（渐变反相：冷 = 白，白在 multiply 下不起作用），最深处是 moltenTint；柔光描边改 multiply + contourInk。
+ *  只有默认三层（O2 柔光 + F1 金属 + S9 熔流）有浅色版，其余描边 / 填充 / S 层方案是深色存档。
+ *  ramp / moltenTint 是原色名（构建期从 tokens.json 取值，同 thermal.ts），contourInk 是语义色名；
+ *  胶囊量尺和图例在浅色里用 ramp 的前 5 段（同深色：金属色带前 5 段 = 图例的荧光色板）。 */
+export type LightLookKind = 'L1' | 'L2' | 'L3' | 'L4';
+export interface LightLookSpec {
+  /** Colorama 色带：冷 → 热，6 个原色 */ ramp: string[];
+  /** 唇边（下缘月牙）/ 整圈内缘的 slope：< 1 是压暗 */ lip: number; edge: number;
+  /** 墨色颗粒透明度 */ grain: number;
+  /** 外发光透明度（乘在深色的 0.9 / 0.7 上） */ glow: number;
+  /** 上沿纸白高光的透明度（金属受光面） */ sheen: number;
+  /** 熔流：最深处的颜色（原色名）与强度（0–1） */ moltenTint: string; molten: number;
+  /** 柔光描边：语义色名 + 透明度 */ contourInk: string; contourAlpha: number;
+  /** 图例读法（读屏） */ legend: string;
+}
+export const LIGHT_LOOKS: Record<LightLookKind, LightLookSpec> = {
+  // 深绿热：中段就进深绿（和荧光热一眼分开），最热到荧光墨；深绿流纹、深绿描边
+  L1: { ramp: ['paper-100', 'lime-600', 'lime-750', 'lime-ink', 'lime-ink', 'ink-900'], lip: 0.62, edge: 0.78, grain: 0.07, glow: 0.22, sheen: 0.8, moltenTint: 'lime-750', molten: 0.9, contourInk: 'accent-ink', contourAlpha: 0.45, legend: '越深越热' },
+  // 荧光热：越饱和越热，最热仍是荧光；荧光撑不起形体，墨色描边给轮廓
+  L2: { ramp: ['paper-100', 'lime-300', 'lime-500', 'lime-550', 'lime-600', 'lime-700'], lip: 0.7, edge: 0.82, grain: 0.06, glow: 0.35, sheen: 0.7, moltenTint: 'lime-600', molten: 1, contourInk: 'brand-mark', contourAlpha: 0.45, legend: '越绿越热' },
+  // 银金属：冷段银灰、热段转绿；高光和下缘影子都最强，金属感最重
+  L3: { ramp: ['paper-200', 'paper-300', 'ink-500', 'lime-550', 'lime-750', 'lime-ink'], lip: 0.42, edge: 0.62, grain: 0.08, glow: 0.25, sheen: 1, moltenTint: 'ink-600', molten: 0.85, contourInk: 'brand-mark', contourAlpha: 0.35, legend: '越绿越热' },
+  // 墨印：版画——平涂、不反光（没有高光、下缘几乎不压暗），墨线更实、颗粒更重
+  L4: { ramp: ['paper-50', 'ink-500', 'ink-600', 'lime-750', 'ink-900', 'ink-900'], lip: 0.85, edge: 0.6, grain: 0.18, glow: 0, sheen: 0, moltenTint: 'ink-900', molten: 0.75, contourInk: 'brand-mark', contourAlpha: 0.8, legend: '越深越热' },
+};
+export const LightLook = createContext<LightLookKind | null>(null);
+/** 浅色人体的默认方案（用户选定前先用 L1；选定后改这一行，落选的留在方案台） */
+export const DEFAULT_LIGHT_LOOK: LightLookKind = 'L1';
+/** 元素在浅色里：返回所选浅色方案（LightLook 上下文没给就是 DEFAULT_LIGHT_LOOK）；在深色里返回 null。胶囊量尺、图例也用它跟着换色带 */
+export function useLightLook(ref: RefObject<Element | null>): LightLookSpec | null {
+  const look = useContext(LightLook) ?? DEFAULT_LIGHT_LOOK;
+  return useElementTheme(ref) === 'light' ? LIGHT_LOOKS[look] : null;
+}
 
 export function BodyFigure({ gender, view, stats, focus, height, width, fit, onAnchors, relativeTo, onPick }: {
   gender: 'male' | 'female'; view: 'front' | 'back'; stats: Map<string, HeadStat>; focus: string | null; height: number;
@@ -172,8 +211,10 @@ function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pi
   const scanK = useContext(ScanFx) ?? DEFAULT_LOOK.scan, contourK = useContext(ContourFx) ?? DEFAULT_LOOK.contour, fillK = useContext(FillFx) ?? DEFAULT_LOOK.fill;
   const fx = scanK === 'band' ? null : scanK, contourFx = contourK === 'glow' ? null : contourK, fill = fillK === 'thermal' ? null : fillK;
   const w = (height * box[2]) / box[3];
+  // 浅色（2026-10-10 全局浅色）：只有默认三层（O2 / F1 / S9）有浅色版，各层自己判断；切主题、换方案都会重画（look 进渲染）
+  const stack = useRef<HTMLSpanElement>(null), look = useLightLook(stack);
   return (
-    <span className={s.stack} style={{ width: w, height }}>
+    <span ref={stack} className={s.stack} style={{ width: w, height }}>
     <svg ref={svgRef} className={`${vb ? s.thermal : s.measuring} ${pick ? s.pickable : ''}`} onClick={pick} viewBox={box.join(' ')} height={height} width={w} preserveAspectRatio="xMinYMin meet" aria-hidden="true">
       <defs>
         {/* 每块肌肉一个径向渐变：中心是它的热度，边缘降到 55%，看起来是一团热而不是一块颜色 */}
@@ -195,7 +236,7 @@ function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pi
           <filter id={`n${fid}`} x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves={2} stitchTiles="stitch" /><feColorMatrix type="saturate" values="0" /><feComposite in2="SourceAlpha" operator="in" /></filter>
         </>}
       </defs>
-      {fill ? <FillLayer kind={fill} v={v} heads={heads} stats={stats} fid={fid} unit={unit} gray={gray} /> : (
+      {fill ? <FillLayer kind={fill} v={v} heads={heads} stats={stats} fid={fid} unit={unit} gray={gray} look={look} /> : (
       <g filter={`url(#h${fid})`}>
         {NEUTRAL.flatMap((k) => (v[k]?.paths ?? []).map((p, i) => <path key={k + i} d={p.d} style={{ fill: gray(0.04) }} />))}
         {heads.map((k) => (
@@ -212,8 +253,8 @@ function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pi
       {/* 轮廓画在上面的光层里；这里留一份不上色的，只为量包围盒（头部只有轮廓，没有肌肉路径，不量它头会被裁掉） */}
       <g className={s.measureOnly}>{(v.body?.paths ?? []).map((p, i) => <path key={i} d={p.d} />)}</g>
     </svg>
-    {vb && <ThermalLight box={box} height={height} width={w} v={v} fid={fid} noBeam={!!fx} contour={contourFx} />}
-    {vb && fx && <ScanLines kind={fx} box={box} height={height} width={w} v={v} fid={fid} heat={(k) => heatOf(stats.get(k))} />}
+    {vb && <ThermalLight box={box} height={height} width={w} v={v} fid={fid} noBeam={!!fx} contour={contourFx} look={look} />}
+    {vb && fx && <ScanLines kind={fx} box={box} height={height} width={w} v={v} fid={fid} heat={(k) => heatOf(stats.get(k))} look={look} />}
     </span>
   );
 }
@@ -223,12 +264,14 @@ function ThermalSvg({ svgRef, vb, box, height, v, stats, focus, fid, thermal, pi
  *  - 游光：同一组轮廓的更亮一份，被一条横向光带遮着，光带每隔一阵从下往上扫过一次（像光沿着轮廓爬上去）；
  *  - 扫描光带：裁在人体剪影里的一条荧光带（带细扫描线），周期性从下往上扫过热力图；
  *  整层 mix-blend-mode: screen（只提亮、不盖住热像）、不接触摸；减少动态效果时只留静止的轮廓。 */
-function ThermalLight({ box, height, width, v, fid, noBeam, contour: kind }: { box: number[]; height: number; width: number; v: Record<string, Part>; fid: string; noBeam?: boolean; contour?: Exclude<ContourFxKind, 'glow'> | null }) {
+function ThermalLight({ box, height, width, v, fid, noBeam, contour: kind, look }: { box: number[]; height: number; width: number; v: Record<string, Part>; fid: string; noBeam?: boolean; contour?: Exclude<ContourFxKind, 'glow'> | null; look: LightLookSpec | null }) {
   const [x, y, bw, bh] = box, unit = bh / 100;
+  // 浅色：只有柔光描边有浅色版——整层改 multiply（只压暗），线用方案的墨色 / 深绿低透明
+  const ink = look && kind === 'soft' ? look : null;
   const silhouette = Object.keys(v).filter((k) => k !== 'body').flatMap((k) => (v[k].paths ?? []).map((p, i) => <path key={k + i} d={p.d} />));
   const contour = (v.body?.paths ?? []).map((p, i) => <path key={i} d={p.d} />);
   return (
-    <svg className={`${s.light} ${s.lightHalf}`} viewBox={box.join(' ')} width={width} height={height} preserveAspectRatio="xMinYMin meet" aria-hidden="true">
+    <svg className={`${s.light} ${s.lightHalf}${ink ? ` ${s.lightInk}` : ''}`} viewBox={box.join(' ')} width={width} height={height} preserveAspectRatio="xMinYMin meet" aria-hidden="true">
       <defs>
         <clipPath id={`c${fid}`}>{silhouette}</clipPath>
         <mask id={`r${fid}`} maskUnits="userSpaceOnUse" x={x} y={y} width={bw} height={bh}><rect className={s.reveal} x={x} y={y} width={bw} height={bh} fill="white" /></mask>
@@ -243,7 +286,7 @@ function ThermalLight({ box, height, width, v, fid, noBeam, contour: kind }: { b
         <pattern id={`sl${fid}`} width={unit} height={unit * 0.8} patternUnits="userSpaceOnUse"><rect width={unit} height={unit * 0.25} className={s.beamLine} /></pattern>
         <mask id={`bm${fid}`} maskUnits="userSpaceOnUse" x={x} y={y} width={bw} height={bh * 0.14}><rect x={x} y={y} width={bw} height={bh * 0.14} fill={`url(#sb${fid})`} /></mask>
       </defs>
-      {kind ? <ContourVariant kind={kind} contour={contour} silhouette={silhouette} fid={fid} unit={unit} /> : (
+      {kind ? <ContourVariant kind={kind} contour={contour} silhouette={silhouette} fid={fid} unit={unit} ink={ink} /> : (
       <g mask={`url(#r${fid})`}>
         <g className={s.contourLime}>{contour}</g>
         <g className={s.glint} mask={`url(#m${fid})`}>{contour}</g>
@@ -258,8 +301,8 @@ function ThermalLight({ box, height, width, v, fid, noBeam, contour: kind }: { b
 /** 扫描线逐层动效（方案见上面 ScanFxKind）：扫描线一行一个矩形（约 110 行，间距 0.9% 人体高），裁在人体剪影里；
  *  每行的动画一样、只差起始时间（从脚往头按行错开），所以看起来是一层层推上去的；只动 opacity。
  *  raster 用 multiply（暗栅盖在热力上，打开才露出来），其余用 screen（只提亮）；iso 不按行、按肌肉热度排先后。 */
-function ScanLines({ kind, box, height, width, v, fid, heat }: { kind: Exclude<ScanFxKind, 'band'>; box: number[]; height: number; width: number; v: Record<string, Part>; fid: string; heat: (k: string) => number }) {
-  if (kind === 'pump' || kind === 'steam' || kind === 'fiber' || kind === 'beam' || kind === 'molten') return <ThemeFx kind={kind} box={box} height={height} width={width} v={v} fid={fid} heat={heat} />;
+function ScanLines({ kind, box, height, width, v, fid, heat, look }: { kind: Exclude<ScanFxKind, 'band'>; box: number[]; height: number; width: number; v: Record<string, Part>; fid: string; heat: (k: string) => number; look: LightLookSpec | null }) {
+  if (kind === 'pump' || kind === 'steam' || kind === 'fiber' || kind === 'beam' || kind === 'molten') return <ThemeFx kind={kind} box={box} height={height} width={width} v={v} fid={fid} heat={heat} look={kind === 'molten' ? look : null} />;
   const [x, y, bw, bh] = box, unit = bh / 100, pitch = unit * 0.9, n = Math.floor(bh / pitch);
   const heads = Object.keys(v).filter((k) => !NEUTRAL.includes(k) && k !== 'body');
   const silhouette = Object.keys(v).filter((k) => k !== 'body').flatMap((k) => (v[k].paths ?? []).map((p, i) => <path key={k + i} d={p.d} />));
@@ -300,7 +343,8 @@ function rng(seed: number) {
 }
 
 /** S 层第二批：呼应主题的四个动效（说明见 ScanFxKind）。只动 transform / opacity / stroke-dashoffset，减少动态效果时全静止 */
-function ThemeFx({ kind, box, height, width, v, fid, heat }: { kind: 'pump' | 'steam' | 'fiber' | 'beam' | 'molten'; box: number[]; height: number; width: number; v: Record<string, Part>; fid: string; heat: (k: string) => number }) {
+function ThemeFx({ kind, box, height, width, v, fid, heat, look }: { kind: 'pump' | 'steam' | 'fiber' | 'beam' | 'molten'; box: number[]; height: number; width: number; v: Record<string, Part>; fid: string; heat: (k: string) => number;
+  /** 浅色人体方案（只有熔流用）：null = 深色原样 */ look?: LightLookSpec | null }) {
   const [x, y, bw, bh] = box, unit = bh / 100, slow = T['motion/slow'];
   const gray = (t: number) => `color-mix(in srgb, white ${Math.round(t * 100)}%, black)`;
   const heads = Object.keys(v).filter((k) => !NEUTRAL.includes(k) && k !== 'body');
@@ -340,14 +384,16 @@ function ThemeFx({ kind, box, height, width, v, fid, heat }: { kind: 'pump' | 's
   if (kind === 'molten') {
     // 亮带 = spreadMethod reflect 的竖向渐变（暗 → 亮 → 暗），一直往上平移；扭曲场不动，亮带流过它就被搅成熔体的流纹。
     // 滤镜和渐变的属性 CSS 动不了，用 SMIL；减少动态效果时不挂动画（只剩静止的一层淡流纹）
+    // 浅色（2026-10-10）：整层 multiply，渐变反相（冷 = 白、不起作用），最后的矩阵把黑映射成方案的 moltenTint、白不变——流纹是压暗的深色，不是提亮
     const still = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const tone = look ? (t: number) => gray(1 - t * look.molten) : gray;
     return (
       // 单独一层（will-change）：熔流每步重算滤镜时，只重画它自己，不连带下面静止的金属层一起重新栅格化（2026-10-10 性能，容量页栅格耗时降到约 1/8）
-      <svg {...svgProps} className={`${svgProps.className} ${s.ownLayer}`} ref={flowSvg} data-flow="molten">
+      <svg {...svgProps} className={`${look ? `${s.fx} ${s.fxMul} ${s.lightHalf}` : svgProps.className} ${s.ownLayer}`} ref={flowSvg} data-flow="molten">
         <defs>
           {hot.map(([k, h]) => (
             <linearGradient key={k} id={`mo${fid}${k}`} x1="0" y1="0" x2="0" y2="0.45" spreadMethod="reflect">
-              <stop offset="0" style={{ stopColor: gray(0) }} /><stop offset="0.7" style={{ stopColor: gray(h * 0.25) }} /><stop offset="1" style={{ stopColor: gray(Math.min(1, h * 0.95)) }} />
+              <stop offset="0" style={{ stopColor: tone(0) }} /><stop offset="0.7" style={{ stopColor: tone(h * 0.25) }} /><stop offset="1" style={{ stopColor: tone(Math.min(1, h * 0.95)) }} />
               {!still && <animateTransform attributeName="gradientTransform" type="translate" from="0 0" to="0 -0.9" dur={`${Math.round(slow * (34 - h * 18))}ms`} repeatCount="indefinite" />}
             </linearGradient>
           ))}
@@ -358,8 +404,8 @@ function ThemeFx({ kind, box, height, width, v, fid, heat }: { kind: 'pump' | 's
             </feDisplacementMap>
             <feGaussianBlur in="disp" stdDeviation={unit * 0.35} result="soft" />
             <feComposite in="soft" in2="SourceAlpha" operator="in" result="inner" />
-            {/* 灰阶 → 荧光到骨白（只提亮，screen 叠上去不会压暗 F 层） */}
-            <feColorMatrix in="inner" type="matrix" values="0.85 0 0 0 0  0 1 0 0 0  0.55 0 0 0 0  0 0 0 1 0" />
+            {/* 灰阶 → 荧光到骨白（只提亮，screen 叠上去不会压暗 F 层）；浅色：白 → 白、黑 → moltenTint（只压暗） */}
+            <feColorMatrix in="inner" type="matrix" values={look ? tintMatrix(look.moltenTint) : '0.85 0 0 0 0  0 1 0 0 0  0.55 0 0 0 0  0 0 0 1 0'} />
           </filter>
         </defs>
         <g filter={`url(#mo${fid})`}>
@@ -475,13 +521,17 @@ function ThemeFx({ kind, box, height, width, v, fid, heat }: { kind: 'pump' | 's
 }
 
 /** 描边的四个方案（ContourFxKind）：都是静态的，只换线的样子，不再描出 / 游光 */
-function ContourVariant({ kind, contour, silhouette, fid, unit }: { kind: Exclude<ContourFxKind, 'glow'>; contour: ReactNode; silhouette: ReactNode; fid: string; unit: number }) {
+function ContourVariant({ kind, contour, silhouette, fid, unit, ink }: { kind: Exclude<ContourFxKind, 'glow'>; contour: ReactNode; silhouette: ReactNode; fid: string; unit: number;
+  /** 浅色柔光描边（multiply 层里）：线色 = 方案的 contourInk、透明度 contourAlpha */ ink?: LightLookSpec | null }) {
   if (kind === 'hair') return <g className={s.cHair}>{contour}</g>;
   if (kind === 'dot') return <g className={s.cDot}>{contour}</g>;
   if (kind === 'soft') return (
     <>
-      <defs><filter id={`cs${fid}`} x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation={unit * 0.35} /></filter></defs>
-      <g className={s.cSoft} filter={`url(#cs${fid})`}>{contour}</g>
+      {/* 浅色：深色线一模糊就像失焦（深色里的模糊亮线读起来是光），所以只留一点点柔 */}
+      <defs><filter id={`cs${fid}`} x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation={unit * (ink ? 0.1 : 0.35)} /></filter></defs>
+      {ink
+        ? <g className={s.cSoftInk} filter={`url(#cs${fid})`} style={{ '--ink': `var(--milo-color-${ink.contourInk})`, '--ink-a': ink.contourAlpha } as React.CSSProperties}>{contour}</g>
+        : <g className={s.cSoft} filter={`url(#cs${fid})`}>{contour}</g>}
     </>
   );
   // rim：剪影收缩一点再和原剪影相减，只剩最外一圈边，模糊成内缘光；内部肌肉分界线不画
@@ -505,13 +555,17 @@ function ContourVariant({ kind, contour, silhouette, fid, unit }: { kind: Exclud
 }
 
 /** 肌头内部容量的四个方案（FillFxKind）。每块肌肉仍是 g[data-head]（锚点、轻点要用） */
-function FillLayer({ kind, v, heads, stats, fid, unit, gray }: { kind: Exclude<FillFxKind, 'thermal'>; v: Record<string, Part>; heads: string[]; stats: Map<string, HeadStat>; fid: string; unit: number; gray: (t: number) => string }) {
+function FillLayer({ kind, v, heads, stats, fid, unit, gray, look }: { kind: Exclude<FillFxKind, 'thermal'>; v: Record<string, Part>; heads: string[]; stats: Map<string, HeadStat>; fid: string; unit: number; gray: (t: number) => string;
+  /** 浅色人体方案（只有金属渐变用）：null = 深色原样 */ look: LightLookSpec | null }) {
   const neutral = NEUTRAL.flatMap((k) => (v[k]?.paths ?? []).map((p, i) => <path key={k + i} d={p.d} style={{ fill: gray(0.06) }} />));
   const H = (k: string) => heatOf(stats.get(k));
   if (kind === 'metal') {
     // 照用户给的 AE 参考（2026-10-07）：Gradient Ramp（每块肌肉自下而上的灰阶，热度越高越亮）→ Turbulent Displace（大尺度湍流扭曲）
     // + Fast Box Blur（强模糊，像熔化的流体）→ Colorama（暗 → 橄榄 → 荧光 → 浅荧光 → 骨白热）→ 形状边缘一圈亮的内缘光 + 外发光 + 一点颗粒
-    const [r, g, b] = rampTables(['gray-50', 'lime-900', 'lime-700', 'lime-500', 'lime-300', 'gray-900']);
+    // 浅色（2026-10-10）：色带换方案的（冷 = 纸白、热 = 深色），唇边 / 内缘压暗、外发光减淡、颗粒改墨色——其余滤镜链和深色一样
+    const [r, g, b] = rampTables(look ? look.ramp : ['gray-50', 'lime-900', 'lime-700', 'lime-500', 'lime-300', 'gray-900']);
+    const lip = look ? look.lip : '2.4', edge = look ? look.edge : '1.5';
+    const grainM = look ? `${primRgb('ink-900').map((c) => `0 0 0 0 ${c.toFixed(3)}`).join('  ')}  ${look.grain} 0 0 0 0` : '0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0.12 0 0 0 0';
     return (
       <>
         <defs>
@@ -533,22 +587,30 @@ function FillLayer({ kind, v, heads, stats, fid, unit, gray }: { kind: Exclude<F
             <feComposite in="SourceAlpha" in2="up" operator="out" result="lip" />
             <feGaussianBlur in="lip" stdDeviation={unit * 0.12} result="lipS" />
             <feComposite in="col" in2="lipS" operator="in" result="rimBase" />
-            <feComponentTransfer in="rimBase" result="rim"><feFuncR type="linear" slope="2.4" /><feFuncG type="linear" slope="2.4" /><feFuncB type="linear" slope="2.4" /></feComponentTransfer>
+            <feComponentTransfer in="rimBase" result="rim"><feFuncR type="linear" slope={lip} /><feFuncG type="linear" slope={lip} /><feFuncB type="linear" slope={lip} /></feComponentTransfer>
             {/* 整圈极细的内缘高光（参考里形状四周那道亮线） */}
             <feMorphology in="SourceAlpha" operator="erode" radius={unit * 0.18} result="er" />
             <feComposite in="SourceAlpha" in2="er" operator="out" result="edge" />
             <feComposite in="col" in2="edge" operator="in" result="edgeCol" />
-            <feComponentTransfer in="edgeCol" result="edgeHi"><feFuncR type="linear" slope="1.5" /><feFuncG type="linear" slope="1.5" /><feFuncB type="linear" slope="1.5" /><feFuncA type="linear" slope="0.8" /></feComponentTransfer>
+            <feComponentTransfer in="edgeCol" result="edgeHi"><feFuncR type="linear" slope={edge} /><feFuncG type="linear" slope={edge} /><feFuncB type="linear" slope={edge} /><feFuncA type="linear" slope="0.8" /></feComponentTransfer>
             {/* 外发光：大半径 + 小半径两层 */}
             <feGaussianBlur in="col" stdDeviation={unit * 3} result="glowL" />
-            <feComponentTransfer in="glowL" result="glowLD"><feFuncA type="linear" slope="0.9" /></feComponentTransfer>
+            <feComponentTransfer in="glowL" result="glowLD"><feFuncA type="linear" slope={look ? 0.9 * look.glow : '0.9'} /></feComponentTransfer>
             <feGaussianBlur in="col" stdDeviation={unit * 0.9} result="glowS" />
-            <feComponentTransfer in="glowS" result="glowSD"><feFuncA type="linear" slope="0.7" /></feComponentTransfer>
+            <feComponentTransfer in="glowS" result="glowSD"><feFuncA type="linear" slope={look ? 0.7 * look.glow : '0.7'} /></feComponentTransfer>
             {/* 颗粒（Noise） */}
             <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves={1} seed={11} result="grain" />
-            <feColorMatrix in="grain" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0.12 0 0 0 0" result="grainW" />
+            <feColorMatrix in="grain" type="matrix" values={grainM} result="grainW" />
             <feComposite in="grainW" in2="inner" operator="in" result="grainIn" />
-            <feMerge><feMergeNode in="glowLD" /><feMergeNode in="glowSD" /><feMergeNode in="col" /><feMergeNode in="grainIn" /><feMergeNode in="edgeHi" /><feMergeNode in="rim" /></feMerge>
+            {/* 浅色：上沿一道纸白高光（形状减去下移一点的自己 = 上沿月牙），和压暗的下缘一起读成金属的受光面 */}
+            {look && <>
+              <feOffset in="SourceAlpha" dy={unit * 0.6} result="dn" />
+              <feComposite in="SourceAlpha" in2="dn" operator="out" result="top" />
+              <feGaussianBlur in="top" stdDeviation={unit * 0.2} result="topS" />
+              <feFlood className={s.sheen} floodOpacity={look.sheen} result="sheenC" />
+              <feComposite in="sheenC" in2="topS" operator="in" result="sheen" />
+            </>}
+            <feMerge><feMergeNode in="glowLD" /><feMergeNode in="glowSD" /><feMergeNode in="col" /><feMergeNode in="grainIn" />{look && <feMergeNode in="sheen" />}<feMergeNode in="edgeHi" /><feMergeNode in="rim" /></feMerge>
           </filter>
         </defs>
         <g filter={`url(#mf${fid})`}>

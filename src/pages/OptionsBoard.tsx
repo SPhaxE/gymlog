@@ -4,17 +4,21 @@
  *  当前三组（都是容量页的人体）：描边 O、肌头内部容量 F、S 层动效；2026-10-07 用户选定 O2 + F1 + S9 为默认（DEFAULT_LOOK），
  *  每组的 0 号是第 7 轮的旧默认，留着对照。方案台本身也是作品集要展示的过程（用户 2026-10-07），选定后不删。
  *  最上面是「自由组合」（2026-10-07 用户）：三组各挑一个，右边是真实的容量页（带胶囊、可以点、可以切正反男女）；
- *  组合写在地址里（?o=hair&f=metal&s=molten），复制链接就能把这个组合发给别人。 */
+ *  组合写在地址里（?o=hair&f=metal&s=molten），复制链接就能把这个组合发给别人。
+ *  2026-10-10 全局浅色：新增「L 浅色人体」组（4 个浅色方案，每格固定浅色），自由组合加 ?l=（浅色主题下用哪个方案）；
+ *  只有默认三层（O2 + F1 + S9）有浅色版，其余人体方案是深色存档——格子固定深色并写明「深色方案」。 */
 import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
-import { BodyFigure, Card, Chip, ContourFx, DEFAULT_LOOK, FillFx, Icon, Num, GainLook, GrainGlow, ParticleField, ProductCard, ProductGrid, ScanFx, ShopTagLook, SteelPlate, dotMonths, type ContourFxKind, type GainLookKind, type GrainKind, type ShopTagLookKind, type FillFxKind, type ParticleKind, type PlateLook, type ScanFxKind } from '../components';
+import { BodyFigure, Card, Chip, ContourFx, DEFAULT_LIGHT_LOOK, DEFAULT_LOOK, FillFx, Icon, LightLook, Num, GainLook, GrainGlow, ParticleField, ProductCard, ProductGrid, ScanFx, ShopTagLook, SteelPlate, dotMonths, type ContourFxKind, type GainLookKind, type GrainKind, type LightLookKind, type ShopTagLookKind, type FillFxKind, type ParticleKind, type PlateLook, type ScanFxKind } from '../components';
 import { IconStyleCtx, type IconStyle } from '../components/iconSets';
 import { bodyData } from '../data/demo';
+import type { HeadStat } from '../engine';
 import { logData } from '../data/log';
 import { PRODUCTS } from '../data/growth';
 import { GainsPage } from './GainsPage';
 import { BodyPage } from './BodyPage';
 import { Stage } from '../playground/Stage';
+import { useTheme } from '../styles/theme';
 import s from './OptionsBoard.module.css';
 
 const noop = () => {};
@@ -53,6 +57,15 @@ const SCAN: [ScanFxKind, string, string][] = [
   ['beam', 'S8 奥赛台顶光', '呼应记录页钢板的丁达尔光束：一盏顶光跟着光束左右摆，在每块肌肉上打出高光和下沿阴影，强化形体；光里有浮尘'],
   ['molten', 'S9 熔流', '只有「流」这一层：亮带一直往上流，穿过湍流扭曲场被搅成流纹；叠在任何 F 上，配 F1 金属渐变就是流动的熔融金属'],
 ];
+/** 浅色人体（2026-10-10 全局浅色，用户：在 F1 金属渐变 + S9 熔流的基础上做 4 个浅色方案）：每格是固定浅色的真实容量页（人体 + 胶囊 + 图例） */
+const LIGHT: [LightLookKind, string, string][] = [
+  ['L1', 'L1 深绿热', '纸白 → 浅荧光 → 深绿 → 荧光墨，越深越热（和「荧光字用深一档绿」同一个逻辑）；深绿流纹、深绿柔光描边'],
+  ['L2', 'L2 荧光热', '纸白 → 浅荧光 → 荧光，越饱和越热，最热仍是荧光；墨色柔光描边给形体，流纹是中绿'],
+  ['L3', 'L3 银金属', '冷段是银灰金属（纸灰 → 中灰），热段转荧光 → 深绿；上沿高光和下缘墨色细边最强，金属感最重'],
+  ['L4', 'L4 墨印', '纸白 → 灰 → 墨，热段混一点深绿，像版画：平涂不反光、墨线更实、颗粒更重；墨色流纹，最克制'],
+];
+/** 人体格子：只有默认三层（O2 + F1 + S9）有浅色版，换了任何一层就是深色存档（格子固定深色） */
+const archived = (o: ContourFxKind, f: FillFxKind, sc: ScanFxKind) => o !== DEFAULT_LOOK.contour || f !== DEFAULT_LOOK.fill || sc !== DEFAULT_LOOK.scan;
 
 /** 主题色流体粒子（2026-10-08 走查 1 #10 #18）：P0 = 现在的荧光弥散色块 + 配重片同心纹（对照），P1–P3 待选 */
 const PARTICLE: [ParticleKind | 'now', string, string][] = [
@@ -128,17 +141,27 @@ const SHOPLOOK: [ShopTagLookKind, string, string][] = [
   ['price', 'T3 放进价格区', '图上不挂标：折扣在价格后跟荧光「−18%」；热销 / 新品写在商家前面（荧光小字 + 图形）；缺货把价格换成「缺货 · 到货提醒」'],
 ];
 
-function Figure({ now, children }: { now: number; children?: (fig: ReactNode) => ReactNode }) {
+function Figure({ now, children, spread }: { now: number; children?: (fig: ReactNode) => ReactNode;
+  /** 全热度对照（L 组）：演示数据只到中等热度，这里把肌肉按顺序从未练排到超量（热度 0 → 1 均匀铺开），一眼看全整条色带 */ spread?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
-  const stats = useMemo(() => bodyData('plain-prescription', now).stats, [now]);
+  const stats = useMemo(() => {
+    const st = bodyData('plain-prescription', now).stats;
+    if (!spread) return st;
+    // 热度均匀铺开：第 i 块肌肉的目标热度 = i / (n − 1)，按 thermal.heatOf 的三条地标反推组数
+    const hs = [...st.values()], n = hs.length;
+    const setsFor = (t: number, h: HeadStat) => t < 0.12 ? 0 : t <= 0.4 ? ((t - 0.12) / 0.28) * h.mev : t <= 0.7 ? h.mev + ((t - 0.4) / 0.3) * (h.mav - h.mev)
+      : t <= 0.88 ? h.mav + ((t - 0.7) / 0.18) * (h.mrv - h.mav) : h.mrv * (1 + ((t - 0.88) / 0.12) * 0.5);
+    return new Map(hs.map((h, i) => [h.id, { ...h, sets7d: setsFor(i / (n - 1), h) }]));
+  }, [now, spread]);
   const fig = <div ref={ref} className={s.fig}><BodyFigure gender="male" view="front" stats={stats} focus={null} height={400} onAnchors={noop} relativeTo={ref} /></div>;
   return <>{children ? children(fig) : fig}</>;
 }
 
-function Cell({ id, title, note, children }: { id: string; title: string; note: string; children: ReactNode }) {
+function Cell({ id, title, note, children, dark, light }: { id: string; title: string; note: string; children: ReactNode;
+  /** 深色存档：格子固定深色（浅色主题下也是）；light：固定浅色（L 组） */ dark?: boolean; light?: boolean }) {
   return (
     <figure className={s.cell} data-option={id}>
-      <div className={s.stage}>{children}</div>
+      <div className={s.stage} data-theme={dark ? 'dark' : light ? 'light' : undefined}>{children}</div>
       <figcaption><b className="milo-text-body-strong">{title}</b><span className="milo-text-caption">{note}</span></figcaption>
     </figure>
   );
@@ -152,7 +175,8 @@ function Composer({ now }: { now: number }) {
     const v = q.get(key) ?? def; return list.find(([k]) => k === v) ?? list.find(([k]) => k === def)!;
   };
   const set = (key: string, v: string, def: string) => { const n = new URLSearchParams(q); if (v === def) n.delete(key); else n.set(key, v); setQ(n, { replace: true }); };
-  const o = pickOf('o', CONTOUR, DEFAULT_LOOK.contour), f = pickOf('f', FILL, DEFAULT_LOOK.fill), sc = pickOf('s', SCAN, DEFAULT_LOOK.scan);
+  const o = pickOf('o', CONTOUR, DEFAULT_LOOK.contour), f = pickOf('f', FILL, DEFAULT_LOOK.fill), sc = pickOf('s', SCAN, DEFAULT_LOOK.scan), l = pickOf('l', LIGHT, DEFAULT_LIGHT_LOOK);
+  const dark = archived(o[0], f[0], sc[0]), theme = useTheme();
   const row = <K extends string>(key: string, label: string, list: readonly (readonly [K, string, string])[], cur: readonly [K, string, string], def: K) => (
     <div className={s.ctlRow} role="group" aria-label={label}>
       <span className="milo-text-label">{label}</span>
@@ -168,10 +192,12 @@ function Composer({ now }: { now: number }) {
         {row('o', '描边', CONTOUR, o, DEFAULT_LOOK.contour)}
         {row('f', '肌头内部容量', FILL, f, DEFAULT_LOOK.fill)}
         {row('s', 'S 层动效', SCAN, sc, DEFAULT_LOOK.scan)}
+        {row('l', '浅色人体', LIGHT, l, DEFAULT_LIGHT_LOOK)}
+        <p className={`milo-text-caption ${s.ctlNote}`}>{dark ? '换了描边 / 填充 / S 层就是深色方案（只有 O2 + F1 + S9 有浅色版），右边固定深色。' : theme === 'light' ? '现在是浅色主题：右边按所选浅色方案画。' : '浅色人体在浅色主题下生效：地址加 ?theme=light，或在「我的 → 外观」切浅色。'}</p>
       </div>
-      <ContourFx.Provider value={o[0]}><FillFx.Provider value={f[0]}><ScanFx.Provider value={sc[0]}>
-        <div className={s.phone}><Stage tall label="容量页 · 组合预览"><BodyPage key={`${o[1]}${f[1]}${sc[1]}`} scenario="plain-prescription" now={now} initialFocus={null} /></Stage></div>
-      </ScanFx.Provider></FillFx.Provider></ContourFx.Provider>
+      <ContourFx.Provider value={o[0]}><FillFx.Provider value={f[0]}><ScanFx.Provider value={sc[0]}><LightLook.Provider value={l[0]}>
+        <div className={s.phone} data-theme={dark ? 'dark' : undefined}><Stage tall label="容量页 · 组合预览"><BodyPage key={`${o[1]}${f[1]}${sc[1]}${l[1]}`} scenario="plain-prescription" now={now} initialFocus={null} /></Stage></div>
+      </LightLook.Provider></ScanFx.Provider></FillFx.Provider></ContourFx.Provider>
     </section>
   );
 }
@@ -184,6 +210,18 @@ export function OptionsBoard({ now }: { now: number }) {
         <p className="milo-text-caption">同一个人、同一份演示数据，待选方案并排实时渲染。选定后定为默认，旧默认和落选的留在这里；规范在 /spec，组件在 /playground。</p>
       </header>
       <Composer now={now} />
+      <section className={s.group} aria-label="浅色人体" id="light-body">
+        <h2 className="milo-text-heading">浅色人体 · L（2026-10-10 全局浅色，待选）</h2>
+        <p className="milo-text-caption">纸白底上的容量页：在选定的 O2 柔光 + F1 金属渐变 + S9 熔流上做浅色版——色带「冷 = 纸白、热 = 深色」，唇边和内缘从提亮改成压暗，熔流和柔光描边从 screen 改 multiply；胶囊量尺和图例跟着换色带。每格固定浅色（不跟页面主题）。选定前默认 L1，选定后定为默认，落选的留在这里。</p>
+        <div className={`${s.phones} ${s.phonesWide}`}>{LIGHT.map(([k, t, n]) => (
+          <figure key={k} className={s.cell} data-option={`light-${k}`}>
+            <LightLook.Provider value={k}><div className={s.phone} data-theme="light"><Stage tall label={`容量页 · ${t}`}><BodyPage scenario="plain-prescription" now={now} initialFocus={null} /></Stage></div></LightLook.Provider>
+            <figcaption><b className="milo-text-body-strong">{k === DEFAULT_LIGHT_LOOK ? `${t} · 默认` : t}</b><span className="milo-text-caption">{n}</span></figcaption>
+          </figure>
+        ))}</div>
+        <p className="milo-text-caption">全热度对照：演示数据只练到中等热度，下面同一个人体把肌肉从未练排到超量，看整条色带——最热的不能和纸融在一起，冷的不能成黑块。</p>
+        <div className={s.grid}>{LIGHT.map(([k, t]) => <Cell key={k} id={`light-spread-${k}`} title={`${t} · 全热度`} note="肌肉按顺序从未练排到 1.5 × 最大可恢复量，热度均匀铺开" light><LightLook.Provider value={k}><Figure now={now} spread /></LightLook.Provider></Cell>)}</div>
+      </section>
       <section className={s.group} aria-label="主题色流体粒子" id="particles">
         <h2 className="milo-text-heading">主题色流体粒子 · P（走查 1，待选）</h2>
         <p className="milo-text-caption">替换两处：主角卡右上角的荧光色块、页头右上角的配重片同心纹（增量、曲线、成长卡、牛龄、知识卡、开通成功共 6 处）。选定后全局换，P0 留作对照。</p>
@@ -218,18 +256,19 @@ export function OptionsBoard({ now }: { now: number }) {
         ))}</div>
       </section>
       <h2 className={`milo-text-heading ${s.sub}`}>逐组对照</h2>
+      <p className="milo-text-caption">人体三组里，只有默认的 O2 / F1 / S9 有浅色版（浅色主题下按 L 组的方案画）；标「深色方案」的是深色存档，格子固定深色。</p>
       <section className={s.group} aria-label="描边">
         <h2 className="milo-text-heading">描边 · O</h2>
-        <div className={s.grid}>{CONTOUR.map(([k, t, n]) => <Cell key={t} id={`contour-${k}`} title={t} note={n}><ContourFx.Provider value={k}><Figure now={now} /></ContourFx.Provider></Cell>)}</div>
+        <div className={s.grid}>{CONTOUR.map(([k, t, n]) => { const dk = archived(k, DEFAULT_LOOK.fill, DEFAULT_LOOK.scan); return <Cell key={t} id={`contour-${k}`} title={dk ? `${t} · 深色方案` : t} note={n} dark={dk}><ContourFx.Provider value={k}><Figure now={now} /></ContourFx.Provider></Cell>; })}</div>
       </section>
       <section className={s.group} aria-label="肌头内部容量">
         <h2 className="milo-text-heading">肌头内部容量 · F</h2>
-        <div className={s.grid}>{FILL.map(([k, t, n]) => <Cell key={t} id={`fill-${k}`} title={t} note={n}><FillFx.Provider value={k}><Figure now={now} /></FillFx.Provider></Cell>)}</div>
+        <div className={s.grid}>{FILL.map(([k, t, n]) => { const dk = archived(DEFAULT_LOOK.contour, k, DEFAULT_LOOK.scan); return <Cell key={t} id={`fill-${k}`} title={dk ? `${t} · 深色方案` : t} note={n} dark={dk}><FillFx.Provider value={k}><Figure now={now} /></FillFx.Provider></Cell>; })}</div>
         <p className="milo-text-caption">（每组只换这一层，另外两层都是默认。）</p>
       </section>
       <section className={s.group} aria-label="S 层动效">
         <h2 className="milo-text-heading">S 层动效 · S</h2>
-        <div className={s.grid}>{SCAN.map(([k, t, n]) => <Cell key={t} id={`scan-${k}`} title={t} note={n}><ScanFx.Provider value={k}><Figure now={now} /></ScanFx.Provider></Cell>)}</div>
+        <div className={s.grid}>{SCAN.map(([k, t, n]) => { const dk = archived(DEFAULT_LOOK.contour, DEFAULT_LOOK.fill, k); return <Cell key={t} id={`scan-${k}`} title={dk ? `${t} · 深色方案` : t} note={n} dark={dk}><ScanFx.Provider value={k}><Figure now={now} /></ScanFx.Provider></Cell>; })}</div>
       </section>
       <section className={s.group} aria-label="导航图标">
         <h2 className="milo-text-heading">导航图标 · I（2026-10-04 选定倾斜断笔）</h2>

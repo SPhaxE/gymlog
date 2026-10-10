@@ -20,23 +20,31 @@ export const PALETTE: Record<ThermalPalette, string[]> = {
 };
 
 const prim = (tokens as unknown as { primitives: { color: Record<string, { value: string }> } }).primitives.color;
-const rgb = (k: string) => { const h = prim[k].value.slice(1, 7); return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16) / 255); };
+const channels = (k: string) => { const h = prim[k].value.slice(1, 7); return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16) / 255); };
+/** 原色的 RGB（0–1，构建期从 tokens.json 取）：滤镜矩阵里要用到具体数值的地方（浅色人体的墨色颗粒） */
+export const primRgb = (k: string) => channels(k) as [number, number, number];
 
 /** feFuncR/G/B 的 tableValues：输入是灰度 t，输出是色板上对应的颜色 */
 export function tables(p: ThermalPalette): [string, string, string] {
-  const cs = PALETTE[p].map(rgb);
+  const cs = PALETTE[p].map(channels);
   return [0, 1, 2].map((ch) => cs.map((c) => c[ch].toFixed(3)).join(' ')) as [string, string, string];
 }
 
 /** 任意一串色标（原色 Token 名）→ feFuncR/G/B 的 tableValues（方案台的金属渐变、等高线用） */
 export function rampTables(keys: string[]): [string, string, string] {
-  const cs = keys.map(rgb);
+  const cs = keys.map(channels);
   return [0, 1, 2].map((ch) => cs.map((c) => c[ch].toFixed(3)).join(' ')) as [string, string, string];
 }
 
-/** CSS 里用的同一条色带（胶囊量尺联动）：在相邻两个色标之间 color-mix */
-export function heatCss(t: number, p: ThermalPalette) {
-  const stops = PALETTE[p], x = Math.max(0, Math.min(1, t)) * (stops.length - 1), i = Math.min(stops.length - 2, Math.floor(x)), f = x - i;
+/** feColorMatrix：灰度（取 R 通道）→ 白不变、黑变成这个原色（out = (1 − c)·g + c）。浅色人体的熔流用它：multiply 下白不起作用，越深的流纹越接近该色 */
+export function tintMatrix(k: string) {
+  return [...channels(k).map((c) => `${(1 - c).toFixed(3)} 0 0 0 ${c.toFixed(3)}`), '0 0 0 1 0'].join('  ');
+}
+
+/** CSS 里用的同一条色带（胶囊量尺联动）：在相邻两个色标之间 color-mix。
+ *  第二个参数可以直接给一串原色名（2026-10-10 全局浅色：浅色人体方案色带的前 5 段） */
+export function heatCss(t: number, p: ThermalPalette | string[]) {
+  const stops = typeof p === 'string' ? PALETTE[p] : p, x = Math.max(0, Math.min(1, t)) * (stops.length - 1), i = Math.min(stops.length - 2, Math.floor(x)), f = x - i;
   return `color-mix(in oklab, var(--milo-prim-${stops[i + 1]}) ${Math.round(f * 100)}%, var(--milo-prim-${stops[i]}))`;
 }
 

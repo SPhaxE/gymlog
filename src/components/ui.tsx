@@ -1,5 +1,6 @@
 /** 内容基础件（视觉语言 v2）。字号只用 .milo-text-* 文字样式，颜色、间距、圆角只用 tokens.css。 */
-import { useContext, type CSSProperties, type ReactNode } from 'react';
+import { useContext, useRef, type CSSProperties, type ReactNode } from 'react';
+import { useLightLook } from './BodyFigure';
 import { BodyRender, PALETTE } from './thermal';
 import { Icon, type IconName } from './Icon';
 import { GrainGlow } from './particles';
@@ -119,11 +120,13 @@ export function ProfileTile({ label, value, unit, onClick, state }: { label: str
 /** 容量图例：四档用明暗 + 纹理区分，不只靠色相 */
 export function TierLegend() {
   const thermal = useContext(BodyRender);
+  // 浅色（2026-10-10 全局浅色）：色带跟人体用的浅色方案走（方案色带的前 5 段）
+  const ref = useRef<HTMLDivElement>(null), look = useLightLook(ref);
   if (thermal) {
     // 热成像色带：0 → 1，上面两道刻度标最低有效量（0.4）与适宜量（0.7），和 thermal.heatOf 一致
-    const stops = PALETTE[thermal.palette].map((k, i, a) => `var(--milo-prim-${k}) ${(i / (a.length - 1)) * 100}%`).join(', ');
+    const stops = (look ? look.ramp.slice(0, 5) : PALETTE[thermal.palette]).map((k, i, a) => `var(--milo-prim-${k}) ${(i / (a.length - 1)) * 100}%`).join(', ');
     return (
-      <div className={s.heat} role="img" aria-label="容量图例：越亮越热。未练、不足、达标、超量">
+      <div ref={ref} className={s.heat} role="img" aria-label={`容量图例：${look ? look.legend : '越亮越热'}。未练、不足、达标、超量`}>
         <span>未练</span>
         <i className={s.heatBar} style={{ background: `linear-gradient(90deg, ${stops})` }}><b style={{ left: '40%' }} /><b style={{ left: '70%' }} /></i>
         <span>超量</span>

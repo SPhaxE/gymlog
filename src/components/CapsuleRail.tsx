@@ -13,7 +13,7 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import type { HeadStat } from '../engine';
 import { T } from '../styles/tokens.gen';
-import type { Anchors } from './BodyFigure';
+import { useLightLook, type Anchors } from './BodyFigure';
 import { capsuleLayout, indexAt, type CapBox } from './capsuleLayout';
 import { sharedName } from './motion';
 import { BodyRender, heatCss, heatOf } from './thermal';
@@ -147,11 +147,13 @@ export function Capsule({ h, c, top = 0, standalone, shared }: { h: HeadStat; c:
   const none = !(h.sets7d > 0);
   const fill = Math.min(1, h.sets7d / h.mrv) * 100;
   const thermal = useContext(BodyRender);
+  // 量尺色带：浅色时用人体浅色方案色带的前 5 段（2026-10-10 全局浅色）
+  const ref = useRef<HTMLDivElement>(null), look = useLightLook(ref);
   return (
-    <div className={`${c.focus ? s.focus : none ? s.none : s.cap} ${standalone ? s.standalone : ''}`} data-id={h.id} role="option" aria-selected={c.focus}
+    <div ref={ref} className={`${c.focus ? s.focus : none ? s.none : s.cap} ${standalone ? s.standalone : ''}`} data-id={h.id} role="option" aria-selected={c.focus}
       style={{ left: c.x, top: top + c.y, width: c.w, height: c.h, ['--w' as string]: c.weight, ...(shared ? sharedName('fluid', h.id) : {}) }}>
       {!c.focus && !none && <div className={`${s.gauge} ${h.sets7d > h.mrv && !thermal ? s.gaugeOver : ''}`}
-        style={{ width: `${fill}%`, ...(thermal ? { background: heatCss(heatOf(h), thermal.palette), opacity: 0.55 } : {}) }} />}
+        style={{ width: `${fill}%`, ...(thermal ? { background: heatCss(heatOf(h), look ? look.ramp.slice(0, 5) : thermal.palette), opacity: 0.55 } : {}) }} />}
       {c.focus ? <FocusBody h={h} /> : (
         <div className={s.l1}>
           <span className={s.name} style={shared ? sharedName('title', h.id) : undefined}>{h.name}</span>
