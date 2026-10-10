@@ -2,7 +2,7 @@
 
 > 新窗口请先完整读完本文件，再开始工作。遇到 Open Questions 里的问题先问我，不要自行决定。
 
-_Updated: 2026-10-11 01:35（作品集 · 规划窗口 → 搭建窗口）_
+_Updated: 2026-10-11（作品集 · 搭建窗口：计划、脚手架、15 屏、P01 两版已出，等用户审 P01）_
 
 ## 1. Goal
 **按规格把慢牛 Milo 作品集做出来**：22 张 1920 × 1080 的 SVG（能导入 Figma 手调）+ 合并 PDF。
@@ -14,10 +14,12 @@ _Updated: 2026-10-11 01:35（作品集 · 规划窗口 → 搭建窗口）_
 - [x] 作品集结构定稿：22 页（规格 §2），视觉体系（§1），素材渲染（§3），动效四种静态呈现（§4），AI / 工具少量提及（§5），封面 AIGC（§6），制作与交付（§7）
 - [x] Pixel 8 官方样机框已入库：`portfolio/assets/device/pixel_8/`（来源、合成方法见同目录 README）
 - [x] 封面 AIGC 提示词已给用户（附录）；**用户会把图直接放进仓库 `docs/`**
-- [ ] 写实施计划（`docs/superpowers/plans/2026-10-11-portfolio.md`），按 §11 的顺序
-- [ ] 搭脚手架：`portfolio/lib/pf.py`、`shoot/`、`render.py`、`check.py`
-- [ ] 渲染素材：15 个 App 屏（Pixel 8 参数 + 安全区 + 状态栏）、方案台 / 组件库 / 规范截图、动效帧
-- [ ] 三张定调页 P01、P09、P21 → 推给用户拍板
+- [x] 实施计划 `docs/superpowers/plans/2026-10-11-portfolio.md`（含「审美要求与自我批评」表）
+- [x] 脚手架：`portfolio/lib/pf.py`、`shoot/app.py`（15 屏）、`shoot/device.py`、`shoot/aigc.py`（绿幕贴真屏）、`render.py`、`check.py`
+- [x] 15 个 App 屏 `portfolio/assets/screens/`（安全区上 48 dp / 下 24 dp + Android 14 状态栏 + 手势条；用户 10-11 确认样机）
+- [x] P01 两版（样机版 / 实拍版）已推给用户 → **等用户审**
+- [ ] P09 → 用户审 → P21 → 用户审（**一页一页来**，用户 10-11：「过了你自己那关还要过我这关」）
+- [ ] 方案台 / 组件库 / 规范截图、动效帧（`shoot/motion.py`）
 - [ ] 其余 19 页按页序 → 每页自检 → 推 `main`
 - [ ] 合并 PDF、总览图，交用户验收
 
@@ -32,7 +34,10 @@ _Updated: 2026-10-11 01:35（作品集 · 规划窗口 → 搭建窗口）_
 - `screenshots/brand/`、`design/brand/story/M1.png`、`design/brand/app-icon.png`、`screenshots/wireframes/`、`screenshots/hifi/`、`screenshots/stage3/00-compare.png`、`screenshots/theme/`、`screenshots/icon-grid/board.png`、`screenshots/growth/*.gif`
 - `scripts/shoot_theme.py --android` — 现成的 Pixel 尺寸截图脚本，可当 `portfolio/shoot/` 的起点
 
-## 4. Changes Made（规划窗口）
+## 4. Changes Made
+（搭建窗口 10-11）计划、`portfolio/` 脚手架、15 屏、`out/svg/01_封面*.svg` + PNG、`out/critique.md`（每页自评记录）、`assets/aigc/cover.jpg`（= docs 里 1_42AM 那张）与 `cover-today.jpg`（贴好真屏）。
+
+（规划窗口）
 - `docs/superpowers/specs/2026-10-11-portfolio-design.md`：新建，22 页结构与全部约定
 - `portfolio/assets/device/pixel_8/`：Pixel 8 机框（`back.webp` 机身 1187 × 2513、`mask.webp` 圆角与挖孔、`layout` 屏幕位置 (49, 55)）+ README
 - 本文件：改写为作品集搭建交接
@@ -48,7 +53,8 @@ _Updated: 2026-10-11 01:35（作品集 · 规划窗口 → 搭建窗口）_
 - **命名只讲**：「慢慢变牛。」+ 慢牛 ↔ Milo 谐音 + 健美祖师爷米洛扛小牛的典故；**删掉股市慢牛、力量之牛**
 - **22 页原则上没问题**（用户担心偏多，但认为必要就保留）
 - 竞品只写品类、不点名具体产品（brief 规定核实前不写进对外文案）
-- 封面两版都出：纯样机版 + AIGC 实拍版（用户出图后）
+- 封面两版都出：纯样机版 + AIGC 实拍版；**实拍版用 3 号图（1_42AM，A 手持日常版）**（用户 10-11）
+- **页面要有审美追求、有设计感，每页先自评改进再给用户**；**一页一页来，每页用户点头才做下一页**（用户 10-11）
 
 ## 6. Failed Attempts / 坑
 - 现成截图直接套 Pixel 8：**挖孔压住「正面 / 背面」分段控件**（规划窗口试贴确认）→ 渲染时注入 `--safe-area-inset-top`（App 在 `global.css` 收成 `--safe-top`，`Screen.module.css` 的 `.frame` 用它），再叠一条按 Android 14 规格画的状态栏
@@ -78,7 +84,7 @@ python3 portfolio/pages/gen01.py                                      # 出一�
 python3 portfolio/check.py portfolio/out/svg                          # 自检（待建）
 python3 portfolio/render.py --png --pdf                               # 预览与合并 PDF（待建）
 ```
-- 当前状态：只有规格和样机框，脚手架都还没建
+- 当前状态：脚手架可用；`python3 portfolio/pages/gen01.py && python3 portfolio/check.py && python3 portfolio/render.py --png --only 01`
 
 ## 9. Environment State
 - **Stitch 密钥：仓库根 `secrets/stitch.env`（.gitignore，不进提交）；新容器里没有——用户 2026-10-10 给过原文，以后不再向用户要；作品集阶段一般用不到**
@@ -89,15 +95,12 @@ python3 portfolio/render.py --png --pdf                               # 预览�
 - Env：Chromium `/opt/pw-browsers/chromium`；容器网络能访问 npm、googlesource；Google Fonts 访问不了（字体用 `node_modules/@fontsource*`）
 
 ## 10. Open Questions
-- 用户的 AIGC 封面图放进 `docs/` 后用哪一张（A 手持 / B 静物）——出了再问
-- 三张定调页出来后，整体风格是否通过（P01、P09、P21）
+- P01 两版是否通过、改哪里（已推给用户）
+- P09、P21 出来后整体风格是否通过
 
 ## 11. Specific Next Steps
-1. 读规格全文 + `docs/portfolio-handoff.md`；用 superpowers 的 writing-plans 写实施计划到 `docs/superpowers/plans/2026-10-11-portfolio.md`，推 `main`
-2. 建 `portfolio/lib/pf.py`：颜色（从 tokens.json 读）、字阶白名单、`header()`（三种变体）、`phone(screen, x, y, scale, rot)`（机身 PNG 层 + 屏幕 `<image>` + `clipPath`）、`callout()`、`filmstrip()`、`onion()`、`curve_frames()`、`slit_scan()`、`footer()`、`embed()`（2 倍、能用 JPEG 用 JPEG）
-3. 建 `portfolio/shoot/app.py`：412 × 915 @2.625、深色、注入安全区、叠状态栏，出 15 屏到 `portfolio/assets/screens/`；先出 body.png 套 Pixel 8 推给用户确认挖孔与状态栏
-4. 建 `portfolio/render.py`（字体包装 HTML → PNG / PDF）与 `check.py`
-5. 做 P01、P09、P21 三张定调页 → `SendUserFile` 推 PNG → 等用户定调
+1–4. ✓（计划、脚手架、15 屏、渲染与自检）
+5. 定调页一页一页：P01 ✓ 已推、等审 → P09（先建 `shoot/motion.py` 截 M02 帧做叠影；`pf.py` 补 `filmstrip / onion / curve_frames / slit_scan`）→ P21；每页自评记进 `portfolio/out/critique.md`
 6. 定调后按页序做其余 19 页；动效页前先建 `portfolio/shoot/motion.py`（冻结时钟逐帧），截方案台 `/preview` 各组、`/playground`、`/spec`
 7. 全部完成：合并 PDF + 22 页总览图，推给用户验收
 
