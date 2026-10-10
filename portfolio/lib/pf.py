@@ -140,7 +140,12 @@ def screen(name):
     return os.path.join(PF, 'assets', 'screens', f'{name}.png')
 
 
-def phone(pg, scr, x, y, w, rot=0, shadow=0.55, label=None):
+def screen_xy(box, px, py):
+    """未旋转样机里屏幕像素 (px, py) → 页面坐标；box = phone() 的返回值"""
+    x, y, w, h = box; s = w / FW; return x + (SX + px) * s, y + (SY + py) * s
+
+
+def phone(pg, scr, x, y, w, rot=0, shadow=0.55, label=None, over=''):
     """样机：x, y 为机身左上角（未旋转），w 为机身宽；rot 绕机身中心旋转（度）。
     分层：投影 PNG → 屏幕 <image>（clipPath 圆角，可在 Figma 单独换屏）→ 机身 PNG（含挖孔与圆角遮罩）"""
     f = _frame_img(); s = w / FW; h = FH * s
@@ -157,7 +162,7 @@ def phone(pg, scr, x, y, w, rot=0, shadow=0.55, label=None):
         sh_im = Image.new('RGBA', canvas.size, (0, 0, 0, 0)); sh_im.putalpha(canvas.point(lambda v: int(v * shadow)))
         dw, dh = w * (1 + 2 * pad), h * (1 + 2 * pad)
         g.append(image(embed(sh_im, dw, dh, scale=sh_im.width / dw), x - w * pad + w * 0.04, y - h * pad + h * 0.03, dw, dh))
-    g.append(f'<g clip-path="url(#{cid})">' + image(embed(scr if isinstance(scr, Image.Image) else Image.open(scr), SW * s, SH * s), x + SX * s, y + SY * s, SW * s, SH * s) + '</g>')
+    g.append(f'<g clip-path="url(#{cid})">' + image(embed(scr if isinstance(scr, Image.Image) else Image.open(scr), SW * s, SH * s), x + SX * s, y + SY * s, SW * s, SH * s) + over + '</g>')
     g.append(image(embed(f, w, h, fmt='png'), x, y, w, h))
     g.append('</g>')
     pg.add('\n'.join(g))
@@ -189,15 +194,16 @@ def footer(pg, light=False):
            text(R, 1050, f'{pg.n:02d} / {TOTAL}', 14, 500, 'mono', ink, anchor='end'))
 
 
-def callout(pg, dot, end, num, label, side='right'):
-    """标注：荧光小点 → 细引线（可折一次）→ Mono 编号 + 一行说明"""
+def callout(pg, dot, end, num, label, side='right', sub=None):
+    """标注：荧光小点 → 细引线（可折一次）→ Mono 编号 + 一行说明（sub 给第二行小字）"""
     (dx, dy), (ex, ey) = dot, end
     a = 'start' if side == 'right' else 'end'; sgn = 1 if side == 'right' else -1
     pg.add(f'<polyline points="{dx:.1f},{dy:.1f} {ex:.1f},{ey:.1f} {ex + sgn * 24:.1f},{ey:.1f}" fill="none" stroke="{BONE}" stroke-opacity="0.55" stroke-width="1"/>',
            f'<circle cx="{dx:.1f}" cy="{dy:.1f}" r="5" fill="{LIME}"/>',
-           f'<circle cx="{dx:.1f}" cy="{dy:.1f}" r="11" fill="none" stroke="{LIME}" stroke-opacity="0.4"/>',
-           text(ex + sgn * 34, ey + 5, num, 14, 600, 'mono', LIME, anchor=a),
-           text(ex + sgn * 66, ey + 6, label, 18, 500, fill=BONE, anchor=a))
+           f'<circle cx="{dx:.1f}" cy="{dy:.1f}" r="11" fill="none" stroke="{LIME}" stroke-opacity="0.4"/>')
+    if num: pg.add(text(ex + sgn * 34, ey + 5, num, 14, 600, 'mono', LIME, anchor=a))
+    if label: pg.add(text(ex + sgn * (66 if num else 34), ey + 6, label, 18, 700 if sub else 500, fill=BONE, anchor=a))
+    if sub: pg.add(text(ex + sgn * (66 if num else 34), ey + 32, sub, 14, 500, fill=BONE2, anchor=a))
 
 
 # ---------- 品牌：递增条牛头（矢量，几何取自 src/components/Logo.tsx） ----------
