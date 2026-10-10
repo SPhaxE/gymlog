@@ -2,10 +2,10 @@
  *  每一项 = 一个导出组件 × 它的变体轴；变体 = 各轴取值的笛卡尔积，去掉 skip 掉的不可能组合。
  *  catalog.test 核对：components/index.ts 的每个可见组件都在这里（或在 NOT_IN_MATRIX 里写明原因），每个变体都能渲染。
  *  按下 / 聚焦在代码里是 :active / :focus-visible，这里经 state 强制显示（state.ts）。 */
-import { useRef, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import {
   BackToTop, Banner, BodyFigure, LightLook, type LightLookKind, FluidPanel, DotCalendar, SteelPlate, ParticleField, OrbitPlate, GrainGlow, GainGroupHead, GainRow, GainSummary, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
-  BodyPicker, PickRow, SwapRow, WarmupStrip,
+  BodyPicker, PickRow, SwapRow, WarmupStrip, DEFAULT_SWAP, SWAP_RAMPS, SWAP_ROUTES, liquidSwap, type SwapRamp, type SwapRoute,
   ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProfileTile, ProgressSteps, SectionLabel, Segmented,
   SessionRow, SetEditor, SetLine, SetRow, NumPad, Sheet, Tilt, SheetBlock, Skeleton, Sparkline, StateView, LoadMore, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
   AppIcon, Lockup, LogoGlyph, Mascot, MascotHead, PropGlyph, type PropKind, RewardCard, AgeBadge, Coupon, FreezeCard, GrowthBar, GrowthCard, StageHero, StreakWeeks, KnowledgeTip, LedgerRow, MessageRow, NiujinBalance, Paywall, ProBadge, StreakRisk, ProductCard, StreakBar, Breakdown, EvidencePanel, NiujinLine, OrderLine, PriceBlock, ProductGrid, RecommendCard, WalletExits, MonthStats, PerkLedger, PerkTable, PlanPicker, ProCard, ProLink, ProWelcome, HeadWeeks,
@@ -18,6 +18,7 @@ import { COUPONS, KNOWLEDGE, PRODUCTS, dateOf, growthSample, sampleRewards, type
 import { PRO_PERKS } from '../data/pro';
 import { GROWTH_CONFIG } from '../engine';
 import { T } from '../styles/tokens.gen';
+import { useTheme, type Theme } from '../styles/theme';
 import type { Fixtures } from './fixtures';
 import { FinderDemo, GuideDemo, famName, groupOf } from './finderDemos';
 import { PICK_SKIP } from '../data/finder';
@@ -112,6 +113,18 @@ const cap = (f: Fixtures, tier: string, size: string) => {
   return <Capsule standalone h={h} c={{ i: 0, x: 0, y: 0, w: w + box.grow, h: box.h, weight: box.weight, focus: box.focus }} />;
 };
 
+/** 深浅切换液态转场：液体只盖这一格（格子局部换主题），按钮播一遍 */
+function SwapCell({ route, ramp }: { route: SwapRoute; ramp: SwapRamp }) {
+  const host = useRef<HTMLDivElement>(null), global = useTheme();
+  const [own, setOwn] = useState<Theme | null>(null), cur = own ?? global, next: Theme = cur === 'dark' ? 'light' : 'dark';
+  return (
+    <div ref={host} className={s.swapCell} data-theme={cur}>
+      <span className="milo-text-caption">第 1 个 · 下肢</span><span className="milo-text-heading">杠铃深蹲</span><Num size="hero" value="85" unit="kg" />
+      <Button kind="neutral" size="s" onClick={() => host.current && void liquidSwap({ to: next, host: host.current, kind: { route, ramp }, apply: () => setOwn(next) })}>{`切到${next === 'light' ? '浅色' : '深色'}`}</Button>
+    </div>
+  );
+}
+
 export const CATALOG: Entry[] = [
   /* ---------------- 基础 ---------------- */
   {
@@ -203,6 +216,11 @@ export const CATALOG: Entry[] = [
     name: 'Toast', group: '反馈与悬浮层', desc: '操作结果，停在导航上方，停留 motion/toast-hold（有撤销的加倍）；一次只显示一条。错误用 role=alert。',
     axes: { kind: ['success', 'error', 'undo'] }, size: 'card',
     render: (p) => p.kind === 'undo' ? <Toast message="已删除这次训练" action="撤销" /> : <Toast kind={p.kind as 'success'} message={p.kind === 'error' ? '保存失败，数据还在本机' : '已保存 · 3 组'} />,
+  },
+  {
+    name: 'LiquidSwap', group: '反馈与悬浮层', desc: `深浅切换的液态转场（2026-10-10 用户：深浅切换只留「我的 → 主题」一个入口，切换时放固定的液态流动动画缓和加载，强制）。照用户给的 AE 熔流拆解拆成两轴：走向 route = 方向场（晕开 / 漫上 / 垂落 / 交汇），渐变 ramp = 色带映射（熔流 / 淬火 / 余温 / 墨晕），湍流扭曲 + 前沿羽化 + 辉光 + 颗粒共用，WebGL 逐像素画。时间线固定（motion/theme-in + hold + out，共 1.32 秒）：一开始就换主题，旧页面快照随色带擦掉，色带后面透明、直接露出正在渲染的新页面（不把页面整个挡住）；没有 View Transitions 时退回「流入盖满 → 换 → 流走」。遮罩不吞点击，按一下跳到终态；放到一半再点会排队；同一时刻的几次调用共用一次转场。组合对照在 /preview#swap，App 用 ${DEFAULT_SWAP.route} × ${DEFAULT_SWAP.ramp}；?route= &ramp= 可临时换。`,
+    axes: { route: [...SWAP_ROUTES], ramp: [...SWAP_RAMPS] }, rows: ['route'], cols: 'ramp', size: 'card',
+    render: (p) => <SwapCell route={p.route as SwapRoute} ramp={p.ramp as SwapRamp} />,
   },
   {
     name: 'DialogCard', group: '反馈与悬浮层', desc: '只用于二次确认。确认在上（骨白或危险），取消在下（描边）；焦点圈定、Esc / 返回键关闭。',

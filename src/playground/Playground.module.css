@@ -129,3 +129,6 @@
 .transitPage { position: absolute; inset: 0; padding: var(--milo-space-l); background: var(--milo-color-bg-base); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
 .transitPage:last-of-type { background: var(--milo-color-bg-raised); }
 .transitNav { position: absolute; z-index: 2; left: var(--milo-space-s); right: var(--milo-space-s); bottom: var(--milo-space-s); height: var(--milo-size-hit-min); border-radius: var(--milo-radius-pill); background: var(--milo-color-bg-raised-2); }
+/* LiquidSwap：一格就是一块局部主题，液体只盖这一格 */
+.swapCell { position: relative; overflow: hidden; display: grid; gap: var(--milo-space-xs); justify-items: start; padding: var(--milo-space-l); border-radius: var(--milo-radius-l);
+  background: var(--milo-color-bg-base); color: var(--milo-color-text-primary); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); }

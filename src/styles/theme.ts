@@ -1,5 +1,5 @@
 /** 主题（2026-10-10 用户：浅色模式，验证 Token 体系）。
- *  ★ 代码级一键切换：改下面这一行。'dark' / 'light' / 'system'（跟随系统）。用户在「我的 → 外观」选过的话以用户的为准。
+ *  ★ 代码级一键切换：改下面这一行。'dark' / 'light' / 'system'（跟随系统）。用户在「我的 → 主题」选过的话以用户的为准。
  *  原理：页面只用语义色（--milo-color-*），tokens.css 里 :root 是深色、[data-theme='light'] 是浅色；切主题 = 改 <html data-theme>。
  *  任意元素加 data-theme 就是一块局部主题——App 里不再用（2026-10-10 用户：要真·全局浅色），只给方案台 / Playground 的单格强制深或浅。
  *  画布特效（流体背景、颗粒光、粒子、钢板、人体）从元素自己身上读 --milo-color-*，主题一变就重画（useTheme / useElementTheme）。 */
@@ -49,18 +49,25 @@ export function applyTheme(p: ThemePref = themePref()) {
   listeners.forEach((f) => f());
 }
 
-/** 「我的 → 外观」：记下用户的选择并立即生效 */
+/** 地址栏里的 ?theme 只管打开那一下：用户自己选过（这里或别的窗口），就从地址栏去掉，以选的为准 */
+function dropUrlTheme() {
+  if (!urlPref()) return;
+  const u = new URL(location.href); u.searchParams.delete('theme'); history.replaceState(history.state, '', u);
+}
+
+/** 「我的 → 主题」：记下用户的选择并立即生效（带液态转场的入口在 components/themeSwap 的 switchTheme） */
 export function setThemePref(p: ThemePref) {
   write(KEY, p === DEFAULT_THEME ? null : p);
-  applyTheme(urlPref() ?? p);
+  dropUrlTheme();
+  applyTheme(p);
 }
 
 /** 启动时调用一次；跟随系统时，系统切换深浅也跟着切 */
 export function installTheme() {
   applyTheme();
   window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', () => { if (themePref() === 'system') applyTheme(); });
-  // 别的窗口改了外观（/demo 的主题按钮改的是手机里那个同源 iframe）：这里也跟着换
-  window.addEventListener('storage', (e) => { if (e.key === KEY) applyTheme(); });
+  // 别的窗口改了主题（/demo 外壳跟着右边手机里「我的 → 主题」换，同源 iframe 共用 localStorage）：这里也跟着换
+  window.addEventListener('storage', (e) => { if (e.key === KEY) { dropUrlTheme(); applyTheme(); } });
 }
 
 const subscribe = (f: () => void) => { listeners.add(f); return () => { listeners.delete(f); }; };

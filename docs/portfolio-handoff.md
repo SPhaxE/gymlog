@@ -28,9 +28,9 @@
 | 4 | 结构与线框 | 训练并入首页、5 Tab 导航胶囊环（进度环 + 休息描边） | `screenshots/wireframes/`（25+ 组灰阶线框，每组 2–3 个方案）、`docs/signature-nav.md` |
 | 5 | 视觉语言 | 暖黑 + 骨白 + 一处荧光；配重片、刻度、颗粒；压缩粗体数字 | `docs/DESIGN.md` §1–§6、`screenshots/hifi/`（Stitch 多方案）、`design/hifi/refs-analysis.md` |
 | 6 | 标志性交互 | 容量页（热成像人体 × 胶囊放大镜 × M02 流体形变）、记录页钢板（固定光源打孔）、首页打卡、增量曲线钻入 | 录屏：`screenshots/walkthrough-1/stage4-motion.mp4`、`stage5-motion.mp4`；`docs/8motions.md` |
-| 7 | 设计系统 | 43 个原色 → 57 个语义色（两套主题）、101 个数值、16 个文字样式；110 个组件 × 全部交互态 | `/playground`（左上角切深 / 浅）、`/spec`、`design/tokens/tokens.json`、Figma 插件 `design/figma-plugin/` |
-| 8 | 质量体系 | 改一行就跑：类型检查 · 400 项单测 · 写死值拦截 · 两套主题对比度 · 全流程门禁 900+ 项（命中区 ≥ 48、对比度、溢出、转场） | `scripts/shoot_6a.py`、`scripts/check_hardcoded.mjs`、`scripts/build_tokens.py` 的对比度表 |
-| 9 | 过程与迭代 | 用户逐条走查（走查 1 共 29 条，分 6 个阶段）、方案台留下的每一轮选择 | `docs/walkthrough-1.md`、`screenshots/walkthrough-1/stage*-report.*`、`/preview` |
+| 7 | 设计系统 | 45 个原色 → 64 个语义色（两套主题）、104 个数值、16 个文字样式；111 个组件 × 全部交互态 | `/playground`（右上角切深 / 浅）、`/spec`、`design/tokens/tokens.json`、Figma 插件 `design/figma-plugin/` |
+| 8 | 质量体系 | 改一行就跑：类型检查 · 401 项单测 · 写死值拦截 · 两套主题对比度 · 全流程门禁约 1270 项（命中区 ≥ 48、对比度、溢出、转场） | `scripts/shoot_6a.py`、`scripts/check_hardcoded.mjs`、`scripts/build_tokens.py` 的对比度表 |
+| 9 | 过程与迭代 | 用户逐条走查（走查 1 共 27 项，分 5 个阶段，全部上线）、方案台留下的每一轮选择 | `docs/walkthrough-1.md`、`screenshots/walkthrough-1/stage*-report.*`、`/preview` |
 
 > 篇幅紧时 6、7 两段最有分量（用户最在意视觉和动效）；8 是区别于普通作品集的亮点，一页讲清即可。
 
@@ -50,15 +50,15 @@
 
 | 项 | 数量 | 出处 |
 |---|---|---|
-| 原色 | 43（深色 25 + 浅色 18） | `design/tokens/tokens.json` primitives |
-| 语义色 | 63，每个都有深色 / 浅色两个映射（含钢板 `plate/*` 6 个，2026-10-10 全局浅色） | semantic |
-| 数值 Token | 101（间距、尺寸、圆角、时长、弹簧、比例、不透明度） | number |
+| 原色 | 45 | `design/tokens/tokens.json` primitives |
+| 语义色 | 64，每个都有深色 / 浅色两个映射（含钢板 `plate/*` 6 个，2026-10-10 全局浅色） | semantic |
+| 数值 Token | 104（间距、尺寸、圆角、时长、弹簧、比例、不透明度；含深浅切换液态转场 `motion/theme-*`） | number |
 | 文字样式 | 16 | textStyles |
 | 对比度校验 | 27 条 × 两套主题，生成时全过 | contrast |
-| 组件 | 110 个条目、上千个变体 | `/playground`，`catalog.test` 保证每个导出都在 |
+| 组件 | 111 个条目、上千个变体 | `/playground`，`catalog.test` 保证每个导出都在 |
 | 动效 | 8motions 的 M01–M09 + 转场表 | `docs/DESIGN.md` §7、`docs/8motions.md` |
-| 单测 | 400 | `npm test` |
-| 门禁 | 17 份 × 约 60 项，900+ 项检查，360 与 412 两种宽 | `npm run gate` |
+| 单测 | 401 | `npm test` |
+| 门禁 | 19 份、约 1270 项检查，360 与 412 两种宽（含浅色一类、深浅荧光焦点比对） | `npm run gate` |
 
 ### 2.3 技术
 
@@ -74,7 +74,8 @@ React 19 + Vite + CSS Modules；Capacitor 8 打安卓；本地存储、无后端
 
 - 页面只用语义色 `--milo-color-*`。`tokens.css` 里 `:root` 是深色、`[data-theme='light']` 是浅色；切主题 = 改 `<html data-theme>`。
 - **代码级一键**：`src/styles/theme.ts` 的 `DEFAULT_THEME`，改这一行全局默认就换了。
-- 用户：「我的 → 外观 → 主题」（跟随系统 / 深色 / 浅色）；`/demo` 手机下面、`/playground` 左上角各有切换；地址栏 `?theme=` 临时指定。
+- 用户：「我的 → 外观 → 主题」（跟随系统 / 深色 / 浅色）是唯一入口（/demo 外壳跟着手机里一起换）；地址栏 `?theme=` 临时指定；`/preview`、`/playground` 右上角的「全局主题」条给内部看方案用。
+- **液态转场**（2026-10-10 用户：固定、强制，用来缓和加载）：一开始就换主题，旧页面快照随色带擦掉、色带后面透出正在渲染的新页面（给渲染争取时间，但不整个挡住），约 1.3 秒；照用户给的 AE 熔流拆解拆成「走向 × 渐变」两轴（4 × 4 自由组合，WebGL），方案台 `/preview#swap`；第一版纯色液体被用户说「没有渐变」，正好是一段可讲的迭代。可录成作品集里的一段动效。
 - 首帧不闪（`index.html` 小脚本）、安卓状态栏图标跟着深浅变（Capacitor SystemBars）。
 - Figma：插件给语义集合加 Light 模式（`design/figma-plugin/`，免费版 Figma 每个集合只能 1 个模式时会提示）。
 
@@ -90,6 +91,11 @@ React 19 + Vite + CSS Modules；Capacitor 8 打安卓；本地存储、无后端
   - **钢板**：浅色拉丝铝板，不打灯，孔里露出平涂荧光底板；
   - **奖励弹窗**：纸白卡，闪白改荧光闪，发白改深绿细边 + 荧光外光晕；
   - **故事引导**：浅色水墨做过又封存——用户指出 App 默认深色、首次引导永远先看到深色，浅色下的引导动画没必要（产品判断：先砍掉没人会看到的工作）；故事固定深色，水墨代码留着
+- **最终定下的浅色规则**（经历的几轮：局部深色岛 → 用户否决做成真·全局 → 人体 L1–L4 → L2 变体 L2a–d × 6 种描边 → 选定 L2d 磨砂 + C3 磨砂白线 → 浅色底色 B4 加框 → 荧光焦点 + 逐页走查）：
+  - 浅色不写描边，层次用 `--depth-*`（阴影 + 内高光）；主视觉只有白 / 荧光 / 黑；
+  - **深色是荧光的焦点浅色仍是荧光**（`--fluo-*` 三种配方：荧光笔 / 荧光块 / 荧光 + 细黑边）；浅色墨黑只对位深色的骨白实心（选中 / 确认 / 一次性强标）；
+  - 流体背景去掉荧光雾（页边偏色 3 → 12）；导航滑块保留浅凹槽；
+  - 门禁逐页比对深浅两套里的荧光焦点是否一一对应（`shoot_6a.py` 的 `LIME_SCAN`）。
 - **荧光的微调**：主题色不换；荧光面从 `lime-500 #D4FF3A` 深半档到 `lime-550 #C9F234`（纸白上不发虚）；荧光字 / 线用 `lime-750 #436A00`。中性实心（主按钮、分段选中、导航选中）从骨白换成墨黑 `ink-900`。
 - **质量**：两套主题都跑对比度校验；门禁新增 `light` 一类（15 个页面 + 故事 8 幕 + 奖励弹窗 18 种 + /demo 外壳浅色下对比度、溢出、命中区，页里不许有局部深色岛，人体压暗混合、钢板孔里是荧光，外观切换持久化）；深色模式与改之前逐像素比对一致（冻结动画、固定随机种子和时钟，只剩计时器噪声）。
 
@@ -180,3 +186,4 @@ React 19 + Vite + CSS Modules；Capacitor 8 打安卓；本地存储、无后端
 2. 样机：安卓用小米 15 的真机框，iOS 用哪一代 iPhone 的框？
 3. 封面主图用深色还是浅色（或并排）？
 4. 要不要把「AI 协作的工作方式」（五步流程、门禁、方案台）作为单独一段？
+   - 要的话底稿用 `docs/UIUX-AI协作工作流.md`（通用、精简）：§0 十条原则 → §3 逐页五步 → §4.4 方案台 → §6 门禁三层 → §8 会话与交接 → §10 坑表；本项目的具体例子到 `docs/workflow.md`、`docs/walkthrough-1.md` 和 `/preview` 里取。

@@ -8,7 +8,6 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router';
 import { Lockup } from '../components';
 import { DEFAULT_PROFILE, demoLegState, demoRiskState, demoState, riskDemoNow, store, STORE_KEY } from '../data/store';
-import { setThemePref, useThemePref, type Theme } from '../styles/theme';
 import s from './DemoPage.module.css';
 
 type Step = { id: string; t: string; d: string; go?: { label: string; run: () => string } };
@@ -41,12 +40,10 @@ export function DemoPage() {
   const frame = useRef<HTMLIFrameElement>(null);
   const phone = useRef<HTMLDivElement>(null);
   const [desk] = useState(wide);
-  const themePref = useThemePref();
   const [at, setAt] = useState('');
   const [scale, setScale] = useState(1);
-  // 地址栏 ?theme=（截图、门禁、分享链接）只管这一次：整页按它，手机里每次打开也带上它；点了下面的主题按钮就以点的为准
-  const urlTheme = useRef(new URLSearchParams(location.search).get('theme'));
-  const themed = (p: string) => (urlTheme.current ? `${p}${p.includes('?') ? '&' : '?'}theme=${urlTheme.current}` : p);
+  // 地址栏 ?theme=（截图、门禁、分享链接）只管这一次：整页按它，手机里每次打开也带上它
+  const themed = (p: string) => { const t = new URLSearchParams(location.search).get('theme'); return t ? `${p}${p.includes('?') ? '&' : '?'}theme=${t}` : p; };
   const [src] = useState(() => themed('/'));  // 只在挂载时定一次：之后换页都走 open()（src 一变 iframe 会自己跳走）
 
   // 手机上：清空后全屏进 App，从故事开始
@@ -66,17 +63,8 @@ export function DemoPage() {
     return () => clearInterval(id);
   }, [desk]);
 
+  // 地址栏的 ?theme 每次现读：手机里「我的 → 主题」选过之后，外壳收到 storage 事件就把它从地址栏去掉（styles/theme），之后换页不再带
   const open = (path: string) => { const w = frame.current?.contentWindow; if (w) w.location.replace(themed(path)); };
-  const pickTheme = (k: Theme) => {
-    if (urlTheme.current) {  // 有 ?theme 时它压着用户的选择：先从地址栏去掉，再换成刚点的
-      const u = new URL(location.href); u.searchParams.delete('theme'); history.replaceState(history.state, '', u);
-      urlTheme.current = null;
-    }
-    setThemePref(k);
-    // 手机的地址里还带着 ?theme（还没换过页）：去掉它原地重载（数据都在本机存储里）
-    const w = frame.current?.contentWindow;
-    try { if (w && new URLSearchParams(w.location.search).has('theme')) { const l = new URL(w.location.href); l.searchParams.delete('theme'); w.location.replace(l.pathname + l.search); } } catch { /* 跨源时读不到 */ }
-  };
   const reset = () => { store.clear(); return '/onboarding'; };
   const withDemo = (path: string, make = demoState) => () => { store.clear(); store.update((x) => ({ ...x, ...make(Date.now()), draft: null })); return path; };
 
@@ -93,7 +81,7 @@ export function DemoPage() {
     { id: 'trend', t: '动作进步曲线', d: '点增量页的任意一行：大数字是选中那天的预估力量，曲线按住横向拖或点明细的一行切换日期（拖的时候整页不跳：组列表按最多的那次预留高度），下面是那天每一组和「下次目标」（和首页、增量页同一个数）；返回回到原来的筛选和滚动位置。曲线上方「对比 ＋ 选一个动作」：选一个同部位练过的动作，它的曲线以虚线叠上来，图下同时读两条（会员的高级分析，旁边挂「Pro ›」）。小曲线会贴到大曲线里最近 8 次那一段，落定后更早的部分从右往左画出来。', go: { label: '从增量页进一个动作', run: withDemo('/gains') } },
     { id: 'log', t: '记录', d: '页头下面是一块钢板日历：近 3 个月练过的日子是冲出来的孔；灯固定在屏幕上、不跟页面走，每个孔射出一束体积光（丁达尔），往下滑时亮暗和光束角度跟着变，钢板滑出灯下时慢慢关灯（透光和光束一起暗）；休息日是暗的手绘细圈，也能选；按住钢板横向拖，吸到某一天、上面读数行按位滚，点「查看」进那天的训练；下面按月收起：月头写次数 · 组数 · 总量和每周小柱，点开是按周分组的一行一次训练；默认只展开最近一个月，滑到底自动再载 6 个月，全部加载完写「到底了」。', go: { label: '打开记录页', run: withDemo('/log') } },
     { id: 'logdetail', t: '训练详情', d: '点记录页的一行：日期飞成标题、部位飞成副标题；汇总三格、新纪录一行，每个动作一张卡，每一组「重量 × 次数」（热身灰字、递减组标出）；点动作卡头进它的进步曲线，返回回到这里；右上角「更多」可以删除这次训练（二次确认、不能撤销），删完回记录页，各页的容量、趋势、新纪录、处方都按新历史重算；返回记录页还原滚动位置和展开的周数。', go: { label: '从记录页进一次训练', run: withDemo('/log') } },
-    { id: 'me', t: '我的', d: '第一屏是成长卡：小牛、牛龄、离下一级还差什么、连胜 · 本周 · 牛劲，点它进牛龄页；下面档案四格（点哪格改哪项，体重可选），消息、导航三项设置（进度环 · 休息描边 · 结束提示，立即生效）、数据（载入示例 · 导出 CSV · 清除，都先确认）、关于。牛龄、钱包、消息、会员这些子页从右边推进来，返回推回去；面板、对话框、轻提示关掉时也有退场。「外观」可以切浅色（手机下面的「深色 / 浅色」整页一起切）：同一套组件只换主题，容量页的人体、记录页的钢板、奖励弹窗也都是浅色。', go: { label: '打开我的', run: withDemo('/me') } },
+    { id: 'me', t: '我的', d: '第一屏是成长卡：小牛、牛龄、离下一级还差什么、连胜 · 本周 · 牛劲，点它进牛龄页；下面档案四格（点哪格改哪项，体重可选），消息、导航三项设置（进度环 · 休息描边 · 结束提示，立即生效）、数据（载入示例 · 导出 CSV · 清除，都先确认）、关于。牛龄、钱包、消息、会员这些子页从右边推进来，返回推回去；面板、对话框、轻提示关掉时也有退场。「外观 → 主题」可以切浅色（深浅切换只有这一个入口，切的时候放一段液态转场；演示页外壳跟着一起换）：同一套组件只换主题，容量页的人体、记录页的钢板、奖励弹窗也都是浅色。', go: { label: '打开我的', run: withDemo('/me') } },
     { id: 'level', t: '牛龄', d: '5 段名字里当前一段加下划线，小牛背后是一圈圈往里收的光点（配重片光环）；离下一级用能照着做的说法（涨幅太大就写「再完成 N 个训练周期」）；连胜、本周、冻结卡三格，最近 12 周守约点阵，成长记录（连着破的几个 PR 合成一行）。删训练后牛龄或连胜回退，会在记录里写一行说明。点一下小牛，它会开心地蹦一下。', go: { label: '打开牛龄', run: withDemo('/me/level') } },
     { id: 'risk', t: '连胜快断', d: '时间拨到这周日、这周只练了 1 次：牛龄页三格下面出来一行「这周快断了：还差几次，只剩 1 天」。手上没有冻结卡，给两个出口——「兑一张冻结卡 · 800 牛劲」直接打开钱包的兑换面板（只放冻结卡），兑完回到牛龄页，这一行变成「有 1 张冻结卡，连胜保住」；「Pro 每月送 2 张」进付费墙。「我的」成长卡那句话这周也换成「这周快断了」。', go: { label: '看连胜快断', run: () => `${withDemo('/me/level', demoRiskState)()}?now=${riskDemoNow(Date.now())}` } },
     { id: 'wallet', t: '钱包', d: '「我的 → 钱包 · 商城」：牛劲余额（≈ 多少元、本月进账）、我的卡券（可用的能「去用」）、最近明细；底部拇指区两个出口——「去商城抵扣」和「兑换卡券」（底部面板，牛劲不够的写还差多少）。', go: { label: '打开钱包', run: withDemo('/me/wallet') } },
@@ -133,10 +121,6 @@ export function DemoPage() {
           </div>
         </div>
         <div className={s.tools}>
-          {/* 主题：整页一起切（演示页外壳 + 右边手机里的 App）；同源 iframe 共用 localStorage，App 收到 storage 事件立即换 */}
-          <div className={s.themes} role="group" aria-label="主题">
-            {([['dark', '深色'], ['light', '浅色']] as const).map(([k, t]) => <button key={k} type="button" aria-pressed={themePref === k} onClick={() => pickTheme(k)}>{t}</button>)}
-          </div>
           <button type="button" className={s.reset} onClick={() => open(reset())}>重新开始</button>
         </div>
       </section>

@@ -41,3 +41,4 @@ export { Breakdown, EvidencePanel, NiujinLine, OrderLine, PriceBlock, ProductCar
 export { MonthStats, PerkLedger, PerkTable, PlanPicker, ProCard, ProLink, ProWelcome, type PerkItem, type PlanOption } from './pro';
 export { GrainGlow, OrbitPlate, ParticleField, type GrainKind, type ParticleKind } from './particles';
 export { ThemeBar } from './ThemeBar';
+export { DEFAULT_SWAP, SWAP_RAMPS, SWAP_ROUTES, liquidSwap, swapKind, switchTheme, type SwapKind, type SwapRamp, type SwapRoute } from './themeSwap';

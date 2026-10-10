@@ -625,28 +625,37 @@ def light_checks(b, w, h):
             layer = pg.locator('[class*=_layer_][data-tier]'); layer.click(position={'x': 5, 'y': 5}); pg.wait_for_timeout(900)   # 点一下跳到定格
             low = layer.evaluate(CONTRAST_IN); ok(not low, f'{tag} 浅色·奖励弹窗「{name}」：文字对比度都达标 {low[:3]}')
             layer.get_by_role('button', name='收下').click(); pg.wait_for_timeout(500)
-    # /demo 外壳（电脑版，只在 360 那一份跑）：手机下面的「浅色」整页一起切，手机里也是浅色
+    # /demo 外壳（电脑版，只在 360 那一份跑）：深浅切换只有一个入口（2026-10-10 用户）——外壳没有主题按钮；在手机里「我的 → 主题」切浅色，外壳跟着一起换
     if w == 360:
         d = b.new_page(viewport={'width': 1440, 'height': 900})
         d.on('pageerror', lambda e: errors.append(f'light demo pageerror: {e}'))
         d.goto(args.base + '/demo'); d.wait_for_selector('iframe'); d.wait_for_timeout(1500)
-        d.get_by_role('group', name='主题').get_by_role('button', name='浅色').click(); d.wait_for_timeout(1500)
+        ok(d.get_by_role('group', name='主题').count() == 0, '/demo：外壳没有深浅切换按钮（只留「我的 → 主题」一个入口）')
+        fr = d.frame_locator('iframe')
+        d.frames[1].evaluate("location.replace('/me?scenario=plain-prescription')"); fr.locator('h1').first.wait_for(timeout=30000); d.wait_for_timeout(800)
+        fr.get_by_role('button', name=re.compile('^主题')).click(); d.wait_for_timeout(600)
+        fr.get_by_role('dialog', name='主题').get_by_role('radio', name=re.compile('^浅色')).click(); d.wait_for_timeout(2200)
         inner = d.frames[1].evaluate('document.documentElement.dataset.theme') if len(d.frames) > 1 else None
-        ok(d.evaluate('document.documentElement.dataset.theme') == 'light' and inner == 'light', f'/demo 浅色：外壳和手机里一起切到浅色（手机里 {inner}）')
+        ok(d.evaluate('document.documentElement.dataset.theme') == 'light' and inner == 'light', f'/demo 浅色：手机里切浅色，外壳一起换（手机里 {inner}）')
         isl = d.evaluate(ISLANDS); ok(not isl, f'/demo 浅色：外壳没有局部深色岛 {isl[:3]}')
         lum = d.evaluate(BG_LUM, 'main'); ok(lum is not None and lum > 0.7, f'/demo 浅色：外壳是浅色底（亮度 {lum}）')
         low = d.evaluate(CONTRAST); ok(not low, f'/demo 浅色：外壳文字对比度都达标 {low[:3]}')
         d.close()
-    # 「我的 → 外观」：选浅色立即生效、刷新还在；选回深色
+    # 「我的 → 主题」：选浅色放完转场就生效、刷新还在；选回深色
     pg.goto(f'{args.base}/me?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(800)
     ok(pg.evaluate('document.documentElement.dataset.theme') == 'dark', f'{tag} 外观：默认深色')
     pg.get_by_role('button', name=re.compile('^主题')).click(); pg.wait_for_timeout(600)
-    pg.get_by_role('dialog', name='主题').get_by_role('radio', name=re.compile('^浅色')).click(); pg.wait_for_timeout(700)
+    pg.get_by_role('dialog', name='主题').get_by_role('radio', name=re.compile('^浅色')).click(); pg.wait_for_timeout(150)
+    # 液态转场（2026-10-10 用户：固定、强制；色带后面透出正在渲染的新页面，不把页面整个挡住）：一开始就换主题，旧页面快照随色带擦掉，遮罩不吞点击
+    veil = pg.evaluate("(() => { const c = [...document.querySelectorAll('body > canvas[aria-hidden]')].find((e) => getComputedStyle(e).position === 'fixed'); return c ? getComputedStyle(c).pointerEvents : null; })()")
+    ok(veil == 'none' and pg.evaluate('document.documentElement.dataset.vt') == 'theme' and pg.evaluate('document.documentElement.dataset.theme') == 'light', f'{tag} 外观：切换放液态转场（遮罩 {veil}，不吞点击），新主题一开始就在下面渲染')
+    pg.wait_for_timeout(1800)
+    ok(pg.evaluate("document.querySelectorAll('body > canvas[aria-hidden]').length") == 0, f'{tag} 外观：转场放完遮罩撤掉')
     ok(pg.evaluate('document.documentElement.dataset.theme') == 'light' and pg.evaluate("localStorage.getItem('milo-theme')") == 'light', f'{tag} 外观：选浅色立即生效并记住')
     pg.reload(); pg.wait_for_selector('h1'); pg.wait_for_timeout(600)
     ok(pg.evaluate('document.documentElement.dataset.theme') == 'light', f'{tag} 外观：刷新后还是浅色')
     pg.get_by_role('button', name=re.compile('^主题')).click(); pg.wait_for_timeout(600)
-    pg.get_by_role('dialog', name='主题').get_by_role('radio', name=re.compile('^深色')).click(); pg.wait_for_timeout(700)
+    pg.get_by_role('dialog', name='主题').get_by_role('radio', name=re.compile('^深色')).click(); pg.wait_for_timeout(2000)
     ok(pg.evaluate('document.documentElement.dataset.theme') == 'dark' and pg.evaluate("localStorage.getItem('milo-theme')") is None, f'{tag} 外观：切回深色（默认值不另存）')
     pg.close()
 

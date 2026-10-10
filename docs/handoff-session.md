@@ -2,7 +2,7 @@
 
 > 新窗口请先完整读完本文件，再开始工作。遇到 Open Questions 里的问题先问我，不要自行决定。
 
-_Updated: 2026-10-10 23:59_
+_Updated: 2026-10-10（第二窗口）_
 
 ## 1. Goal
 **把「进入作品集之前」剩下的事做完**，然后开作品集。用户 2026-10-10：「进入作品集之前，我们还有哪些要做的，交给下个窗口。」
@@ -18,8 +18,9 @@ _Updated: 2026-10-10 23:59_
 - [ ] **A. 用户验收浅色最新效果**（荧光焦点 + 走查；改前改后对照图已推给用户，用户还没回）——有意见先改
 - [ ] **B. 用户最后审查一遍 → 打 APK 真机走查**（用户 2026-10-07 定：真机体检改为「用户最后审查一遍后打包 APK 走查」）。APK 由 CI 自动打在 `main` 的 `apk/milo-debug.apk`。顺带看一直没验的：放大镜跟手帧率、Android 返回键在训练中 / 改数面板、360 × 640 矮屏训练中一屏几组、小米 15 上浅色阴影 / 模糊的性能。用户若出批注 → 按协作工作流 §3.3（参考 `docs/walkthrough-1.md`）
 - [ ] **C.（可选）性能第二轮**：首页、容量页静置 CPU 仍约 60%（4×降速、无 GPU 的相对值），来自流体背景 + 主角卡心跳光 + 容量人体熔流等持续动效；只做不降视效的优化（协作工作流 §5「性能与降级」）。用户没要求，先问做不做
-- [ ] **D. 文档对齐现状**：`HANDOFF.md` 还写着「2026-10-09 走查 1 进行中」「浅色人体默认 L1」等过时内容 → 改成现状（走查 1 完成、浅色 L2d + C3、荧光焦点、性能巡检、协作工作流）；`docs/portfolio-handoff.md` 的数字与浅色段落更新（门禁 1262 项；浅色经历的几轮与最终规则；「AI 协作」一段可用协作工作流当底稿）
-- [ ] **E. 重拍作品集素材**：`screenshots/theme/`（深浅成对图）是浅色治理前拍的 → 按最新代码重拍并推给用户；视需要补浅色录屏（MP4）；核对 `screenshots/walkthrough-1/stage4-motion.mp4`、`stage5-*` 是否仍与现状一致
+- [x] **D. 文档对齐现状**（本窗口完成）：`HANDOFF.md` 还写着「2026-10-09 走查 1 进行中」「浅色人体默认 L1」等过时内容 → 改成现状（走查 1 完成、浅色 L2d + C3、荧光焦点、性能巡检、协作工作流）；`docs/portfolio-handoff.md` 的数字与浅色段落更新（门禁 1262 项；浅色经历的几轮与最终规则；「AI 协作」一段可用协作工作流当底稿）
+- [x] **E. 重拍作品集素材**（本窗口：`screenshots/theme/` 12 对 + `theme-pairs.png` 按最新代码重拍，脚本进了仓库 `scripts/shoot_theme.py`；深色逐像素未变，所以 `stage4/5` 深色录屏仍与现状一致；浅色录屏等用户要再补）。原文：`screenshots/theme/`（深浅成对图）是浅色治理前拍的 → 按最新代码重拍并推给用户；视需要补浅色录屏（MP4）；核对 `screenshots/walkthrough-1/stage4-motion.mp4`、`stage5-*` 是否仍与现状一致
+- [ ] **G. 深浅切换（用户 2026-10-10 追加，强制）**：已上线——只留「我的 → 主题」一个入口（/demo 外壳按钮去掉）；液态转场 `src/components/themeSwap.ts`：照用户给的 AE 熔流拆解拆成**走向 R（晕开 / 漫上 / 垂落 / 交汇）× 渐变 G（熔流 / 淬火 / 余温 / 墨晕）**两轴，WebGL；**一开始就换主题，旧页面快照（View Transitions）随色带擦掉，色带后面透出正在渲染的新页面**（用户：不能把页面整个挡住）。方案台 `/preview#swap` 自由组合 + 两行逐组对照。**等用户选组合**（用户说自己看、会告诉我选哪个；选定后改 `DEFAULT_SWAP`，落选留在方案台）
 - [ ] **F. 作品集开工前问用户 4 件事**（`docs/portfolio-handoff.md` §8）：载体（网站 / Behance / PDF，尺寸篇幅）、iOS 样机用哪代 iPhone（安卓用小米 15 真机框）、封面深 / 浅 / 并排、要不要单讲 AI 协作
 
 ## 3. Active Files
@@ -32,7 +33,12 @@ _Updated: 2026-10-10 23:59_
 - `src/components/particles.tsx` — `ParticleField soft`（OrbitPlate 用 1 倍分辨率）
 - `scripts/shoot_6a.py`（门禁，含 `LIME_SCAN`）、`scripts/regress_dark.py`（深色逐像素回归）
 
-## 4. Changes Made（本窗口）
+## 4. Changes Made（第二窗口）
+- 深浅切换唯一入口 + 液态转场（第一版纯色 W1–W4 → 用户「没有渐变」→ 第二版 R × G 两轴 → 用户「白色区域要能透出后面的页面」→ 透出模式）；Token `motion/theme-in/hold/out`；/playground `LiquidSwap`；门禁改 /demo 与「我的 → 主题」两段
+- D：`HANDOFF.md` §0、`docs/portfolio-handoff.md`（数字、浅色最终规则、AI 协作底稿指引）、DESIGN §1.5、ia「外观」、协作工作流坑表 +2 条
+- E：`scripts/shoot_theme.py` 重拍深浅成对图
+
+## 4b. Changes Made（第一窗口）
 - `d07ffd0` 浅色荧光焦点 + 走查；门禁跨主题比对
 - `baa6397` 性能巡检（钢板、粒子）；`docs/UIUX-AI协作工作流.md` 通用精简版
 - 本提交：本交接
@@ -44,6 +50,8 @@ _Updated: 2026-10-10 23:59_
 - 协作工作流：用户要求不对比、无版本、不举项目例子、普适简洁（给 AI 读省上下文）；用户最初的模板原文留在 `docs/workflow.md` 附录作出处
 
 ## 6. Failed Attempts / 坑
+- 截转场动画：Playwright `clock.install()` 后时间仍在走，要 `pause_at` 再 `run_for`；View Transitions 的 CSS 动画还要 CDP `Animation.setPlaybackRate 0` 冻住；无头 + SwiftShader 截一张图约 1.4 秒，比转场还长
+- 主题转场期间页面上平时带共享名（`sharedName`）的元素会变成单独的组、不跟着擦——转场里用 `html[data-vt='theme'] *:not([data-swap-vt]) { view-transition-name: none !important }` 压掉
 - **核对线上不要比文件名哈希**（构建把提交号打进包里，本地哈希必然 ≠ 线上）：`js=$(curl -s https://gymlog-taupe.vercel.app/demo | grep -o 'assets/index-[^"]*\.js' | head -1); curl -s https://gymlog-taupe.vercel.app/$js | grep -c <短提交号>`
 - 门禁跨主题比对的误报（动画相位、`currentColor` 边框、荧光底里的墨字）已在 `LIME_SCAN` 处理；「浮尘在飘」要对钢板两张画布一起取哈希
 - `pkill -f` 会杀掉自己的 shell → `for p in $(pgrep -f '^node.*vite preview'); do kill $p; done`
@@ -61,20 +69,21 @@ _Updated: 2026-10-10 23:59_
 ```bash
 npm ci && npm run check                         # tsc + 400 单测 + 写死值 + 构建
 npm run build && npx vite preview --port 4173 --host 127.0.0.1 &
-python3 scripts/shoot_6a.py --no-shots --base http://127.0.0.1:4173     # 全套门禁（后台，约 5 分钟，19 份 / 1262 项）
+python3 scripts/shoot_6a.py --no-shots --base http://127.0.0.1:4173     # 全套门禁（后台，约 5 分钟，19 份 / 1269 项）
 # 深色回归：git worktree 出改动前提交 → 软链 node_modules → build → 两个 vite preview --outDir → regress_dark.py shoot ×2 → compare
 ```
-- 当前状态：check 全绿；门禁 19 / 19；深色 17 页逐像素一致；线上 /demo = `baa6397`
+- 当前状态：check 全绿（401 单测）；门禁 19 / 19、1269 项；深色页面没动（只去掉了 /demo 外壳的深浅按钮）；线上 /demo = 本次提交
 - 性能测量（脚本没进仓库）：Playwright + CDP `Emulation.setCPUThrottlingRate 4`，每页量 FCP、加载长任务、静置 4 秒帧率 / 长任务 / `Performance.getMetrics` TaskDuration；热点用 `Profiler` 采样
 
 ## 9. Environment State
 - **Stitch 密钥：仓库根 `secrets/stitch.env`（.gitignore，不进提交）；新容器里没有——用户 2026-10-10 给过原文，以后不再向用户要；可建议用户配成云环境密钥**
-- Branch：工作分支 `claude/friendly-gauss-m528ns`，内容 = `main`；发布推 `main`
+- Branch：工作分支 `claude/eager-faraday-cnvnxs`，内容 = `main`；发布推 `main`
 - Uncommitted changes：无
 - Running services：新容器没有，自己起 `vite preview`
 - Env：Chromium `/opt/pw-browsers/chromium`；Python Playwright 先 `pip install playwright`；GitHub 只能用 `mcp__github__*`
 
 ## 10. Open Questions
+- 深浅切换转场选哪个组合（R × G）？用户说自己在 /preview#swap 看、会告诉我（G）
 - 浅色最新效果（荧光焦点 + 走查）通过了吗？（A）
 - 什么时候做最后审查 + APK 真机走查？（B）
 - 性能第二轮要不要做？（C）
@@ -82,7 +91,7 @@ python3 scripts/shoot_6a.py --no-shots --base http://127.0.0.1:4173     # 全套
 
 ## 11. Specific Next Steps
 1. 先问 §10 前三条。
-2. 不用等用户就能做的：D（更新 `HANDOFF.md`、`portfolio-handoff.md`）→ E（重拍 `screenshots/theme/` 深浅成对图，推给用户）。
+2. D、E 已做完；等用户选转场组合（G）后改 `DEFAULT_SWAP`、DESIGN §1.5 写明选定。
 3. 按用户对 A / B / C 的回答做；B 若出批注按协作工作流 §3.3。
 4. 都完了问 F，开作品集（先读 `docs/portfolio-handoff.md`）。
 5. 每次推 main 顺手更新本文件；推后在线上包里搜提交号确认上线。

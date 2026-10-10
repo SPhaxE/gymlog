@@ -206,6 +206,9 @@
   --milo-motion-stagger: 80ms;
   --milo-motion-list-max: 300ms;
   --milo-motion-toast-hold: 2800ms;
+  --milo-motion-theme-in: 520ms;
+  --milo-motion-theme-hold: 160ms;
+  --milo-motion-theme-out: 640ms;
   --milo-motion-long-press: 150ms;
   --milo-motion-drag-slop: 8;
   --milo-motion-magnifier-radius: 3;

@@ -74,3 +74,10 @@
 [data-sel='old'] [class*='_seg_up_'] { background: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); box-shadow: none; }
 [data-sel='old'] nav [class*='_pill_'] { background: var(--milo-color-nav-pill); box-shadow: none; }
 [data-sel='old'] nav a[aria-current='page'] { color: var(--milo-color-nav-pill-ink); }
+/* 深浅切换转场 W：液体只盖这台手机（遮罩画在这块里），圆角跟着屏幕裁 */
+.swapHost { position: relative; width: max-content; max-width: 100%; border-radius: var(--milo-radius-xl); overflow: hidden; isolation: isolate; }
+.swapMini { position: relative; height: calc(var(--milo-space-5xl) * 7); border-radius: var(--milo-radius-m); overflow: hidden; isolation: isolate; box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
+.swapCol { display: grid; gap: var(--milo-space-s); justify-items: start; }
+.swapCol .swapMini { justify-self: stretch; }
+.swapHead { display: flex; align-items: center; justify-content: space-between; gap: var(--milo-space-m); }
+.swapHead h3 { margin: 0; }

@@ -1,0 +1,3 @@
+/* 液态转场的遮罩：永远在最前；不吞点击（DESIGN §9.6 转场不吞点击） */
+.veil { position: fixed; inset: 0; z-index: 2147483000; width: 100%; height: 100%; pointer-events: none; }
+.veil[data-local] { position: absolute; }

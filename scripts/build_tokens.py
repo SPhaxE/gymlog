@@ -208,7 +208,7 @@ def main():
         if k.startswith('opacity/') or k.startswith('ratio/'):
             out = f'{val / 100:g}'
         elif k.startswith('motion/'):
-            unit = 'ms' if k in ('motion/press', 'motion/fast', 'motion/base', 'motion/slow', 'motion/stagger', 'motion/list-max', 'motion/long-press', 'motion/toast-hold') else ''
+            unit = 'ms' if k in ('motion/press', 'motion/fast', 'motion/base', 'motion/slow', 'motion/stagger', 'motion/list-max', 'motion/long-press', 'motion/toast-hold', 'motion/theme-in', 'motion/theme-hold', 'motion/theme-out') else ''
             out = f'{val / 100:g}' if k.startswith('motion/press-') else f'{val:g}{unit}'
         else:
             out = f'{val:g}px'

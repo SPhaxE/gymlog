@@ -6,10 +6,12 @@
  *  最上面是「自由组合」（2026-10-07 用户）：三组各挑一个（浅色主题下再加浅色人体、浅色描边），右边是真实的容量页（带胶囊、可以点、可以切正反男女）；
  *  组合写在地址里（?o=hair&f=metal&s=molten），复制链接就能把这个组合发给别人。
  *  2026-10-10 全局浅色：新增「L 浅色人体」组（4 个浅色方案，每格固定浅色），自由组合加 ?l=（浅色主题下用哪个方案）；
- *  只有默认三层（O2 + F1 + S9）有浅色版，其余人体方案是深色存档——格子固定深色并写明「深色方案」。 */
-import { useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+ *  只有默认三层（O2 + F1 + S9）有浅色版，其余人体方案是深色存档——格子固定深色并写明「深色方案」。
+ *  2026-10-10 深浅切换液态转场（用户：仅保留一个入口、固定的液态流动动画缓和加载、强制）：照用户给的 AE 熔流拆解拆成走向 R × 渐变 G 两轴，
+ *  自由组合写进地址栏（?route= &ramp=），顶上的全局主题条按它播（App 里用 DEFAULT_SWAP）；下面两行逐组对照，每格自己播、也能一行一起播。 */
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
-import { BodyFigure, Card, Chip, ThemeBar, ContourFx, DEFAULT_LIGHT_LOOK, DEFAULT_LOOK, FillFx, Icon, LightContour, LightLook, Num, GainLook, GrainGlow, ParticleField, ProductCard, ProductGrid, ScanFx, ShopTagLook, SteelPlate, dotMonths, type ContourFxKind, type GainLookKind, type GrainKind, type LightContourKind, type LightLookKind, type ShopTagLookKind, type FillFxKind, type ParticleKind, type PlateLook, type ScanFxKind } from '../components';
+import { BodyFigure, Button, Card, DEFAULT_SWAP, liquidSwap, type SwapKind, type SwapRamp, type SwapRoute, Chip, ThemeBar, ContourFx, DEFAULT_LIGHT_LOOK, DEFAULT_LOOK, FillFx, Icon, LightContour, LightLook, Num, GainLook, GrainGlow, ParticleField, ProductCard, ProductGrid, ScanFx, ShopTagLook, SteelPlate, dotMonths, type ContourFxKind, type GainLookKind, type GrainKind, type LightContourKind, type LightLookKind, type ShopTagLookKind, type FillFxKind, type ParticleKind, type PlateLook, type ScanFxKind } from '../components';
 import { IconStyleCtx, type IconStyle } from '../components/iconSets';
 import { bodyData } from '../data/demo';
 import type { HeadStat } from '../engine';
@@ -19,7 +21,7 @@ import { GainsPage } from './GainsPage';
 import { HomePage } from './HomePage';
 import { BodyPage } from './BodyPage';
 import { Stage } from '../playground/Stage';
-import { useTheme } from '../styles/theme';
+import { useTheme, type Theme } from '../styles/theme';
 import s from './OptionsBoard.module.css';
 
 const noop = () => {};
@@ -244,6 +246,81 @@ function Cell({ id, title, note, children, dark, light }: { id: string; title: s
   );
 }
 
+/** 深浅切换液态转场（照用户给的 AE 熔流拆解，拆成两轴）：走向 R = 方向场（Gradient Ramp），渐变 G = 色带映射（Colorama）；湍流扭曲、羽化、辉光 + 颗粒共用 */
+const ROUTE: [SwapRoute, string, string][] = [
+  ['drop', 'R1 晕开', '从手指按下的地方往外晕开（径向场）；和点的位置有因果，点哪儿从哪儿开始'],
+  ['rise', 'R2 漫上', '从拇指区（屏幕底）往上漫（竖直场）；最稳、最像液面上涨'],
+  ['drip', 'R3 垂落', '从顶上往下淌，七股快慢不一的流柱先挂下来（竖直场减去流柱）；最「熔」'],
+  ['merge', 'R4 交汇', '左右两边同时流进来、在中线撞上（对称场）；流走时从中线裂开往两边退'],
+];
+const RAMP: [SwapRamp, string, string][] = [
+  ['molten', 'G1 熔流', '前沿白热 → 浅荧光 → 荧光 → 黄绿 → 橄榄，沉进新底色；前沿一道辉光。和容量人体 S9 熔流、热成像荧光色板是同一条色带'],
+  ['quench', 'G2 淬火', '钢板 / F1 金属渐变的冷色：两道镜面高光夹一段暗钢，像一块金属板扫过去；第二道高光上有辉光'],
+  ['ember', 'G3 余温', '热成像骨白色板倒过来：只有最前沿一线荧光（荧光只标最热处），后面骨白慢慢冷成暗骨'],
+  ['ink', 'G4 墨晕', '素墨：淡墨先洇开、浓墨跟上、再化成纸色；没有荧光也没有辉光，颗粒最重。最克制'],
+];
+/** 一台能自己换主题的小屏：转场只盖这一块（局部 data-theme）；换主题时内容整块重新挂载，正好演示转场盖住的那段「加载」 */
+function SwapScreen({ kind, tall, now, play }: { kind: SwapKind; tall?: boolean; now: number; play?: number }) {
+  const host = useRef<HTMLDivElement>(null), global = useTheme();
+  const [own, setOwn] = useState<Theme | null>(null), cur = own ?? global, next: Theme = cur === 'dark' ? 'light' : 'dark';
+  const run = () => { if (host.current) void liquidSwap({ to: next, host: host.current, kind, apply: () => setOwn(next) }); };
+  const seen = useRef(play);
+  // 「这一行一起播」：play 计数一变，每格各播一遍
+  useEffect(() => { if (play !== seen.current) { seen.current = play; run(); } });
+  return (
+    <div className={s.swapCol}>
+      <div ref={host} className={tall ? s.swapHost : s.swapMini} data-theme={cur}>
+        {tall ? <Stage tall label="首页 · 转场预览"><HomePage key={cur} scenario="plain-prescription" now={now} /></Stage> : <GrainDemo key={cur} kind="pulse" />}
+      </div>
+      <Button kind="neutral" size="s" onClick={run}>{`切到${next === 'light' ? '浅色' : '深色'}`}</Button>
+    </div>
+  );
+}
+function SwapBoard({ now }: { now: number }) {
+  const [q, setQ] = useSearchParams();
+  const route = ROUTE.find(([k]) => k === q.get('route')) ?? ROUTE.find(([k]) => k === DEFAULT_SWAP.route)!;
+  const ramp = RAMP.find(([k]) => k === q.get('ramp')) ?? RAMP.find(([k]) => k === DEFAULT_SWAP.ramp)!;
+  const set = (key: string, v: string, def: string) => { const n = new URLSearchParams(q); if (v === def) n.delete(key); else n.set(key, v); setQ(n, { replace: true }); };
+  const [playR, setPlayR] = useState(0), [playG, setPlayG] = useState(0);
+  const row = <K extends string>(key: string, label: string, list: [K, string, string][], cur: [K, string, string], def: K) => (
+    <div className={s.ctlRow} role="group" aria-label={label}>
+      <span className="milo-text-label">{label}</span>
+      <div className={s.chips}>{list.map(([k, t]) => <Chip key={k} selected={cur[0] === k} onClick={() => set(key, k, def)}>{k === def ? `${t} · 默认` : t}</Chip>)}</div>
+      <span className={`milo-text-caption ${s.ctlNote}`}>{cur[2]}</span>
+    </div>
+  );
+  return (
+    <section className={s.group} aria-label="深浅切换转场" id="swap">
+      <h2 className="milo-text-heading">深浅切换转场 · R × G（2026-10-10，待选）</h2>
+      <p className="milo-text-caption">用户：深浅切换只留一个入口（App 里「我的 → 主题」；/demo 外壳的按钮已去掉，外壳跟着手机里一起换），切换时放一段固定的液态转场、每次都放，用来盖住换主题时的重绘。第二版照用户给的 AE 熔流拆解（Gradient Ramp → Colorama → Turbulent Displace + Fast Box Blur → Glow + Noise）拆成两轴：<b>走向 R</b> 是方向场（每个像素什么时候被淹到），<b>渐变 G</b> 是色带映射（前沿到落定的那段颜色）；湍流扭曲、前沿羽化、辉光和胶片颗粒四种共用，逐像素用 WebGL 画。时间线固定 1.32 秒、每次都放：一开始就换主题，旧页面拍成快照压在上面，色带一路扫过把快照擦掉，<b>色带后面是透明的</b>，直接透出正在渲染的新页面——给新页面多一段渲染时间，但不把页面整个挡住（用户 2026-10-10 第二条意见）。遮罩不吞点击，按一下就跳到终态。</p>
+      <div className={s.composer}>
+        <div className={s.ctl}>
+          <h3 className="milo-text-heading">自由组合</h3>
+          {row('route', '走向', ROUTE, route, DEFAULT_SWAP.route)}
+          {row('ramp', '渐变', RAMP, ramp, DEFAULT_SWAP.ramp)}
+          <p className={`milo-text-caption ${s.ctlNote}`}>组合写进地址栏（?route= &ramp=），复制链接就能分享；右上角「全局主题」也按这个组合整页放一遍——整页要重画几百格，最能看出它盖住加载的效果。右边是真实的首页。</p>
+        </div>
+        <SwapScreen key={`${route[0]}-${ramp[0]}`} tall kind={{ route: route[0], ramp: ramp[0] }} now={now} />
+      </div>
+      <div className={s.swapHead}><h3 className="milo-text-heading">走向 · R（渐变用上面选的 {ramp[1]}）</h3><Button kind="ghost" size="s" onClick={() => setPlayR((n) => n + 1)}>四格一起播</Button></div>
+      <div className={s.grid}>{ROUTE.map(([k, t, n]) => (
+        <figure key={k} className={s.cell} data-option={`swap-route-${k}`}>
+          <SwapScreen kind={{ route: k, ramp: ramp[0] }} now={now} play={playR} />
+          <figcaption><b className="milo-text-body-strong">{k === DEFAULT_SWAP.route ? `${t} · 默认` : t}</b><span className="milo-text-caption">{n}</span></figcaption>
+        </figure>
+      ))}</div>
+      <div className={s.swapHead}><h3 className="milo-text-heading">渐变 · G（走向用上面选的 {route[1]}）</h3><Button kind="ghost" size="s" onClick={() => setPlayG((n) => n + 1)}>四格一起播</Button></div>
+      <div className={s.grid}>{RAMP.map(([k, t, n]) => (
+        <figure key={k} className={s.cell} data-option={`swap-ramp-${k}`}>
+          <SwapScreen kind={{ route: route[0], ramp: k }} now={now} play={playG} />
+          <figcaption><b className="milo-text-body-strong">{k === DEFAULT_SWAP.ramp ? `${t} · 默认` : t}</b><span className="milo-text-caption">{n}</span></figcaption>
+        </figure>
+      ))}</div>
+      <p className="milo-text-caption">第一版（2026-10-10 上午，W1 墨滴晕开 / W2 潮水漫上 / W3 熔流垂落 / W4 双流交汇：纯色液体 + 一道荧光沿，Canvas 2D 画轮廓）用户看了「效果一般，没有渐变」，四种走向并进了第二版的 R 轴。</p>
+    </section>
+  );
+}
+
 /** 自由组合：三组各挑一个，套在真实的容量页上 */
 function Composer({ now }: { now: number }) {
   const [q, setQ] = useSearchParams();
@@ -271,7 +348,7 @@ function Composer({ now }: { now: number }) {
         {row('s', 'S 层动效', SCAN, sc, DEFAULT_LOOK.scan)}
         {row('l', '浅色人体', LIGHT_ALL, l, DEFAULT_LIGHT_LOOK)}
         {row('c', '浅色描边', LIGHT_CONTOUR, c, 'auto')}
-        <p className={`milo-text-caption ${s.ctlNote}`}>{dark ? '换了描边 / 填充 / S 层就是深色方案（只有 O2 + F1 + S9 有浅色版），右边固定深色。' : theme === 'light' ? '现在是浅色主题：右边按所选浅色方案画。' : '浅色人体在浅色主题下生效：地址加 ?theme=light，或在「我的 → 外观」切浅色。'}</p>
+        <p className={`milo-text-caption ${s.ctlNote}`}>{dark ? '换了描边 / 填充 / S 层就是深色方案（只有 O2 + F1 + S9 有浅色版），右边固定深色。' : theme === 'light' ? '现在是浅色主题：右边按所选浅色方案画。' : '浅色人体在浅色主题下生效：地址加 ?theme=light，或在「我的 → 主题」切浅色。'}</p>
       </div>
       <ContourFx.Provider value={o[0]}><FillFx.Provider value={f[0]}><ScanFx.Provider value={sc[0]}><LightLook.Provider value={l[0]}><LightContour.Provider value={c[0] === 'auto' ? null : c[0]}>
         <div className={s.phone} data-theme={dark ? 'dark' : undefined}><Stage tall label="容量页 · 组合预览"><BodyPage key={`${o[1]}${f[1]}${sc[1]}${l[1]}${c[1]}`} scenario="plain-prescription" now={now} initialFocus={null} /></Stage></div>
@@ -289,6 +366,7 @@ export function OptionsBoard({ now }: { now: number }) {
         <p className="milo-text-caption">同一个人、同一份演示数据，待选方案并排实时渲染。选定后定为默认，旧默认和落选的留在这里；规范在 /spec，组件在 /playground。</p>
       </header>
       <Composer now={now} />
+      <SwapBoard now={now} />
       <BaseBoard now={now} />
       <SelBoard now={now} />
       <section className={s.group} aria-label="L2 变体" id="light-v">

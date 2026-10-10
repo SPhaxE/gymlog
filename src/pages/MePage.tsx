@@ -18,7 +18,8 @@ import { saveTextFile } from '../data/exportFile';
 import { growthOf, messagesOf, riskOf, unreadOf } from '../data/me';
 import { mergeProfile, profileError, profileFacts, updateProfile } from '../data/profile';
 import { setSettings } from '../data/settings';
-import { setThemePref, useThemePref, type ThemePref } from '../styles/theme';
+import { useThemePref, type ThemePref } from '../styles/theme';
+import { switchTheme } from '../components/themeSwap';
 import { DEFAULT_PROFILE, demoState, store, useStore } from '../data/store';
 import { activate, cancel, dayText, proPeriods, proStatus, trialUsed, usePro } from '../data/pro';
 import { useSource } from '../data/useSource';
@@ -152,7 +153,7 @@ export function MePage({ scenario, now, onTab }: { scenario?: string; now: numbe
         <Sheet title="主题" meta="立即生效；只记在这台手机上" onClose={() => setThemeSheet(false)}>
           <div className={s.sheetBody}>
             <OptionGroup label="主题">
-              {THEMES.map(([k, t, d]) => <OptionCard key={k} title={t} detail={d} selected={themePref === k} onClick={() => { setThemePref(k); setThemeSheet(false); }} />)}
+              {THEMES.map(([k, t, d]) => <OptionCard key={k} title={t} detail={d} selected={themePref === k} onClick={() => { switchTheme(k); setThemeSheet(false); }} />)}
             </OptionGroup>
           </div>
         </Sheet>
