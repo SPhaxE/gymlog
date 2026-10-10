@@ -538,15 +538,15 @@ def light_checks(b, w, h):
             ok(look['light'] == 'multiply' and look['flow'] == 'multiply', f'{tag} 浅色·容量：柔光描边和熔流都是压暗混合（multiply），纸白上不提亮 {look}')
         if path == '/log':
             lum = pg.evaluate(BG_LUM, '[data-plate]'); ok(lum is not None and lum > 0.5, f'{tag} 浅色·记录：钢板是浅色钢面（亮度 {lum}）')
-            fx = pg.evaluate("""() => ({ lamp: document.querySelectorAll('[class*=_lamp_], [class*=_halo_]').length, beams: document.querySelectorAll('[data-plate] canvas[class*=_beams_]').length })""")
-            ok(fx['lamp'] == 0 and fx['beams'] == 0, f'{tag} 浅色·记录：浅色不打灯（没有灯、光晕、光束画布）{fx}')
+            fx = pg.evaluate("""() => ({ lamp: document.querySelectorAll('[class*=_lamp_], [data-plate] [class*=_halo_]').length, canvas: document.querySelectorAll('[data-plate] canvas').length,
+              back: getComputedStyle(document.querySelector('[data-plate] [class*=_back_]')).backgroundColor })""")
+            ok(fx['lamp'] == 0 and fx['canvas'] == 0, f'{tag} 浅色·记录：浅色不打灯（没有灯、光晕、光束 / 背板画布）{fx}')
             from PIL import Image
+            lime = tuple(int(v) for v in re.findall(r'\d+', fx['back'])[:3])
             pts = pg.evaluate(PLATE_HOLES)
-            pg.evaluate("(p) => { const [x, y] = p; const el = document.elementFromPoint(x, y); el && el.scrollIntoView({ block: 'center' }); }", pts[0]) if pts else None
-            pg.wait_for_timeout(300); pts = pg.evaluate(PLATE_HOLES)
             im = Image.open(io.BytesIO(pg.screenshot())).convert('RGB'); sx = im.width / w
-            lime = [im.getpixel((int(x * sx), int(y * sx))) for x, y in pts if 0 < y < h][:12]
-            ok(lime and all(g > 200 and g - bl > 120 and r > 150 for r, g, bl in lime), f'{tag} 浅色·记录：孔里露出荧光底板 {lime[:3]}')
+            px = [im.getpixel((int(x * sx), int(y * sx))) for x, y in pts if 2 < y < h - 2]
+            ok(px and all(max(abs(a - b) for a, b in zip(c, lime)) <= 3 for c in px), f'{tag} 浅色·记录：孔里露出平涂荧光底板 {lime}（{len(px)} 个孔 {px[:2]}）')
     if not args.no_shots and w == 360: pg.screenshot(path=os.path.join(OUT, 'light-last.png'))
     # 故事 8 幕：浅色水墨，页里没有深色岛，底是浅色，字对比度达标（等每一幕的字都出来）
     for k in range(1, 9):
