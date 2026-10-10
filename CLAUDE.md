@@ -1,6 +1,6 @@
 # 慢牛 Milo · 给 AI 客户端的入口
 
-**先读 [`HANDOFF.md`](HANDOFF.md)**（现状、架构、命令、素材管线、坑、下一步），再按需读 `docs/workflow.md`（工作流：本项目版 + 用户最初的模板原文；通用模板 v2 在 `docs/uiux-ai-workflow-v2.md`，新坑 / 新优化要回写进去，用户 2026-10-10：「这一部分与 App 是并重的」）→ `docs/brief.md`（决定记录）→ `docs/ia.md`（功能规格）→ `docs/DESIGN.md`（视觉与交互规范）。
+**先读 [`HANDOFF.md`](HANDOFF.md)**（现状、架构、命令、素材管线、坑、下一步），再按需读 `docs/workflow.md`（工作流：本项目版 + 用户最初的模板原文；通用的 UIUX-AI 协作工作流在 `docs/UIUX-AI协作工作流.md`，新坑 / 新优化要回写进去，用户 2026-10-10：「这一部分与 App 是并重的」）→ `docs/brief.md`（决定记录）→ `docs/ia.md`（功能规格）→ `docs/DESIGN.md`（视觉与交互规范）。
 
 ## 不许破的规则（摘自 HANDOFF §2 与 DESIGN §9.6）
 

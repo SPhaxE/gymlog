@@ -121,7 +121,7 @@ export function SteelPlate({ months, label = '近 3 个月训练', selected, onS
   const uid = useId().replace(/:/g, ''), u = (k: string) => `${uid}-${k}`, ref = (k: string) => `url(#${u(k)})`;
   const n = dotDays(months), lit = g.holes.length > 0, { r, pitch, h } = g;
   const dr = pitch * 0.12;  // 样冲点半径
-  const fig = useRef<HTMLElement>(null), back = useRef<HTMLCanvasElement>(null), front = useRef<HTMLCanvasElement>(null), halo = useRef<HTMLElement>(null);
+  const fig = useRef<HTMLElement>(null), back = useRef<HTMLCanvasElement>(null), front = useRef<HTMLCanvasElement>(null), motesRef = useRef<HTMLCanvasElement>(null), halo = useRef<HTMLElement>(null);
   const dark = look !== 'steel';
   // 浅色（所在主题，见 useElementTheme）：不点灯——没有灯、光晕、光束、浮尘，孔里是平涂荧光
   const light = useElementTheme(fig) === 'light';
@@ -138,18 +138,24 @@ export function SteelPlate({ months, label = '近 3 个月训练', selected, onS
   const draw = useRef<() => void>(() => {});
   useEffect(() => {
     if (!lit || light) return;
-    const el = fig.current!, bc = back.current!, fc = front.current!;
+    const el = fig.current!, bc = back.current!, fc = front.current!, mc = motesRef.current!;
     // 画不了（测试环境没有画布、或浏览器拒绝）就不点灯：钢板照样能看、能拖
-    if (!bc.getContext('2d') || !fc.getContext('2d') || typeof ResizeObserver === 'undefined') return;
+    if (!bc.getContext('2d') || !fc.getContext('2d') || !mc.getContext('2d') || typeof ResizeObserver === 'undefined') return;
     const pal = palette(el), dpr = Math.min(2, window.devicePixelRatio || 1);
     const still = dense || !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const beams = document.createElement('canvas'), dust = document.createElement('canvas');
+    // 性能（2026-10-10 巡检）：光束只在滚动 / 尺寸变化时画进 front（静态），浮尘单独一层 motes、每帧只画几十粒；
+    // 浮尘亮度按所在位置的光束强度取（光束缩成 1/4 的小图采样），等于原来「整张浮尘画布 destination-in 光束」的效果，省掉每帧三次整张画布合成
+    // 光束先不带模糊叠加画进 raw，再整张模糊一次画进 beams：叠加（lighter）是加法、模糊是线性的，先加后糊 = 逐个糊再加，
+    // 但只做一次模糊（原来每个孔的光束 + 泛光各糊一次，约 180 次大面积模糊，打开记录页卡好几秒）
+    const beams = document.createElement('canvas'), raw = document.createElement('canvas'), grid = document.createElement('canvas'), SUB = 4;
+    let ga: Uint8ClampedArray | null = null, gw = 0, gh = 0;
     let W = 0, H = 0, raf = 0, last = 0, visible = true;
     const motes = Array.from({ length: DUST }, (_, i) => { const q = rnd(101 + i); return { x: q(), y: q() * (1 + BEAM_SPILL), s: 0.4 + q() * 0.9, v: 0.15 + q() * 0.35, ph: q() * 6.28 }; });
     const size = () => {
       W = el.clientWidth; H = el.clientHeight;
-      for (const [c, hh] of [[bc, H], [fc, H * (1 + BEAM_SPILL)], [beams, H * (1 + BEAM_SPILL)], [dust, H * (1 + BEAM_SPILL)]] as const) { c.width = Math.round(W * dpr); c.height = Math.round(hh * dpr); }
-      fc.style.top = `${el.offsetTop}px`; fc.style.height = `${H * (1 + BEAM_SPILL)}px`;  // 光束画布和板顶对齐（上面可能有读数行）
+      for (const [c, hh] of [[bc, H], [fc, H * (1 + BEAM_SPILL)], [beams, H * (1 + BEAM_SPILL)], [raw, H * (1 + BEAM_SPILL)], [mc, H * (1 + BEAM_SPILL)]] as const) { c.width = Math.round(W * dpr); c.height = Math.round(hh * dpr); }
+      for (const c of [fc, mc]) { c.style.top = `${el.offsetTop}px`; c.style.height = `${H * (1 + BEAM_SPILL)}px`; }  // 光束 / 浮尘画布和板顶对齐（上面可能有读数行）
+      gw = Math.max(1, Math.ceil(beams.width / SUB)); gh = Math.max(1, Math.ceil(beams.height / SUB)); grid.width = gw; grid.height = gh;
     };
     // 灯的亮度（lamp，2026-10-09 用户：钢板上移后「关灯」，要渐变、不能瞬间，并且和透光联动）：
     // 板的中线在灯下面 0.8 个板高以上 = 全亮；中线升到灯的高度 = 全灭；中间平滑过渡。实际亮度按 motion/slow 的时间常数追目标值（滚得再快也是慢慢暗下去）
@@ -186,8 +192,8 @@ export function SteelPlate({ months, label = '近 3 个月训练', selected, onS
       }
       b.globalAlpha = 1;
       // 板前光束：每个孔沿「离开光源」的方向射出一束锥形光，叠加发光（重叠处更亮）
-      const c = beams.getContext('2d')!; c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, H * (1 + BEAM_SPILL));
-      c.globalCompositeOperation = 'lighter'; c.filter = `blur(${(r * k * 0.6).toFixed(2)}px)`;  // 糊一点：光束和泛光是雾，不是硬边的形
+      const c = raw.getContext('2d')!; c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, H * (1 + BEAM_SPILL));
+      c.globalCompositeOperation = 'lighter';
       const dmax = Math.hypot(W - lx, H - ly) * 1.05;
       for (const p of g.holes) {
         const x = p.x * k, y = p.y * k, rr = r * k, dx = x - lx, dy = y - ly, d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d, nx = -uy, ny = ux;
@@ -202,19 +208,25 @@ export function SteelPlate({ months, label = '近 3 个月训练', selected, onS
         bl.addColorStop(0, tint(pal.hot, 0.5 * I)); bl.addColorStop(0.3, tint(pal.lime, 0.2 * I)); bl.addColorStop(1, tint(pal.lime, 0));
         c.fillStyle = bl; c.fillRect(x - R2, y - R2, R2 * 2, R2 * 2);
       }
-      c.filter = 'none'; c.globalCompositeOperation = 'source-over';
+      c.globalCompositeOperation = 'source-over';
+      const bm = beams.getContext('2d')!; bm.setTransform(dpr, 0, 0, dpr, 0, 0); bm.clearRect(0, 0, W, H * (1 + BEAM_SPILL));
+      bm.filter = `blur(${(r * k * 0.6).toFixed(2)}px)`;  // 糊一点：光束和泛光是雾，不是硬边的形
+      bm.drawImage(raw, 0, 0, W, H * (1 + BEAM_SPILL)); bm.filter = 'none';
+      const f = fc.getContext('2d')!; f.setTransform(1, 0, 0, 1, 0, 0); f.clearRect(0, 0, fc.width, fc.height); f.drawImage(beams, 0, 0);
+      const gx = grid.getContext('2d', { willReadFrequently: true })!; gx.clearRect(0, 0, gw, gh); gx.drawImage(beams, 0, 0, gw, gh);
+      ga = gx.getImageData(0, 0, gw, gh).data;
     };
     const paintFront = (time: number) => {
-      const f = fc.getContext('2d')!; f.setTransform(1, 0, 0, 1, 0, 0); f.clearRect(0, 0, fc.width, fc.height); f.drawImage(beams, 0, 0);
-      // 浮尘：一粒粒画在一张单独的画布上，再只留下落在光束里的部分（destination-in），叠加到光束上
-      const d = dust.getContext('2d')!; d.setTransform(dpr, 0, 0, dpr, 0, 0); d.globalCompositeOperation = 'source-over'; d.clearRect(0, 0, W, H * (1 + BEAM_SPILL));
+      const d = mc.getContext('2d')!; d.setTransform(1, 0, 0, 1, 0, 0); d.clearRect(0, 0, mc.width, mc.height);
+      if (!ga) return;
+      d.setTransform(dpr, 0, 0, dpr, 0, 0);
       const tt = time / 1000;
       for (const m of motes) {
         const x = ((m.x + tt * m.v * 0.02) % 1) * W, y = ((m.y + tt * m.v * 0.012 + Math.sin(tt * 0.6 + m.ph) * 0.004) % (1 + BEAM_SPILL)) * H;
-        d.fillStyle = tint(pal.dust, 0.75 + 0.25 * Math.sin(tt * 1.7 + m.ph)); d.beginPath(); d.arc(x, y, m.s, 0, 6.283); d.fill();
+        const a = ga[(Math.min(gh - 1, Math.max(0, Math.floor((y * dpr) / SUB))) * gw + Math.min(gw - 1, Math.max(0, Math.floor((x * dpr) / SUB)))) * 4 + 3] / 255;
+        if (a < 0.01) continue;
+        d.fillStyle = tint(pal.dust, (0.75 + 0.25 * Math.sin(tt * 1.7 + m.ph)) * a); d.beginPath(); d.arc(x, y, m.s, 0, 6.283); d.fill();
       }
-      d.setTransform(1, 0, 0, 1, 0, 0); d.globalCompositeOperation = 'destination-in'; d.drawImage(beams, 0, 0);
-      f.globalCompositeOperation = 'lighter'; f.drawImage(dust, 0, 0); f.globalCompositeOperation = 'source-over';
     };
     const redraw = () => { paintStatic(); paintFront(performance.now()); };
     draw.current = redraw;
@@ -239,7 +251,7 @@ export function SteelPlate({ months, label = '近 3 个月训练', selected, onS
       if (!pending) pending = requestAnimationFrame(() => { pending = 0; redraw(); });
     };
     size(); on = target = aim(); redraw();
-    const ro = new ResizeObserver(() => { size(); redraw(); }); ro.observe(el);
+    const ro = new ResizeObserver(() => { if (el.clientWidth === W && el.clientHeight === H) return; size(); redraw(); }); ro.observe(el);   // 挂载时它会先报一次同样的尺寸，不重画
     const io = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible && !still && !raf) raf = requestAnimationFrame(loop); });
     io?.observe(el);
     document.addEventListener('scroll', onScroll, { capture: true, passive: true });
@@ -350,6 +362,7 @@ export function SteelPlate({ months, label = '近 3 个月训练', selected, onS
         {sel && <i className={s.focus} style={{ left: `${(sel.x / g.w) * 100}%`, top: `${(sel.y / h) * 100}%`, width: `${((r * 3.2) / g.w) * 100}%` }} aria-hidden="true" />}
       </figure>
       {lit && !light && <canvas ref={front} className={s.beams} aria-hidden="true" />}
+      {lit && !light && <canvas ref={motesRef} className={s.beams} aria-hidden="true" />}
     </div>
   );
 }

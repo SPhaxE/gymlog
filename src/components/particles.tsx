@@ -25,11 +25,12 @@ function ramp(cols: [number, number, number][], t: number, a: number) {
 
 type P = { x: number; y: number; vx: number; vy: number; age: number; life: number; size: number; k: number; th: number };
 
-export function ParticleField({ kind, anchor = [1, 0], spread = 1, strength = 1, inward, className }: {
+export function ParticleField({ kind, anchor = [1, 0], spread = 1, strength = 1, inward, soft, className }: {
   kind: ParticleKind;
   /** 光源在容器里的位置（0–1），默认右上角 */ anchor?: [number, number];
   /** 影响范围（相对容器长边） */ spread?: number;
   /** 亮度与密度（训练中的页面给小一点） */ strength?: number;
+  /** 外面压了模糊（OrbitPlate）：按 1 倍分辨率画，模糊后看不出差别，像素少 4 倍（2026-10-10 性能巡检） */ soft?: boolean;
   /** orbit：一圈圈轨道同时向内收缩，收到光源那一点（亮核），外面再补上新的一圈（2026-10-09 用户：增量页头用 P3 + 向内层层收缩到右上角的光点） */ inward?: boolean;
   className?: string;
 }) {
@@ -50,7 +51,7 @@ export function ParticleField({ kind, anchor = [1, 0], spread = 1, strength = 1,
     const q = (x: number) => Math.round(Math.max(0, Math.min(1, x)) * 255);
     const col = (t: number, a: number) => HEX[q(t)] + ALPHA[q(a)];
     const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const dpr = soft ? 1 : Math.min(2, window.devicePixelRatio || 1);
     let W = 0, H = 0, R = 1, ax = 0, ay = 0, ps: P[] = [];
     const rand = (a: number, b: number) => a + Math.random() * (b - a);
     // 新粒子：离光源的距离按 √ 分布再压一下（近处更密）
@@ -114,7 +115,8 @@ export function ParticleField({ kind, anchor = [1, 0], spread = 1, strength = 1,
         const a = lifeA * Math.pow(Math.max(0, 1 - f), 1.4) * strength;
         if (a <= 0.01) continue;
         const r = p.size * (kind === 'dust' ? 1.2 - f * 0.5 : 1);
-        c.fillStyle = col(f, a * 0.22); c.beginPath(); c.arc(p.x, p.y, r * 2.4, 0, Math.PI * 2); c.fill();   // 光晕
+        // 透明度量化到 0 的光晕不画（画了也是全透明，2026-10-10 性能巡检）
+        if (q(a * 0.22) > 0) { c.fillStyle = col(f, a * 0.22); c.beginPath(); c.arc(p.x, p.y, r * 2.4, 0, Math.PI * 2); c.fill(); }   // 光晕
         c.fillStyle = col(f * 0.6, a); c.beginPath(); c.arc(p.x, p.y, r, 0, Math.PI * 2); c.fill();           // 亮核
       }
       if (kind === 'orbit' && inward) {
@@ -143,7 +145,7 @@ export function ParticleField({ kind, anchor = [1, 0], spread = 1, strength = 1,
     document.addEventListener('visibilitychange', run);
     run();
     return () => { cancelAnimationFrame(raf); ro.disconnect(); io?.disconnect(); document.removeEventListener('visibilitychange', run); };
-  }, [kind, anchor[0], anchor[1], spread, strength, inward, theme]);   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [kind, anchor[0], anchor[1], spread, strength, inward, soft, theme]);   // eslint-disable-line react-hooks/exhaustive-deps
   return <canvas ref={ref} className={`${s.field} ${className ?? ''}`} aria-hidden="true" />;
 }
 
@@ -151,7 +153,7 @@ export function ParticleField({ kind, anchor = [1, 0], spread = 1, strength = 1,
  *  取代所有静态的配重片同心纹：增量页头、曲线页页头、牛龄页小牛背后（光点在正中）、「我的」成长卡、会员卡 / 开通成功、商城推荐卡。
  *  铺满最近的定位祖先（祖先要 isolation: isolate，它画在内容后面）。 */
 export function OrbitPlate({ anchor = [1, 0], spread = 0.75, strength = 0.8, className }: { anchor?: [number, number]; spread?: number; strength?: number; className?: string }) {
-  return <ParticleField kind="orbit" inward anchor={anchor} spread={spread} strength={strength} className={`${s.orbit} ${className ?? ''}`} />;
+  return <ParticleField kind="orbit" inward soft anchor={anchor} spread={spread} strength={strength} className={`${s.orbit} ${className ?? ''}`} />;
 }
 
 /** 主角卡的颗粒渐变光（2026-10-09 用户：主角卡 P0 的形是对的，但清晰度太低、没有噪点粒子渐变的动态 → 方案台 H 组）。

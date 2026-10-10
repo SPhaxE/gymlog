@@ -21,8 +21,8 @@ _Updated: 2026-10-10 23:30_
 - [x] 文档：DESIGN §1.5 第 9、10 条，brief 决定记录，`/playground` 说明（Coupon、PlanPicker、PropGlyph、FluidBackdrop、Nav、OptionCard、RewardCard）
 - [ ] 用户看浅色新效果（只告诉了改了什么、线上能看）
 - [ ] 用户在小米 15 上复查浅色性能（卡片带阴影；浅色流体背景现在不跑循环了，应更省）
-- [x] **工作流模板 v2.0**：`docs/uiux-ai-workflow-v2.md`（用户 2026-10-10：把 Milo 踩过的坑、优化思路整理进 UIUX-AI 工作流模板，「这一部分与 App 是并重的」）；`docs/workflow.md` 顶部、`CLAUDE.md` / `AGENTS.md` 指向它；v1.4 原文仍在 `docs/workflow.md` 附录（用户上传的「最初版本」与它逐字一致）
-- [ ] 用户看工作流 v2，有补充再回写（以后新坑 / 新优化都回写进 v2）
+- [x] **UIUX-AI 协作工作流**：`docs/UIUX-AI协作工作流.md`（用户 2026-10-10：把 Milo 踩过的坑、优化思路整理进工作流，「这一部分与 App 是并重的」；「存为 UIUX-AI 协作工作流即可，不需要对比，也没有版本之分」）——一份独立完整的工作流，用户最初给的模板原文仍在 `docs/workflow.md` 附录；以后新坑 / 新优化都回写进它
+- [x] **性能巡检（2026-10-10）**：4 倍降速逐页量首屏 / 长任务 / 静置帧率与 CPU。修了三处、视效不变：① 钢板（`plate.tsx`）光束静态化 + 浮尘单独一层按光束缩略图上色（记录页深色静置 25 → 59 帧）② 光束先叠加后整张模糊一次（打开记录页长任务 9.4 → 1.4 秒）③ 同心环粒子（`OrbitPlate`）外面有 CSS 模糊 → 1 倍分辨率画（增量页静置 30 → 48 帧、空闲长任务 640 → 0）；粒子跳过量化为全透明的光晕。主包 615 KB 里框架（react-dom、router）占大头，没拆。做法写进 `docs/UIUX-AI协作工作流.md` §5「性能与降级」
 - [ ] 作品集（暂不考虑）
 
 ## 3. Active Files
@@ -82,7 +82,7 @@ python3 scripts/regress_dark.py compare /tmp/r_base /tmp/r_cand        # 页面�
 - Env：Chromium `/opt/pw-browsers/chromium`；Python Playwright 先 `pip install playwright`；Pillow、numpy 在；GitHub 只能用 `mcp__github__*`
 
 ## 10. Open Questions
-- 工作流 v2 有没有要补的
+- 协作工作流有没有要补的
 - 浅色新效果用户还没看（荧光焦点 + 走查）；有意见再按 §7 的规矩改
 - 作品集：用户说暂不考虑（`docs/portfolio-handoff.md` §8 的问题等用户重提再问）
 

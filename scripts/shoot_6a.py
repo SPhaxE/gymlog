@@ -686,7 +686,8 @@ def log_checks(b, w, h):
       for (let y = 0; y < c.height; y += 2) for (let x = 0; x < c.width; x += 2) { const a = d[(y * c.width + x) * 4 + 3]; s += a; if (y > c.height * 0.62) lo += a; } return [lo / s, 0]; }"""
     beam = pg.evaluate("""() => { const c = document.querySelector('[data-plate] canvas[class*=_beams_]'); if (!c) return null; const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 16) if (d[i] > 12) n++; return n / (d.length / 16); }""")
     ok(beam is not None and beam > 0.08, f'{tag} 记录·钢板：孔前有光束（光束画布 {0 if beam is None else beam * 100:.0f}% 有光）')
-    snap = "() => { const c = document.querySelector('[data-plate] canvas[class*=_beams_]'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let h = 0; for (let i = 0; i < d.length; i += 97) h = (h * 31 + d[i]) | 0; return h; }"
+    # 光束是静态层、浮尘在它上面单独一层（2026-10-10 性能巡检），两张一起取哈希
+    snap = "() => { let h = 0; for (const c of document.querySelectorAll('[data-plate] canvas[class*=_beams_]')) { const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; for (let i = 0; i < d.length; i += 97) h = (h * 31 + d[i]) | 0; } return h; }"
     f0 = pg.evaluate(snap); pg.wait_for_timeout(400); f1 = pg.evaluate(snap)
     ok(f0 != f1, f'{tag} 记录·钢板：光束里的浮尘在飘')
     pg.evaluate('document.querySelector("[class*=_scroll_]").scrollTo(0, 0)'); pg.evaluate('document.querySelector("[class*=_body_]").style.paddingTop = ""'); pg.wait_for_timeout(500)
