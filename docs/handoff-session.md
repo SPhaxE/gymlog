@@ -107,10 +107,12 @@ python3 portfolio/render.py --png --pdf                               # 预览�
 
 屏幕必须纯 #00FF00（抠掉贴真屏），16:9，最高清；图里的文字一律不用。
 
+（2026-10-11 用户：第一版「太硬核」→ 改成精品健身房 / 日常感，原版作废）
+
 ```
-A: Photorealistic close-up of a hand with light chalk dust holding a Google Pixel 8 smartphone (Obsidian black) in portrait orientation, screen facing the camera. The screen is a perfectly flat, uniform pure #00FF00 green, no reflections, no glare, no UI, no text. Background: dim industrial gym in warm near-black tones, out-of-focus barbell and black iron weight plates, a single lime-yellow rim light from the upper right, subtle film grain, shallow depth of field, cinematic low-key lighting. 16:9 landscape; phone on the right third, large empty dark area on the left for typography. No logos, no text, no watermarks.
+A: Photorealistic lifestyle shot, a relaxed hand holding a Google Pixel 8 smartphone (Obsidian black) in portrait orientation, screen facing the camera, resting on the knee of someone sitting on a padded bench between sets, wearing clean minimal athleisure. The screen is a perfectly flat, uniform pure #00FF00 green, no reflections, no glare, no UI, no text. Background: a calm, modern boutique gym at dusk, warm wood and soft fabric textures, a neat rack of light dumbbells softly out of focus, large window with fading evening light, warm dim interior with one subtle lime-yellow accent light. Soft, natural, premium mood, gentle film grain, shallow depth of field. 16:9 landscape; phone on the right third, large calm dark area on the left for typography. No logos, no text, no watermarks.
 ```
 
 ```
-B: Photorealistic still life, a Google Pixel 8 smartphone (Obsidian black) lying face-up at a slight 3/4 angle on a stack of matte black iron weight plates, chalk dust on the plates. The screen is a perfectly flat, uniform pure #00FF00 green, no reflections, no UI, no text. Warm near-black background, one soft lime-yellow light grazing the plate edges from the upper right, subtle film grain, shallow depth of field, cinematic low-key lighting. 16:9 landscape; subject on the right half, empty dark negative space on the left for typography. No logos, no text, no watermarks.
+B: Photorealistic minimal still life, a Google Pixel 8 smartphone (Obsidian black) lying face-up at a slight 3/4 angle on a light oak bench, next to a folded towel, a reusable water bottle and one small rubber-coated dumbbell. The screen is a perfectly flat, uniform pure #00FF00 green, no reflections, no UI, no text. Calm modern gym interior in warm dark tones, soft window light grazing the scene from the upper right, a faint lime-yellow glow in the background bokeh, gentle film grain, shallow depth of field, editorial product-photo feel. 16:9 landscape; subject on the right half, empty dark negative space on the left for typography. No logos, no text, no watermarks.
 ```
