@@ -18,8 +18,8 @@ _Updated: 2026-10-11（作品集 · 搭建窗口：计划、脚手架、15 屏�
 - [x] 脚手架：`portfolio/lib/pf.py`、`shoot/app.py`（15 屏）、`shoot/device.py`、`shoot/aigc.py`（绿幕贴真屏）、`render.py`、`check.py`
 - [x] 15 个 App 屏 `portfolio/assets/screens/`（安全区上 48 dp / 下 24 dp + Android 14 状态栏 + 手势条；用户 10-11 确认样机）
 - [x] P01 两版用户通过，**PDF 两版都放**（10-11）
-- [x] P09 已推给用户 → **等用户审**（M02 帧：`python3 portfolio/shoot/motion.py m02 mag figure`）
-- [ ] P21 → 用户审（**一页一页来**，用户 10-11：「过了你自己那关还要过我这关」）
+- [x] P09 用户通过（时间刻度保留，10-11）（M02 帧：`python3 portfolio/shoot/motion.py m02 mag figure`）
+- [x] P21 已推给用户 → **等用户审**；通过后定调完成，按页序做 P02 起其余 19 页（**一页一页来**，用户 10-11：「过了你自己那关还要过我这关」）
 - [ ] 方案台 / 组件库 / 规范截图、动效帧（`shoot/motion.py`）
 - [ ] 其余 19 页按页序 → 每页自检 → 推 `main`
 - [ ] 合并 PDF、总览图，交用户验收
@@ -96,8 +96,7 @@ python3 portfolio/render.py --png --pdf                               # 预览�
 - Env：Chromium `/opt/pw-browsers/chromium`；容器网络能访问 npm、googlesource；Google Fonts 访问不了（字体用 `node_modules/@fontsource*`）
 
 ## 10. Open Questions
-- P09 是否通过（已推给用户）
-- P21 出来后整体风格是否通过
+- P21 是否通过（已推给用户）
 
 ## 11. Specific Next Steps
 1–4. ✓（计划、脚手架、15 屏、渲染与自检）
