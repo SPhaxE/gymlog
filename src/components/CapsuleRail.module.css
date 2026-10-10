@@ -7,8 +7,9 @@
 @keyframes leaderDot { from { opacity: 0; } }
 @keyframes leaderFade { to { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .leaders polyline, .leaders circle, .leadersOut { animation: none; } }
-.leaderOn polyline { fill: none; stroke: var(--milo-color-accent-default); stroke-width: var(--milo-stroke-focus); stroke-linejoin: round; stroke-linecap: round; }
-.leaderOn circle { fill: var(--milo-color-accent-default); }
+/* 引线是荧光当线：accent-ink（深色里就是荧光，浅色里深一档绿，2026-10-10 全局浅色） */
+.leaderOn polyline { fill: none; stroke: var(--milo-color-accent-ink); stroke-width: var(--milo-stroke-focus); stroke-linejoin: round; stroke-linecap: round; }
+.leaderOn circle { fill: var(--milo-color-accent-ink); }
 .rail { position: absolute; inset: 0; pointer-events: none; -webkit-user-select: none; user-select: none; }
 /* 手势层：胶囊列静止宽度、整列高；竖向滑动交给页面滚动，按住才进放大镜（见 CapsuleRail.tsx） */
 .hit { position: absolute; top: 0; bottom: 0; touch-action: pan-y; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }

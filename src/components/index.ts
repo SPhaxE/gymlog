@@ -2,7 +2,7 @@
 import './interactive.css';
 
 export { FluidBackdrop, grainTile, installGrain } from './atmosphere';
-export { BodyFigure, ContourFx, DEFAULT_LOOK, FillFx, ScanFx, type Anchors, type ContourFxKind, type FillFxKind, type ScanFxKind } from './BodyFigure';
+export { BodyFigure, ContourFx, DEFAULT_LIGHT_LOOK, DEFAULT_LOOK, FillFx, LIGHT_LOOKS, LightLook, ScanFx, type Anchors, type ContourFxKind, type FillFxKind, type LightLookKind, type LightLookSpec, type ScanFxKind } from './BodyFigure';
 export { BodyPicker } from './BodyPicker';
 export { Button, IconButton, type ButtonKind } from './Button';
 export { Capsule, CapsuleRail } from './CapsuleRail';

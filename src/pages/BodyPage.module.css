@@ -15,7 +15,3 @@
 @keyframes cardOut { to { opacity: 0; transform: translateX(28%); } }
 @media (prefers-reduced-motion: reduce) { .cardIn, .cardOut { animation: none; } }
 .big { display: flex; align-items: baseline; justify-content: space-between; color: var(--milo-color-text-primary); }
-/* 浅色模式：舞台是一块深色「热成像观察窗」（2026-10-10）——人体的金属渐变、熔流、胶囊都是为暗底调的，放在纸白上会糊成一团暗影。
-   底色直接画在舞台上（不是伪元素）：里面的字算对比度时，背景就是这块深色 */
-:root[data-theme='light'] .stage { border-radius: var(--milo-radius-l); box-shadow: 0 var(--milo-space-s) var(--milo-space-2xl) var(--milo-prim-black-a16); /* 舞台自己是深色岛，阴影按纸白页面取浅的 */
-  background: radial-gradient(120% 80% at 30% 40%, var(--milo-color-bg-raised), transparent 70%), var(--milo-color-bg-base); }
