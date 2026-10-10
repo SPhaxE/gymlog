@@ -19,3 +19,11 @@ body {
 /* 排版（2026-10-08 走查 1 #19 #23 #24）：标题折行时两行等长（不留一个字孤零零在第二行），正文末行不留孤字 */
 h1, h2, h3, [class*='milo-text-title'], .milo-text-heading { text-wrap: balance; }
 p, .milo-text-body, .milo-text-caption { text-wrap: pretty; }
+
+/* 浅色的「拟真阴影」（2026-10-10 用户：很多组件多了描边，不好，改拟真阴影、尽量不用描边）：
+   浅色里卡片 / Chip / 胶囊不再用发丝描边，改成两层真实的阴影——贴纸的接触影 + 往下的环境影；凹槽 / 输入框用内阴影（凹进去）。深色里的发丝描边不变。 */
+[data-theme='light'] {
+  --depth-1: 0 var(--milo-stroke-hairline) var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-color-shadow-float) 50%, transparent), 0 var(--milo-space-2xs) var(--milo-space-m) var(--milo-color-shadow-float);
+  --depth-0: 0 var(--milo-stroke-hairline) var(--milo-space-2xs) color-mix(in srgb, var(--milo-color-shadow-float) 70%, transparent);
+  --depth-sink: inset 0 var(--milo-stroke-hairline) var(--milo-space-xs) color-mix(in srgb, var(--milo-color-shadow-float) 90%, transparent);
+}

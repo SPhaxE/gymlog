@@ -9,3 +9,6 @@
 .stat i { font-style: normal; color: var(--milo-color-text-secondary); }
 .empty { margin: 0; color: var(--milo-color-text-secondary); }
 .note { margin: 0; color: var(--milo-color-text-secondary); text-wrap: pretty; }
+
+/* 浅色：发丝描边 → 拟真阴影（2026-10-10 用户：尽量不用描边；深色不变） */
+[data-theme='light'] .stats { box-shadow: var(--depth-1); }

@@ -91,3 +91,6 @@
 .pausedBar i.on { background: var(--milo-color-data-fill); }
 .addGlyph { width: var(--milo-space-3xl); height: var(--milo-space-3xl); }
 .addHint { font-size: var(--milo-font-size-caption); }
+
+/* 浅色：发丝描边 → 拟真阴影（2026-10-10 用户：尽量不用描边；深色不变） */
+[data-theme='light'] .done { box-shadow: var(--depth-1); }

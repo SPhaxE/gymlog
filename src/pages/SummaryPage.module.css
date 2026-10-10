@@ -47,3 +47,6 @@
 .cta { isolation: isolate; }
 .cta::before { content: ''; position: absolute; z-index: -1; pointer-events: none; left: calc(var(--milo-size-gutter) * -1); right: calc(var(--milo-size-gutter) * -1);
   top: calc(var(--milo-space-3xl) * -1); bottom: calc(var(--milo-space-2xl) * -1); background: linear-gradient(to bottom, transparent, var(--milo-color-bg-base) 55%); }
+
+/* 浅色：发丝描边 → 拟真阴影（2026-10-10 用户：尽量不用描边；深色不变） */
+[data-theme='light'] .rate button { box-shadow: var(--depth-1); }

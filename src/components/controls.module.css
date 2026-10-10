@@ -58,3 +58,13 @@
 .stepBars { flex: 1; display: flex; gap: var(--milo-space-xs); }
 .stepBars i { flex: 1; height: var(--milo-space-xs); border-radius: var(--milo-radius-pill); background: var(--milo-color-data-track); transition: background-color var(--milo-motion-base) var(--milo-motion-ease-standard); }
 .stepBars i.stepOn { background: var(--milo-color-control-selected); }
+/* 浅色选中态（2026-10-10 荧光治理第 4 期，用户：整体深色太多）：大块纯黑的选中态改成「白浮起 / 淡荧光 + 深绿细边」，荧光面积不增加（淡荧光是点缀级，不是荧光面）；导航选中滑块仍是整个 App 的签名，浅色里换成浅凹槽。深色不走这里 */
+
+/* 浅色：发丝描边 → 拟真阴影（2026-10-10 用户：尽量不用描边；深色不变） */
+[data-theme='light'] .chip { box-shadow: var(--depth-1); }
+[data-theme='light'] .option { box-shadow: var(--depth-1); }
+[data-theme='light'] .stepper { box-shadow: var(--depth-sink); }
+[data-theme='light'] .fieldBox { box-shadow: var(--depth-sink); }
+[data-theme='light'] .chipOn { background-color: color-mix(in srgb, var(--milo-color-accent-default) 38%, var(--milo-color-bg-raised)); color: var(--milo-color-text-primary);
+  box-shadow: 0 var(--milo-stroke-hairline) 0 color-mix(in srgb, var(--milo-color-accent-rim) 35%, transparent), 0 var(--milo-space-2xs) var(--milo-space-s) color-mix(in srgb, var(--milo-color-accent-rim) 25%, transparent); }
+[data-theme='light'] .switchOn { background-color: var(--milo-color-accent-default); box-shadow: 0 var(--milo-stroke-hairline) 0 color-mix(in srgb, var(--milo-color-accent-rim) 40%, transparent), 0 var(--milo-space-2xs) var(--milo-space-xs) color-mix(in srgb, var(--milo-color-accent-rim) 28%, transparent); }

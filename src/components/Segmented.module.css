@@ -7,3 +7,8 @@
   top: calc((var(--milo-size-segment-h) - var(--milo-space-2xs) * 2 - var(--milo-size-hit-min)) / 2); bottom: calc((var(--milo-size-segment-h) - var(--milo-space-2xs) * 2 - var(--milo-size-hit-min)) / 2); }
 .on { background-color: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); font-weight: 700; }
 .seg[aria-disabled='true'] .on { opacity: 1; }
+/* 浅色选中态（2026-10-10 荧光治理第 4 期，用户：整体深色太多）：大块纯黑的选中态改成「白浮起 / 淡荧光 + 深绿细边」，荧光面积不增加（淡荧光是点缀级，不是荧光面）；导航选中滑块仍是整个 App 的签名，浅色里换成浅凹槽。深色不走这里 */
+[data-theme='light'] .on { background-color: var(--milo-color-bg-raised); color: var(--milo-color-text-primary); box-shadow: var(--depth-1); }
+
+/* 浅色：发丝描边 → 拟真阴影（2026-10-10 用户：尽量不用描边；深色不变） */
+[data-theme='light'] .seg { background: var(--milo-color-bg-raised-2); box-shadow: var(--depth-sink); }

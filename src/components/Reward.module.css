@@ -35,7 +35,7 @@
   -webkit-mask: radial-gradient(90% 60% at 50% 22%, black, transparent 72%); mask: radial-gradient(90% 60% at 50% 22%, black, transparent 72%); }
 .card[data-milo] { background: radial-gradient(100% 70% at 50% 25%, color-mix(in srgb, var(--milo-color-accent-default) 42%, transparent), transparent 72%), var(--milo-color-bg-sheet); }
 /* 浅色：纸白卡和纸白遮罩分不开，加一圈细描边 + 浮层阴影 */
-[data-theme='light'] .card { box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default), 0 var(--milo-space-s) var(--milo-space-3xl) var(--milo-color-shadow-float); }
+[data-theme='light'] .card { box-shadow: var(--depth-1), 0 var(--milo-space-s) var(--milo-space-3xl) var(--milo-color-shadow-float); }
 @property --spin { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
 .border { position: absolute; inset: 0; z-index: -2; border-radius: inherit; padding: var(--milo-stroke-focus); pointer-events: none;
   background: conic-gradient(from var(--spin), transparent 0 50%, var(--milo-color-accent-default) 72%, var(--milo-prim-bone-100) 78%, transparent 92%);

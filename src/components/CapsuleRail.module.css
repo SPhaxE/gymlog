@@ -33,6 +33,8 @@
 .focus { padding: 0 var(--milo-space-l); border-radius: var(--milo-radius-l); background: var(--milo-color-accent-default);
   /* 背后泛光（走查 1 #12）：这屏唯一的荧光焦点 */
   box-shadow: 0 0 0 var(--milo-stroke-ring-gap) var(--milo-color-accent-glow-ring), 0 0 var(--milo-space-4xl) var(--milo-space-s) var(--milo-color-accent-glow), 0 var(--milo-space-s) var(--milo-space-2xl) var(--milo-color-shadow-float); }
+[data-theme='light'] .focus {
+  box-shadow: 0 0 0 var(--milo-stroke-ring-gap) var(--milo-color-accent-glow-ring), 0 var(--milo-stroke-focus) 0 color-mix(in srgb, var(--milo-color-accent-rim) 38%, transparent), 0 var(--milo-space-xs) var(--milo-space-m) color-mix(in srgb, var(--milo-color-accent-rim) 30%, transparent), 0 0 var(--milo-space-4xl) var(--milo-space-s) var(--milo-color-accent-glow); }
 /* 焦点：左边信息三行（手指挡不到），名称在最右（手指底下，放大前已看过）；名称最多两行，右对齐 */
 .fRow { position: relative; display: flex; align-items: center; gap: var(--milo-space-s); min-width: 0; }
 .fInfo { display: flex; flex-direction: column; gap: var(--milo-space-2xs); flex: none; color: var(--milo-color-text-on-accent-secondary); }

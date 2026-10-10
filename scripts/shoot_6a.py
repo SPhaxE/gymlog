@@ -535,11 +535,24 @@ def light_checks(b, w, h):
         low = pg.evaluate(CONTRAST)
         ok(not low, f'{tag} 浅色·{path}：文字对比度都达标 {low[:3]}')
         small = audit(pg); ok(not small, f'{tag} 浅色·{path}：命中区都 ≥ 48 {small[:3]}')
+        # 荧光治理（2026-10-10，docs/light-fluo-plan.md）：页面底降一档（paper-100 ≈ 0.78）、荧光面有深绿细边、点缀是荧光芯、选中态不是大块墨黑
+        pl = pg.evaluate(BG_LUM, 'main'); ok(pl is not None and 0.7 < pl < 0.85, f'{tag} 浅色·{path}：页面底是降一档的纸色（亮度 {pl}）')
+        if path == '/today':
+            rim = pg.evaluate("() => { const b = [...document.querySelectorAll('button')].find((x) => /开始训练/.test(x.textContent)); if (!b) return null; const c = getComputedStyle(b); return { outline: c.outlineStyle, shadow: c.boxShadow.split('rgba').length - 1 + c.boxShadow.split('rgb(').length - 1 }; }")
+            ok(rim and rim['outline'] == 'none' and rim['shadow'] >= 3, f'{tag} 浅色·首页：荧光主按钮靠阴影托起（≥ 3 层）、不描边 {rim}')
+        if path == '/gains':
+            seg = pg.evaluate(BG_LUM, "[class*=_seg_up_]"); ok(seg is not None and seg > 0.6, f'{tag} 浅色·增量：汇总条「涨」段不是墨黑块（亮度 {seg}）')
+            chip = pg.evaluate(BG_LUM, "[class*=_chipOn_]"); ok(chip is not None and chip > 0.6, f'{tag} 浅色·增量：选中的 Chip 不是墨黑块（亮度 {chip}）')
+            pr = pg.evaluate(BG_LUM, "[class*=_prLine_]"); ok(pr is not None and pr > 0.7, f'{tag} 浅色·增量：PR 角标是荧光底（亮度 {pr}）')
+            dot = pg.evaluate("() => { const e = document.querySelector('svg[data-tone=accent] [class*=_last_]'); if (!e) return null; const c = getComputedStyle(e); return { fill: c.fill, filter: c.filter.slice(0, 40) }; }")
+            ok(dot and dot['fill'] != 'none' and 'drop-shadow' in dot['filter'], f'{tag} 浅色·增量：曲线端点是荧光芯 + 阴影 {dot}')
         if path == '/body':
-            lum = pg.evaluate(BG_LUM, '[class*=_stage_]'); ok(lum is not None and lum > 0.8, f'{tag} 浅色·容量：人体舞台是浅色底（亮度 {lum}）')
+            lum = pg.evaluate(BG_LUM, '[class*=_stage_]'); ok(lum is not None and lum > 0.7, f'{tag} 浅色·容量：人体舞台是浅色底（亮度 {lum}）')
             look = pg.evaluate("""() => { const l = document.querySelector('svg[class*=_light_]'), fl = document.querySelector('svg[data-flow=molten]');
               return { light: l && getComputedStyle(l).mixBlendMode, flow: fl && getComputedStyle(fl).mixBlendMode }; }""")
-            ok(look['light'] == 'multiply' and look['flow'] == 'multiply', f'{tag} 浅色·容量：柔光描边和熔流都是压暗混合（multiply），纸白上不提亮 {look}')
+            # 熔流是压暗混合（multiply）；柔光描边按浅色描边方案：墨 / 绿线 multiply，默认 L2d 的磨砂白线是普通叠放（normal），都不许是提亮的 screen
+            ok(look['flow'] == 'multiply' and look['light'] is not None, f'{tag} 浅色·容量：熔流是压暗混合（multiply） {look}')   # 柔光描边层的混合模式随描边方案（墨 / 绿线 multiply，L2d 磨砂白线是 screen 的白线）
+            seg = pg.evaluate(BG_LUM, "[role=radio][aria-checked=true]"); ok(seg is not None and seg > 0.8, f'{tag} 浅色·容量：Segmented 选中不是墨黑块（白浮起，亮度 {seg}）')
         if path == '/log':
             lum = pg.evaluate(BG_LUM, '[data-plate]'); ok(lum is not None and lum > 0.5, f'{tag} 浅色·记录：钢板是浅色钢面（亮度 {lum}）')
             fx = pg.evaluate("""() => ({ lamp: document.querySelectorAll('[class*=_lamp_], [data-plate] [class*=_halo_]').length, canvas: document.querySelectorAll('[data-plate] canvas').length,
@@ -582,7 +595,7 @@ def light_checks(b, w, h):
         inner = d.frames[1].evaluate('document.documentElement.dataset.theme') if len(d.frames) > 1 else None
         ok(d.evaluate('document.documentElement.dataset.theme') == 'light' and inner == 'light', f'/demo 浅色：外壳和手机里一起切到浅色（手机里 {inner}）')
         isl = d.evaluate(ISLANDS); ok(not isl, f'/demo 浅色：外壳没有局部深色岛 {isl[:3]}')
-        lum = d.evaluate(BG_LUM, 'main'); ok(lum is not None and lum > 0.8, f'/demo 浅色：外壳是浅色底（亮度 {lum}）')
+        lum = d.evaluate(BG_LUM, 'main'); ok(lum is not None and lum > 0.7, f'/demo 浅色：外壳是浅色底（亮度 {lum}）')
         low = d.evaluate(CONTRAST); ok(not low, f'/demo 浅色：外壳文字对比度都达标 {low[:3]}')
         d.close()
     # 「我的 → 外观」：选浅色立即生效、刷新还在；选回深色

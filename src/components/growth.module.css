@@ -223,3 +223,15 @@
   border: 0; background: none; color: var(--milo-color-text-secondary); font: inherit; }
 @keyframes riskIn { from { opacity: 0; transform: translateY(var(--milo-space-l)); } }
 @media (prefers-reduced-motion: reduce) { .risk { animation: none; } }
+/* 浅色荧光点缀配方（2026-10-10 荧光治理第 2 期）：点 / 标 / 条 = 荧光芯（accent-default）+ 深绿细边（accent-rim）+ 光晕，不再是深绿实心——浅色里深绿读成「一个深色点」；字仍用 accent-ink。深色不走这里 */
+[data-theme='light'] .pips .pipOn { background: var(--milo-color-accent-default); box-shadow: 0 var(--milo-stroke-hairline) var(--milo-space-2xs) color-mix(in srgb, var(--milo-color-accent-rim) 55%, transparent); }
+[data-theme='light'] .fill { box-shadow: inset 0 calc(var(--milo-stroke-hairline) * -1) 0 color-mix(in srgb, var(--milo-color-accent-rim) 35%, transparent); }
+[data-theme='light'] .week i.on { box-shadow: 0 var(--milo-stroke-hairline) var(--milo-space-2xs) color-mix(in srgb, var(--milo-color-accent-rim) 55%, transparent); }
+
+/* 浅色：发丝描边 → 拟真阴影（2026-10-10 用户：尽量不用描边；深色不变） */
+[data-theme='light'] .badgeC { box-shadow: var(--depth-1); }
+[data-theme='light'] .gcard { box-shadow: var(--depth-1); }
+[data-theme='light'] .hero { box-shadow: var(--depth-1); }
+[data-theme='light'] .tip { box-shadow: var(--depth-1); }
+[data-theme='light'] .plan { box-shadow: var(--depth-1); }
+[data-theme='light'] .risk { box-shadow: var(--depth-1); }

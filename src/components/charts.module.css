@@ -51,3 +51,8 @@
 .spark[data-tone='lime'] .line { stroke: var(--milo-color-data-spark-line); }
 .spark[data-tone='lime'] .area { fill: color-mix(in srgb, var(--milo-color-data-spark-area) 45%, transparent); }
 .spark[data-tone='lime'] .last, .spark[data-tone='lime'] .pr { fill: var(--milo-color-accent-ink); filter: drop-shadow(0 0 var(--milo-space-2xs) var(--milo-color-accent-glow)); }
+/* 浅色荧光点缀配方（2026-10-10 荧光治理第 2 期）：点 / 标 / 条 = 荧光芯（accent-default）+ 深绿细边（accent-rim）+ 光晕，不再是深绿实心——浅色里深绿读成「一个深色点」；字仍用 accent-ink。深色不走这里 */
+[data-theme='light'] .spark[data-tone='accent'] .last, [data-theme='light'] .spark[data-tone='accent'] .pr, [data-theme='light'] .spark[data-tone='lime'] .last, [data-theme='light'] .spark[data-tone='lime'] .pr {
+  fill: var(--milo-color-accent-default); filter: drop-shadow(0 var(--milo-stroke-hairline) var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-color-accent-rim) 70%, transparent)) drop-shadow(0 0 var(--milo-space-2xs) var(--milo-color-accent-glow)); }
+[data-theme='light'] .spark[data-tone='accent'] .area, [data-theme='light'] .spark[data-tone='lime'] .area { fill: color-mix(in srgb, var(--milo-color-accent-default) 22%, transparent); }
+[data-theme='light'] .on { fill: var(--milo-color-accent-default); stroke: none; filter: drop-shadow(0 var(--milo-stroke-hairline) var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-color-accent-rim) 70%, transparent)); }

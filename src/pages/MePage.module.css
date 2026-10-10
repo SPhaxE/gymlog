@@ -14,3 +14,6 @@
 .minutes { display: grid; gap: var(--milo-space-m); justify-items: start; }
 .minutes p { margin: 0; color: var(--milo-color-text-secondary); }
 .more { justify-self: start; min-height: var(--milo-size-hit-min); padding: 0; border: 0; background: none; font: inherit; font-size: var(--milo-font-size-caption); color: var(--milo-color-text-secondary); text-decoration: underline; text-underline-offset: var(--milo-space-2xs); }
+
+/* 浅色：发丝描边 → 拟真阴影（2026-10-10 用户：尽量不用描边；深色不变） */
+[data-theme='light'] .card { box-shadow: var(--depth-1); }

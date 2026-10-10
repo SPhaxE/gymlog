@@ -162,3 +162,10 @@
 .warmOn { background: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); box-shadow: none; }
 .warmOn i { color: var(--milo-color-control-selected-ink); }
 .warmNote { grid-column: 1 / -1; color: var(--milo-color-text-secondary); }
+
+/* 浅色：发丝描边 → 拟真阴影（2026-10-10 用户：尽量不用描边；深色不变） */
+[data-theme='light'] .set_current { box-shadow: var(--depth-1); }
+[data-theme='light'] .set_editing { box-shadow: var(--depth-1); }
+[data-theme='light'] .session { box-shadow: var(--depth-1); }
+[data-theme='light'] .mediaBox { box-shadow: var(--depth-1); }
+[data-theme='light'] .keyStep { box-shadow: var(--depth-1); }

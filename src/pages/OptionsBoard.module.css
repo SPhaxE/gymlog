@@ -61,7 +61,16 @@
 /* 局部主题的格子（L 组固定浅色、深色存档固定深色）：字色要在格子里重新取一次——color 继承的是外面主题算好的值 */
 .phone[data-theme], .stage[data-theme] { color: var(--milo-color-text-primary); }
 
-/* 浅色底色 B 的「荧光加框」（2026-10-10 荧光治理第 1 期）：荧光面外一圈深绿细边 + 下沿深一档的绿，让荧光有容器、在纸白上也读成「发光的面」；只在方案台的 B3 / B4 格里生效 */
-[data-fluo='rim'] button[class*='_primary_'], [data-fluo='rim'] [class*='_focus_'][role='option'], [data-fluo='rim'] [class*='_headLit_'] {
-  outline: var(--milo-stroke-hairline) solid color-mix(in srgb, var(--milo-prim-lime-750) 55%, transparent); outline-offset: calc(var(--milo-stroke-hairline) * -1);
-  background-image: linear-gradient(to top, var(--milo-prim-lime-600) 0 var(--milo-stroke-focus), transparent var(--milo-stroke-focus)); }
+/* 浅色底色 B（2026-10-10 荧光治理第 1 期，用户选 B4 并入全局浅色）：这里的格子用覆盖值还原当时的各方案——off = 不加框（还原全局已有的框），rim = 加框（和全局一样） */
+[data-fluo='off'] button[class*='_primary_']:not(:disabled) { box-shadow: 0 0 var(--milo-space-2xl) var(--milo-color-accent-glow); }
+[data-fluo='off'] [class*='_focus_'][role='option'] { box-shadow: 0 0 0 var(--milo-stroke-ring-gap) var(--milo-color-accent-glow-ring), 0 0 var(--milo-space-4xl) var(--milo-space-s) var(--milo-color-accent-glow), 0 var(--milo-space-s) var(--milo-space-2xl) var(--milo-color-shadow-float); }
+[data-fluo='off'] [class*='_headLit_'] { box-shadow: none; }
+
+/* 浅色选中态 S0（原来的墨黑）：覆盖还原全局已有的 S3 */
+[data-sel='old'] [role='radiogroup'] { background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
+[data-sel='old'] [role='radiogroup'] [aria-checked='true'] { background-color: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); box-shadow: none; }
+[data-sel='old'] [class*='_chipOn_'] { background-color: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); box-shadow: none; }
+[data-sel='old'] [class*='_switchOn_'] { background-color: var(--milo-color-control-selected); box-shadow: none; }
+[data-sel='old'] [class*='_seg_up_'] { background: var(--milo-color-control-selected); color: var(--milo-color-control-selected-ink); box-shadow: none; }
+[data-sel='old'] nav [class*='_pill_'] { background: var(--milo-color-nav-pill); box-shadow: none; }
+[data-sel='old'] nav a[aria-current='page'] { color: var(--milo-color-nav-pill-ink); }

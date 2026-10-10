@@ -84,3 +84,11 @@ li.listRow + li.listRow::before, .rowItem + .rowItem::before, li.listRow + .rowI
 .heat em { font-style: normal; margin-left: auto; }
 .heatBar { position: relative; flex: 0 1 calc(var(--milo-size-screen-w) * 0.36); height: var(--milo-space-s); border-radius: var(--milo-radius-pill); }
 .heatBar b { position: absolute; top: calc(var(--milo-space-2xs) * -1); bottom: calc(var(--milo-space-2xs) * -1); width: var(--milo-stroke-hairline); background: var(--tick, var(--milo-color-text-primary)); }
+/* 浅色荧光点缀配方（2026-10-10 荧光治理第 2 期）：点 / 标 / 条 = 荧光芯（accent-default）+ 深绿细边（accent-rim）+ 光晕，不再是深绿实心——浅色里深绿读成「一个深色点」；字仍用 accent-ink。深色不走这里 */
+[data-theme='light'] .tag_accent { background: var(--milo-color-accent-default); color: var(--milo-color-text-on-accent); box-shadow: 0 var(--milo-stroke-hairline) 0 color-mix(in srgb, var(--milo-color-accent-rim) 40%, transparent), 0 var(--milo-space-2xs) var(--milo-space-xs) color-mix(in srgb, var(--milo-color-accent-rim) 28%, transparent); }
+
+/* 浅色：发丝描边 → 拟真阴影（2026-10-10 用户：尽量不用描边；深色不变） */
+[data-theme='light'] .tag_neutral { box-shadow: var(--depth-1); }
+[data-theme='light'] .card { box-shadow: var(--depth-1); }
+[data-theme='light'] .hero { box-shadow: var(--depth-1); }
+[data-theme='light'] .tile { box-shadow: var(--depth-1); }

@@ -29,6 +29,7 @@
   --milo-prim-paper-0: #F2F0EA;
   --milo-prim-paper-50: #FCFBF8;
   --milo-prim-paper-100: #E8E5DC;
+  --milo-prim-paper-150: #E0DDD3;
   --milo-prim-paper-200: #DCD8CD;
   --milo-prim-paper-300: #C4BFB1;
   --milo-prim-ink-600: #5F5D56;
@@ -40,6 +41,7 @@
   --milo-prim-lime-550-a40: #C9F23466;
   --milo-prim-lime-550-a20: #C9F23433;
   --milo-prim-red-600: #C2362A;
+  --milo-prim-red-700: #AE2E23;
   --milo-prim-bone-200: #DDD5C0;
   --milo-prim-black-a40: #00000066;
   --milo-prim-black-a16: #00000029;
@@ -60,6 +62,7 @@
   --milo-color-accent-glow: var(--milo-prim-lime-500-a33);
   --milo-color-accent-glow-ring: var(--milo-prim-lime-500-a13);
   --milo-color-accent-ink: var(--milo-prim-lime-500);
+  --milo-color-accent-rim: var(--milo-prim-lime-500);
   --milo-color-brand-mark: var(--milo-prim-bone-100);
   --milo-color-brand-mark-lit: var(--milo-prim-lime-500);
   --milo-color-action-primary: var(--milo-prim-bone-100);
@@ -239,6 +242,7 @@
   --milo-color-accent-glow: var(--milo-prim-lime-500-a33);
   --milo-color-accent-glow-ring: var(--milo-prim-lime-500-a13);
   --milo-color-accent-ink: var(--milo-prim-lime-500);
+  --milo-color-accent-rim: var(--milo-prim-lime-500);
   --milo-color-brand-mark: var(--milo-prim-bone-100);
   --milo-color-brand-mark-lit: var(--milo-prim-lime-500);
   --milo-color-action-primary: var(--milo-prim-bone-100);
@@ -289,9 +293,9 @@
 }
 [data-theme='light'] {
   color-scheme: light;
-  --milo-color-bg-base: var(--milo-prim-paper-0);
+  --milo-color-bg-base: var(--milo-prim-paper-100);
   --milo-color-bg-raised: var(--milo-prim-paper-50);
-  --milo-color-bg-raised-2: var(--milo-prim-paper-100);
+  --milo-color-bg-raised-2: var(--milo-prim-paper-150);
   --milo-color-bg-sheet: var(--milo-prim-paper-50);
   --milo-color-bg-scrim: var(--milo-prim-black-a40);
   --milo-color-line-default: var(--milo-prim-paper-200);
@@ -301,17 +305,18 @@
   --milo-color-text-disabled: var(--milo-prim-ink-500);
   --milo-color-text-on-accent: var(--milo-prim-gray-0);
   --milo-color-text-on-accent-secondary: var(--milo-prim-lime-ink);
-  --milo-color-accent-default: var(--milo-prim-lime-550);
+  --milo-color-accent-default: var(--milo-prim-lime-500);
   --milo-color-accent-glow: var(--milo-prim-lime-550-a40);
   --milo-color-accent-glow-ring: var(--milo-prim-lime-550-a20);
   --milo-color-accent-ink: var(--milo-prim-lime-750);
+  --milo-color-accent-rim: var(--milo-prim-lime-750);
   --milo-color-brand-mark: var(--milo-prim-ink-900);
   --milo-color-brand-mark-lit: var(--milo-prim-lime-700);
   --milo-color-action-primary: var(--milo-prim-ink-900);
   --milo-color-action-primary-ink: var(--milo-prim-paper-50);
   --milo-color-control-selected: var(--milo-prim-ink-900);
   --milo-color-control-selected-ink: var(--milo-prim-paper-50);
-  --milo-color-feedback-danger: var(--milo-prim-red-600);
+  --milo-color-feedback-danger: var(--milo-prim-red-700);
   --milo-color-data-track: var(--milo-prim-paper-200);
   --milo-color-data-fill: var(--milo-prim-gray-0);
   --milo-color-data-tick: var(--milo-prim-gray-0);
@@ -334,8 +339,8 @@
   --milo-color-nav-rest: var(--milo-prim-bone-500);
   --milo-color-shadow-float: var(--milo-prim-black-a16);
   --milo-color-fx-glow-deep: var(--milo-prim-lime-300);
-  --milo-color-fx-glow-mid: var(--milo-prim-lime-600);
-  --milo-color-fx-glow-hot: var(--milo-prim-lime-550);
+  --milo-color-fx-glow-mid: var(--milo-prim-lime-500);
+  --milo-color-fx-glow-hot: var(--milo-prim-lime-500);
   --milo-color-fx-spark-0: var(--milo-prim-lime-750);
   --milo-color-fx-spark-1: var(--milo-prim-lime-700);
   --milo-color-fx-spark-2: var(--milo-prim-lime-600);
@@ -346,12 +351,12 @@
   --milo-color-picker-dim: var(--milo-prim-ink-500);
   --milo-color-data-spark-line: var(--milo-prim-lime-750);
   --milo-color-data-spark-area: var(--milo-prim-lime-300);
-  --milo-color-plate-steel-top: var(--milo-prim-paper-200);
-  --milo-color-plate-steel-bottom: var(--milo-prim-paper-100);
+  --milo-color-plate-steel-top: var(--milo-prim-paper-50);
+  --milo-color-plate-steel-bottom: var(--milo-prim-paper-150);
   --milo-color-plate-hi: var(--milo-prim-paper-50);
   --milo-color-plate-lo: var(--milo-prim-ink-900);
   --milo-color-plate-label: var(--milo-prim-ink-600);
-  --milo-color-plate-hole: var(--milo-prim-lime-550);
+  --milo-color-plate-hole: var(--milo-prim-lime-500);
 }
 .milo-text-number-hero { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-hero); line-height: 60px; letter-spacing: 0em; }
 .milo-text-number-xl { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-xl); line-height: 40px; letter-spacing: 0em; }

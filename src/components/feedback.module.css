@@ -67,3 +67,7 @@
 .loadMore { display: flex; align-items: center; justify-content: center; gap: var(--milo-space-xs); min-height: var(--milo-size-hit-min); color: var(--milo-color-text-secondary); }
 .loadGlyph { width: var(--milo-size-icon); height: var(--milo-size-icon); }
 .loadEnd { margin: 0; display: grid; place-items: center; min-height: var(--milo-size-hit-min); color: var(--milo-color-text-secondary); }
+
+/* 浅色：发丝描边 → 拟真阴影（2026-10-10 用户：尽量不用描边；深色不变） */
+[data-theme='light'] .skCard { box-shadow: var(--depth-1); }
+[data-theme='light'] .dialog { box-shadow: var(--depth-1), 0 var(--milo-space-s) var(--milo-space-3xl) var(--milo-color-shadow-float); }

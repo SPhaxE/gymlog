@@ -120,7 +120,7 @@ export const CATALOG: Entry[] = [
     render: (p) => <span className={s.iconCell}><Icon name={p.name as IconName} /><span className="milo-text-micro">{p.name}</span></span>,
   },
   {
-    name: 'Button', group: '基础', desc: 'primary 荧光 = 每屏唯一的行动焦点；glow（M06）= 再加一圈慢转的圆锥渐变描边与呼吸光晕，只给首页「开始训练」；neutral 骨白 = 完成 / 确认；ghost = 次要；danger = 删除、清除。按下：缩放 + 内阴影，松手弹簧回弹（M08）。加载时宽度不变、不可重复点。',
+    name: 'Button', group: '基础', desc: 'primary 荧光 = 每屏唯一的行动焦点；glow（M06）= 再加一圈慢转的圆锥渐变描边与呼吸光晕，只给首页「开始训练」；neutral 骨白 = 完成 / 确认；ghost = 次要；danger = 删除、清除。按下：缩放 + 内阴影，松手弹簧回弹（M08）。加载时宽度不变、不可重复点。 浅色（2026-10-10 荧光治理）：荧光面多一圈深绿细边 + 下沿深一档的绿（纸白上荧光明度不比卡片高，要有「容器」），深色不变。',
     axes: { kind: ['primary', 'primary_glow', 'neutral', 'ghost', 'danger'], size: ['l', 's'], state: [...STATE, 'loading'] }, rows: ['kind', 'size'], cols: 'state', size: 'm',
     skip: (p) => p.kind === 'primary_glow' && (p.size === 's' || p.state !== 'default'),
     render: (p) => <Button kind={p.kind.startsWith('primary') ? 'primary' : p.kind as 'primary'} glow={p.kind === 'primary_glow'} size={p.size as 'l'} state={st(p.state)} disabled={p.state === 'disabled'} loading={p.state === 'loading'}>
@@ -132,7 +132,7 @@ export const CATALOG: Entry[] = [
     render: (p) => <IconButton icon={p.kind === 'raised' ? 'close' : 'edit'} label="示例" kind={p.kind as 'raised'} state={st(p.state)} disabled={p.state === 'disabled'} />,
   },
   {
-    name: 'Tag', group: '基础', desc: 'neutral 信息；strong 骨白实心 = 一屏只出现一次的标（详情页「新纪录 N」、未读数、对比中）；accent 荧光细线 = 列表里重复出现的 PR（2026-10-09 DESIGN §1 第 7 条：同一种标一屏三次以上不用实心块）；outline 虚线 = 首次 / 基线 / 未做；danger = 错误。',
+    name: 'Tag', group: '基础', desc: 'neutral 信息；strong 骨白实心 = 一屏只出现一次的标（详情页「新纪录 N」、未读数、对比中）；accent 荧光细线 = 列表里重复出现的 PR（2026-10-09 DESIGN §1 第 7 条：同一种标一屏三次以上不用实心块）；outline 虚线 = 首次 / 基线 / 未做；danger = 错误。 浅色：accent 标签 = 荧光底 + 深绿字（PR、「该加重」类点缀），不再是深绿细框字。',
     axes: { tone: ['neutral', 'strong', 'accent', 'outline', 'danger'] }, size: 'auto',
     render: (p) => <Tag tone={p.tone as TagTone} icon={p.tone === 'strong' || p.tone === 'accent' ? 'star' : undefined}>{({ neutral: '13 组', strong: '新纪录 2', accent: 'PR 2', outline: '首次', danger: '保存失败' } as Props)[p.tone]}</Tag>,
   },
@@ -148,18 +148,18 @@ export const CATALOG: Entry[] = [
   },
   /* ---------------- 表单 ---------------- */
   {
-    name: 'Segmented', group: '表单', desc: '2–3 个互斥视图（正面 / 背面、男 / 女）。选中骨白，命中区外扩到 hit-min；方向键切换。',
+    name: 'Segmented', group: '表单', desc: '2–3 个互斥视图（正面 / 背面、男 / 女）。选中骨白，命中区外扩到 hit-min；方向键切换。 浅色：选中 = 白色浮起 + 深绿细边（槽是浅凹槽），不是墨黑块。',
     axes: { items: ['2', '3'], state: STATE }, rows: ['items'], cols: 'state', size: 'auto',
     render: (p) => <Segmented label="示例" items={p.items === '2' ? [['f', '正面'], ['b', '背面']] : [['a', '全部'], ['b', '上肢'], ['c', '下肢']]} value={p.items === '2' ? 'f' : 'a'}
       state={st(p.state)} disabled={p.state === 'disabled'} />,
   },
   {
-    name: 'Chip', group: '表单', desc: '筛选（增量页按部位）。选中骨白；aria-pressed。',
+    name: 'Chip', group: '表单', desc: '筛选（增量页按部位）。选中骨白；aria-pressed。 浅色：选中 = 淡荧光底 + 深绿细边，不是墨黑块。',
     axes: { selected: ['false', 'true'], state: STATE }, rows: ['selected'], cols: 'state', size: 'auto',
     render: (p) => <Chip selected={p.selected === 'true'} state={st(p.state)} disabled={p.state === 'disabled'}>{p.selected === 'true' ? '胸' : '下肢'}</Chip>,
   },
   {
-    name: 'Switch', group: '表单', desc: '设置里的即时开关（显示今日进度环等），改动立即生效。role=switch。',
+    name: 'Switch', group: '表单', desc: '设置里的即时开关（显示今日进度环等），改动立即生效。role=switch。 浅色：开 = 荧光 + 深绿细边。',
     axes: { on: ['false', 'true'], state: STATE }, rows: ['on'], cols: 'state', size: 'auto',
     render: (p) => <Switch checked={p.on === 'true'} label="显示今日进度环" state={st(p.state)} disabled={p.state === 'disabled'} />,
   },
@@ -524,7 +524,7 @@ export const CATALOG: Entry[] = [
     render: () => <div className={s.sheetBox}><FluidBackdrop /></div>,
   },
   {
-    name: 'Sparkline', group: '数据图形', desc: '增量页列表行的趋势小线：时间正序；末点实心；PR 用菱形。只有 1 次记录画虚线基线。',
+    name: 'Sparkline', group: '数据图形', desc: '增量页列表行的趋势小线：时间正序；末点实心；PR 用菱形。只有 1 次记录画虚线基线。 浅色（荧光治理）：末点 / PR 点 = 荧光芯 + 深绿细边 + 光晕，面积是荧光淡面，不是深绿实心和灰米。',
     axes: { trend: ['up', 'down', 'single_pt'] }, size: 'auto',
     render: (p, f) => <Sparkline label="预估 1RM" points={p.trend === 'up' ? f.trends.normal : p.trend === 'down' ? f.trends.falling : f.trends.one} />,
   },

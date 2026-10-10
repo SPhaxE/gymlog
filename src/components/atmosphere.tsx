@@ -35,12 +35,12 @@ export function installGrain() {
 const hexVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim().slice(0, 7);
 const withAlpha = (hex: string, a: number) => hex + Math.round(Math.max(0, Math.min(1, a)) * 255).toString(16).padStart(2, '0');
 
-/** 光斑：位置在 0–1 的画布坐标里绕各自的中心做李萨如漂移。浅色主题（2026-10-10）同样的位置和轨迹，换成纸白上看得见的荧光与骨色 */
+/** 光斑：位置在 0–1 的画布坐标里绕各自的中心做李萨如漂移。浅色主题（2026-10-10）同样的位置和轨迹，换成纸白上看得见的荧光；
+ *  荧光治理第 3 期（用户：特效下面垫了灰、看起来发黑）：去掉骨灰斑 bone-500（暖灰叠在暖灰纸上就是一层脏膜），三团都是荧光，透明度压低 */
 const BLOBS_LIGHT = [
-  { c: '--milo-prim-lime-550', a: 0.2, x: 0.9, y: 0.08, r: 0.5, fx: 0.07, fy: 0.05, ax: 0.1, ay: 0.06 },
-  { c: '--milo-prim-lime-300', a: 0.32, x: 0.1, y: 0.4, r: 0.55, fx: 0.045, fy: 0.06, ax: 0.12, ay: 0.1 },
-  { c: '--milo-prim-bone-500', a: 0.1, x: 0.3, y: 0.98, r: 0.5, fx: 0.05, fy: 0.035, ax: 0.18, ay: 0.05 },
-  { c: '--milo-prim-lime-600', a: 0.08, x: 0.75, y: 0.62, r: 0.38, fx: 0.06, fy: 0.08, ax: 0.1, ay: 0.12 },
+  { c: '--milo-prim-lime-500', a: 0.22, x: 0.9, y: 0.08, r: 0.5, fx: 0.07, fy: 0.05, ax: 0.1, ay: 0.06 },
+  { c: '--milo-prim-lime-300', a: 0.26, x: 0.1, y: 0.4, r: 0.55, fx: 0.045, fy: 0.06, ax: 0.12, ay: 0.1 },
+  { c: '--milo-prim-lime-500', a: 0.08, x: 0.75, y: 0.62, r: 0.38, fx: 0.06, fy: 0.08, ax: 0.1, ay: 0.12 },
 ];
 const BLOBS = [
   { c: '--milo-prim-lime-500', a: 0.09, x: 0.9, y: 0.08, r: 0.5, fx: 0.07, fy: 0.05, ax: 0.1, ay: 0.06 },

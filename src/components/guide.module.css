@@ -31,3 +31,6 @@
 .stepOn .thumb { outline: var(--milo-stroke-focus) solid var(--milo-color-control-selected); outline-offset: calc(var(--milo-stroke-focus) * -1); }
 .thumbBar { position: absolute; left: 0; right: 0; bottom: 0; height: var(--milo-stroke-focus); transform-origin: left; transform: scaleX(var(--gs, 0)); background: var(--milo-color-control-selected); }
 @media (prefers-reduced-motion: reduce) { .loading { animation: none; } }
+
+/* 浅色：发丝描边 → 拟真阴影（2026-10-10 用户：尽量不用描边；深色不变） */
+[data-theme='light'] .frame { box-shadow: var(--depth-1); }

@@ -32,6 +32,7 @@
 .band b { flex: 1; min-width: 0; }
 .bandGrey { background: var(--milo-color-bg-raised-2); color: var(--milo-color-text-primary); }
 .headLit { background: var(--milo-color-accent-default); color: var(--milo-color-text-on-accent); }
+[data-theme='light'] .headLit { box-shadow: 0 var(--milo-stroke-focus) 0 color-mix(in srgb, var(--milo-color-accent-rim) 38%, transparent), 0 var(--milo-space-xs) var(--milo-space-m) color-mix(in srgb, var(--milo-color-accent-rim) 30%, transparent); }
 .count { flex: none; opacity: 0.8; }
 .hint { margin: 0; padding: 0 var(--milo-space-m); color: var(--milo-color-text-secondary); }
 
@@ -64,3 +65,8 @@
 .row:is([data-look='accent'], [data-look='curve'], [data-look='star']) .delta [class*='_up_'] { color: var(--milo-color-accent-ink); }
 /* J1：「下次」的重量 × 次数改描边无填充——左边一大串实心数字太重，右边的最新值才是实心（用户 2026-10-09） */
 .row[data-look='accent'] .target b { color: transparent; -webkit-text-stroke: var(--milo-stroke-hairline) var(--milo-color-text-primary); paint-order: stroke fill; letter-spacing: 0.02em; }
+/* 浅色荧光点缀配方（2026-10-10 荧光治理第 2 期）：点 / 标 / 条 = 荧光芯（accent-default）+ 深绿细边（accent-rim）+ 光晕，不再是深绿实心——浅色里深绿读成「一个深色点」；字仍用 accent-ink。深色不走这里 */
+[data-theme='light'] .prLine { background: var(--milo-color-accent-default); color: var(--milo-color-text-on-accent); box-shadow: 0 var(--milo-stroke-hairline) 0 color-mix(in srgb, var(--milo-color-accent-rim) 40%, transparent), 0 var(--milo-space-2xs) var(--milo-space-xs) color-mix(in srgb, var(--milo-color-accent-rim) 28%, transparent); }
+[data-theme='light'] .prStar { color: var(--milo-color-accent-default); filter: drop-shadow(0 var(--milo-stroke-hairline) var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-color-accent-rim) 60%, transparent)) drop-shadow(0 0 var(--milo-space-2xs) var(--milo-color-accent-glow)); }
+/* 浅色选中态（2026-10-10 荧光治理第 4 期，用户：整体深色太多）：大块纯黑的选中态改成「白浮起 / 淡荧光 + 深绿细边」，荧光面积不增加（淡荧光是点缀级，不是荧光面）；导航选中滑块仍是整个 App 的签名，浅色里换成浅凹槽。深色不走这里 */
+[data-theme='light'] .seg_up { background: color-mix(in srgb, var(--milo-color-accent-default) 60%, var(--milo-color-bg-raised)); color: var(--milo-color-text-primary); }

@@ -103,19 +103,19 @@ export const LIGHT_CONTOUR_PICKS: LightContourKind[] = ['ink', 'green', 'sage', 
 export const LightContour = createContext<LightContourKind | null>(null);
 
 /** 浅色里胶囊 / 引线 / 刻度的色调（2026-10-10 用户：整体深色太多，引导线、胶囊描边也是）：
- *  胶囊描边 line、焦点引线 leader（带一圈纸白光边，压在荧光肌肉上也读得出）、量尺刻度 tick、胶囊额外的影子 fx。深色不走这里，保持语义色原样。 */
+ *  胶囊描边 line（浅色一律透明，改用 --depth-1 阴影）、焦点引线 leader（带一圈纸白光边，压在荧光肌肉上也读得出）、量尺刻度 tick、胶囊额外的影子 fx。深色不走这里，保持语义色原样。 */
 export interface LightTone { line: string; leader: string; tick: string; fx?: string }
 const TONES = {
-  // 荧光细边：胶囊描边是一圈很淡的荧光绿，引线中绿
-  lime: { line: 'color-mix(in srgb, var(--milo-prim-lime-600) 70%, transparent)', leader: mix('lime-750', 45, 'lime-600'), tick: mix('lime-750', 50, 'lime-600') },
-  // 纸边：最淡的暖灰细边，引线深一点的绿
-  paper: { line: 'var(--milo-prim-paper-200)', leader: mix('lime-750', 60, 'lime-600'), tick: 'var(--milo-prim-ink-500)' },
-  // 无边：不描边，靠一点点影子浮起来
+  // 偏荧光：引线中绿、刻度深绿（胶囊都不描边，靠阴影 --depth-1 浮起来，2026-10-10 用户：尽量不用描边）
+  lime: { line: 'transparent', leader: mix('lime-750', 45, 'lime-600'), tick: mix('lime-750', 50, 'lime-600'), fx: 'var(--depth-1)' },
+  // 偏纸色：引线深一点的绿、刻度暖灰
+  paper: { line: 'transparent', leader: mix('lime-750', 60, 'lime-600'), tick: 'var(--milo-prim-ink-500)', fx: 'var(--depth-1)' },
+  // 偏绿影：引线、刻度同一个中绿
   quiet: { line: 'transparent', leader: mix('lime-750', 50, 'lime-600'), tick: mix('lime-750', 55, 'lime-600'),
-    fx: '0 var(--milo-space-2xs) var(--milo-space-s) color-mix(in srgb, var(--milo-prim-ink-900) 9%, transparent)' },
-  // 磨砂：纸白细边 + 一点绿影
-  frost: { line: 'var(--milo-prim-paper-50)', leader: mix('lime-750', 50, 'lime-600'), tick: mix('lime-750', 50, 'lime-600'),
-    fx: '0 var(--milo-space-2xs) var(--milo-space-s) color-mix(in srgb, var(--milo-prim-lime-750) 18%, transparent)' },
+    fx: 'var(--depth-1)' },
+  // 磨砂（L2d 默认）：引线、刻度中绿
+  frost: { line: 'transparent', leader: mix('lime-750', 50, 'lime-600'), tick: mix('lime-750', 50, 'lime-600'),
+    fx: 'var(--depth-1)' },
 } satisfies Record<string, LightTone>;
 
 export interface LightLookSpec {
