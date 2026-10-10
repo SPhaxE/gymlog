@@ -137,3 +137,22 @@ html[data-vt='pop']::view-transition-new(root) { animation: popUnder var(--milo-
 @keyframes popOut { to { transform: translateX(100%); } }
 @keyframes popUnder { from { transform: translateX(-30%); filter: brightness(var(--vt-dim)); } }
 html[data-rest-fly='out'] nav[aria-label='主导航'] > span[aria-hidden] { animation: vtIn var(--milo-motion-fast) var(--milo-motion-ease-standard) both; }
+
+/* 深浅切换液态转场（themeSwap.ts，2026-10-10）：规则全部常驻在这里，转场时只给 <html> 打 data-vt='theme'、给宿主 / 遮罩挂名字和类，不插样式表。
+   - 这里只有伪元素规则（切 data-vt 时只重算 <html> 自己）；页面里平时带共享名的元素（卡片、胶囊、记录行）由 themeSwap.ts 临时摘掉名字、跟整页一起擦——
+     用后代选择器压它们的话，3 万节点的 /preview 上切一次 data-vt 要重算 7 千多个带内联样式的元素（82 ms），开始、结束各一次；
+   - 旧快照（.swaphost）在上、按走向擦除；擦除边 --swap-e、圆心、羽化宽度都由转场里的浏览器动画写在旧快照伪元素自己身上（不改 <html> 上会继承的变量）；
+   - 只播局部（方案台的格子）时 <html> 的 view-transition-name 临时设为 none：整页不拍快照，照常实时渲染。 */
+html[data-vt='theme']::view-transition-group(*), html[data-vt='theme']::view-transition-old(*), html[data-vt='theme']::view-transition-new(*) { animation: none; mix-blend-mode: normal; }
+html[data-vt='theme']::view-transition-old(*.swaphost) { z-index: 1; }
+html[data-vt='theme']::view-transition-group(*.swapveil) { z-index: 9; }
+html[data-vt='theme']::view-transition-old(*.r-drop) { -webkit-mask: radial-gradient(circle at var(--swap-ox) var(--swap-oy), transparent var(--swap-e), black calc(var(--swap-e) + var(--swap-f)));
+  mask: radial-gradient(circle at var(--swap-ox) var(--swap-oy), transparent var(--swap-e), black calc(var(--swap-e) + var(--swap-f))); }
+html[data-vt='theme']::view-transition-old(*.r-rise) { -webkit-mask: linear-gradient(to bottom, black calc(var(--swap-e) - var(--swap-f)), transparent var(--swap-e));
+  mask: linear-gradient(to bottom, black calc(var(--swap-e) - var(--swap-f)), transparent var(--swap-e)); }
+html[data-vt='theme']::view-transition-old(*.r-drip) { -webkit-mask: linear-gradient(to bottom, transparent var(--swap-e), black calc(var(--swap-e) + var(--swap-f)));
+  mask: linear-gradient(to bottom, transparent var(--swap-e), black calc(var(--swap-e) + var(--swap-f))); }
+/* 交汇：左右两半各一层，从外往中线擦（两层分开画，过了中线不留缝） */
+html[data-vt='theme']::view-transition-old(*.r-merge) {
+  -webkit-mask: linear-gradient(to right, transparent var(--swap-e), black calc(var(--swap-e) + var(--swap-f))) left top / 50% 100% no-repeat, linear-gradient(to left, transparent var(--swap-e), black calc(var(--swap-e) + var(--swap-f))) right top / 50% 100% no-repeat;
+  mask: linear-gradient(to right, transparent var(--swap-e), black calc(var(--swap-e) + var(--swap-f))) left top / 50% 100% no-repeat, linear-gradient(to left, transparent var(--swap-e), black calc(var(--swap-e) + var(--swap-f))) right top / 50% 100% no-repeat; }
