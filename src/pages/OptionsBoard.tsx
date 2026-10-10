@@ -213,11 +213,13 @@ export function OptionsBoard({ now }: { now: number }) {
       <section className={s.group} aria-label="浅色人体" id="light-body">
         <h2 className="milo-text-heading">浅色人体 · L（2026-10-10 全局浅色，待选）</h2>
         <p className="milo-text-caption">纸白底上的容量页：在选定的 O2 柔光 + F1 金属渐变 + S9 熔流上做浅色版——色带「冷 = 纸白、热 = 深色」，唇边和内缘从提亮改成压暗，熔流和柔光描边从 screen 改 multiply；胶囊量尺和图例跟着换色带。每格固定浅色（不跟页面主题）。选定前默认 L1，选定后定为默认，落选的留在这里。</p>
-        <div className={`${s.phones} ${s.phonesWide}`}>{LIGHT.map(([k, t, n]) => (
-          <figure key={k} className={s.cell} data-option={`light-${k}`}>
-            <LightLook.Provider value={k}><div className={s.phone} data-theme="light"><Stage tall label={`容量页 · ${t}`}><BodyPage scenario="plain-prescription" now={now} initialFocus={null} /></Stage></div></LightLook.Provider>
-            <figcaption><b className="milo-text-body-strong">{k === DEFAULT_LIGHT_LOOK ? `${t} · 默认` : t}</b><span className="milo-text-caption">{n}</span></figcaption>
-          </figure>
+        <div className={s.pairs}>{[LIGHT.slice(0, 2), LIGHT.slice(2)].map((pair) => (
+          <div key={pair[0][0]} className={`${s.phones} ${s.phonesWide}`}>{pair.map(([k, t, n]) => (
+            <figure key={k} className={s.cell} data-option={`light-${k}`}>
+              <LightLook.Provider value={k}><div className={s.phone} data-theme="light"><Stage tall label={`容量页 · ${t}`}><BodyPage scenario="plain-prescription" now={now} initialFocus={null} /></Stage></div></LightLook.Provider>
+              <figcaption><b className="milo-text-body-strong">{k === DEFAULT_LIGHT_LOOK ? `${t} · 默认` : t}</b><span className="milo-text-caption">{n}</span></figcaption>
+            </figure>
+          ))}</div>
         ))}</div>
         <p className="milo-text-caption">全热度对照：演示数据只练到中等热度，下面同一个人体把肌肉从未练排到超量，看整条色带——最热的不能和纸融在一起，冷的不能成黑块。</p>
         <div className={s.grid}>{LIGHT.map(([k, t]) => <Cell key={k} id={`light-spread-${k}`} title={`${t} · 全热度`} note="肌肉按顺序从未练排到 1.5 × 最大可恢复量，热度均匀铺开" light><LightLook.Provider value={k}><Figure now={now} spread /></LightLook.Provider></Cell>)}</div>

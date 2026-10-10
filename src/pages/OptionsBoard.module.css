@@ -47,6 +47,8 @@
 .phones { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--milo-space-5xl) * 6), 1fr)); gap: var(--milo-space-l); }
 /* L 浅色人体：一列至少一台手机宽，手机不叠到旁边那格上；不吸顶（吸顶的手机滚动时会盖住自己下面的说明） */
 .phonesWide { grid-template-columns: repeat(auto-fill, minmax(var(--milo-size-screen-w), 1fr)); }
+/* L 组 4 台手机两台一组（2026-10-10）：宽屏一排 4 台，放不下就 2 × 2，不出现 3 + 1 */
+.pairs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--milo-size-screen-w) * 2 + var(--milo-space-l))), 1fr)); gap: var(--milo-space-l); }
 .phonesWide .phone { position: static; }
 .shopDemo { position: absolute; inset: 0; overflow-y: auto; padding: var(--milo-space-s); background: var(--milo-color-bg-base); }
 .gCard { background: radial-gradient(80% 70% at 0% 100%, color-mix(in srgb, var(--milo-prim-bone-500) 12%, transparent), transparent 70%), var(--milo-color-bg-raised); }
