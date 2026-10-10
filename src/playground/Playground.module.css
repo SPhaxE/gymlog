@@ -101,10 +101,10 @@
 .curveKey { fill: var(--milo-color-text-secondary); }
 .curveMid, .curveNov, .curveAdv { fill: none; stroke-width: 1.6; stroke-linejoin: round; }
 .curveMid { stroke: var(--milo-color-accent-ink); }
-.curveNov { stroke: var(--milo-prim-bone-100); }
-.curveAdv { stroke: var(--milo-prim-gray-600); }
+.curveNov { stroke: var(--milo-color-brand-mark); } /* 2026-10-10 全局浅色：骨白线换 brand-mark、灰线换 text-secondary（深色值相同） */
+.curveAdv { stroke: var(--milo-color-text-secondary); }
 .curveTarget { fill: var(--milo-color-bg-raised); stroke: var(--milo-color-accent-ink); stroke-width: 0.8; }
-.kMid { fill: var(--milo-color-accent-ink); } .kNov { fill: var(--milo-prim-bone-100); } .kAdv { fill: var(--milo-prim-gray-600); }
+.kMid { fill: var(--milo-color-accent-ink); } .kNov { fill: var(--milo-color-brand-mark); } .kAdv { fill: var(--milo-color-text-secondary); }
 
 /* 可滚演示（回到顶端、钢板）：整屏一个滚动区（页头 + 内容一起滚） */
 .headerDemoScroll { flex: 1; min-height: 0; overflow: auto; }

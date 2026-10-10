@@ -30,8 +30,9 @@
 .icon96 { display: grid; place-items: center; width: calc(var(--milo-size-hit-min) * 2); height: calc(var(--milo-size-hit-min) * 2); border-radius: 22%; background: var(--milo-prim-gray-150); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-prim-gray-300); }
 .sizes { display: flex; align-items: flex-end; gap: var(--milo-space-m); }
 .lockRow { display: flex; align-items: center; gap: var(--milo-space-m); color: var(--milo-color-text-secondary); }
-.lockBig { display: inline-flex; align-items: center; gap: 0.35em; font-size: var(--milo-font-size-l); line-height: 1; color: var(--milo-prim-bone-100); }
-.lockSmall { display: inline-flex; align-items: center; gap: 0.35em; font-size: var(--milo-font-size-heading); line-height: 1; color: var(--milo-prim-bone-100); }
+/* 2026-10-10 全局浅色：字标不再强制骨白，跟 brand-mark 走（深色骨白、浅色墨黑）；App 图标（.icon96 / .icon64）是成品图，底色固定 */
+.lockBig { display: inline-flex; align-items: center; gap: 0.35em; font-size: var(--milo-font-size-l); line-height: 1; color: var(--milo-color-brand-mark); }
+.lockSmall { display: inline-flex; align-items: center; gap: 0.35em; font-size: var(--milo-font-size-heading); line-height: 1; color: var(--milo-color-brand-mark); }
 
 .stateTable { display: grid; gap: 0; border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised); overflow: hidden; }
 .stateHead, .stateRowItem { display: grid; grid-template-columns: minmax(0, 0.7fr) minmax(0, 0.8fr) minmax(0, 0.8fr) minmax(0, 2fr); align-items: center; gap: var(--milo-space-l); padding: var(--milo-space-m) var(--milo-space-xl); }
