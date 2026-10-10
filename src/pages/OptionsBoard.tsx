@@ -7,7 +7,7 @@
  *  组合写在地址里（?o=hair&f=metal&s=molten），复制链接就能把这个组合发给别人。
  *  2026-10-10 全局浅色：新增「L 浅色人体」组（4 个浅色方案，每格固定浅色），自由组合加 ?l=（浅色主题下用哪个方案）；
  *  只有默认三层（O2 + F1 + S9）有浅色版，其余人体方案是深色存档——格子固定深色并写明「深色方案」。 */
-import { useMemo, useRef, useState, type ReactNode } from 'react';
+import { useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { BodyFigure, Card, Chip, ContourFx, DEFAULT_LIGHT_LOOK, DEFAULT_LOOK, FillFx, Icon, LightContour, LightLook, Num, GainLook, GrainGlow, ParticleField, ProductCard, ProductGrid, ScanFx, ShopTagLook, SteelPlate, dotMonths, type ContourFxKind, type GainLookKind, type GrainKind, type LightContourKind, type LightLookKind, type ShopTagLookKind, type FillFxKind, type ParticleKind, type PlateLook, type ScanFxKind } from '../components';
 import { IconStyleCtx, type IconStyle } from '../components/iconSets';
@@ -16,6 +16,7 @@ import type { HeadStat } from '../engine';
 import { logData } from '../data/log';
 import { PRODUCTS } from '../data/growth';
 import { GainsPage } from './GainsPage';
+import { HomePage } from './HomePage';
 import { BodyPage } from './BodyPage';
 import { Stage } from '../playground/Stage';
 import { useTheme } from '../styles/theme';
@@ -160,6 +161,37 @@ const SHOPLOOK: [ShopTagLookKind, string, string][] = [
   ['price', 'T3 放进价格区', '图上不挂标：折扣在价格后跟荧光「−18%」；热销 / 新品写在商家前面（荧光小字 + 图形）；缺货把价格换成「缺货 · 到货提醒」'],
 ];
 
+/** 浅色底色 B（2026-10-10 荧光治理第 1 期，docs/light-fluo-plan.md）：浅色里荧光明度（0.76–0.86）不比卡片（0.965）、页面底（0.871）高，视觉重点塌了。
+ *  这里只在浅色单格里覆盖语义色（不改全局 Token），并排看「把底降一档 / 荧光加框」哪个能让荧光重新成为最亮的东西；选定后再改 tokens.json 的 light 值。
+ *  rim = 荧光面加一圈深绿细边 + 下沿一道深一档的绿（OptionsBoard.module.css 的 [data-fluo='rim']，作用在主按钮、焦点胶囊、该加重条）。 */
+const BASE: [string, string, string, Record<string, string>, boolean][] = [
+  ['B0', 'B0 现在', '页面底 paper-0、卡 paper-50、荧光面 lime-550——对照', {}, false],
+  ['B1', 'B1 底降一档', '页面底 paper-100，卡仍是纸白（浮起来），荧光面换成深色用的更亮的 lime-500', { '--milo-color-bg-base': 'var(--milo-prim-paper-100)', '--milo-color-bg-raised-2': 'var(--milo-prim-paper-200)', '--milo-color-accent-default': 'var(--milo-prim-lime-500)' }, false],
+  ['B2', 'B2 底降两档', '页面底 paper-200，对比最足，但整体偏暗，和「深色太多」冲突——极限对照', { '--milo-color-bg-base': 'var(--milo-prim-paper-200)', '--milo-color-bg-raised-2': 'var(--milo-prim-paper-100)', '--milo-color-accent-default': 'var(--milo-prim-lime-500)' }, false],
+  ['B3', 'B3 底不动 · 荧光加框', '页面底不变；荧光面换 lime-500，外加一圈深绿细边 + 下沿深一档绿，荧光有了「容器」', { '--milo-color-accent-default': 'var(--milo-prim-lime-500)' }, true],
+  ['B4', 'B4 底降一档 + 加框', 'B1 的底 + B3 的框', { '--milo-color-bg-base': 'var(--milo-prim-paper-100)', '--milo-color-bg-raised-2': 'var(--milo-prim-paper-200)', '--milo-color-accent-default': 'var(--milo-prim-lime-500)' }, true],
+];
+function BaseBoard({ now }: { now: number }) {
+  const [page, setPage] = useState<'home' | 'body' | 'gains'>('home');
+  const pages: [typeof page, string][] = [['home', '首页'], ['body', '容量'], ['gains', '增量']];
+  const node = page === 'home' ? <HomePage scenario="plain-prescription" now={now} /> : page === 'body' ? <BodyPage scenario="plain-prescription" now={now} initialFocus={null} /> : <GainsPage scenario="plain-prescription" now={now} />;
+  return (
+    <section className={s.group} aria-label="浅色底色" id="light-base">
+      <h2 className="milo-text-heading">浅色底色 · B（2026-10-10 荧光治理第 1 期，待选）</h2>
+      <p className="milo-text-caption">用户：浅色背景太白，荧光不再是页面最亮的元素。实测：荧光明度 0.76–0.86，低于卡片 0.965、和页面底 0.871 相当，对比度只有 1.0–1.25。这里并排看「把底降一档」「荧光加框」哪个能让荧光重新跳出来；每格固定浅色、是真实页面，切下面的页面看三屏。评判：荧光面比相邻底醒目，整页不变灰变脏。</p>
+      <div className={s.chips} role="group" aria-label="页面">{pages.map(([k, t]) => <Chip key={k} selected={page === k} onClick={() => setPage(k)}>{t}</Chip>)}</div>
+      <div className={s.pairs}>{[BASE.slice(0, 2), BASE.slice(2, 4), BASE.slice(4)].map((pair) => (
+        <div key={pair[0][0]} className={`${s.phones} ${s.phonesWide}`}>{pair.map(([k, t, n, vars, rim]) => (
+          <figure key={k} className={s.cell} data-option={`base-${k}-${page}`}>
+            <div className={s.phone} data-theme="light" data-fluo={rim ? 'rim' : undefined} style={vars as CSSProperties}><Stage tall label={`${pages.find(([p]) => p === page)![1]} · ${t}`}>{node}</Stage></div>
+            <figcaption><b className="milo-text-body-strong">{t}</b><span className="milo-text-caption">{n}</span></figcaption>
+          </figure>
+        ))}</div>
+      ))}</div>
+    </section>
+  );
+}
+
 function Figure({ now, children, spread }: { now: number; children?: (fig: ReactNode) => ReactNode;
   /** 全热度对照（L 组）：演示数据只到中等热度，这里把肌肉按顺序从未练排到超量（热度 0 → 1 均匀铺开），一眼看全整条色带 */ spread?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -230,6 +262,7 @@ export function OptionsBoard({ now }: { now: number }) {
         <p className="milo-text-caption">同一个人、同一份演示数据，待选方案并排实时渲染。选定后定为默认，旧默认和落选的留在这里；规范在 /spec，组件在 /playground。</p>
       </header>
       <Composer now={now} />
+      <BaseBoard now={now} />
       <section className={s.group} aria-label="L2 变体" id="light-v">
         <h2 className="milo-text-heading">浅色人体 · L2 变体（2026-10-10，待选）</h2>
         <p className="milo-text-caption">用户：配色选 L2，但效果还不满意、整体深色太多（人体描边、胶囊描边、量尺刻度、引导线）。四个变体色带都是 L2 的荧光热，差在亮度、金属质感、描边和胶囊 / 引线的调子——<b>浅色里描边、胶囊边、引线都不再用墨</b>。每格固定浅色，是真实的容量页：可以按住胶囊看引线。四个都不合适就用最上面的「自由组合」混：浅色人体 × 浅色描边。</p>

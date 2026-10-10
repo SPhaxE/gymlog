@@ -60,3 +60,8 @@
   -webkit-mask: radial-gradient(110% 95% at 95% 0%, black, transparent 70%); mask: radial-gradient(110% 95% at 95% 0%, black, transparent 70%); }
 /* 局部主题的格子（L 组固定浅色、深色存档固定深色）：字色要在格子里重新取一次——color 继承的是外面主题算好的值 */
 .phone[data-theme], .stage[data-theme] { color: var(--milo-color-text-primary); }
+
+/* 浅色底色 B 的「荧光加框」（2026-10-10 荧光治理第 1 期）：荧光面外一圈深绿细边 + 下沿深一档的绿，让荧光有容器、在纸白上也读成「发光的面」；只在方案台的 B3 / B4 格里生效 */
+[data-fluo='rim'] button[class*='_primary_'], [data-fluo='rim'] [class*='_focus_'][role='option'], [data-fluo='rim'] [class*='_headLit_'] {
+  outline: var(--milo-stroke-hairline) solid color-mix(in srgb, var(--milo-prim-lime-750) 55%, transparent); outline-offset: calc(var(--milo-stroke-hairline) * -1);
+  background-image: linear-gradient(to top, var(--milo-prim-lime-600) 0 var(--milo-stroke-focus), transparent var(--milo-stroke-focus)); }
