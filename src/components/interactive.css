@@ -124,13 +124,16 @@ html[data-vt='tab'] nav[aria-label='主导航'] { view-transition-name: x-tabnav
 html[data-vt='tab']::view-transition-old(root) { animation: tabOut var(--milo-motion-slow) var(--milo-motion-ease-decelerate) both; }
 html[data-vt='tab']::view-transition-new(root) { animation: tabIn var(--milo-motion-slow) var(--milo-motion-ease-decelerate) both; }
 @keyframes tabIn { from { transform: translateX(calc(var(--vt-x) * 100%)); } }
-@keyframes tabOut { to { transform: translateX(calc(var(--vt-x) * -100%)); filter: brightness(0.4); } }
+/* 压暗：深色 0.4；浅色 0.85（纸白压到 0.4 是一闪而过的脏灰，2026-10-10 全局浅色） */
+html { --vt-dim: 0.4; }
+html[data-theme='light'] { --vt-dim: 0.85; }
+@keyframes tabOut { to { transform: translateX(calc(var(--vt-x) * -100%)); filter: brightness(var(--vt-dim)); } }
 html[data-vt='push']::view-transition-old(root) { animation: pushUnder var(--milo-motion-slow) var(--milo-motion-ease-decelerate) both; }
 html[data-vt='push']::view-transition-new(root) { animation: pushIn var(--milo-motion-slow) var(--milo-motion-ease-decelerate) both; }
 html[data-vt='pop']::view-transition-old(root) { z-index: 1; animation: popOut var(--milo-motion-slow) var(--milo-motion-ease-decelerate) both; }
 html[data-vt='pop']::view-transition-new(root) { animation: popUnder var(--milo-motion-slow) var(--milo-motion-ease-decelerate) both; }
 @keyframes pushIn { from { transform: translateX(100%); } }
-@keyframes pushUnder { to { transform: translateX(-30%); filter: brightness(0.4); } }
+@keyframes pushUnder { to { transform: translateX(-30%); filter: brightness(var(--vt-dim)); } }
 @keyframes popOut { to { transform: translateX(100%); } }
-@keyframes popUnder { from { transform: translateX(-30%); filter: brightness(0.4); } }
+@keyframes popUnder { from { transform: translateX(-30%); filter: brightness(var(--vt-dim)); } }
 html[data-rest-fly='out'] nav[aria-label='主导航'] > span[aria-hidden] { animation: vtIn var(--milo-motion-fast) var(--milo-motion-ease-standard) both; }

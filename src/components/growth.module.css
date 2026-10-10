@@ -1,12 +1,13 @@
-/* 增长层组件。荧光只给「得到」的东西（进账、点亮、Pro），其余是骨白与灰；全部用 Token */
+/* 增长层组件。荧光只给「得到」的东西（进账、点亮、Pro），其余是骨白与灰；全部用 Token
+   2026-10-10 全局浅色：原色换成深色值相同的语义色（深色逐像素不变）；骨白作荧光面上的扫光（.pro、.near 的光泽）保持固定原色。 */
 .muted { color: var(--milo-color-text-secondary); }
 .plus { color: var(--milo-color-accent-ink); }
 .minus { color: var(--milo-color-text-primary); }
 .pro { display: inline-block; padding: var(--milo-space-2xs) var(--milo-space-xs); border-radius: var(--milo-radius-pill); font: 700 var(--milo-font-size-min) / 1.2 var(--milo-font-number);
-  color: var(--milo-color-text-on-accent); background: linear-gradient(110deg, var(--milo-prim-lime-500) 35%, var(--milo-prim-bone-100) 50%, var(--milo-prim-lime-500) 65%) 0 0 / 300% 100%;
+  color: var(--milo-color-text-on-accent); background: linear-gradient(110deg, var(--milo-color-accent-default) 35%, var(--milo-prim-bone-100) 50%, var(--milo-color-accent-default) 65%) 0 0 / 300% 100%;
   animation: sheen calc(var(--milo-motion-slow) * 6) linear infinite; }
 .chip { display: inline-block; padding: var(--milo-space-2xs) var(--milo-space-xs); border-radius: var(--milo-radius-pill); font: 700 var(--milo-font-size-min) / 1.2 var(--milo-font-ui);
-  color: var(--milo-color-accent-ink); background: var(--milo-prim-lime-500-a13); }
+  color: var(--milo-color-accent-ink); background: var(--milo-color-accent-glow-ring); }
 @keyframes sheen { to { background-position: -300% 0; } }
 
 /* ---------- 牛龄徽章 ---------- */
@@ -16,29 +17,30 @@
 .dot { width: var(--milo-space-2xs); height: var(--milo-space-2xs); border-radius: 50%; background: var(--milo-color-text-disabled); }
 .badge { display: flex; align-items: center; gap: var(--milo-space-m); color: var(--milo-color-text-primary); }
 .badgeHead { position: relative; display: grid; place-items: center; width: calc(var(--milo-space-5xl) * 1.5); aspect-ratio: 1; border-radius: 50%;
-  background: radial-gradient(circle at 50% 60%, var(--milo-prim-lime-500-a33), transparent 70%), var(--milo-color-bg-raised);
-  box-shadow: 0 0 0 var(--milo-stroke-focus) var(--milo-color-accent-ink), 0 0 var(--milo-space-l) var(--milo-prim-lime-500-a33); }
+  background: radial-gradient(circle at 50% 60%, var(--milo-color-accent-glow), transparent 70%), var(--milo-color-bg-raised);
+  box-shadow: 0 0 0 var(--milo-stroke-focus) var(--milo-color-accent-ink), 0 0 var(--milo-space-l) var(--milo-color-accent-glow); }
 .badgeHeadImg { display: block; width: 100%; height: 100%; }
 .badgeText { display: grid; gap: var(--milo-space-2xs); }
 .badgeText b { line-height: 1; }
 .pips { display: inline-flex; align-items: center; gap: var(--milo-space-2xs); }
 .pips i { width: var(--milo-space-l); height: var(--milo-space-2xs); border-radius: var(--milo-radius-pill); background: var(--milo-color-data-track); }
-.pips .pipOn { background: var(--milo-color-accent-default); }
+.pips .pipOn { background: var(--milo-color-accent-ink); } /* 2 像素的细线：荧光线用 accent-ink */
 .pips span { margin-left: var(--milo-space-2xs); color: var(--milo-color-text-secondary); }
-.miloTone .badgeHead { box-shadow: 0 0 0 var(--milo-stroke-focus) var(--milo-prim-lime-300), 0 0 var(--milo-space-2xl) var(--milo-color-accent-default); }
+.miloTone .badgeHead { box-shadow: 0 0 0 var(--milo-stroke-focus) var(--milo-color-fx-spark-0), 0 0 var(--milo-space-2xl) var(--milo-color-accent-default); }
+[data-theme='light'] .miloTone .badgeHead { box-shadow: 0 0 0 var(--milo-stroke-focus) var(--milo-color-accent-ink), 0 0 var(--milo-space-2xl) var(--milo-color-accent-glow); } /* 浅色：整圈荧光光晕在纸白上像荧光笔涂过，换淡的 */
 
 /* ---------- 成长条 ---------- */
 .growth { display: grid; gap: var(--milo-space-xs); padding: var(--milo-space-m); border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised); color: var(--milo-color-text-primary); }
 .growthHead { display: flex; justify-content: space-between; align-items: baseline; gap: var(--milo-space-s); }
 .track { position: relative; height: var(--milo-space-s); border-radius: var(--milo-radius-pill); background: var(--milo-color-data-track); overflow: hidden; }
 .fill { position: absolute; inset: 0; border-radius: inherit; transform-origin: left; scale: var(--p) 1;
-  background: linear-gradient(90deg, var(--milo-prim-lime-700), var(--milo-color-accent-default)); transition: scale var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring); }
+  background: linear-gradient(90deg, var(--milo-color-fx-spark-2), var(--milo-color-accent-default)); transition: scale var(--milo-motion-spring-soft-ms) var(--milo-motion-ease-spring); }
 .hint { margin: 0; color: var(--milo-color-text-secondary); }
 .hint b { color: var(--milo-color-text-primary); font-family: var(--milo-font-number); }
-.near .track { box-shadow: 0 0 var(--milo-space-m) var(--milo-prim-lime-500-a33); }
+.near .track { box-shadow: 0 0 var(--milo-space-m) var(--milo-color-accent-glow); }
 .near .fill::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent 30%, color-mix(in srgb, var(--milo-prim-bone-100) 60%, transparent) 50%, transparent 70%) 0 0 / 250% 100%;
   animation: sheen calc(var(--milo-motion-slow) * 5) linear infinite; }
-.max .fill { background: linear-gradient(90deg, var(--milo-color-accent-default), var(--milo-prim-lime-300), var(--milo-color-accent-default)); }
+.max .fill { background: linear-gradient(90deg, var(--milo-color-accent-default), var(--milo-color-fx-glow-hot), var(--milo-color-accent-default)); }
 
 /* ---------- 成长卡（「我的」第一屏） ---------- */
 .gcard { position: relative; display: grid; gap: var(--milo-space-m); width: 100%; padding: var(--milo-space-l); border: 0; border-radius: var(--milo-radius-l); font: inherit; text-align: left; overflow: clip; isolation: isolate;
@@ -96,10 +98,10 @@
 .st_kept .streakNum b, .st_milestone .streakNum b { color: var(--milo-color-accent-ink); }
 .st_risk { box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-feedback-danger); }
 .st_risk .streakLine { color: var(--milo-color-feedback-danger); }
-.st_frozen .week i.on { background: var(--milo-prim-bone-100); }
-.st_deload .week i.on { background: var(--milo-prim-bone-500); }
-.st_milestone { background: radial-gradient(90% 120% at 0% 50%, var(--milo-prim-lime-500-a33), transparent 70%), var(--milo-color-bg-raised);
-  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-prim-lime-500-a33); }
+.st_frozen .week i.on { background: var(--milo-color-data-tier-over); }
+.st_deload .week i.on { background: var(--milo-color-data-tier-ok); }
+.st_milestone { background: radial-gradient(90% 120% at 0% 50%, var(--milo-color-accent-glow), transparent 70%), var(--milo-color-bg-raised);
+  box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-accent-glow); }
 
 /* ---------- 冻结卡（冰块：六边形 + 内部高光） ---------- */
 .freeze { display: flex; align-items: center; gap: var(--milo-space-m); padding: var(--milo-space-m); border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised); color: var(--milo-color-text-primary); }
@@ -156,14 +158,14 @@
 .product { display: flex; gap: var(--milo-space-m); width: 100%; padding: var(--milo-space-s); border: 0; border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised); color: var(--milo-color-text-primary); font: inherit; text-align: left; }
 .productOff { opacity: var(--milo-opacity-disabled); }
 .pic { position: relative; display: grid; place-items: center; width: calc(var(--milo-space-5xl) * 1.8); aspect-ratio: 1; flex: none; border-radius: var(--milo-radius-m);
-  background: radial-gradient(circle at 30% 20%, var(--milo-prim-lime-500-a33), transparent 60%), var(--milo-color-bg-raised-2); }
-.pic i { display: block; background: var(--milo-prim-bone-100); }
+  background: radial-gradient(circle at 30% 20%, var(--milo-color-accent-glow), transparent 60%), var(--milo-color-bg-raised-2); }
+.pic i { display: block; background: var(--milo-color-brand-mark); }
 .picImg { position: absolute; inset: 6%; width: 88%; height: 88%; object-fit: contain; filter: drop-shadow(0 var(--milo-space-2xs) var(--milo-space-s) var(--milo-color-shadow-float)); }
 .picImgWait { visibility: hidden; }
 .picGear i { width: 60%; height: 34%; border-radius: var(--milo-radius-s); box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-bg-raised-2), 0 0 0 0 transparent;
-  background: repeating-linear-gradient(90deg, var(--milo-prim-bone-100) 0 18%, var(--milo-prim-bone-500) 18% 22%); }
+  background: repeating-linear-gradient(90deg, var(--milo-color-brand-mark) 0 18%, var(--milo-color-data-tier-ok) 18% 22%); }
 .picSupp i { width: 44%; height: 58%; border-radius: var(--milo-radius-m) var(--milo-radius-m) var(--milo-radius-s) var(--milo-radius-s);
-  background: linear-gradient(var(--milo-color-accent-default) 0 22%, var(--milo-prim-bone-100) 22%); }
+  background: linear-gradient(var(--milo-color-accent-default) 0 22%, var(--milo-color-brand-mark) 22%); }
 .productText { display: grid; gap: var(--milo-space-2xs); flex: 1; align-content: center; }
 .priceRow { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--milo-space-xs); margin-top: var(--milo-space-2xs); }
 
@@ -188,7 +190,7 @@
 .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--milo-space-xs); }
 .plan { position: relative; display: grid; gap: var(--milo-space-2xs); justify-items: center; padding: var(--milo-space-m) var(--milo-space-2xs); border: 0; border-radius: var(--milo-radius-l); font: inherit;
   color: var(--milo-color-text-primary); background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default); }
-.planOn { background: var(--milo-prim-lime-500-a13); box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-accent-ink), 0 0 var(--milo-space-l) var(--milo-prim-lime-500-a33); }
+.planOn { background: var(--milo-color-accent-glow-ring); box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-accent-ink), 0 0 var(--milo-space-l) var(--milo-color-accent-glow); }
 .save { position: absolute; top: calc(var(--milo-space-s) * -1); padding: var(--milo-space-2xs) var(--milo-space-xs); border-radius: var(--milo-radius-pill);
   font: 700 var(--milo-font-size-min) / 1.2 var(--milo-font-ui); color: var(--milo-color-text-on-accent); background: var(--milo-color-accent-default); }
 .paySuccess { justify-items: center; text-align: center; }

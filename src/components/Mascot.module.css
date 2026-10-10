@@ -1,4 +1,5 @@
-/* IP 小牛（PNG）：图里只有牛本身；这里管尺寸、动效和代码生成的特效（速度线、z、碎屑、Milo 的泛光 / 星光 / 扫光） */
+/* IP 小牛（PNG）：图里只有牛本身；这里管尺寸、动效和代码生成的特效（速度线、z、碎屑、Milo 的泛光 / 星光 / 扫光）
+   2026-10-10 全局浅色：原色换成深色值相同的语义色（深色逐像素不变）；浅色下骨白的牛身和纸白分不开，图加一圈墨色细边；扫光固定用浅色。 */
 .mascot { display: inline-block; width: min(calc(var(--fig-w) * var(--mascot-unit, 0.04em)), calc(var(--mascot-max-h, 100vh) * var(--fig-w) / var(--fig-h))); max-width: 100%; vertical-align: bottom; }
 .fig { position: relative; display: block; width: 100%; aspect-ratio: var(--fig-ratio); }
 /* 牛身：会动的只有这一层（动效以地面线为支点）；特效是 .fig 里它的兄弟，不跟着动 */
@@ -12,9 +13,14 @@
   filter: blur(calc(var(--glow) * 1.6)) saturate(1.3); }
 .alive .lime { animation: limeGlow calc(var(--milo-motion-slow) * 9.1) ease-in-out infinite; }
 @keyframes limeGlow { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
-.milo .img { filter: drop-shadow(0 0 var(--glow) color-mix(in srgb, var(--milo-prim-lime-500) 70%, transparent)) drop-shadow(0 0 calc(var(--glow) * 3.2) color-mix(in srgb, var(--milo-prim-lime-500) 28%, transparent)); }
+.milo .img { filter: drop-shadow(0 0 var(--glow) color-mix(in srgb, var(--milo-color-accent-default) 70%, transparent)) drop-shadow(0 0 calc(var(--glow) * 3.2) color-mix(in srgb, var(--milo-color-accent-default) 28%, transparent)); }
+/* 浅色：墨色细边把牛从纸白上托出来；Milo 的泛光在纸白上换成淡荧光（accent-glow），细边在泛光里面 */
+[data-theme='light'] .img { filter: drop-shadow(0 0 var(--milo-stroke-hairline) var(--edge)); }
+[data-theme='light'] .milo .img { filter: drop-shadow(0 0 var(--milo-stroke-hairline) var(--edge)) drop-shadow(0 0 calc(var(--glow) * 3.2) var(--milo-color-accent-glow)); }
+[data-theme='light'] .root { --edge: color-mix(in srgb, var(--milo-color-brand-mark) 55%, transparent); }
+/* 扫光固定用浅色（screen 混合只会提亮；用 brand-mark 的话浅色下是墨黑，扫光就没了） */
 .sheen { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen;
-  background: linear-gradient(105deg, transparent 35%, color-mix(in srgb, var(--milo-color-brand-mark) 70%, transparent) 50%, transparent 65%) no-repeat;
+  background: linear-gradient(105deg, transparent 35%, color-mix(in srgb, var(--milo-prim-bone-100) 70%, transparent) 50%, transparent 65%) no-repeat;
   background-size: 220% 100%; background-position: 160% 0;
   -webkit-mask: var(--src) center / contain no-repeat; mask: var(--src) center / contain no-repeat; }
 .alive .sheen { animation: sheen calc(var(--milo-motion-slow) * 11) var(--milo-motion-ease-standard) infinite; }
@@ -24,25 +30,25 @@
 .speed, .z, .confetti, .spark { position: absolute; pointer-events: none; }
 /* 专注：身后三道速度线 */
 .speed { border-radius: var(--milo-radius-pill); background: color-mix(in srgb, var(--milo-color-brand-mark) 55%, transparent); }
-.milo .speed { background: var(--milo-prim-lime-500); box-shadow: 0 0 var(--glow) var(--milo-prim-lime-500); }
+.milo .speed { background: var(--milo-color-fx-spark-1); box-shadow: 0 0 var(--glow) var(--milo-color-fx-spark-1); }
 .alive .speed { animation: speed calc(var(--milo-motion-slow) * 2.6) linear calc(var(--k) * var(--milo-motion-slow) * -0.7) infinite; }
 @keyframes speed { 0% { transform: translateX(30%) scaleX(0.2); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateX(-40%) scaleX(1); opacity: 0; } }
 /* 恢复日：头顶两个 z，往上飘 */
 .z { overflow: visible; font-family: var(--milo-font-number); font-weight: 700; font-style: italic; fill: color-mix(in srgb, var(--milo-color-brand-mark) 75%, transparent); }
-.milo .z { fill: var(--milo-prim-lime-300); }
+.milo .z { fill: var(--milo-color-fx-spark-0); }
 .alive .z { animation: float calc(var(--milo-motion-slow) * 7) ease-in-out calc(var(--k) * var(--milo-motion-slow) * -3.2) infinite; }
 @keyframes float { 0% { opacity: 0; transform: translate(0, 30%); } 30%, 70% { opacity: 1; } 100% { opacity: 0; transform: translate(40%, -70%); } }
 /* 破纪录：头边一圈碎屑（三角 + 圆点），一闪一闪往外迸 */
 .confetti { aspect-ratio: 1; background: var(--milo-color-brand-mark); transform: rotate(var(--rot)); }
 .confetti:nth-child(odd) { background: color-mix(in srgb, var(--milo-color-brand-mark) 60%, var(--milo-color-text-secondary)); }
-.confetti.lit, .milo .confetti.lit { background: var(--milo-prim-lime-500); }
-.milo .confetti:not(.lit) { background: var(--milo-prim-lime-300); }
+.confetti.lit, .milo .confetti.lit { background: var(--milo-color-fx-spark-1); }
+.milo .confetti:not(.lit) { background: var(--milo-color-fx-spark-0); }
 .tri { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
 .dot { border-radius: 50%; }
 .alive .confetti { animation: burst calc(var(--milo-motion-slow) * 4.6) var(--milo-motion-ease-decelerate) calc(var(--k) * var(--milo-motion-slow) * -0.3) infinite; }
 @keyframes burst { 0% { opacity: 0; transform: translate(0, 20%) rotate(var(--rot)) scale(0.4); } 20% { opacity: 1; } 70% { opacity: 1; transform: translate(0, -20%) rotate(calc(var(--rot) + 60deg)) scale(1); } 100% { opacity: 0; transform: translate(0, -30%) rotate(calc(var(--rot) + 90deg)) scale(0.8); } }
 /* Milo：四角星闪烁 */
-.spark { aspect-ratio: 1; background: var(--milo-prim-lime-300); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); }
+.spark { aspect-ratio: 1; background: var(--milo-color-fx-spark-0); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); }
 .alive .spark { animation: spark calc(var(--milo-motion-slow) * 5.7) ease-in-out calc(var(--k) * var(--milo-motion-slow) * -1.3) infinite; }
 @keyframes spark { 0%, 100% { opacity: 0.25; transform: scale(0.55) rotate(0deg); } 50% { opacity: 1; transform: scale(1.1) rotate(45deg); } }
 
@@ -52,7 +58,7 @@
 .headImg { position: absolute; max-width: none; height: auto; user-select: none; }
 /* 头像的荧光：非 Milo 角上一圈微光；Milo 整只泛光（圆里只看得到头，光沿着头和角的轮廓） */
 .headLime { filter: blur(calc(var(--milo-stroke-hairline) * 2)); opacity: 0.9; }
-.headMilo .headImg { filter: drop-shadow(0 0 var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-prim-lime-500) 80%, transparent)) drop-shadow(0 0 calc(var(--milo-stroke-hairline) * 3) color-mix(in srgb, var(--milo-prim-lime-500) 35%, transparent)); }
+.headMilo .headImg { filter: drop-shadow(0 0 var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-color-accent-default) 80%, transparent)) drop-shadow(0 0 calc(var(--milo-stroke-hairline) * 3) color-mix(in srgb, var(--milo-color-accent-default) 35%, transparent)); }
 
 /* ---------- 动效（animate）：整只以地面线为支点；周期用 motion/slow 的倍数，首尾帧相同 ---------- */
 .m_idle .body { animation: breathe calc(var(--milo-motion-slow) * 13.7) ease-in-out infinite; }

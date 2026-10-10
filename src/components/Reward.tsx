@@ -5,7 +5,9 @@
  *  - 三档强度：升段 = 满档（蓄力、闪屏、冲击波、光芒、大碎屑、震屏、长振动）；破纪录 / 连胜里程碑 = 高；升小级 / 周期完成 = 中。
  *  - 一次只弹一个（pickRewards 排好优先级），其余合并成一行「还有 N 条进了消息」。
  *  - 点一下跳过动画直接到定格；系统开启「减少动态效果」时：无碎屑、无震动、小牛不做成长动画，只淡入定格。
- *  - 只在结算页或回到 Tab 根页时出现，训练进行中不弹（ia §1.15）。 */
+ *  - 只在结算页或回到 Tab 根页时出现，训练进行中不弹（ia §1.15）。
+ *  - 2026-10-10 全局浅色：不再是局部深色岛，跟页面主题走；浅色下纸白卡 + 细描边 + 浮层阴影，荧光字线用 accent-ink，
+ *    闪屏换荧光、蓄力与长大的「发白」换成深绿外发光（纸白上发白就看不见了）。 */
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Button } from './Button';
 import { Odometer } from './dataviz';
@@ -140,7 +142,7 @@ export function RewardCard({ reward, pro, queued = 0, still, onClaim }: { reward
   }
 
   return (
-    <div className={cx(s.card, still && s.still)} data-theme="dark" data-kind={reward.kind} data-tier={tier} data-milo={stage === 'milo' || undefined}
+    <div className={cx(s.card, still && s.still)} data-kind={reward.kind} data-tier={tier} data-milo={stage === 'milo' || undefined}
       style={{ '--t0': t0 } as CSSProperties} role="dialog" aria-modal="true" aria-label={`${REWARD_NAME[reward.kind]}：${typeof headline === 'string' ? headline : line}`}>
       <span className={cx(s.border, s.loop)} aria-hidden="true" />
       <div className={s.stageArea}>
@@ -194,7 +196,7 @@ function RewardLayer({ reward, pro, queued, onClose }: { reward: Reward; pro?: b
     return () => timers.forEach(clearTimeout);
   }, [reward.kind, tier]);
   return (
-    <div ref={ref} className={cx(s.layer, done && s.done)} data-theme="dark" data-tier={tier} data-milo={(reward.kind === 'stage' ? reward.to : reward.stage) === 'milo' || undefined}
+    <div ref={ref} className={cx(s.layer, done && s.done)} data-tier={tier} data-milo={(reward.kind === 'stage' ? reward.to : reward.stage) === 'milo' || undefined}
       style={{ '--t0': reward.kind === 'stage' ? 6 : 2 } as CSSProperties}
       onClick={() => { if (!done) setDone(true); }}>
       <span className={s.bloom} aria-hidden="true" />
