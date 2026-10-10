@@ -548,12 +548,24 @@ def light_checks(b, w, h):
             px = [im.getpixel((int(x * sx), int(y * sx))) for x, y in pts if 2 < y < h - 2]
             ok(px and all(max(abs(a - b) for a, b in zip(c, lime)) <= 3 for c in px), f'{tag} 浅色·记录：孔里露出平涂荧光底板 {lime}（{len(px)} 个孔 {px[:2]}）')
     if not args.no_shots and w == 360: pg.screenshot(path=os.path.join(OUT, 'light-last.png'))
-    # 故事 8 幕：浅色水墨，页里没有深色岛，底是浅色，字对比度达标（等每一幕的字都出来）
-    for k in range(1, 9):
-        pg.goto(f'{args.base}/'); pg.evaluate('localStorage.clear()'); pg.goto(f'{args.base}/onboarding?scene={k}&theme=light'); pg.wait_for_selector('main'); pg.wait_for_timeout(2600)
+    # 故事 8 幕：浅色水墨，页里没有深色岛，底是浅色，字对比度达标（每幕等到字都出来、又赶在自动翻页之前）
+    for k, wait in ((1, 4200), (2, 2600), (3, 8800), (4, 4300), (5, 1800), (6, 6900), (7, 6200), (8, 3800)):
+        pg.goto(f'{args.base}/'); pg.evaluate('localStorage.clear()'); pg.goto(f'{args.base}/onboarding?scene={k}&theme=light'); pg.wait_for_selector('main'); pg.wait_for_timeout(wait)
         isl = pg.evaluate(ISLANDS); ok(not isl, f'{tag} 浅色·故事第 {k} 幕：没有局部深色岛 {isl[:3]}')
-        lum = pg.evaluate(BG_LUM, 'main'); ok(lum is not None and lum > 0.8, f'{tag} 浅色·故事第 {k} 幕：底是浅色（亮度 {lum}）')
+        lum = pg.evaluate(BG_LUM, '[class*=_story_]'); ok(lum is not None and lum > 0.8, f'{tag} 浅色·故事第 {k} 幕：底是浅色（亮度 {lum}）')
         low = pg.evaluate(CONTRAST); ok(not low, f'{tag} 浅色·故事第 {k} 幕：文字对比度都达标 {low[:3]}')
+    # /demo 外壳（电脑版，只在 360 那一份跑）：手机下面的「浅色」整页一起切，手机里也是浅色
+    if w == 360:
+        d = b.new_page(viewport={'width': 1440, 'height': 900})
+        d.on('pageerror', lambda e: errors.append(f'light demo pageerror: {e}'))
+        d.goto(args.base + '/demo'); d.wait_for_selector('iframe'); d.wait_for_timeout(1500)
+        d.get_by_role('group', name='主题').get_by_role('button', name='浅色').click(); d.wait_for_timeout(1500)
+        inner = d.frames[1].evaluate('document.documentElement.dataset.theme') if len(d.frames) > 1 else None
+        ok(d.evaluate('document.documentElement.dataset.theme') == 'light' and inner == 'light', f'/demo 浅色：外壳和手机里一起切到浅色（手机里 {inner}）')
+        isl = d.evaluate(ISLANDS); ok(not isl, f'/demo 浅色：外壳没有局部深色岛 {isl[:3]}')
+        lum = d.evaluate(BG_LUM, 'main'); ok(lum is not None and lum > 0.8, f'/demo 浅色：外壳是浅色底（亮度 {lum}）')
+        low = d.evaluate(CONTRAST); ok(not low, f'/demo 浅色：外壳文字对比度都达标 {low[:3]}')
+        d.close()
     # 「我的 → 外观」：选浅色立即生效、刷新还在；选回深色
     pg.goto(f'{args.base}/me?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(800)
     ok(pg.evaluate('document.documentElement.dataset.theme') == 'dark', f'{tag} 外观：默认深色')
