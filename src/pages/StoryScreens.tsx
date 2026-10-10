@@ -2,7 +2,8 @@
  *  - 像 Stories 一样播：顶部 8 段进度条，每幕播完自动进下一幕；点右半屏下一幕、左半屏上一幕，按住暂停；右上角「跳过」直接进建档。
  *  - 背景是远 / 中 / 近三层场景（用户出图，scripts/story_png.py 抠图），前 6 幕同一个镜头左右平移（视差）；人物是米洛 6 个姿势。
  *  - 刻度尺、天数、曲线、阶梯、碎屑、产品小样都是代码生成；产品小样用真组件（胶囊、处方卡）。
- *  - 减少动态效果：每幕直接到最后一帧，互动换成按钮；故事不记进度（杀进程回第 1 幕）。?scene=N 从第 N 幕开始（截图用）。 */
+ *  - 减少动态效果：每幕直接到最后一帧，互动换成按钮；故事不记进度（杀进程回第 1 幕）。?scene=N 从第 N 幕开始（截图用）。
+ *  - 主题（2026-10-10 全局浅色）：不再固定深色，跟全局主题走；浅色下三层场景、拱门、米洛用代码处理成纸上的淡墨（样式末尾「浅色水墨」），不出新素材。 */
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { BodyFigure, Button, CapsuleRail, Lockup, LogoGlyph, Mascot, PrescriptionHero, Screen, type Anchors } from '../components';
@@ -55,7 +56,7 @@ export function StoryScreens({ onDone }: { onDone: () => void }) {
   };
 
   return (
-    <Screen label={`故事 第 ${i + 1} 幕，共 ${SCENES.length} 幕`} theme="dark">
+    <Screen label={`故事 第 ${i + 1} 幕，共 ${SCENES.length} 幕`}>
     <div ref={setHost} className={s.story} style={{ '--cam': sc.cam, ...(sc.sh ? { '--stage-h': sc.sh } : {}) } as CSSProperties}>
       <Backdrop />
       <div className={s.bars} aria-hidden="true">
