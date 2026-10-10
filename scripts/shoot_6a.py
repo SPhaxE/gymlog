@@ -574,7 +574,7 @@ def light_checks(b, w, h):
             lum = pg.evaluate(BG_LUM, '[class*=_stage_]'); ok(lum is not None and lum > 0.7, f'{tag} 浅色·容量：人体舞台是浅色底（亮度 {lum}）')
             look = pg.evaluate("""() => { const l = document.querySelector('svg[class*=_light_]'), fl = document.querySelector('svg[data-flow=molten]');
               return { light: l && getComputedStyle(l).mixBlendMode, flow: fl && getComputedStyle(fl).mixBlendMode }; }""")
-            # 熔流是压暗混合（multiply）；柔光描边按浅色描边方案：墨 / 绿线 multiply，默认 L2d 的磨砂白线是普通叠放（normal），都不许是提亮的 screen
+            # 熔流是压暗混合（multiply）；柔光描边按浅色描边方案：墨 / 绿线 multiply，L2d 的磨砂白线是普通叠放（normal），默认 L2a 是中绿线，都不许是提亮的 screen
             ok(look['flow'] == 'multiply' and look['light'] is not None, f'{tag} 浅色·容量：熔流是压暗混合（multiply） {look}')   # 柔光描边层的混合模式随描边方案（墨 / 绿线 multiply，L2d 磨砂白线是 screen 的白线）
             seg = pg.evaluate(BG_LUM, "[role=radio][aria-checked=true]"); ok(seg is not None and seg > 0.8, f'{tag} 浅色·容量：Segmented 选中不是墨黑块（白浮起，亮度 {seg}）')
         if path == '/log':

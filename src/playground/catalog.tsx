@@ -218,7 +218,7 @@ export const CATALOG: Entry[] = [
     render: (p) => p.kind === 'undo' ? <Toast message="已删除这次训练" action="撤销" /> : <Toast kind={p.kind as 'success'} message={p.kind === 'error' ? '保存失败，数据还在本机' : '已保存 · 3 组'} />,
   },
   {
-    name: 'LiquidSwap', group: '反馈与悬浮层', desc: `深浅切换的液态转场（2026-10-10 用户：深浅切换只留「我的 → 主题」一个入口，切换时放固定的液态流动动画缓和加载，强制）。照用户给的 AE 熔流拆解拆成两轴：走向 route = 方向场（晕开 / 漫上 / 垂落 / 交汇），渐变 ramp = 色带映射（熔流 / 淬火 / 余温 / 墨晕），湍流扭曲 + 前沿羽化 + 辉光 + 颗粒共用，WebGL 逐像素画。时间线固定（motion/theme-in + hold + out，共 1.32 秒）：一开始就换主题，旧页面快照随色带擦掉，色带后面透明、直接露出正在渲染的新页面（不把页面整个挡住）；没有 View Transitions 时退回「流入盖满 → 换 → 流走」。遮罩不吞点击，按一下跳到终态；放到一半再点会排队；同一时刻的几次调用共用一次转场。组合对照在 /preview#swap，App 用 ${DEFAULT_SWAP.route} × ${DEFAULT_SWAP.ramp}；?route= &ramp= 可临时换。`,
+    name: 'LiquidSwap', group: '反馈与悬浮层', desc: `深浅切换的液态转场（2026-10-10 用户：深浅切换只留「我的 → 主题」一个入口，切换时放固定的液态流动动画缓和加载，强制）。照用户给的 AE 熔流拆解拆成两轴：走向 route = 方向场（晕开 / 漫上 / 垂落 / 交汇），渐变 ramp = 色带映射（熔流 / 淬火 / 余温 / 墨晕），湍流扭曲 + 前沿羽化 + 辉光 + 颗粒共用，WebGL 逐像素画。时间线固定（motion/theme-in + hold + out，共 1.32 秒）：一开始就换主题，旧页面快照随色带擦掉，色带后面透明、直接露出正在渲染的新页面（不把页面整个挡住）；没有 View Transitions 时退回「流入盖满 → 换 → 流走」。遮罩不吞点击，按一下跳到终态；放到一半再点会排队；同一时刻的几次调用共用一次转场。组合对照在 /preview#swap，用户选定 R1 晕开 × G1 熔流（${DEFAULT_SWAP.route} × ${DEFAULT_SWAP.ramp}），起点 = 手指按下处；?route= &ramp= 可临时换。`,
     axes: { route: [...SWAP_ROUTES], ramp: [...SWAP_RAMPS] }, rows: ['route'], cols: 'ramp', size: 'card',
     render: (p) => <SwapCell route={p.route as SwapRoute} ramp={p.ramp as SwapRamp} />,
   },
@@ -587,7 +587,7 @@ export const CATALOG: Entry[] = [
     },
   },
   {
-    name: 'BodyFigure', group: '容量', desc: 'MuscleWiki 真实路径的人体。半身：从左裁掉 ratio/figure-crop、左缘渐隐（容量页与故事动画同一个版式）。三层视效（2026-10-07 方案台选定，DEFAULT_LOOK）：O2 柔光描边（轮廓一圈模糊淡光）+ F1 金属渐变（灰阶 → 湍流扭曲 + 模糊 → 暗 / 橄榄 / 荧光 / 骨白热色带，下缘白热亮边 + 外发光 + 颗粒，越热越亮）+ S9 熔流（亮带往上流过湍流扭曲场，越热越快；滚出屏幕暂停）。减少动态效果时全静止。浅色（2026-10-10 全局浅色）：不再是深色观察窗，人体直接画在纸白上、跟随所在元素的主题；按 LightLook 方案画（L1 深绿热 · L2 荧光热 · L3 银金属 · L4 墨印；2026-10-10 用户选定 L2 的配色，默认 L2，再出 4 个变体 L2a 轻盈 · L2b 金属 · L2c 形体靠影 · L2d 磨砂待选）——色带冷 = 纸白、热 = 深色，唇边 / 内缘从提亮改压暗 + 上沿纸白高光，熔流和柔光描边从 screen 改 multiply；只有 O2 / F1 / S9 有浅色版，其余方案是深色存档。浅色描边不用墨（LightContour：C1 中绿线 · C2 灰绿线 · C3 磨砂白线 · C4 柔影 · C5 无描边），胶囊描边、引线、量尺刻度也跟人体方案走（CapsuleRail / TierLegend，lightToneVars）。look 轴：theme = 跟随页面主题，其余 = 这一格固定浅色。其余方案与旧默认见 /preview 方案台（L2 变体、描边 C、L 组 + 全热度对照）。',
+    name: 'BodyFigure', group: '容量', desc: 'MuscleWiki 真实路径的人体。半身：从左裁掉 ratio/figure-crop、左缘渐隐（容量页与故事动画同一个版式）。三层视效（2026-10-07 方案台选定，DEFAULT_LOOK）：O2 柔光描边（轮廓一圈模糊淡光）+ F1 金属渐变（灰阶 → 湍流扭曲 + 模糊 → 暗 / 橄榄 / 荧光 / 骨白热色带，下缘白热亮边 + 外发光 + 颗粒，越热越亮）+ S9 熔流（亮带往上流过湍流扭曲场，越热越快；滚出屏幕暂停）。减少动态效果时全静止。浅色（2026-10-10 全局浅色）：不再是深色观察窗，人体直接画在纸白上、跟随所在元素的主题；按 LightLook 方案画（L1 深绿热 · L2 荧光热 · L3 银金属 · L4 墨印；2026-10-10 用户选定 L2 的配色，默认 L2，再出 4 个变体 L2a 轻盈 · L2b 金属 · L2c 形体靠影 · L2d 磨砂，最后选定 L2a 轻盈，DEFAULT_LIGHT_LOOK）——色带冷 = 纸白、热 = 深色，唇边 / 内缘从提亮改压暗 + 上沿纸白高光，熔流和柔光描边从 screen 改 multiply；只有 O2 / F1 / S9 有浅色版，其余方案是深色存档。浅色描边不用墨（LightContour：C1 中绿线 · C2 灰绿线 · C3 磨砂白线 · C4 柔影 · C5 无描边），胶囊描边、引线、量尺刻度也跟人体方案走（CapsuleRail / TierLegend，lightToneVars）。look 轴：theme = 跟随页面主题，其余 = 这一格固定浅色。其余方案与旧默认见 /preview 方案台（L2 变体、描边 C、L 组 + 全热度对照）。',
     axes: { look: ['theme', 'L1', 'L2', 'L3', 'L4', 'L2a', 'L2b', 'L2c', 'L2d'], view: ['front', 'back'], sex: ['male', 'female'] }, rows: ['look', 'sex'], cols: 'view', size: 'm',
     skip: (p) => p.look !== 'theme' && p.sex === 'female',
     render: (p, f) => p.look === 'theme' ? <FigureCell view={p.view as 'front'} sex={p.sex as 'male'} f={f} />

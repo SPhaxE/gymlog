@@ -113,7 +113,7 @@ const TONES = {
   // 偏绿影：引线、刻度同一个中绿
   quiet: { line: 'transparent', leader: 'color-mix(in srgb, var(--milo-prim-ink-900) 85%, transparent)', tick: 'var(--milo-prim-ink-500)',
     fx: 'var(--depth-1)' },
-  // 磨砂（L2d 默认）：引线、刻度中绿
+  // 磨砂（L2d，旧默认）：引线、刻度中绿
   frost: { line: 'transparent', leader: 'color-mix(in srgb, var(--milo-prim-ink-900) 85%, transparent)', tick: 'var(--milo-prim-ink-500)',
     fx: 'var(--depth-1)' },
 } satisfies Record<string, LightTone>;
@@ -150,8 +150,8 @@ export const LIGHT_LOOKS: Record<LightLookKind, LightLookSpec> = {
   L2d: { ramp: ['paper-50', 'lime-300', 'lime-500', 'lime-500', 'lime-500', 'lime-500'], lip: 0.8, edge: 0.9, grain: 0.05, glow: 0.4, sheen: 1, moltenTint: 'lime-500', molten: 0.5, contour: 'frost', tone: TONES.frost, legend: '越绿越热' },
 };
 export const LightLook = createContext<LightLookKind | null>(null);
-/** 浅色人体的默认方案（2026-10-10 用户选定 L2d 磨砂 + C3 磨砂白线，即 L2d 自己的默认描边；L1–L4、L2a–c 落选，留在方案台） */
-export const DEFAULT_LIGHT_LOOK: LightLookKind = 'L2d';
+/** 浅色人体的默认方案（2026-10-10 用户最后定为 L2a 轻盈 + 它自己的中绿细线描边；之前的 L2d 磨砂 + C3 磨砂白线和 L1–L4、L2b–c 留在方案台） */
+export const DEFAULT_LIGHT_LOOK: LightLookKind = 'L2a';
 /** 元素在浅色里：返回所选浅色方案（LightLook 上下文没给就是 DEFAULT_LIGHT_LOOK）；在深色里返回 null。胶囊量尺、图例也用它跟着换色带 */
 export function useLightLook(ref: RefObject<Element | null>): LightLookSpec | null {
   const look = useContext(LightLook) ?? DEFAULT_LIGHT_LOOK;

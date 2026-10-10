@@ -24,7 +24,7 @@ export type SwapRamp = 'molten' | 'quench' | 'ember' | 'ink';
 export interface SwapKind { route: SwapRoute; ramp: SwapRamp }
 export const SWAP_ROUTES: readonly SwapRoute[] = ['drop', 'rise', 'drip', 'merge'];
 export const SWAP_RAMPS: readonly SwapRamp[] = ['molten', 'quench', 'ember', 'ink'];
-/** App 里用的组合（方案台待选，选定后改这一行） */
+/** App 里用的组合（2026-10-10 用户选定 R1 晕开 × G1 熔流，起点 = 手指按下的那个「深色 / 浅色」；其余组合留在方案台） */
 export const DEFAULT_SWAP: SwapKind = { route: 'drop', ramp: 'molten' };
 
 export function swapKind(): SwapKind {
@@ -48,9 +48,15 @@ const RAMPS: Record<SwapRamp, Ramp> = {
   ink: { stops: ['ink-500', 'ink-600', 'ink-900', 'ink-600', 'paper-300'], glow: [0, 0], grain: 0.08, band: 0.42 },
 };
 
-/** 最近一次按下的位置：「晕开」从手指按下的地方开始（各入口不用自己传坐标） */
-let lastDown: { x: number; y: number } | null = null;
-if (typeof window !== 'undefined') window.addEventListener('pointerdown', (e) => { lastDown = { x: e.clientX, y: e.clientY }; }, { capture: true, passive: true });
+/** 「晕开」的起点 = 手指按下的地方（点的那个「深色 / 浅色」，用户 2026-10-10 定）；各入口不用自己传坐标。
+ *  只认刚按下的（1 秒内）；键盘 / 读屏操作没有按下，就从获得焦点的那个按钮中心开始 */
+let lastDown: { x: number; y: number; at: number } | null = null;
+if (typeof window !== 'undefined') window.addEventListener('pointerdown', (e) => { lastDown = { x: e.clientX, y: e.clientY, at: performance.now() }; }, { capture: true, passive: true });
+function tapPoint() {
+  if (lastDown && performance.now() - lastDown.at < 1000) return lastDown;
+  const r = document.activeElement && document.activeElement !== document.body ? document.activeElement.getBoundingClientRect() : null;
+  return r && r.width ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null;
+}
 
 // 一律用 performance.now()：rAF 给的时间戳在部分环境（虚拟时钟、旧 WebView）和它不是一个基准
 const frame = () => new Promise<number>((r) => requestAnimationFrame(() => r(performance.now())));
@@ -181,8 +187,9 @@ function veilOf({ to, host, kind = swapKind() }: Job, reveal: boolean): Veil | n
   const fw = Math.max(2, Math.round(w * FIELD_SCALE)), fh = Math.max(2, Math.round(h * FIELD_SCALE));
   g.bindTexture(g.TEXTURE_2D, tex); g.texImage2D(g.TEXTURE_2D, 0, g.RGBA, fw, fh, 0, g.RGBA, g.UNSIGNED_BYTE, null);
   g.bindFramebuffer(g.FRAMEBUFFER, fb); g.framebufferTexture2D(g.FRAMEBUFFER, g.COLOR_ATTACHMENT0, g.TEXTURE_2D, tex, 0); g.bindFramebuffer(g.FRAMEBUFFER, null);
-  const o: [number, number] = lastDown && lastDown.x >= box.left && lastDown.x <= box.left + w && lastDown.y >= box.top && lastDown.y <= box.top + h
-    ? [(lastDown.x - box.left) / w, (lastDown.y - box.top) / h] : [0.5, 0.7];
+  const tp = tapPoint();
+  const o: [number, number] = tp && tp.x >= box.left && tp.x <= box.left + w && tp.y >= box.top && tp.y <= box.top + h
+    ? [(tp.x - box.left) / w, (tp.y - box.top) / h] : [0.5, 0.7];
   const r = RAMPS[kind.ramp], band = r.band * (reveal ? REVEAL_BAND : 1);
   const cols = [...r.stops.map(primRgb), bgOf(to)];
   g.useProgram(pf);
