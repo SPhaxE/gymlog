@@ -1,9 +1,9 @@
 /** 主题（2026-10-10 用户：浅色模式，验证 Token 体系）。
  *  ★ 代码级一键切换：改下面这一行。'dark' / 'light' / 'system'（跟随系统）。用户在「我的 → 外观」选过的话以用户的为准。
  *  原理：页面只用语义色（--milo-color-*），tokens.css 里 :root 是深色、[data-theme='light'] 是浅色；切主题 = 改 <html data-theme>。
- *  任意元素加 data-theme 就是一块局部主题（容量页人体的深色观察窗、奖励弹窗）。
- *  画布特效（流体背景、颗粒光、粒子、钢板）从元素自己身上读 --milo-color-fx-*，主题一变就重画（useTheme）。 */
-import { useSyncExternalStore } from 'react';
+ *  任意元素加 data-theme 就是一块局部主题——App 里不再用（2026-10-10 用户：要真·全局浅色），只给方案台 / Playground 的单格强制深或浅。
+ *  画布特效（流体背景、颗粒光、粒子、钢板、人体）从元素自己身上读 --milo-color-*，主题一变就重画（useTheme / useElementTheme）。 */
+import { useLayoutEffect, useState, useSyncExternalStore, type RefObject } from 'react';
 import { Capacitor, SystemBars, SystemBarsStyle } from '@capacitor/core';
 
 export type Theme = 'dark' | 'light';
@@ -71,4 +71,15 @@ export function useThemePref(): ThemePref {
 /** 当前主题（画布特效把它放进 effect 依赖，切主题就重画） */
 export function useTheme(): Theme {
   return useSyncExternalStore(subscribe, () => current, () => 'dark');
+}
+/** 元素所在的主题：最近的 [data-theme]（方案台 / Playground 单格可以局部强制深或浅），没有就是全局主题。
+ *  画布与 SVG 按它选色带、选混合模式；全局主题一变就重算（放进 effect / useMemo 依赖就会重画） */
+export function useElementTheme(ref: RefObject<Element | null>): Theme {
+  const theme = useTheme();
+  const [t, setT] = useState<Theme>(theme);
+  useLayoutEffect(() => {
+    const v = ref.current?.closest('[data-theme]')?.getAttribute('data-theme');
+    setT(v === 'light' || v === 'dark' ? v : theme);
+  }, [ref, theme]);
+  return t;
 }
