@@ -1,5 +1,6 @@
 /* 钢板打孔日历（2026-10-06 第 7 轮重做）：读数行 → 钢板（板后灯箱画布 + 钢面 SVG + 选中光晕）→ 板前光束画布。
-   光源固定在屏幕上，画布在脚本里按板相对光源的位置画（见 plate.tsx）；这里只管叠放与交互态。 */
+   光源固定在屏幕上，画布在脚本里按板相对光源的位置画（见 plate.tsx）；这里只管叠放与交互态。
+   2026-10-10 全局浅色：板跟随所在主题（.light 由脚本按 useElementTheme 加）。浅色不点灯：板后是平涂荧光底板，暗部乘 --plate-lo-k 压淡。 */
 .wrap { position: relative; isolation: isolate; display: grid; gap: var(--milo-space-s); }
 
 /* 读数行（M04 的「码表」）：日期 · 部位 | 数值（按位滚）| 查看 */
@@ -12,8 +13,8 @@
 .rdGo { display: grid; place-items: center; width: var(--milo-size-hit-min); height: var(--milo-size-hit-min); margin-right: calc(var(--milo-space-s) * -1); border: 0; border-radius: var(--milo-radius-pill);
   background: var(--milo-color-bg-raised-2); color: var(--milo-color-text-primary); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong); }
 
-/* 钢板：圆角裁切用 clip（不做滚动容器）；底色是没点灯时的深底 */
-.plate { position: relative; margin: 0; border-radius: var(--milo-radius-m); overflow: clip; isolation: isolate; background: var(--milo-color-bg-raised); }
+/* 钢板：圆角裁切用 clip（不做滚动容器）；底色是没点灯时的钢面底 */
+.plate { position: relative; margin: 0; border-radius: var(--milo-radius-m); overflow: clip; isolation: isolate; background: var(--milo-color-plate-steel-bottom); }
 .plate::after { content: ''; position: absolute; inset: 0; z-index: 3; border-radius: inherit; pointer-events: none;
   box-shadow: inset 0 0 0 var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-color-text-primary) 18%, transparent); }
 /* 可拖：竖向滑动交给页面滚动，横向拖是游标；按下时整块板有 M08 的按压感 */
@@ -44,9 +45,18 @@
   mask: linear-gradient(transparent, black var(--milo-space-2xl), black calc(100% - var(--milo-space-2xl)), transparent), linear-gradient(90deg, transparent, black var(--milo-size-gutter), black calc(100% - var(--milo-size-gutter)), transparent);
   mask-composite: intersect; }
 .haloCenter { background: radial-gradient(ellipse 62% 70% at var(--hx, 50%) var(--hy, 50%), color-mix(in srgb, var(--milo-prim-lime-300) 55%, transparent), color-mix(in srgb, var(--milo-prim-lime-500) 22%, transparent) 55%, transparent 100%); }
-.dark .plate { background: var(--milo-color-bg-raised-2); }
+.dark .plate { background: var(--milo-color-plate-steel-top); }
 /* lamp（2026-10-09 选定 S1）：灯在「屏幕」那一层、不跟内容滚——屏幕左上角一盏看得见的灯（亮核 + 一大圈泛光），钢板从它下面滚过；
    板升上来时由脚本把 opacity 渐变到 0（关灯），孔和光束同步变暗。z-index -1：在页面内容下面、氛围底色上面 */
 .lamp { position: absolute; inset: 0; z-index: -1; pointer-events: none; transition: none;
   background: radial-gradient(circle at var(--lx, 0) var(--ly, 0), color-mix(in srgb, var(--milo-prim-bone-100) 85%, transparent) 0, color-mix(in srgb, var(--milo-prim-lime-300) 70%, transparent) var(--milo-space-s),
     color-mix(in srgb, var(--milo-prim-lime-500) 26%, transparent) calc(var(--milo-space-5xl) * 1.2), color-mix(in srgb, var(--milo-prim-lime-700) 8%, transparent) calc(var(--milo-space-5xl) * 3), transparent calc(var(--milo-space-5xl) * 4.5)); }
+
+/* 浅色（2026-10-10 用户：「钢板透光等特效，浅色模式下就可以省去」）：浅色拉丝铝板，孔里露出平涂荧光底板；
+   暗部（孔壁、凹痕、划痕、槽、今天的环）乘 0.45，墨色阴影不发脏；选中孔的外发光换成 accent-glow */
+.light { --plate-lo-k: 0.45; }
+.light .back { background: var(--milo-color-plate-hole); }
+.light .tex { opacity: 0.5; }
+.light .vig { opacity: 0.4; }
+.light .groove { opacity: 0.5; }
+.light .focus { box-shadow: 0 0 0 var(--milo-stroke-focus) var(--milo-color-text-primary), 0 0 var(--milo-space-m) var(--milo-space-2xs) var(--milo-color-accent-glow); }
