@@ -504,29 +504,56 @@ CONTRAST = r"""() => {
   return out;
 }"""
 
+# 元素实际看到的底色亮度（往上叠到第一层不透明的背景；0 黑 – 1 白）
+BG_LUM = r"""(sel) => {
+  const el = typeof sel === 'string' ? document.querySelector(sel) : sel; if (!el) return null;
+  const parse = (c) => { const m = c.match(/rgba?\(([^)]+)\)/); if (!m) return null; const p = m[1].split(/[ ,\/]+/).filter(Boolean).map(Number); return [p[0], p[1], p[2], p.length > 3 ? p[3] : 1]; };
+  const layers = []; for (let e = el; e; e = e.parentElement) { const c = parse(getComputedStyle(e).backgroundColor); if (c && c[3] > 0) { layers.push(c); if (c[3] >= 0.99) break; } }
+  let bg = [255, 255, 255]; for (let i = layers.length - 1; i >= 0; i--) { const a = layers[i][3]; bg = [0, 1, 2].map((k) => layers[i][k] * a + bg[k] * (1 - a)); }
+  const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+  return +(0.2126 * f(bg[0]) + 0.7152 * f(bg[1]) + 0.0722 * f(bg[2])).toFixed(3);
+}"""
+# 页里有没有局部主题（2026-10-10 用户：要真·全局浅色，App 里不许再有深色岛）
+ISLANDS = "[...document.querySelectorAll('body [data-theme]')].map((e) => e.tagName.toLowerCase() + '.' + String(e.className).slice(0, 30))"
+
 def light_checks(b, w, h):
-    """浅色主题（2026-10-10，DESIGN §1.5）：各页 ?theme=light 下 html 是浅色、文字对比度达标、无横向溢出、命中区 ≥ 48；
-    深色岛（容量页观察窗、钢板、故事）仍是深色；「我的 → 外观」切换立即生效、刷新后还在、切回深色。"""
+    """浅色主题（2026-10-10，DESIGN §1.5）：真·全局浅色——各页 ?theme=light 下 html 是浅色、页里没有任何局部深色岛、文字对比度达标、无横向溢出、命中区 ≥ 48；
+    容量人体用压暗混合（multiply，不是提亮的 screen）、舞台底是浅色；钢板不打灯（没有灯、光束画布）、孔里露出荧光底板；
+    故事 8 幕是浅色水墨、字对比度达标；奖励弹窗浅色；「我的 → 外观」切换立即生效、刷新后还在、切回深色。"""
     tag = f'{w}×{h}'
     pg = b.new_page(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True)
     pg.on('pageerror', lambda e: errors.append(f'{tag} light pageerror: {e}'))
     for path in ('/today', '/body', '/gains', '/gains/barbell-bench-press-4', '/log', '/me', '/me/level', '/me/messages', '/me/wallet', '/me/pro', '/pro', '/shop', '/shop/item/belt-10', '/shop/guide/belt', '/exercise/barbell-bench-press-4'):
         pg.goto(f'{args.base}{path}?scenario=plain-prescription&theme=light'); pg.wait_for_selector('main'); pg.wait_for_timeout(1100)
         ok(pg.evaluate('document.documentElement.dataset.theme') == 'light', f'{tag} 浅色·{path}：html 是浅色')
+        isl = pg.evaluate(ISLANDS); ok(not isl, f'{tag} 浅色·{path}：页里没有局部深色岛 {isl[:3]}')
         ok(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag} 浅色·{path}：无横向溢出')
         low = pg.evaluate(CONTRAST)
         ok(not low, f'{tag} 浅色·{path}：文字对比度都达标 {low[:3]}')
         small = audit(pg); ok(not small, f'{tag} 浅色·{path}：命中区都 ≥ 48 {small[:3]}')
         if path == '/body':
-            ok(pg.evaluate("document.querySelector('[class*=_stage_]').dataset.theme") == 'dark', f'{tag} 浅色·容量：人体舞台是深色观察窗（局部深色主题）')
-            bgc = pg.evaluate("getComputedStyle(document.querySelector('[class*=_stage_]')).backgroundColor")
-            ok(bgc.startswith('rgb(1') or bgc.startswith('rgb(2'), f'{tag} 浅色·容量：观察窗是深色底 {bgc}')
+            lum = pg.evaluate(BG_LUM, '[class*=_stage_]'); ok(lum is not None and lum > 0.8, f'{tag} 浅色·容量：人体舞台是浅色底（亮度 {lum}）')
+            look = pg.evaluate("""() => { const l = document.querySelector('svg[class*=_light_]'), fl = document.querySelector('svg[data-flow=molten]');
+              return { light: l && getComputedStyle(l).mixBlendMode, flow: fl && getComputedStyle(fl).mixBlendMode }; }""")
+            ok(look['light'] == 'multiply' and look['flow'] == 'multiply', f'{tag} 浅色·容量：柔光描边和熔流都是压暗混合（multiply），纸白上不提亮 {look}')
         if path == '/log':
-            ok(pg.evaluate("document.querySelector('figure[data-theme=dark]') !== null"), f'{tag} 浅色·记录：钢板本体是深色（实物）')
+            lum = pg.evaluate(BG_LUM, '[data-plate]'); ok(lum is not None and lum > 0.5, f'{tag} 浅色·记录：钢板是浅色钢面（亮度 {lum}）')
+            fx = pg.evaluate("""() => ({ lamp: document.querySelectorAll('[class*=_lamp_], [class*=_halo_]').length, beams: document.querySelectorAll('[data-plate] canvas[class*=_beams_]').length })""")
+            ok(fx['lamp'] == 0 and fx['beams'] == 0, f'{tag} 浅色·记录：浅色不打灯（没有灯、光晕、光束画布）{fx}')
+            from PIL import Image
+            pts = pg.evaluate(PLATE_HOLES)
+            pg.evaluate("(p) => { const [x, y] = p; const el = document.elementFromPoint(x, y); el && el.scrollIntoView({ block: 'center' }); }", pts[0]) if pts else None
+            pg.wait_for_timeout(300); pts = pg.evaluate(PLATE_HOLES)
+            im = Image.open(io.BytesIO(pg.screenshot())).convert('RGB'); sx = im.width / w
+            lime = [im.getpixel((int(x * sx), int(y * sx))) for x, y in pts if 0 < y < h][:12]
+            ok(lime and all(g > 200 and g - bl > 120 and r > 150 for r, g, bl in lime), f'{tag} 浅色·记录：孔里露出荧光底板 {lime[:3]}')
     if not args.no_shots and w == 360: pg.screenshot(path=os.path.join(OUT, 'light-last.png'))
-    # 故事引导固定深色
-    pg.goto(f'{args.base}/'); pg.evaluate('localStorage.clear()'); pg.goto(f'{args.base}/onboarding?theme=light'); pg.wait_for_selector('main'); pg.wait_for_timeout(800)
-    ok(pg.evaluate("document.querySelector('main').dataset.theme") == 'dark', f'{tag} 浅色·故事引导：画面固定深色')
+    # 故事 8 幕：浅色水墨，页里没有深色岛，底是浅色，字对比度达标（等每一幕的字都出来）
+    for k in range(1, 9):
+        pg.goto(f'{args.base}/'); pg.evaluate('localStorage.clear()'); pg.goto(f'{args.base}/onboarding?scene={k}&theme=light'); pg.wait_for_selector('main'); pg.wait_for_timeout(2600)
+        isl = pg.evaluate(ISLANDS); ok(not isl, f'{tag} 浅色·故事第 {k} 幕：没有局部深色岛 {isl[:3]}')
+        lum = pg.evaluate(BG_LUM, 'main'); ok(lum is not None and lum > 0.8, f'{tag} 浅色·故事第 {k} 幕：底是浅色（亮度 {lum}）')
+        low = pg.evaluate(CONTRAST); ok(not low, f'{tag} 浅色·故事第 {k} 幕：文字对比度都达标 {low[:3]}')
     # 「我的 → 外观」：选浅色立即生效、刷新还在；选回深色
     pg.goto(f'{args.base}/me?scenario=plain-prescription'); pg.wait_for_selector('h1'); pg.wait_for_timeout(800)
     ok(pg.evaluate('document.documentElement.dataset.theme') == 'dark', f'{tag} 外观：默认深色')
