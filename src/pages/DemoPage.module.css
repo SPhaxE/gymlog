@@ -1,10 +1,11 @@
-/* /demo：左讲解 + 右手机（iframe 里是 App 本体）。深色舞台、两团慢慢呼吸的荧光余晖、米洛站在手机后面 */
+/* /demo：左讲解 + 右手机（iframe 里是 App 本体）。两团慢慢呼吸的荧光余晖、米洛站在手机后面。
+   2026-10-10 全局浅色：外壳不再固定深色，跟主题走（下面的主题按钮整页一起切）；原色换成深色值相同的语义色，深色一像素不变 */
 .page { position: relative; isolation: isolate; min-height: 100vh; display: grid; grid-template-columns: minmax(26rem, 34rem) auto; justify-content: center; align-items: center;
   gap: calc(var(--milo-space-4xl) * 1.5); padding: var(--milo-space-2xl) var(--milo-space-4xl); overflow: clip; background: var(--milo-color-bg-base); color: var(--milo-color-text-primary); }
 .aura { position: absolute; z-index: -1; inset: 0; pointer-events: none;
   background:
-    radial-gradient(40% 50% at 78% 45%, color-mix(in srgb, var(--milo-prim-lime-500) 14%, transparent), transparent 70%),
-    radial-gradient(35% 45% at 12% 90%, color-mix(in srgb, var(--milo-prim-lime-900) 60%, transparent), transparent 70%);
+    radial-gradient(40% 50% at 78% 45%, color-mix(in srgb, var(--milo-color-accent-default) 14%, transparent), transparent 70%),
+    radial-gradient(35% 45% at 12% 90%, color-mix(in srgb, var(--milo-color-fx-glow-deep) 60%, transparent), transparent 70%);
   animation: aura calc(var(--milo-motion-slow) * 18) ease-in-out infinite alternate; }
 @keyframes aura { to { filter: hue-rotate(-8deg) brightness(1.15); transform: scale(1.04); } }
 
@@ -17,7 +18,7 @@
   animation: pulse calc(var(--milo-motion-slow) * 4) ease-in-out infinite; }
 @keyframes pulse { 50% { opacity: 0.35; transform: scale(0.7); } }
 .title { margin: 0; font-size: calc(var(--milo-font-size-heading) * 1.9); line-height: 1.12; font-weight: 900; letter-spacing: -0.01em; }
-.title em { font-style: normal; color: var(--milo-color-accent-default); text-shadow: 0 0 var(--milo-space-2xl) var(--milo-color-accent-glow); }
+.title em { font-style: normal; color: var(--milo-color-accent-ink); text-shadow: 0 0 var(--milo-space-2xl) var(--milo-color-accent-glow); }
 .lead { margin: 0; color: var(--milo-color-text-secondary); font-size: var(--milo-font-size-body); line-height: 1.7; }
 .lead b { color: var(--milo-color-text-primary); }
 
@@ -31,7 +32,7 @@
 .route li.on { background: var(--milo-color-bg-raised); }
 .route li.on::before { transform: scaleY(1); }
 .n { font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-m); color: var(--milo-color-text-secondary); transition: color var(--milo-motion-base); }
-.on .n { color: var(--milo-color-accent-default); }
+.on .n { color: var(--milo-color-accent-ink); }
 .route li > div { display: grid; gap: var(--milo-space-2xs); }
 .route b { font-size: var(--milo-font-size-body); }
 .route span:not(.n) { color: var(--milo-color-text-secondary); font-size: var(--milo-font-size-caption); line-height: 1.5; }
@@ -54,13 +55,18 @@
 .phone { width: var(--pw); height: var(--ph); padding: var(--bezel); transform: scale(var(--k)); transform-origin: top left; border-radius: calc(var(--milo-radius-xl) * 2.2);
   background: linear-gradient(160deg, var(--milo-color-bg-raised-2), var(--milo-color-bg-base) 40%, var(--milo-color-bg-raised));
   box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong), 0 0 0 var(--milo-stroke-hairline) var(--milo-color-bg-base),
-    0 var(--milo-space-3xl) calc(var(--milo-space-4xl) * 2) color-mix(in srgb, var(--milo-color-bg-base) 80%, transparent), 0 0 calc(var(--milo-space-4xl) * 1.5) color-mix(in srgb, var(--milo-prim-lime-500) 12%, transparent); }
+    0 var(--milo-space-3xl) calc(var(--milo-space-4xl) * 2) color-mix(in srgb, var(--milo-color-bg-base) 80%, transparent), 0 0 calc(var(--milo-space-4xl) * 1.5) color-mix(in srgb, var(--milo-color-accent-default) 12%, transparent); }
+/* 浅色：投影换 shadow-float（纸白上用页面底色当影子看不见） */
+[data-theme='light'] .phone { box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-strong), 0 var(--milo-space-3xl) calc(var(--milo-space-4xl) * 2) var(--milo-color-shadow-float),
+    0 0 calc(var(--milo-space-4xl) * 1.5) color-mix(in srgb, var(--milo-color-accent-default) 12%, transparent); }
 .screen { display: block; width: 100%; height: 100%; border: 0; border-radius: calc(var(--milo-radius-xl) * 1.8); background: var(--milo-color-bg-base); }
 /* 米洛（故事里扛公牛那张）站在手机左后方，压暗一点当背景，脚下一圈荧光地面光 */
 .milo { position: relative; z-index: -1; grid-column: 1; grid-row: 1; height: 54vh; margin-right: -12%; margin-bottom: 4%; filter: brightness(0.7) saturate(0.9);
   animation: miloIn calc(var(--milo-motion-spring-soft-ms) * 2) var(--milo-motion-ease-spring) calc(var(--milo-motion-slow) * 3) both; }
 .milo img { display: block; height: 100%; width: auto; animation: bob calc(var(--milo-motion-slow) * 12) ease-in-out infinite; transform-origin: 50% 100%; }
 .milo::after { content: ''; position: absolute; left: 10%; right: 10%; bottom: -3%; height: 6%; border-radius: 50%; background: radial-gradient(closest-side, var(--milo-color-accent-glow), transparent); }
+/* 浅色：不压暗（纸上压暗是发脏），改成降透明度退到背景里；骨白的人在纸上会化掉，加一圈很细的墨边（同故事引导） */
+[data-theme='light'] .milo { filter: drop-shadow(0 0 calc(var(--milo-stroke-hairline) * 0.6) color-mix(in srgb, var(--milo-color-brand-mark) 70%, transparent)); opacity: 0.75; }
 @keyframes miloIn { from { opacity: 0; transform: translateX(-12%); } }
 @keyframes bob { 50% { transform: scaleY(0.985) translateY(0.6%); } }
 .tools { display: flex; align-items: center; justify-content: center; gap: var(--milo-space-m); }
