@@ -235,7 +235,8 @@ export function OptionsBoard({ now }: { now: number }) {
       <section className={s.group} aria-label="钢板" id="plate">
         <h2 className="milo-text-heading">记录页钢板 · S（走查 1，待选）</h2>
         <p className="milo-text-caption">钢板改成主题黑、休息日改白色手绘圈（4 种笔触轮换、可以选中）；要选的是光源怎么「看得见」。S0 留作对照。</p>
-        <div className={s.grid}>{PLATE.map(([k, t, n]) => <Cell key={t} id={`plate-${k}`} title={t} note={n}><PlateDemo look={k} now={now} /></Cell>)}</div>
+        <div className={s.grid}>{PLATE.map(([k, t, n]) => <Cell key={t} id={`plate-${k}`} title={`${t} · 深色方案`} note={n} dark><PlateDemo look={k} now={now} /></Cell>)}</div>
+        <p className="milo-text-caption">灯光只在深色下有，三格固定深色。浅色钢板（2026-10-10 全局浅色，用户：「钢板透光等特效，浅色模式下就可以省去」）不点灯：浅色拉丝铝板，孔里露出平涂荧光底板——看记录页或 /playground。</p>
       </section>
       <section className={s.group} aria-label="增量页配色" id="gainlook">
         <h2 className="milo-text-heading">增量页配色 · J（走查 1，待选）</h2>

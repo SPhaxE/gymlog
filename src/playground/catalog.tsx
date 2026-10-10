@@ -4,7 +4,7 @@
  *  按下 / 聚焦在代码里是 :active / :focus-visible，这里经 state 强制显示（state.ts）。 */
 import { useRef, type ReactNode } from 'react';
 import {
-  BackToTop, Banner, BodyFigure, FluidPanel, DotCalendar, SteelPlate, ParticleField, OrbitPlate, GrainGlow, GainGroupHead, GainRow, GainSummary, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
+  BackToTop, Banner, BodyFigure, LightLook, type LightLookKind, FluidPanel, DotCalendar, SteelPlate, ParticleField, OrbitPlate, GrainGlow, GainGroupHead, GainRow, GainSummary, SharedDetail, FluidBackdrop, GiantNumber, Odometer, RestDock, StepRing, WeekBars, dotMonths, Button, Capsule, CapsuleRail, Card, Chip, DayCell, Delta, DialogCard, ExerciseRow, Icon, ICONS, IconButton, IncrementRuler, LandmarkRuler,
   BodyPicker, PickRow, SwapRow, WarmupStrip,
   ListRow, List, MediaFrame, Nav, NumberField, Num, OptionCard, PageHeader, PhaseSegments, PrescriptionHero, ProfileTile, ProgressSteps, SectionLabel, Segmented,
   SessionRow, SetEditor, SetLine, SetRow, NumPad, Sheet, Tilt, SheetBlock, Skeleton, Sparkline, StateView, LoadMore, Stepper, Switch, Tag, Ticks, TierLegend, Toast, TopBar, TrendChart, WeekStrip,
@@ -474,12 +474,15 @@ export const CATALOG: Entry[] = [
     render: (_, f) => <DotCalendar months={dotMonths(f.trainedDays, f.now)} />,
   },
   {
-    name: 'SteelPlate', group: '训练与记录', desc: '记录页顶部的钢板打孔日历（2026-10-06 第 7 轮重做）：中性冷灰的冲压钢板，练过的日子是冲出来的孔、没练的只有样冲点、今天刻一圈细环。光源固定在屏幕上（2026-10-09 S1：灯挂在不滚动的屏幕层，不跟板也不跟页面走；板滚出灯下时慢慢关灯，灯、透光、光束一起暗；休息日是暗的手绘细圈、也能选）：板后灯箱离光越近越亮，每个孔向光源反方向射出一束体积光（丁达尔），光束里有浮尘慢慢飘；页面滚动时板相对光源移动，孔的亮暗和光束角度真实变化。交互（M04）：按住横向拖吸到最近的练过的日子，孔口一圈光晕呼吸、轻振，上方读数行按位滚到那天；「查看」/ 再点同一个孔 / 回车钻进那天的训练。没练过任何一天时板后不点灯。一页只放一块。',
-    axes: { kind: ['trained', 'selected', 'today-done', 'empty', 'lamp', 'center'] }, size: 'card',
+    name: 'SteelPlate', group: '训练与记录', desc: '记录页顶部的钢板打孔日历（2026-10-06 第 7 轮重做）：中性冷灰的冲压钢板，练过的日子是冲出来的孔、没练的只有样冲点、今天刻一圈细环。光源固定在屏幕上（2026-10-09 S1：灯挂在不滚动的屏幕层，不跟板也不跟页面走；板滚出灯下时慢慢关灯，灯、透光、光束一起暗；休息日是暗的手绘细圈、也能选）：板后灯箱离光越近越亮，每个孔向光源反方向射出一束体积光（丁达尔），光束里有浮尘慢慢飘；页面滚动时板相对光源移动，孔的亮暗和光束角度真实变化。交互（M04）：按住横向拖吸到最近的练过的日子，孔口一圈光晕呼吸、轻振，上方读数行按位滚到那天；「查看」/ 再点同一个孔 / 回车钻进那天的训练。没练过任何一天时板后不点灯。一页只放一块。浅色（2026-10-10 全局浅色，用户：「钢板透光等特效，浅色模式下就可以省去」）：纸上一块浅色拉丝铝板（钢面 plate/steel-*，暗部乘 0.45 免得发脏），孔里露出平涂荧光底板（plate/hole），孔壁一圈很淡的内阴影；不挂灯、不画光晕 / 光束 / 浮尘、不跑任何循环；选中孔是墨色细环 + 淡荧光晕。light / light-steel = 这一格固定浅色。',
+    axes: { kind: ['trained', 'selected', 'today-done', 'empty', 'lamp', 'center', 'light', 'light-steel'] }, size: 'card',
     render: (p, f) => {
       const days = new Set(f.trainedDays);
       if (p.kind === 'today-done') days.add(new Date(f.now).setHours(0, 0, 0, 0));
       const months = dotMonths(p.kind === 'empty' ? new Set() : days, f.now), last = Math.max(...f.trainedDays);
+      // 浅色格：data-theme 要在钢板挂上去之前就在祖先上（钢板挂载时读一次元素主题）
+      if (p.kind === 'light') return <div className={s.lightCell} data-theme="light"><SteelPlate dense months={months} selected={last} onSelect={noop} onOpen={noop} day={{ t: last, title: '10月2日 周五', sub: '下肢 · 13 组', value: '6,209', unit: 'kg' }} /></div>;
+      if (p.kind === 'light-steel') return <div className={s.lightCell} data-theme="light"><SteelPlate dense months={months} look="steel" /></div>;
       return p.kind === 'selected'
         ? <SteelPlate dense months={months} selected={last} onSelect={noop} onOpen={noop} day={{ t: last, title: '10月2日 周五', sub: '下肢 · 13 组', value: '6,209', unit: 'kg' }} />
         : <SteelPlate dense months={months} look={p.kind === 'lamp' || p.kind === 'center' ? p.kind : 'steel'} />;
@@ -548,7 +551,7 @@ export const CATALOG: Entry[] = [
     render: (p) => <PhaseSegments phase={p.phase} />,
   },
   { name: 'Ticks', group: '数据图形', desc: '刻度分隔线：做分隔和量尺用，不做装饰；向右渐隐。', axes: {}, size: 'card', render: () => <Ticks /> },
-  { name: 'TierLegend', group: '数据图形', desc: '容量四档图例：明暗 + 纹理，不只靠色相；和人体图、胶囊同源。', axes: {}, size: 'card', render: () => <TierLegend /> },
+  { name: 'TierLegend', group: '数据图形', desc: '容量四档图例：明暗 + 纹理，不只靠色相；和人体图、胶囊同源。浅色下用所选浅色人体方案（LightLook）色带的前 5 段，读屏文案跟方案走（越深越热 / 越绿越热）。', axes: {}, size: 'card', render: () => <TierLegend /> },
   /* ---------------- 身体 ---------------- */
   {
     name: 'Capsule', group: '容量', desc: '常态缩小 1/3（2026-10-06 用户：少挡人体；高 20、宽从内容区 62% 起）。胶囊 = 量尺：底色按「组数 ÷ 最大可恢复量」从左填；0 组斜纹压暗；超量加斜纹。放大镜：邻近按余弦变大；焦点荧光实心，名称挪到最右（手指底下），组数 / 恢复度 · 时相 / 还需几小时三行写在左边（手指挡不到）。',
@@ -566,9 +569,11 @@ export const CATALOG: Entry[] = [
     },
   },
   {
-    name: 'BodyFigure', group: '容量', desc: 'MuscleWiki 真实路径的人体。半身：从左裁掉 ratio/figure-crop、左缘渐隐（容量页与故事动画同一个版式）。三层视效（2026-10-07 方案台选定，DEFAULT_LOOK）：O2 柔光描边（轮廓一圈模糊淡光）+ F1 金属渐变（灰阶 → 湍流扭曲 + 模糊 → 暗 / 橄榄 / 荧光 / 骨白热色带，下缘白热亮边 + 外发光 + 颗粒，越热越亮）+ S9 熔流（亮带往上流过湍流扭曲场，越热越快；滚出屏幕暂停）。减少动态效果时全静止。其余方案与旧默认见 /preview 方案台。',
-    axes: { view: ['front', 'back'], sex: ['male', 'female'] }, rows: ['sex'], cols: 'view', size: 'm',
-    render: (p, f) => <FigureCell view={p.view as 'front'} sex={p.sex as 'male'} f={f} />,
+    name: 'BodyFigure', group: '容量', desc: 'MuscleWiki 真实路径的人体。半身：从左裁掉 ratio/figure-crop、左缘渐隐（容量页与故事动画同一个版式）。三层视效（2026-10-07 方案台选定，DEFAULT_LOOK）：O2 柔光描边（轮廓一圈模糊淡光）+ F1 金属渐变（灰阶 → 湍流扭曲 + 模糊 → 暗 / 橄榄 / 荧光 / 骨白热色带，下缘白热亮边 + 外发光 + 颗粒，越热越亮）+ S9 熔流（亮带往上流过湍流扭曲场，越热越快；滚出屏幕暂停）。减少动态效果时全静止。浅色（2026-10-10 全局浅色）：不再是深色观察窗，人体直接画在纸白上、跟随所在元素的主题；按 LightLook 方案画（L1 深绿热 · L2 荧光热 · L3 银金属 · L4 墨印，待用户选，默认 L1）——色带冷 = 纸白、热 = 深色，唇边 / 内缘从提亮改压暗 + 上沿纸白高光，熔流和柔光描边从 screen 改 multiply；只有 O2 / F1 / S9 有浅色版，其余方案是深色存档。look 轴：theme = 跟随页面主题，L1–L4 = 这一格固定浅色。其余方案与旧默认见 /preview 方案台（L 组 4 格 + 全热度对照）。',
+    axes: { look: ['theme', 'L1', 'L2', 'L3', 'L4'], view: ['front', 'back'], sex: ['male', 'female'] }, rows: ['look', 'sex'], cols: 'view', size: 'm',
+    skip: (p) => p.look !== 'theme' && p.sex === 'female',
+    render: (p, f) => p.look === 'theme' ? <FigureCell view={p.view as 'front'} sex={p.sex as 'male'} f={f} />
+      : <div className={s.lightCell} data-theme="light"><LightLook.Provider value={p.look as LightLookKind}><FigureCell view={p.view as 'front'} sex={p.sex as 'male'} f={f} /></LightLook.Provider></div>,
   },
   /* ---------------- 导航 ---------------- */
   {
@@ -581,13 +586,13 @@ export const CATALOG: Entry[] = [
   },
   /* ---------------- 品牌（阶段 5.5b，2026-10-05） ---------------- */
   {
-    name: 'Mascot', group: '品牌', desc: 'IP 小牛（PNG）：用户按意向图 3_27AM 用 Nano Banana 高清重制，scripts/mascot_png.py 切图、Real-ESRGAN 4 倍超分、抠图（边缘反解透明度不留黑边，只留牛本身；Milo 用无泛光的品红底源图，泛光由代码生成）。5 种牛龄（牛犊 · 小牛 · 壮牛 · 公牛 · Milo）× 6 种状态；前四种单眼，Milo 双眼发光。特效由代码生成：专注 = 速度线、恢复日 = 飘 z、破纪录 = 碎屑、Milo = 全身泛光 + 四角星 + 扫光；其余牛龄的荧光角带一圈会呼吸的微光。同一牛龄同比例、同地面线，换状态不跳；动效以地面线为支点整只呼吸 / 前压 / 小跳 / 欢呼 / 叹气，粒子特效挂在不动的一层、不跟着牛跳，减少动态效果时静止。只出现在品牌位置（引导、奖励、牛龄、空态、商城、会员）。',
+    name: 'Mascot', group: '品牌', desc: 'IP 小牛（PNG）：用户按意向图 3_27AM 用 Nano Banana 高清重制，scripts/mascot_png.py 切图、Real-ESRGAN 4 倍超分、抠图（边缘反解透明度不留黑边，只留牛本身；Milo 用无泛光的品红底源图，泛光由代码生成）。5 种牛龄（牛犊 · 小牛 · 壮牛 · 公牛 · Milo）× 6 种状态；前四种单眼，Milo 双眼发光。特效由代码生成：专注 = 速度线、恢复日 = 飘 z、破纪录 = 碎屑、Milo = 全身泛光 + 四角星 + 扫光；其余牛龄的荧光角带一圈会呼吸的微光。同一牛龄同比例、同地面线，换状态不跳；动效以地面线为支点整只呼吸 / 前压 / 小跳 / 欢呼 / 叹气，粒子特效挂在不动的一层、不跟着牛跳，减少动态效果时静止。只出现在品牌位置（引导、奖励、牛龄、空态、商城、会员）。浅色（2026-10-10）：图加一圈墨色细边（brand-mark 55%），骨白牛身才托得出纸白；Milo 泛光换淡荧光 accent-glow；星光、z、碎屑用 fx-spark-*（浅色是深一档的绿）；扫光固定骨白、仍是 screen。',
     axes: { stage: ['newborn', 'young', 'sturdy', 'bull', 'milo'], mood: ['m-idle', 'm-focused', 'm-happy', 'm-rest', 'm-pr', 'm-deload'] }, rows: ['stage'], cols: 'mood', size: 'card',
     render: (p) => <div className={s.mascotCell}><Mascot stage={p.stage as MascotStage} mood={p.mood.slice(2) as MascotMood} animate title="慢牛小牛" /></div>,
   },
   {
     name: 'RewardCard', group: '增长', covers: ['RewardModal'],
-    desc: '奖励弹窗（品牌时刻）：升段 = 满档（旧形态蓄力抖动发亮 → 闪屏 + 冲击波 + 光芒 + 碎屑 + 震屏 + 长振动 → 新形态从白光里弹出，就是「小牛长大」，五段路径长到新段）；破纪录 / 连胜里程碑 = 高（印章砸下、Logo 条点亮、重量码表滚到新纪录 / 周胶囊依次点亮）；升小级 / 周期完成 = 中。牛劲用码表滚出来，会员显示 ×1.5。一次只弹一个，其余进「消息」；点一下跳过到定格；减少动态效果时只淡入定格。这里是定格画面，交互演示里看完整编排。数据取自等级曲线模拟里的进阶用户。破纪录（2026-10-09 走查 1 #23）：标签「破纪录 · 预估 1RM」→ 大数字 + 涨幅胶囊同一行（主角）→ 动作名（Heading，balance、最多两行）→ 一句短话（涨幅不再重复）；五种标题都 balance、说明句 pretty + 按字数限行宽、收短到一行半以内。',
+    desc: '奖励弹窗（品牌时刻）：升段 = 满档（旧形态蓄力抖动发亮 → 闪屏 + 冲击波 + 光芒 + 碎屑 + 震屏 + 长振动 → 新形态从白光里弹出，就是「小牛长大」，五段路径长到新段）；破纪录 / 连胜里程碑 = 高（印章砸下、Logo 条点亮、重量码表滚到新纪录 / 周胶囊依次点亮）；升小级 / 周期完成 = 中。牛劲用码表滚出来，会员显示 ×1.5。一次只弹一个，其余进「消息」；点一下跳过到定格；减少动态效果时只淡入定格。这里是定格画面，交互演示里看完整编排。数据取自等级曲线模拟里的进阶用户。破纪录（2026-10-09 走查 1 #23）：标签「破纪录 · 预估 1RM」→ 大数字 + 涨幅胶囊同一行（主角）→ 动作名（Heading，balance、最多两行）→ 一句短话（涨幅不再重复）；五种标题都 balance、说明句 pretty + 按字数限行宽、收短到一行半以内。浅色（2026-10-10 全局浅色：不再是深色岛）：纸白卡 + line-default 内描边 + shadow-float，遮罩纸白；荧光字和线（标签、牛劲、小级、五段路径、冲击波环）用 accent-ink；升段大字深绿 → 墨黑渐变；闪白改荧光闪；蓄力和长大的「发白」换成深绿细边 + 荧光外光晕，动作不变；没到的段名用次要字色。',
     axes: { kind: ['r-stage', 'r-milo', 'r-pr', 'r-streak', 'r-level', 'r-cycle'], member: ['free', 'pro'] }, rows: ['kind'], cols: 'member', size: 'screen',
     render: (p) => {
       const r = sampleRewards()[p.kind.slice(2) as keyof ReturnType<typeof sampleRewards>];

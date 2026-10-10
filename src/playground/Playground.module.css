@@ -47,6 +47,8 @@
 .navBox { position: relative; height: calc(var(--milo-size-nav-bar-h) + var(--milo-size-nav-bottom) * 2); }
 .figureBox { position: relative; width: 100%; height: calc(var(--milo-size-hero-max-h) * 2); overflow: hidden; }
 .figureInner { position: absolute; inset: 0; }
+/* 固定浅色的一格（2026-10-10 全局浅色：人体 L1–L4、浅色钢板）：局部主题要自己重设底色和字色，不然继承外面主题算好的值 */
+.lightCell { background: var(--milo-color-bg-base); color: var(--milo-color-text-primary); border-radius: var(--milo-radius-m); }
 
 /* 交互演示 */
 .demo { display: grid; gap: var(--milo-space-m); padding: var(--milo-space-l); border-radius: var(--milo-radius-l); background: var(--milo-color-bg-raised);
