@@ -56,3 +56,6 @@
   fill: var(--milo-color-accent-default); filter: drop-shadow(0 var(--milo-stroke-hairline) var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-color-accent-rim) 70%, transparent)) drop-shadow(0 0 var(--milo-space-2xs) var(--milo-color-accent-glow)); }
 [data-theme='light'] .spark[data-tone='accent'] .area, [data-theme='light'] .spark[data-tone='lime'] .area { fill: color-mix(in srgb, var(--milo-color-accent-default) 22%, transparent); }
 [data-theme='light'] .on { fill: var(--milo-color-accent-default); stroke: none; filter: drop-shadow(0 var(--milo-stroke-hairline) var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-color-accent-rim) 70%, transparent)); }
+/* 浅色荧光焦点（2026-10-10 用户：荧光绿在各页都是焦点点缀色，动作曲线页选中点被画成黑块是错的）：对位钻入留下的罩层（.tail）不再重画点，
+   下面主图里的点（含荧光选中点 .on）露出来；罩层的点在深色里和主图同色，深色不走这里 */
+[data-theme='light'] .tail :is(.dot, .prDot) { visibility: hidden; }

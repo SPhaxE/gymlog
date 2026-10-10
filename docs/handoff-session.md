@@ -2,117 +2,88 @@
 
 > 新窗口请先完整读完本文件，再开始工作。遇到 Open Questions 里的问题先问我，不要自行决定。
 
-_Updated: 2026-10-10 18:00_
+_Updated: 2026-10-10 23:30_
 
 ## 1. Goal
-**浅色模式做到「白 + 荧光 + 黑」、不脏、不发暗，并且深色模式（默认、App 对外口径）一像素不变。** 这一轮的工作已经全部做完并推到分支，等用户验收浅色；验收通过、没有新意见之后，进入**作品集**（先读 `docs/portfolio-handoff.md`，§8 的问题先问用户）。
+**浅色模式保持高质量：荧光绿在每一页都是焦点点缀色，浅色不是深色的反色，按页面重新判断层级；深色（默认、App 对外口径）一像素不变。** 本轮已做完并推上 `main`。作品集**暂不考虑**（用户 2026-10-10）。
 
-用户的浅色诉求按时间顺序（都已实现，原话是判断依据）：
-1. 全局浅色，不要深色岛（容量人体、钢板、奖励、故事、/demo 都跟主题走）；
-2. 浅色人体：配色用 L2、效果再出 4 个变体 → **选定 L2d 磨砂 + C3 磨砂白线**；描边 / 胶囊边 / 引线 / 刻度不要深色；
-3. 荧光不是页面最亮的元素、特效垫灰发黑、点缀（端点 / PR / 进度条）同一个问题 → 荧光治理四期（`docs/light-fluo-plan.md`）；
-4. **拟真阴影，尽量不用描边**（深色里原有的描边不动）；
-5. 荧光还发暗 → **浅色去墨绿，主视觉只有白、荧光绿、黑**；中性灰白底；特效只用纯荧光；
-6. /preview、/playground 最前面加全局深浅开关；
-7. 首次引导动画（故事）固定深色（App 默认深色），浅色水墨封存；
-8. 用户原话：「深色模式是默认且更推荐（app 对外口径）」「原本没计划浅色，可能冲突，可以随时回改」「深色模式的页面已经是完全固定的」。
+用户这一轮的原话（判断依据）：
+1. 「浅色模式不是简单的深色反色，也要对页面做页面各种必要的分析再做决定。你自行决断即可」「你可以对页面做快速走查，保证浅色模式也保持高质量」「作品集暂不考虑」
+2. 「要保证的是主题色荧光绿在各页面都是焦点点缀色，所以像动作曲线页那样的处理是错误的，排查所有问题」
+3. 上一窗口遗留问题的回答：合 `main` = 现在合（已合）；导航滑块浅色 = **保留浅凹槽**；荧光雾 / 墨黑小块 = 「你来分析」→ 本轮已分析并决定（见 §5）。
 
 ## 2. Current State
-- [x] 全局浅色（无深色岛）、L2d + C3、故事固定深色、荧光治理四期、拟真阴影、去墨绿 / 纯荧光、ThemeBar
-- [x] `npm run check` 全绿（400 项）；`shoot_6a.py` 全套 19 / 19 份通过（含新增的荧光治理检查）；深色 17 个页面（today / body / gains / log / me / me/level / shop / pro / 故事 8 幕）与治理前逐像素一致
-- [x] 文档同步：DESIGN §1.5「荧光治理」第 1–8 条、brief 决定记录、`/playground` 说明、`docs/light-fluo-plan.md`
-- [ ] **用户验收浅色**（首页 / 容量 / 增量 / 记录 / 我的 / 商城）——看了最后一轮截图还没回复
-- [ ] **这一轮的全部提交只在分支 `claude/gifted-gauss-sg2xds` 上，没推 `main`**（本轮的任务设定要求只推这个分支；CLAUDE.md 的常规做法是推 main，Vercel 才会部署）。要不要合 main：问用户
-- [ ] 用户在小米 15 上复查浅色性能（卡片现在都带阴影）
-- [ ] Stitch 密钥：**这个容器里没有 `secrets/stitch.env`**（约定：Stitch 密钥在仓库根 `secrets/stitch.env`，用户 2026-10-09 说每次交接都告知、不再向用户要；用户 2026-10-10 说先不管）
-- [ ] 作品集
+- [x] 上一窗口浅色分支 `claude/gifted-gauss-sg2xds` 快进合进 `main`
+- [x] 浅色走查：17 个页面深浅对照 + 浅色训练全流程截图逐张看过
+- [x] **荧光焦点排查**：脚本逐元素比对深 / 浅，深色是荧光、浅色变黑的全部改回荧光（DESIGN §1.5 第 9 条）
+- [x] 走查另改：浅色去荧光雾、建档选中卡、Pro 方案分段、增量「持平」段与收起组头（第 10 条）
+- [x] 门禁 `light_checks` 新增「荧光焦点」比对（每个浅色页面先开深色收一遍荧光元素）
+- [x] 文档：DESIGN §1.5 第 9、10 条，brief 决定记录，`/playground` 说明（Coupon、PlanPicker、PropGlyph、FluidBackdrop、Nav、OptionCard、RewardCard）
+- [ ] 用户看浅色新效果（只告诉了改了什么、线上能看）
+- [ ] 用户在小米 15 上复查浅色性能（卡片带阴影；浅色流体背景现在不跑循环了，应更省）
+- [ ] 作品集（暂不考虑）
 
 ## 3. Active Files
-- `design/tokens/tokens.json`（改完跑 `python3 scripts/build_tokens.py`，它校验两套主题对比度，生成 `tokens.css` / `tokens.gen.ts` / Figma 插件）：
-  - 浅色值：`bg/base` paper-100、`bg/raised-2` paper-150、`accent/default` lime-500、`accent/glow` lime-500-a33、`accent/glow-ring` lime-500-a13、**`accent/ink` ink-900（墨黑）**、`text/on-accent-secondary` ink-600、`brand/mark-lit` lime-500、`nav/progress` ink-900、`fx/spark-0..2`、`fx/glow-mid|hot`、`data/spark-line` ink-900、`plate/steel-top|bottom|hole`、`feedback/danger` red-700
-  - 新语义色 **`accent/rim`**（深色 = 荧光、浅色 ink-900；只在 `[data-theme='light']` 规则里用，取 25–70% 透明做「带灰黑的阴影」）；新原色 `paper-150`、`red-700`
-  - 原色 `paper-*` / `ink-500|600|900` 改成**中性灰白**（`paper-50` 纯白 `#FFFFFF`、`paper-100` `#E9EAE7`……）；深色不引用这些原色
-- `src/styles/global.css`：浅色阴影变量 **`--depth-1`**（卡片 / Chip / 胶囊：接触影 + 环境影）、**`--depth-0`**（小标）、**`--depth-sink`**（凹槽 / 输入框 / 导航滑块，内阴影）
-- 各 `*.module.css` 末尾的「浅色：发丝描边 → 拟真阴影」块（`[data-theme='light'] .xxx { box-shadow: var(--depth-*) }`）：把深色里 `inset 0 0 0 hairline line-default|line-strong` 的卡片、Chip、胶囊、标签、档案格、记录卡、圆按钮等换成阴影；荧光面（`Button .primary`、`CapsuleRail .focus`、`gains .headLit`）= 下沿 2px 厚度 + 带灰黑的投影 + 光晕；点缀配方块（`charts` `gains` `growth` `ui`）= 荧光芯 + 小阴影；选中态块（`Segmented` `controls` `Nav` `gains`）
-- `src/components/BodyFigure.tsx`：`LIGHT_LOOKS`（L1–L4 落选、L2a–c 落选、**L2d 默认**）、`LIGHT_CONTOURS`（C0 墨 / C1 绿 / C2 灰绿 / **C3 frost 默认** / C4 柔影 / C5 无）、`TONES`（胶囊 / 引线 / 刻度，浅色引线黑、刻度灰、胶囊无描边靠 `--depth-1`）、`lightToneVars`、`DEFAULT_LIGHT_LOOK`
-- `src/components/atmosphere.tsx`：`BLOBS_LIGHT`（流体背景浅色光斑，只有荧光）
-- `src/components/ThemeBar.tsx(+.module.css)`：/preview、/playground 右上角固定的全局深浅开关（`setThemePref`，会记住）
-- `src/pages/OptionsBoard.tsx`：方案台，新增 L2 变体（`#light-v`）、描边 C（`#light-contour`）、底色 B（`#light-base`）、选中态 S（`#light-sel`）；B / S 的格子用覆盖值还原旧状态（`[data-fluo='off']`、`[data-sel='old']`）
-- `src/pages/StoryScreens.tsx`：`<Screen theme="dark">`；浅色水墨 CSS 选择器改成 `[data-story-ink]`（封存，没有元素带它）
-- `scripts/shoot_6a.py` 的 `light_checks`：页面底亮度 0.7–0.85、荧光主按钮不描边且 ≥ 3 层阴影、涨段 / Chip / Segmented 不是墨黑块、PR 角标荧光底、曲线端点芯 + 阴影、/preview /playground 的 ThemeBar（桌面视口，给 60 秒重绘）、故事 8 幕「整屏唯一深色岛」
-- **`scripts/regress_dark.py`**（本轮新收进仓库）：深色逐像素回归，用法见文件头和 §8
-- 文档：`docs/DESIGN.md` §1.5、`docs/light-fluo-plan.md`（分析 + 四期方案，含追加说明）、`docs/brief.md`、`docs/portfolio-handoff.md`
+- `src/styles/global.css`：浅色配方变量 `--depth-1 / --depth-0 / --depth-sink`（拟真阴影）+ **新 `--fluo-mark`（荧光笔）、`--fluo-edge`（荧光块立体边）、`--fluo-rim`（荧光线 / 点细黑边）**，只在 `[data-theme='light']` 定义
+- 各 `*.module.css` 末尾「浅色荧光焦点」块：`gains`（涨幅荧光笔、持平段浅灰、组头白浮起）、`guide`（要领竖条）、`dataviz`（今天圈）、`shop`（新品角带、引导语）、`PropGlyph`（Pro 通行证、速度线、冰块；`.prop:not(.dim)` 限定）、`Nav`（今日进度环）、`growth`（进账、chip、牛龄头像环、票根、可用、Pro 标、方案）、`Reward`（标签、牛劲胶囊、小级、五段路径、当前段）、`charts`（`.tail` 罩层不画点）、`controls`（选中选项卡）、`pro`（方案分段、省 40%）
+- `src/components/atmosphere.tsx`：`FluidBackdrop` 浅色直接 return（只留颗粒层），`BLOBS_LIGHT` 删了，旧值记在 brief
+- `scripts/shoot_6a.py`：`LIME_SCAN` + `light_checks` 里的荧光焦点比对
+- `scripts/regress_dark.py`：深色逐像素回归（用法见文件头和 §8）
+- 文档：`docs/DESIGN.md` §1.5 第 9、10 条；`docs/brief.md` 决定记录最后一行
 
 ## 4. Changes Made
-按提交（都在 `claude/gifted-gauss-sg2xds`）：
-- `eb473de` L2 配色选定；L2a–d 四个变体 + 6 种描边 + 胶囊 / 引线 / 刻度调子；故事固定深色
-- `a7656fe` 选定 L2d + C3 为默认
-- `f4415ff` 荧光治理方案文档
-- `a59ff68` 方案台底色 B 组
-- `ef9a927` 荧光治理四期 + 拟真阴影
-- `7544cb1` 门禁修正
-- `b4bdaed` 去墨绿 / 纯荧光、line-strong 描边换阴影、ThemeBar
-- 本提交：`scripts/regress_dark.py` + 本文件
+- `main` 上：上一窗口 8 个浅色提交（快进）+ 本轮一个提交「浅色荧光焦点 + 走查」
+- 荧光焦点改回荧光的元素：增量列表涨幅、增量详情曲线选中点（被钻入罩层的黑菱形盖住）、导航今日进度环、动作页要领竖条、日历「今天」圈、钱包进账 / 票根 / 「可用」、Pro 标、商城「新品」角带与引导语、知识卡序号、连胜数、牛龄头像环、道具图标（Pro 通行证、速度线、冰块）、奖励弹窗（标签、牛劲、小级、五段路径、当前段）、Pro 方案「省 40%」
+- 走查：浅色流体背景不画荧光雾；建档选中项白底 + 墨黑环（原来被阴影盖掉、只剩灰底）；Pro 方案分段 = 凹槽 + 白浮起（原来大黑块）；增量「持平」段浅灰；收起组头白浮起
 
 ## 5. Decisions & Rationale
-- **根因分析（数据）**：浅色里荧光明度 lime-500 0.858 / lime-550 0.762，低于卡片 0.965、和页面底 0.871 相当（对比度 1.0–1.25）→「荧光是最亮元素」在浅色塌了；点缀被换成近黑深绿 → 读成「深色点」；特效垫灰 / 暖米色底把荧光黄绿拉成橄榄 → 读成「暗」。治法：页面底降一档让卡片浮起、荧光面加真实阴影、点缀用荧光芯、特效去灰、纸色改中性灰白、深绿全部换黑。
-- **浅色里「亮」不靠明度，靠「荧光芯 + 阴影 + 光晕」**；荧光字和线用 `accent/ink`（现在是墨黑），荧光只做面 / 点 / 光晕。
-- **「荧光面积每屏一处」仍成立**：选中态用淡荧光（点缀级），没有做成荧光面（方案 S2 违反规则，没做）。
-- **阴影代替描边只在浅色**：深色里发丝描边是它的立体手段，一条没动；所有新规则都写在 `[data-theme='light']` 下，Token 只改 `light` 值。保留的描边：虚线占位（「加一个动作」「首次」）、选中 / 聚焦环（功能性）、复选框 / 单选 / 状态点。
-- **导航选中滑块浅色也换成浅凹槽**——对「导航滑块 = App 签名」的一次让步，**用户可否决**（见 Open Questions）。
-- **故事引导固定深色**：用户判断 App 默认深色、首次引导永远先是深色，浅色动画没人看到——先砍没人会看到的工作。
-- L2d 柔光描边层的混合模式是 screen（白线），门禁因此不再要求 multiply，只要求熔流 multiply。
-- 没有出 Stitch 参考：容器里没有密钥，用户也说先不管；直接在方案台用真实组件对比。
+- **荧光 = 焦点点缀色（两套主题都一样）**：浅色里荧光明度不比纸白高，之前的解法是「字和线用 `accent/ink` 墨黑」——用户否了：焦点被换成黑。现在深色是荧光的，浅色仍是荧光，看清靠三种配方：字 → 荧光笔（字墨黑、下半截荧光）；小块 → 荧光底墨字 + 下沿暗边；线 / 点 / 环 → 荧光 + 一圈细黑影。`accent/ink` 仍是墨黑，只给必须是线又不能是荧光的地方。
+- **墨黑保留给**：深色骨白实心的对位（选中 / 确认 / 一次性强标）——未读「N 条新」、「对比中」、首页本次加重黑条、牛龄守约周格、力竭度选中、对话框主按钮、知识卡标。黑本来就是浅色三色之一；荧光 = 焦点 / 得到的东西，黑 = 选中 / 确认。
+- **荧光雾去掉**：实测页边底色偏色量 3 → 12（黄橄榄），就是之前暖米色底让荧光发暗的老问题；还多铺一片荧光抢焦点。浅色也就不跑这块画布循环了。
+- **导航滑块浅色保留浅凹槽**（用户选）。
+- **没有上 /preview 方案台**：这一轮是改错（用户说现在的处理是错的、让我自行决断），不是待选方案；旧做法（墨黑字线、浅色荧光雾的旧值）记在 brief 决定记录。若要在方案台展示对比，需给每个模块的浅色规则加「旧」覆盖，成本高，没做。
+- 曲线页罩层（`.tail`）：深色里罩层的点和主图同色无所谓；浅色里它的墨黑菱形盖住了荧光选中点 → 浅色隐藏罩层的点（主图里同一位置的点露出来）。
 
 ## 6. Failed Attempts / 踩过的坑
-- `pkill -f "<串>"` 会把自己的 shell 杀掉（命令行里含同一串）→ 用 `kill $(pgrep -f '^python3 xxx')`，或按 PID 杀。
-- `npm run check` 里 `App.test.tsx` 的「规范页」偶发失败：和回归脚本抢 CPU 导致懒加载超时，单独重跑通过。
-- `/playground` 切浅色整页重绘很重（几百格，要几秒甚至十几秒）；门禁里的等待要给足（≥ 30–60 秒），原来的 8 秒在这个容器里本来就超。
-- 回归噪声：休息倒计时弧、钢板固定光源（位置相关）、/playground 个别格 1–80 个像素的动画 / 懒加载抖动（每次跑的集合不同）、说明文字变长导致后面各节整体下移（高度变化，不是视觉变化）。**页面必须 0 差异**。
-- `box-shadow: ... color-mix(... 140% ...)` 无效（百分比不能 > 100）。
-- 暖米色（paper 旧值）作浅色底会让荧光发暗；L2 变体里 L2c 的柔影叠在灰米冷肌肉上发脏 → 冷肌肉底改纸白。
-- 之前窗口的坑仍有效：推 main 别让最后一个提交只差 apk（`vercel.json` 的 `ignoreCommand`，推前先 `git merge --ff-only origin/main`）；无头 Chromium 没有 H.264；新容器 `pip install playwright`；4 个并行 agent 撞 API 额度上限时 SendMessage 让它们续上。
+- **Vercel 没部署**：CI 构建完会自动推一个只改 apk 的提交（`apk: debug 构建 … [skip ci]`），`vercel.json` 的 `ignoreCommand` 让 Vercel 跳过它，而它前面那个真提交的部署被取消 → 线上停在旧版本。推 `main` 前 `git fetch origin main && git merge --ff-only origin/main`（让有内容的提交在最上面），推完核对线上 bundle 哈希。
+- 审计脚本里 `border*Color` / `outlineColor` 跟 `currentColor`，会重复报；只看 `color / backgroundColor / fill / stroke / boxShadow / backgroundImage / filter`。荧光块里的字（墨黑）会被报成「丢了荧光」，要看往上几层有没有荧光底（门禁里查 4 层）。
+- DOM 比对看不见遮挡：曲线选中点在 DOM 里是荧光，但被上面一层罩住——要配合截图看。
+- 上一窗口的坑仍有效：`pkill -f` 会杀自己；`/playground` 浅色重绘很重（门禁等待 ≥ 30–60 秒）；回归噪声（休息倒计时弧、钢板光源、/playground 个别格）；`color-mix` 百分比不能 > 100；无头 Chromium 没有 H.264（动作页「示范加载失败」是这个原因）；新容器 `pip install playwright`。
 
 ## 7. Constraints
-- 见 `CLAUDE.md`：中文、结论先行；组件 / 页面里不写死 px、ms、十六进制颜色（`npm run check:hardcoded` 拦，**tsx 里也不许写 hex**）；命中区 ≥ 48；`/playground`、`/demo` 同步；方案台旧方案不删；要拍板的图用 `SendUserFile` 推；门禁放后台跑，**用户 2026-10-10 说：工作都做完再最后跑，不用中途跑**。
-- **深色模式一像素不许变**（用户：「深色模式原本有描边的不用改，深色模式的页面已经是完全固定的」）。任何主题相关的改动：Token 只改 `light`，CSS 只写 `[data-theme='light'] …`，改完跑 `scripts/regress_dark.py`。
-- 浅色：不写描边，用 `var(--depth-*)`；不用深绿（`lime-600/700/750` 不要出现在浅色可见元素里）；主视觉只有白 / 荧光 / 黑。
-- 绝不让对话被自动压缩：每个阶段收尾推送时顺手更新本文件（CLAUDE.md）。
+- 见 `CLAUDE.md`：中文、结论先行；组件 / 页面里不写死 px、ms、十六进制颜色（`npm run check:hardcoded`）；命中区 ≥ 48；`/playground`、`/demo` 同步；方案台旧方案不删；要拍板的图用 `SendUserFile` 推；门禁放后台、做完再跑。
+- **深色一像素不许变**：Token 只改 `light`，CSS 只写 `[data-theme='light'] …`，改完跑 `scripts/regress_dark.py`。
+- 浅色：不写描边用 `var(--depth-*)`；不用深绿；主视觉只有白 / 荧光 / 黑；**深色是荧光的地方浅色也是荧光**（`var(--fluo-*)`），门禁会查。
+- 绝不让对话被自动压缩：每个阶段收尾推送时顺手更新本文件。
 
 ## 8. How to Verify
 ```bash
 npm ci && npm run check                                   # tsc + 400 单测 + 写死值 + 构建（含两套主题对比度）
 npm run build && npx vite preview --port 4173 --host 127.0.0.1 &
-python3 scripts/shoot_6a.py --no-shots --base http://127.0.0.1:4173            # 全套门禁（后台跑，约 5 分钟）
-python3 scripts/shoot_6a.py --no-shots --only light --base http://127.0.0.1:4173   # 只跑浅色
-# 深色回归（基线 = 改动前提交的构建）
-git stash / git checkout <旧提交> && npm run build && cp -r dist /tmp/base_dist && npx vite preview --outDir /tmp/base_dist --port 4174 --host 127.0.0.1 &
-cp -r dist /tmp/cand_dist && npx vite preview --outDir /tmp/cand_dist --port 4175 --host 127.0.0.1 &
+python3 scripts/shoot_6a.py --no-shots --base http://127.0.0.1:4173                 # 全套门禁（后台跑）
+python3 scripts/shoot_6a.py --no-shots --only light --base http://127.0.0.1:4173    # 只跑浅色（含荧光焦点比对）
+# 深色回归：基线 = 改动前提交的构建（git worktree 出旧提交、软链 node_modules、build）
+npx vite preview --outDir <base_dist> --port 4174 --host 127.0.0.1 &  ;  npx vite preview --outDir <cand_dist> --port 4175 --host 127.0.0.1 &
 ROUTES_ONLY=1 python3 scripts/regress_dark.py shoot http://127.0.0.1:4174 /tmp/r_base
 ROUTES_ONLY=1 python3 scripts/regress_dark.py shoot http://127.0.0.1:4175 /tmp/r_cand
 python3 scripts/regress_dark.py compare /tmp/r_base /tmp/r_cand        # 页面必须全部一致
 ```
-- 测试状态：`check` 全绿；门禁全套 19 / 19；深色页面 17 / 17 一致。
-- 浅色看法：任何页面加 `?theme=light`（例：`/today?scenario=plain-prescription&theme=light`）；方案台 `/preview#light-v`、`#light-contour`、`#light-base`、`#light-sel`；`/playground` 右上角切全局主题。
-- 截图小工具（本窗口 scratchpad，丢了就按这个写）：playwright chromium `executable_path='/opt/pw-browsers/chromium'`，`args=['--no-sandbox']`，视口 390×844，`device_scale_factor=2`。
+- 测试状态：`check` 全绿（400 项）；门禁全套 19 / 19（含新增浅色荧光焦点比对）；深色逐像素 23 个页面全部一致（17 个常规 + 钱包、增量详情、动作页、会员中心、商品、知识卡）。
+- 浅色看法：任何页面加 `?theme=light`；`/playground` 右上角切全局主题。
+- 荧光审计思路（这一轮在 scratchpad 写的，丢了照这个写）：Playwright 同一地址 `&theme=dark` / `&theme=light` 各开一次，`#root *` 逐元素收 computedStyle（color、backgroundColor、fill、stroke、boxShadow、backgroundImage、filter），按 DOM 路径配对，HSL 色相 61–94°、饱和 > 0.6、亮度 > 0.45 算荧光；训练流程也深浅各走一遍逐步比对。门禁里的 `LIME_SCAN` 就是它的精简版。
 
 ## 9. Environment State
-- **Stitch 密钥：约定在仓库根 `secrets/stitch.env`（每次交接都告知，不再向用户要）；这个容器里没有这个文件**（用户说先不管）。
-- Branch: **`claude/gifted-gauss-sg2xds`**（已全部推送，远端同步）；`main` 没有这一轮的任何提交
-- Uncommitted changes: 无（本文件和 `scripts/regress_dark.py` 随下一个提交推送）
-- Running services: 可能还有 `vite preview` 在 4173 / 4174 / 4175 / 4176（旧容器的话已没有）；新窗口先 `npm ci`、构建、自己起
-- Env: Chromium `/opt/pw-browsers/chromium`；Python Playwright 先 `pip install playwright`（1.63）；`ffmpeg` 在；Pillow、numpy 在；GitHub 只能用 `mcp__github__*`，没有 `gh`
+- **Stitch 密钥：在仓库根 `secrets/stitch.env`（已被 `.gitignore`，不进提交；用户 2026-10-10 又给了一次，这个容器里已写好并验证 `stitch.py list` 可用）。每次交接告知，以后不再向用户要。**
+- Branch：工作分支 `claude/friendly-gauss-m528ns`，内容同 `main`（推 `main` 时同步推它）
+- Uncommitted changes：无
+- Running services：可能还有 `vite preview` 在 4173 / 4174 / 4175（新容器没有）
+- Env：Chromium `/opt/pw-browsers/chromium`；Python Playwright 先 `pip install playwright`；Pillow、numpy 在；GitHub 只能用 `mcp__github__*`
 
 ## 10. Open Questions
-- **要不要把这条分支合进 `main`**（让 Vercel 部署、线上 /demo 能看到）？
-- **导航选中滑块浅色保留「浅凹槽」吗？**（墨黑滑块是 App 签名，浅色里改了；可只把导航改回墨黑）
-- 流体背景在浅色里仍有一层淡荧光雾，要不要更淡 / 去掉
-- 还剩的墨黑小块（`tag_strong`、商城角标、`control/selected` 作数据填充处）要不要也治
-- 作品集：载体、样机机型、封面深 / 浅、要不要单独讲 AI 协作（`docs/portfolio-handoff.md` §8）
-- Stitch 密钥（用户说先不管）
+- 浅色新效果用户还没看（荧光焦点 + 走查）；有意见再按 §7 的规矩改
+- 作品集：用户说暂不考虑（`docs/portfolio-handoff.md` §8 的问题等用户重提再问）
 
 ## 11. Specific Next Steps
-1. **先问用户**：浅色验收意见；要不要合 `main`；导航滑块保留与否（Open Questions）。
-2. 按反馈微调浅色：只改 `light` Token / `[data-theme='light']` 规则；改完跑 `npm run check`，用 `regress_dark.py` 重截深色页面比对，最后（所有改动做完后）一次性跑门禁全套。
-3. 合 `main`（若用户同意）：`git fetch origin main && git merge --ff-only origin/main`（让有内容的提交在最上面），推 `main`，核对线上 `https://gymlog-taupe.vercel.app/demo` 的提交号；只告诉用户「改了什么、线上能看了」。
-4. 之后作品集：先读 `docs/portfolio-handoff.md`，§8 的问题先问用户（不要自行决定）。
+1. 等用户对浅色的反馈；改动只写 `light` Token / `[data-theme='light']` 规则，深色是荧光的浅色也要荧光（`--fluo-*`）。
+2. 改完：`npm run check` → `regress_dark.py` 深色回归 → 最后一次性跑门禁全套（含浅色荧光焦点比对）。
+3. 推 `main` 前先 `git merge --ff-only origin/main`，推完核对线上 /demo 的 bundle 哈希是新的；只告诉用户「改了什么、线上能看了」。

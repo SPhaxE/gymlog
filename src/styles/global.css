@@ -26,4 +26,11 @@ p, .milo-text-body, .milo-text-caption { text-wrap: pretty; }
   --depth-1: 0 var(--milo-stroke-hairline) var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-color-shadow-float) 50%, transparent), 0 var(--milo-space-2xs) var(--milo-space-m) var(--milo-color-shadow-float);
   --depth-0: 0 var(--milo-stroke-hairline) var(--milo-space-2xs) color-mix(in srgb, var(--milo-color-shadow-float) 70%, transparent);
   --depth-sink: inset 0 var(--milo-stroke-hairline) var(--milo-space-xs) color-mix(in srgb, var(--milo-color-shadow-float) 90%, transparent);
+  /* 荧光焦点（2026-10-10 用户：荧光绿在各页都是焦点点缀色，浅色不能把它换成黑）：深色里是荧光的地方，浅色仍是荧光，靠下面三种配方看清——
+     --fluo-mark 荧光笔：字保持墨黑、底下划一道荧光（数字、短语）；
+     --fluo-edge 荧光块的立体边：荧光底 + 墨黑字的小块（角标、票根、胶囊）配它，下沿一道暗边 + 小投影；
+     --fluo-rim 荧光线 / 点的细黑边：给细荧光线、圆点、环（filter），让它在纸白上有轮廓 */
+  --fluo-mark: linear-gradient(transparent 52%, var(--milo-color-accent-default) 52% 94%, transparent 94%);
+  --fluo-edge: 0 var(--milo-stroke-hairline) 0 color-mix(in srgb, var(--milo-color-accent-rim) 35%, transparent), 0 var(--milo-stroke-hairline) var(--milo-space-2xs) color-mix(in srgb, var(--milo-color-accent-rim) 25%, transparent);
+  --fluo-rim: drop-shadow(0 0 var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-color-accent-rim) 60%, transparent));
 }

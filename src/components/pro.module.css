@@ -118,7 +118,12 @@
 
 /* 浅色：发丝描边 → 拟真阴影（2026-10-10 用户：尽量不用描边；深色不变） */
 [data-theme='light'] .ledger { box-shadow: var(--depth-1); }
-[data-theme='light'] .plans { box-shadow: var(--depth-1); }
 /* 浅色：line-strong 发丝描边 → 拟真阴影（用户：尽量不用描边；深色不变） */
 [data-theme='light'] .card { box-shadow: var(--depth-1); }
 [data-theme='light'] .proMark { box-shadow: var(--depth-0); }
+/* 浅色走查（2026-10-10）：浅色不是深色的反色——按页面重新判断层级。深色不走这里 */
+/* 方案分段：和 Segmented 的浅色一致（凹槽 + 白浮起的选中块），不再是一大块墨黑压在荧光主按钮上面；「省 40%」是得到的东西 → 荧光 */
+[data-theme='light'] .plans { background: var(--milo-color-bg-raised-2); box-shadow: var(--depth-sink); }
+[data-theme='light'] .thumb { background: var(--milo-color-bg-raised); box-shadow: var(--depth-1); }
+[data-theme='light'] :is(.planOn, .planOn b) { color: var(--milo-color-text-primary); }
+[data-theme='light'] .save { background: var(--milo-color-accent-default); color: var(--milo-color-text-on-accent); box-shadow: 0 0 0 var(--milo-space-2xs) var(--milo-color-bg-base), var(--fluo-edge); }

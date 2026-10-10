@@ -35,13 +35,9 @@ export function installGrain() {
 const hexVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim().slice(0, 7);
 const withAlpha = (hex: string, a: number) => hex + Math.round(Math.max(0, Math.min(1, a)) * 255).toString(16).padStart(2, '0');
 
-/** 光斑：位置在 0–1 的画布坐标里绕各自的中心做李萨如漂移。浅色主题（2026-10-10）同样的位置和轨迹，换成纸白上看得见的荧光；
- *  荧光治理第 3 期（用户：特效下面垫了灰、看起来发黑）：去掉骨灰斑 bone-500（暖灰叠在暖灰纸上就是一层脏膜），三团都是荧光，透明度压低 */
-const BLOBS_LIGHT = [
-  { c: '--milo-prim-lime-500', a: 0.22, x: 0.9, y: 0.08, r: 0.5, fx: 0.07, fy: 0.05, ax: 0.1, ay: 0.06 },
-  { c: '--milo-prim-lime-300', a: 0.26, x: 0.1, y: 0.4, r: 0.55, fx: 0.045, fy: 0.06, ax: 0.12, ay: 0.1 },
-  { c: '--milo-prim-lime-500', a: 0.08, x: 0.75, y: 0.62, r: 0.38, fx: 0.06, fy: 0.08, ax: 0.1, ay: 0.12 },
-];
+/** 光斑：位置在 0–1 的画布坐标里绕各自的中心做李萨如漂移。只在深色里画。
+ *  浅色（2026-10-10 走查）不铺荧光雾，只留颗粒：雾把中性灰白底染成黄橄榄（页边偏色量 3 → 12，正是暖米色底让荧光发暗的老毛病），
+ *  还在每屏多铺一片荧光、抢走真正的荧光焦点（主按钮、人体、PR）。浅色里曾用的三团荧光（lime-500 .22 / lime-300 .26 / lime-500 .08，位置同深色）记在 docs/brief.md */
 const BLOBS = [
   { c: '--milo-prim-lime-500', a: 0.09, x: 0.9, y: 0.08, r: 0.5, fx: 0.07, fy: 0.05, ax: 0.1, ay: 0.06 },
   { c: '--milo-prim-lime-900', a: 0.3, x: 0.1, y: 0.4, r: 0.55, fx: 0.045, fy: 0.06, ax: 0.12, ay: 0.1 },
@@ -57,14 +53,15 @@ export function FluidBackdrop({ level }: { level?: () => number }) {
     let ctx: CanvasRenderingContext2D | null = null;
     try { ctx = cv?.getContext('2d') ?? null; } catch { ctx = null; }
     if (!cv || !ctx) return;
-    const W = (cv.width = 96), H = (cv.height = 192);
+    const W = (cv.width = 96), H = (cv.height = 192); // 重设尺寸顺带清空画布（从深色切到浅色时不留旧雾）
+    if (theme === 'light') return;
     const off = document.createElement('canvas'); off.width = W; off.height = H;
     const oc = off.getContext('2d');
     if (!oc) return;
     // 屏幕上的 space/2xl 模糊 → 画布像素（画布按 CSS 拉伸到元素大小）
     const sigma = () => (T['space/2xl'] * W) / Math.max(1, cv.getBoundingClientRect().width);
     let blur = sigma();
-    const blobs = theme === 'light' ? BLOBS_LIGHT : BLOBS;
+    const blobs = BLOBS;
     const cols = blobs.map((b) => hexVar(b.c));
     const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     let raf = 0, last = 0, energy = 0;

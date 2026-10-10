@@ -63,3 +63,5 @@
 @keyframes hwGrow { from { transform: scaleY(0); } }
 @keyframes hwFade { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .hwBar, .hwVal { animation: none; } }
+/* 浅色荧光焦点（2026-10-10 用户：荧光绿在各页都是焦点点缀色——深色里是荧光的，浅色仍是荧光，不换成黑；配方见 global.css --fluo-*）。深色不走这里 */
+[data-theme='light'] .dot_today { box-shadow: 0 0 0 var(--milo-stroke-focus) var(--milo-color-accent-default), 0 0 0 calc(var(--milo-stroke-focus) + var(--milo-stroke-hairline)) color-mix(in srgb, var(--milo-color-accent-rim) 45%, transparent); }

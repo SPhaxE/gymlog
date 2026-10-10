@@ -518,6 +518,25 @@ BG_LUM = r"""(sel) => {
   return +(0.2126 * f(bg[0]) + 0.7152 * f(bg[1]) + 0.0722 * f(bg[2])).toFixed(3);
 }"""
 # 页里有没有局部主题（2026-10-10 用户：要真·全局浅色，App 里不许再有深色岛）
+# 荧光焦点（2026-10-10 用户：荧光绿在各页都是焦点点缀色，浅色不能换成黑；DESIGN §1.5 第 9 条）：同一页深 / 浅各收一遍，
+# 深色里是荧光（字 / 底 / 描边 / 填充 / 阴影 / 渐变 / filter）的元素，浅色里它自己或往上 4 层得还有荧光（荧光笔、荧光块里的字算有）
+LIME_SCAN = r"""() => {
+  const isLime = (s) => [...(s || '').matchAll(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)/g)].some((m) => {
+    const [r, g, b] = [m[1], m[2], m[3]].map((x) => x / 255), a = m[4] == null ? 1 : +m[4]; if (a < 0.25) return false;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn; if (!d || l <= 0.45) return false;
+    const sat = d / (1 - Math.abs(2 * l - 1)); let h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h = ((h * 60) + 360) % 360;
+    return sat > 0.6 && h >= 61 && h <= 94; });
+  // 字色只算有自己文字的元素；左边框色只算真有左边框的（否则它跟着 currentColor，是假荧光）
+  const own = (el) => { const c = getComputedStyle(el); return ['color', 'backgroundColor', 'fill', 'stroke', 'boxShadow', 'backgroundImage', 'filter', 'borderLeftColor'].some((k) =>
+    (k !== 'color' || [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) && (k !== 'borderLeftColor' || parseFloat(c.borderLeftWidth) > 0) && isLime(c[k])); };
+  const out = {};
+  for (const el of document.querySelectorAll('#root main *')) {
+    const b = el.getBoundingClientRect(); if (!b.width || !b.height || el.getAnimations().length) continue;   // 在跑动画的（Logo 条闪亮等）颜色随相位变，不比
+    let k = [], e = el; for (; e && e.id !== 'root'; e = e.parentElement) k.unshift(e.tagName + [...(e.parentElement?.children || [])].indexOf(e));
+    let lit = false, a = el; for (let i = 0; a && i < 5; i++, a = a.parentElement) if (own(a)) { lit = true; break; }
+    out[k.join('>')] = { own: own(el), lit, cls: String(el.className?.baseVal ?? el.className).slice(0, 40), txt: (el.textContent || '').trim().slice(0, 12) };
+  }
+  return out; }"""
 ISLANDS = "[...document.querySelectorAll('body [data-theme]')].map((e) => e.tagName.toLowerCase() + '.' + String(e.className).slice(0, 30))"
 
 def light_checks(b, w, h):
@@ -528,6 +547,8 @@ def light_checks(b, w, h):
     pg = b.new_page(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True)
     pg.on('pageerror', lambda e: errors.append(f'{tag} light pageerror: {e}'))
     for path in ('/today', '/body', '/gains', '/gains/barbell-bench-press-4', '/log', '/me', '/me/level', '/me/messages', '/me/wallet', '/me/pro', '/pro', '/shop', '/shop/item/belt-10', '/shop/guide/belt', '/exercise/barbell-bench-press-4'):
+        pg.goto(f'{args.base}{path}?scenario=plain-prescription&theme=dark'); pg.wait_for_selector('main'); pg.wait_for_timeout(1100)
+        dark = pg.evaluate(LIME_SCAN)   # 先收深色的荧光焦点，下面浅色比对
         pg.goto(f'{args.base}{path}?scenario=plain-prescription&theme=light'); pg.wait_for_selector('main'); pg.wait_for_timeout(1100)
         ok(pg.evaluate('document.documentElement.dataset.theme') == 'light', f'{tag} 浅色·{path}：html 是浅色')
         isl = pg.evaluate(ISLANDS); ok(not isl, f'{tag} 浅色·{path}：页里没有局部深色岛 {isl[:3]}')
@@ -537,6 +558,9 @@ def light_checks(b, w, h):
         small = audit(pg); ok(not small, f'{tag} 浅色·{path}：命中区都 ≥ 48 {small[:3]}')
         # 荧光治理（2026-10-10，docs/light-fluo-plan.md）：页面底降一档（paper-100 ≈ 0.78）、荧光面有深绿细边、点缀是荧光芯、选中态不是大块墨黑
         pl = pg.evaluate(BG_LUM, 'main'); ok(pl is not None and 0.7 < pl < 0.85, f'{tag} 浅色·{path}：页面底是降一档的纸色（亮度 {pl}）')
+        lit = pg.evaluate(LIME_SCAN)
+        lost = [f"{d['cls']}「{d['txt']}」" for k, d in dark.items() if d['own'] and k in lit and not lit[k]['lit']]
+        ok(not lost, f'{tag} 浅色·{path}：深色里的荧光焦点浅色里还是荧光（不换成黑）{lost[:3]}')
         if path == '/today':
             rim = pg.evaluate("() => { const b = [...document.querySelectorAll('button')].find((x) => /开始训练/.test(x.textContent)); if (!b) return null; const c = getComputedStyle(b); return { outline: c.outlineStyle, shadow: (() => { let d = 0, n = c.boxShadow === 'none' ? 0 : 1; for (const ch of c.boxShadow) { if (ch === '(') d++; else if (ch === ')') d--; else if (ch === ',' && d === 0) n++; } return n; })() }; }")
             ok(rim and rim['outline'] == 'none' and rim['shadow'] >= 3, f'{tag} 浅色·首页：荧光主按钮靠阴影托起（≥ 3 层）、不描边 {rim}')

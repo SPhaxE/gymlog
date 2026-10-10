@@ -237,3 +237,11 @@
 [data-theme='light'] .risk { box-shadow: var(--depth-1); }
 /* 浅色：line-strong 发丝描边 → 拟真阴影（用户：尽量不用描边；深色不变） */
 [data-theme='light'] .gcHead { box-shadow: var(--depth-0); }
+/* 浅色荧光焦点（2026-10-10 用户：荧光绿在各页都是焦点点缀色——深色里是荧光的，浅色仍是荧光，不换成黑；配方见 global.css --fluo-*）。深色不走这里 */
+[data-theme='light'] .plus, [data-theme='light'] .how b, [data-theme='light'] :is(.st_kept, .st_milestone) .streakNum b { color: var(--milo-color-text-primary); background: var(--fluo-mark); }
+[data-theme='light'] .chip { color: var(--milo-color-text-on-accent); background: var(--milo-color-accent-default); box-shadow: var(--fluo-edge); }
+[data-theme='light'] .badgeHead, [data-theme='light'] .miloTone .badgeHead { box-shadow: 0 0 0 var(--milo-stroke-focus) var(--milo-color-accent-default), 0 0 0 calc(var(--milo-stroke-focus) + var(--milo-stroke-hairline)) color-mix(in srgb, var(--milo-color-accent-rim) 40%, transparent), 0 0 var(--milo-space-l) var(--milo-color-accent-glow); }
+[data-theme='light'] .coupon:not(.cp_used, .cp_expired) .stub { color: var(--milo-color-text-on-accent); background: var(--milo-color-accent-default); }
+[data-theme='light'] .coupon:not(.cp_used, .cp_expired) .couponState { color: var(--milo-color-text-primary); background: var(--fluo-mark); }
+[data-theme='light'] .proBadge:not(.proActive) { color: var(--milo-color-text-on-accent); background: var(--milo-color-accent-default); box-shadow: var(--fluo-edge); }
+[data-theme='light'] .planOn { box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-accent-default), 0 0 0 var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-color-accent-rim) 40%, transparent), var(--depth-1); }

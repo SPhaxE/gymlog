@@ -220,3 +220,11 @@
 @keyframes fill { from { scale: var(--from) 1; } }
 @keyframes nodePulse { 0%, 100% { scale: 1; } 50% { scale: 1.35; } }
 @keyframes sheen { to { background-position: -300% 0; } }
+/* 浅色荧光焦点（2026-10-10 用户：荧光绿在各页都是焦点点缀色——深色里是荧光的，浅色仍是荧光，不换成黑；配方见 global.css --fluo-*）。深色不走这里 */
+[data-theme='light'] .label { color: var(--milo-color-text-primary); background: var(--fluo-mark); }
+[data-theme='light'] .gain { background: var(--milo-color-accent-default); box-shadow: var(--fluo-edge); }
+[data-theme='light'] .gain > :global(*), [data-theme='light'] .plus { color: var(--milo-color-text-on-accent); }
+[data-theme='light'] .gain .pro { color: var(--milo-color-accent-default); background: var(--milo-color-text-on-accent); animation: none; }
+[data-theme='light'] .pips .pipOn, [data-theme='light'] .nodeOn i { background: var(--milo-color-accent-default); box-shadow: 0 0 0 var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-color-accent-rim) 45%, transparent); }
+[data-theme='light'] .pathFill { background: var(--milo-color-accent-default); box-shadow: 0 0 0 var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-color-accent-rim) 40%, transparent), 0 0 var(--milo-space-s) var(--milo-color-accent-glow); }
+[data-theme='light'] .nodeNow i { box-shadow: 0 0 0 var(--milo-stroke-focus) var(--milo-color-bg-sheet), 0 0 0 calc(var(--milo-stroke-focus) * 2) var(--milo-color-accent-default), 0 0 0 calc(var(--milo-stroke-focus) * 2 + var(--milo-stroke-hairline)) color-mix(in srgb, var(--milo-color-accent-rim) 45%, transparent); }

@@ -164,7 +164,7 @@ export const CATALOG: Entry[] = [
     render: (p) => <Switch checked={p.on === 'true'} label="显示今日进度环" state={st(p.state)} disabled={p.state === 'disabled'} />,
   },
   {
-    name: 'OptionCard', group: '表单', desc: '建档与设置的选项：single = 单选（训练经验），multi = 多选（可用器械）。选中为骨白描边 + 实心标记；多选刚被选中时，勾按导航同一套描线画出来（从左到右、从下到上）。',
+    name: 'OptionCard', group: '表单', desc: '建档与设置的选项：single = 单选（训练经验），multi = 多选（可用器械）。选中为骨白描边 + 实心标记；多选刚被选中时，勾按导航同一套描线画出来（从左到右、从下到上）。 浅色：选中 = 白底 + 墨黑选中环 + 浮起（不是灰底）。',
     axes: { mode: ['single', 'multi'], selected: ['false', 'true'], state: STATE }, rows: ['mode', 'selected'], cols: 'state', size: 'card',
     render: (p) => <OptionCard mode={p.mode as 'single'} selected={p.selected === 'true'} state={st(p.state)} disabled={p.state === 'disabled'}
       title={p.mode === 'single' ? '进阶' : '杠铃'} detail={p.mode === 'single' ? '规律训练 1–3 年' : undefined} />,
@@ -519,7 +519,7 @@ export const CATALOG: Entry[] = [
     render: (p) => <Odometer value="79.1" size={p.size as 'xl'} />,
   },
   {
-    name: 'FluidBackdrop', group: '导航', desc: '底层流体噪点渐变（A4 追加）：几团主题色光斑缓慢漂移 + 颗粒，只铺在 Tab 根页的最底层；页面隐藏时停，减少动态效果时静止。可接音频电平随音乐涨落。',
+    name: 'FluidBackdrop', group: '导航', desc: '底层流体噪点渐变（A4 追加）：几团主题色光斑缓慢漂移 + 颗粒，只铺在 Tab 根页的最底层；页面隐藏时停，减少动态效果时静止。可接音频电平随音乐涨落。 浅色（2026-10-10 走查，DESIGN §1.5 第 10 条）：不画荧光雾、只留颗粒——雾把中性灰白底染成黄橄榄、抢走荧光焦点。',
     axes: {}, size: 'screen',
     render: () => <div className={s.sheetBox}><FluidBackdrop /></div>,
   },
@@ -577,7 +577,7 @@ export const CATALOG: Entry[] = [
   },
   /* ---------------- 导航 ---------------- */
   {
-    name: 'Nav', group: '导航', desc: '5 项「图标 + 名称」，选中项是按弹簧滑动的骨白小胶囊，切换时图标笔画由暗到亮画出来（iconmotionref1）。外圈 = 今日进度：不画（恢复日、未开始）→ 开始训练、0 组：一整圈暗色轨道（= 整场训练）→ 每完成一组荧光实线往前走（无端点）→ 最后一组走满。休息：选中项写剩余时间，小胶囊里一道实线内描边跟着小胶囊滑、平滑收短。',
+    name: 'Nav', group: '导航', desc: '5 项「图标 + 名称」，选中项是按弹簧滑动的骨白小胶囊，切换时图标笔画由暗到亮画出来（iconmotionref1）。外圈 = 今日进度：不画（恢复日、未开始）→ 开始训练、0 组：一整圈暗色轨道（= 整场训练）→ 每完成一组荧光实线往前走（无端点）→ 最后一组走满。休息：选中项写剩余时间，小胶囊里一道实线内描边跟着小胶囊滑、平滑收短。 浅色荧光焦点（2026-10-10 DESIGN §1.5 第 9 条）：今日进度仍是荧光实线，加一圈细黑边（--fluo-rim），不是墨黑环。',
     axes: { item: ['default', 'pressed', 'focused'], selected: ['home', 'body', 'gains', 'log', 'me'], ring: ['off', 'track', 'partial', 'full', 'rest'] },
     rows: ['item', 'selected'], cols: 'ring', size: 'screen',
     skip: (p) => p.item !== 'default' && !(p.selected === 'home' && p.ring === 'partial'),
@@ -592,7 +592,7 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'RewardCard', group: '增长', covers: ['RewardModal'],
-    desc: '奖励弹窗（品牌时刻）：升段 = 满档（旧形态蓄力抖动发亮 → 闪屏 + 冲击波 + 光芒 + 碎屑 + 震屏 + 长振动 → 新形态从白光里弹出，就是「小牛长大」，五段路径长到新段）；破纪录 / 连胜里程碑 = 高（印章砸下、Logo 条点亮、重量码表滚到新纪录 / 周胶囊依次点亮）；升小级 / 周期完成 = 中。牛劲用码表滚出来，会员显示 ×1.5。一次只弹一个，其余进「消息」；点一下跳过到定格；减少动态效果时只淡入定格。这里是定格画面，交互演示里看完整编排。数据取自等级曲线模拟里的进阶用户。破纪录（2026-10-09 走查 1 #23）：标签「破纪录 · 预估 1RM」→ 大数字 + 涨幅胶囊同一行（主角）→ 动作名（Heading，balance、最多两行）→ 一句短话（涨幅不再重复）；五种标题都 balance、说明句 pretty + 按字数限行宽、收短到一行半以内。浅色（2026-10-10 全局浅色：不再是深色岛）：纸白卡 + line-default 内描边 + shadow-float，遮罩纸白；荧光字和线（标签、牛劲、小级、五段路径、冲击波环）用 accent-ink；升段大字深绿 → 墨黑渐变；闪白改荧光闪；蓄力和长大的「发白」换成深绿细边 + 荧光外光晕，动作不变；没到的段名用次要字色。',
+    desc: '奖励弹窗（品牌时刻）：升段 = 满档（旧形态蓄力抖动发亮 → 闪屏 + 冲击波 + 光芒 + 碎屑 + 震屏 + 长振动 → 新形态从白光里弹出，就是「小牛长大」，五段路径长到新段）；破纪录 / 连胜里程碑 = 高（印章砸下、Logo 条点亮、重量码表滚到新纪录 / 周胶囊依次点亮）；升小级 / 周期完成 = 中。牛劲用码表滚出来，会员显示 ×1.5。一次只弹一个，其余进「消息」；点一下跳过到定格；减少动态效果时只淡入定格。这里是定格画面，交互演示里看完整编排。数据取自等级曲线模拟里的进阶用户。破纪录（2026-10-09 走查 1 #23）：标签「破纪录 · 预估 1RM」→ 大数字 + 涨幅胶囊同一行（主角）→ 动作名（Heading，balance、最多两行）→ 一句短话（涨幅不再重复）；五种标题都 balance、说明句 pretty + 按字数限行宽、收短到一行半以内。浅色（2026-10-10 全局浅色：不再是深色岛）：纸白卡 + line-default 内描边 + shadow-float，遮罩纸白；冲击波环用 accent-ink；标签荧光笔划底、牛劲是荧光胶囊、小级 / 五段路径 / 当前段是荧光 + 细黑边（2026-10-10 DESIGN §1.5 第 9 条：荧光是焦点点缀色，浅色不换成黑）；升段大字深绿 → 墨黑渐变；闪白改荧光闪；蓄力和长大的「发白」换成深绿细边 + 荧光外光晕，动作不变；没到的段名用次要字色。',
     axes: { kind: ['r-stage', 'r-milo', 'r-pr', 'r-streak', 'r-level', 'r-cycle'], member: ['free', 'pro'] }, rows: ['kind'], cols: 'member', size: 'screen',
     render: (p) => {
       const r = sampleRewards()[p.kind.slice(2) as keyof ReturnType<typeof sampleRewards>];
@@ -668,7 +668,7 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'Coupon', group: '增长',
-    desc: '卡券（票根：左侧深色存根放道具图标 PropGlyph + 面额，两侧缺口 + 虚线）：商家券 / 免邮券 / 会员体验 / 冻结卡 × 可兑换 / 牛劲不够（按钮不可用、写明还差多少）/ 可用 / 可用且能「去用」（钱包 → 商城，命中区 48）/ 已用 / 已过期。',
+    desc: '卡券（票根：左侧深色存根放道具图标 PropGlyph + 面额，两侧缺口 + 虚线）：商家券 / 免邮券 / 会员体验 / 冻结卡 × 可兑换 / 牛劲不够（按钮不可用、写明还差多少）/ 可用 / 可用且能「去用」（钱包 → 商城，命中区 48）/ 已用 / 已过期。 浅色荧光焦点（2026-10-10 DESIGN §1.5 第 9 条）：可用的票根是荧光底 + 墨黑字（已用 / 过期仍是灰），「可用」与进账数字荧光笔划底。',
     axes: { type: ['c-merchant', 'c-shipping', 'c-trial', 'c-freeze'], state: ['c-redeem', 'c-short', 'c-available', 'c-use', 'c-used', 'c-expired'] }, rows: ['type'], cols: 'state', size: 'card',
     render: (p) => {
       const c = COUPONS[p.type.slice(2) as keyof typeof COUPONS], st = p.state.slice(2);
@@ -744,7 +744,7 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'PlanPicker', group: '会员',
-    desc: '方案分段（6g，Stitch 付费墙 V1 的一行分段）：月度 / 年度（默认，骨白「省 40%」小标挂在上方）/ 试用 7 天；骨白滑块按软弹簧滑到选中项（M02 尺寸弹簧），每项 ≥ 48 高，方向键可切；用过试用就只剩两项。贴在主按钮正上方（拇指区）。',
+    desc: '方案分段（6g，Stitch 付费墙 V1 的一行分段）：月度 / 年度（默认，骨白「省 40%」小标挂在上方）/ 试用 7 天；骨白滑块按软弹簧滑到选中项（M02 尺寸弹簧），每项 ≥ 48 高，方向键可切；用过试用就只剩两项。贴在主按钮正上方（拇指区）。 浅色（DESIGN §1.5 第 10 条）：和 Segmented 一致——浅凹槽 + 白浮起的选中块，「省 40%」荧光底，不再是一大块墨黑。',
     axes: { state: ['plan-year', 'plan-month', 'plan-trial', 'plan-two'] }, size: 'card',
     render: (p) => { const plans = [{ id: 'month', name: '月度', price: '¥18' }, { id: 'year', name: '年度', price: '¥128', tag: '省 40%' }, { id: 'trial', name: '试用', price: '7 天' }];
       return <div style={{ paddingTop: 'var(--milo-space-m)' }}><PlanPicker plans={p.state === 'plan-two' ? plans.slice(0, 2) : plans} value={p.state === 'plan-month' ? 'month' : p.state === 'plan-trial' ? 'trial' : 'year'} /></div>; },
@@ -787,7 +787,7 @@ export const CATALOG: Entry[] = [
   },
   {
     name: 'PropGlyph', group: '增长',
-    desc: '道具图标（标志「递增条牛头」的变体）：冻结卡 = 牛头冻在冰块里（用掉时化开一角、荧光漫进来）；牛劲 = 荧光硬币压印牛头；Pro 体验 = 通行证；免邮 = 印着牛头的纸箱 + 荧光封箱带；商家券 = 吊牌 + 荧光折角。已用 / 过期整体降为禁用色。用在冻结卡、卡券票根、消息。',
+    desc: '道具图标（标志「递增条牛头」的变体）：冻结卡 = 牛头冻在冰块里（用掉时化开一角、荧光漫进来）；牛劲 = 荧光硬币压印牛头；Pro 体验 = 通行证；免邮 = 印着牛头的纸箱 + 荧光封箱带；商家券 = 吊牌 + 荧光折角。已用 / 过期整体降为禁用色。用在冻结卡、卡券票根、消息。 浅色荧光焦点（2026-10-10 DESIGN §1.5 第 9 条）：Pro 通行证是荧光卡面 + 墨线，速度线、化开的冰块边是荧光 + 细黑边。',
     axes: { kind: ['pk-freeze', 'pk-niujin', 'pk-trial', 'pk-shipping', 'pk-merchant'], state: ['ps-normal', 'ps-used', 'ps-dim'] }, size: 'auto', covers: ['PROP_NAME'],
     render: (p) => <PropGlyph kind={p.kind.slice(3) as PropKind} used={p.state === 'ps-used'} dim={p.state === 'ps-dim'} className={s.propGlyph} />,
   },

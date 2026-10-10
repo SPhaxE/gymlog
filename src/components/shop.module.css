@@ -109,3 +109,6 @@
 .oosLine { color: var(--milo-color-text-secondary); text-decoration: underline dotted; text-underline-offset: var(--milo-space-xs); }
 /* 浅色：line-strong 发丝描边 → 拟真阴影（用户：尽量不用描边；深色不变） */
 [data-theme='light'] .exit { box-shadow: var(--depth-1); }
+/* 浅色荧光焦点（2026-10-10 用户：荧光绿在各页都是焦点点缀色——深色里是荧光的，浅色仍是荧光，不换成黑；配方见 global.css --fluo-*）。深色不走这里 */
+[data-theme='light'] :is(.sh_new, .rb_new) { color: var(--milo-color-text-primary); background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-focus) var(--milo-color-accent-default), var(--depth-0); }
+[data-theme='light'] .lead { color: var(--milo-color-text-primary); background: var(--fluo-mark); }

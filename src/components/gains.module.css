@@ -70,3 +70,10 @@
 [data-theme='light'] .prStar { color: var(--milo-color-accent-default); filter: drop-shadow(0 var(--milo-stroke-hairline) var(--milo-stroke-hairline) color-mix(in srgb, var(--milo-color-accent-rim) 60%, transparent)) drop-shadow(0 0 var(--milo-space-2xs) var(--milo-color-accent-glow)); }
 /* 浅色选中态（2026-10-10 荧光治理第 4 期，用户：整体深色太多）：大块纯黑的选中态改成「白浮起 / 淡荧光 + 深绿细边」，荧光面积不增加（淡荧光是点缀级，不是荧光面）；导航选中滑块仍是整个 App 的签名，浅色里换成浅凹槽。深色不走这里 */
 [data-theme='light'] .seg_up { background: color-mix(in srgb, var(--milo-color-accent-default) 60%, var(--milo-color-bg-raised)); color: var(--milo-color-text-primary); }
+/* 浅色荧光焦点（2026-10-10 用户：荧光绿在各页都是焦点点缀色——深色里是荧光的，浅色仍是荧光，不换成黑；配方见 global.css --fluo-*）。深色不走这里 */
+[data-theme='light'] .row:is([data-look='accent'], [data-look='curve'], [data-look='star']) .delta [class*='_up_'] { color: var(--milo-color-text-primary); background: var(--fluo-mark); }
+/* 浅色走查（2026-10-10）：浅色不是深色的反色——按页面重新判断层级。深色不走这里 */
+/* 「持平」是最大的一段、却不是重点：深色里它是退后的深灰，浅色里同样比例的灰成了一大块发闷的中灰、压过荧光的「在涨」→ 换成浅灰，让条读成白 / 荧光 / 黑 */
+[data-theme='light'] .seg_flat { background: color-mix(in srgb, var(--milo-color-text-secondary) 18%, var(--milo-color-bg-raised)); }
+/* 收起的组头（保持 / 该减重）：raised-2 在浅色里比页面底还暗，读成「不可用的灰块」→ 和别的卡片一样白浮起 */
+[data-theme='light'] .bandGrey { background: var(--milo-color-bg-raised); box-shadow: var(--depth-1); }

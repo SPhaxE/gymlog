@@ -37,3 +37,8 @@
 .dim .pro { fill: var(--milo-color-text-disabled); }
 .dim .card, .dim .ice, .dim .used .ice { stroke: var(--milo-color-text-disabled); }
 .dim .crystal path, .dim .speedLines { stroke: var(--milo-color-text-disabled); }
+/* 浅色荧光焦点（2026-10-10 用户：荧光绿在各页都是焦点点缀色——深色里是荧光的，浅色仍是荧光，不换成黑；配方见 global.css --fluo-*）。深色不走这里 */
+[data-theme='light'] .prop:not(.dim) .used .ice, [data-theme='light'] .prop:not(.dim).used .ice { stroke: var(--milo-color-accent-default); filter: var(--fluo-rim); }
+[data-theme='light'] .prop:not(.dim) .card { fill: var(--milo-color-accent-default); stroke: var(--milo-color-text-primary); }
+[data-theme='light'] .prop:not(.dim) .pro { fill: var(--milo-color-text-primary); }
+[data-theme='light'] .prop:not(.dim) .speedLines { stroke: var(--milo-color-accent-default); filter: var(--fluo-rim); }
