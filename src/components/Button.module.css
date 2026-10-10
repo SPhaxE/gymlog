@@ -36,3 +36,4 @@
 @media (prefers-reduced-motion: reduce) { .glow, .glow::after { animation: none; } }
 [data-theme='light'] .glow { --glow-hi: var(--milo-prim-paper-50); }
 [data-theme='light'] .ghost:not(:disabled) { background-color: var(--milo-color-bg-raised); box-shadow: var(--depth-1); }
+[data-theme='light'] .danger:not(:disabled) { background-color: var(--milo-color-bg-raised); box-shadow: var(--depth-1); }

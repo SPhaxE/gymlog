@@ -67,4 +67,6 @@
 [data-theme='light'] .fieldBox { box-shadow: var(--depth-sink); }
 [data-theme='light'] .chipOn { background-color: color-mix(in srgb, var(--milo-color-accent-default) 38%, var(--milo-color-bg-raised)); color: var(--milo-color-text-primary);
   box-shadow: 0 var(--milo-stroke-hairline) 0 color-mix(in srgb, var(--milo-color-accent-rim) 35%, transparent), 0 var(--milo-space-2xs) var(--milo-space-s) color-mix(in srgb, var(--milo-color-accent-rim) 25%, transparent); }
+/* 浅色：line-strong 发丝描边 → 拟真阴影（用户：尽量不用描边；深色不变） */
+[data-theme='light'] .switch { box-shadow: var(--depth-sink); }
 [data-theme='light'] .switchOn { background-color: var(--milo-color-accent-default); box-shadow: 0 var(--milo-stroke-hairline) 0 color-mix(in srgb, var(--milo-color-accent-rim) 40%, transparent), 0 var(--milo-space-2xs) var(--milo-space-xs) color-mix(in srgb, var(--milo-color-accent-rim) 28%, transparent); }

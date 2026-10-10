@@ -571,6 +571,21 @@ def light_checks(b, w, h):
         isl = pg.evaluate(ISLANDS); ok(len(isl) == 1 and 'main' in str(isl[0]).lower(), f'{tag} 浅色·故事第 {k} 幕：只有整屏一块深色岛（封存浅色水墨）{isl[:3]}')
         lum = pg.evaluate(BG_LUM, '[class*=_story_]'); ok(lum is not None and lum < 0.2, f'{tag} 浅色·故事第 {k} 幕：底是深色（亮度 {lum}）')
         low = pg.evaluate(CONTRAST); ok(not low, f'{tag} 浅色·故事第 {k} 幕：文字对比度都达标 {low[:3]}')
+    # /preview、/playground 最前面有全局深浅开关（2026-10-10 用户）：点「浅色」整页变浅色、点「深色」变回，开关一直在视口里
+    if w == 360:
+        dk = b.new_page(viewport={'width': 1280, 'height': 800})   # 这两页是桌面上看的内部页，用桌面视口
+        dk.on('pageerror', lambda e: errors.append(f'/preview|/playground pageerror: {e}'))
+        for path in ('/preview', '/playground'):
+            dk.goto(f'{args.base}{path}'); dk.evaluate('localStorage.clear()'); dk.goto(f'{args.base}{path}'); dk.wait_for_selector('[role=radiogroup][aria-label=全局主题]', timeout=30000)
+            bar = dk.locator('[role=radiogroup][aria-label=全局主题]'); box = bar.bounding_box()
+            ok(box and 0 <= box['y'] < 100, f'浅色·{path}：全局主题开关在页面最前（右上角）{box}')
+            bar.get_by_role('radio', name='浅色').click(timeout=60000); dk.wait_for_function("document.documentElement.dataset.theme === 'light'", timeout=60000)   # playground 整页重绘很重（几百格），给足时间
+            ok(dk.evaluate('document.documentElement.dataset.theme') == 'light', f'浅色·{path}：点「浅色」整页变浅色')
+            dk.evaluate('window.scrollTo(0, document.body.scrollHeight / 3)'); dk.wait_for_timeout(300)
+            box = bar.bounding_box(); ok(box and 0 <= box['y'] < 100, f'浅色·{path}：滚动后开关还在视口里 {box}')
+            bar.get_by_role('radio', name='深色').click(timeout=60000); dk.wait_for_function("document.documentElement.dataset.theme === 'dark'", timeout=60000)
+            ok(dk.evaluate('document.documentElement.dataset.theme') == 'dark', f'浅色·{path}：点「深色」变回深色')
+        dk.close()
     # 奖励弹窗（只在 360 那一份跑）：结算流程门禁里只打 1 组、不出奖励，所以用 /playground 的定格卡和「奖励演示」里真弹出来的弹窗；对比度只算卡里的字、不按视口裁
     if w == 360:
         pg.goto(f'{args.base}/playground?theme=light'); pg.wait_for_selector('section#RewardCard', timeout=30000); pg.wait_for_timeout(1500)

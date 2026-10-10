@@ -107,3 +107,5 @@
 .lead { display: inline-flex; align-items: center; gap: var(--milo-space-2xs); flex: none; white-space: nowrap; color: var(--milo-color-accent-ink); font-weight: 700; }
 .pctChip { padding: 0 var(--milo-space-xs); border-radius: var(--milo-radius-xs); font-family: var(--milo-font-number); font-weight: 700; font-size: var(--milo-font-size-caption); color: var(--milo-color-text-on-accent); background: var(--milo-color-accent-default); }
 .oosLine { color: var(--milo-color-text-secondary); text-decoration: underline dotted; text-underline-offset: var(--milo-space-xs); }
+/* 浅色：line-strong 发丝描边 → 拟真阴影（用户：尽量不用描边；深色不变） */
+[data-theme='light'] .exit { box-shadow: var(--depth-1); }

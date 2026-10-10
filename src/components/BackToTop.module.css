@@ -9,3 +9,5 @@
 /* 有固定主按钮（首页「开始训练」）：抬到主按钮上面 */
 .lift { bottom: calc(var(--nav-clear) + var(--milo-size-button-h) + var(--milo-space-m)); }
 @media (prefers-reduced-motion: reduce) { .btn { transition: opacity var(--milo-motion-fast) linear; transform: none; } }
+/* 浅色：line-strong 发丝描边 → 拟真阴影（用户：尽量不用描边；深色不变） */
+[data-theme='light'] .btn { box-shadow: var(--depth-1); }

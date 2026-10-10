@@ -169,3 +169,9 @@
 [data-theme='light'] .session { box-shadow: var(--depth-1); }
 [data-theme='light'] .mediaBox { box-shadow: var(--depth-1); }
 [data-theme='light'] .keyStep { box-shadow: var(--depth-1); }
+/* 浅色：line-strong 发丝描边 → 拟真阴影（用户：尽量不用描边；深色不变） */
+[data-theme='light'] .idx { box-shadow: var(--depth-0); }
+[data-theme='light'] .lineIdx { box-shadow: var(--depth-0); }
+[data-theme='light'] .setInput { box-shadow: var(--depth-sink); }
+[data-theme='light'] .tile { box-shadow: var(--depth-1); }
+[data-theme='light'] .warmChip { box-shadow: var(--depth-0); }

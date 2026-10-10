@@ -9,7 +9,7 @@
  *  只有默认三层（O2 + F1 + S9）有浅色版，其余人体方案是深色存档——格子固定深色并写明「深色方案」。 */
 import { useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
-import { BodyFigure, Card, Chip, ContourFx, DEFAULT_LIGHT_LOOK, DEFAULT_LOOK, FillFx, Icon, LightContour, LightLook, Num, GainLook, GrainGlow, ParticleField, ProductCard, ProductGrid, ScanFx, ShopTagLook, SteelPlate, dotMonths, type ContourFxKind, type GainLookKind, type GrainKind, type LightContourKind, type LightLookKind, type ShopTagLookKind, type FillFxKind, type ParticleKind, type PlateLook, type ScanFxKind } from '../components';
+import { BodyFigure, Card, Chip, ThemeBar, ContourFx, DEFAULT_LIGHT_LOOK, DEFAULT_LOOK, FillFx, Icon, LightContour, LightLook, Num, GainLook, GrainGlow, ParticleField, ProductCard, ProductGrid, ScanFx, ShopTagLook, SteelPlate, dotMonths, type ContourFxKind, type GainLookKind, type GrainKind, type LightContourKind, type LightLookKind, type ShopTagLookKind, type FillFxKind, type ParticleKind, type PlateLook, type ScanFxKind } from '../components';
 import { IconStyleCtx, type IconStyle } from '../components/iconSets';
 import { bodyData } from '../data/demo';
 import type { HeadStat } from '../engine';
@@ -283,6 +283,7 @@ function Composer({ now }: { now: number }) {
 export function OptionsBoard({ now }: { now: number }) {
   return (
     <div className={s.page}>
+      <ThemeBar />
       <header className={s.head}>
         <h1 className="milo-text-title-l">方案台</h1>
         <p className="milo-text-caption">同一个人、同一份演示数据，待选方案并排实时渲染。选定后定为默认，旧默认和落选的留在这里；规范在 /spec，组件在 /playground。</p>

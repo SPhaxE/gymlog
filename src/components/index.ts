@@ -40,3 +40,4 @@ export { AgeBadge, Coupon, FreezeCard, GrowthBar, GrowthCard, KnowledgeTip, Ledg
 export { Breakdown, EvidencePanel, NiujinLine, OrderLine, PriceBlock, ProductCard, ProductGrid, ProductImage, RecommendCard, StatusTag, WalletExits, type ProductCardProps, type ProductStatus , ShopTagLook, type ShopTagLookKind } from './shop';
 export { MonthStats, PerkLedger, PerkTable, PlanPicker, ProCard, ProLink, ProWelcome, type PerkItem, type PlanOption } from './pro';
 export { GrainGlow, OrbitPlate, ParticleField, type GrainKind, type ParticleKind } from './particles';
+export { ThemeBar } from './ThemeBar';

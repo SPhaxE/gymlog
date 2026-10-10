@@ -38,3 +38,5 @@
 .swapText { display: grid; gap: var(--milo-space-2xs); min-width: 0; }
 .swapText > :last-child { color: var(--milo-color-text-secondary); }
 .swapName { display: flex; align-items: center; gap: var(--milo-space-s); }
+/* 浅色：line-strong 发丝描边 → 拟真阴影（用户：尽量不用描边；深色不变） */
+[data-theme='light'] .menu { box-shadow: var(--depth-1); }

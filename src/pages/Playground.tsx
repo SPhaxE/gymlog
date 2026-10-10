@@ -5,8 +5,7 @@ import { Fragment, useMemo } from 'react';
 import { CATALOG, GROUPS, NOT_IN_MATRIX, TOTAL, cn, variants, type Entry, type Variant } from '../playground/catalog';
 import { DEMOS } from '../playground/demos';
 import { fixtures, type Fixtures } from '../playground/fixtures';
-import { Segmented } from '../components';
-import { setThemePref, useTheme } from '../styles/theme';
+import { ThemeBar } from '../components';
 import s from '../playground/Playground.module.css';
 
 const cx = (...xs: (string | false | undefined)[]) => xs.filter(Boolean).join(' ');
@@ -66,15 +65,13 @@ function Section({ e, f }: { e: Entry; f: Fixtures }) {
 
 export function Playground({ now }: { now: number }) {
   const f = useMemo(() => fixtures(now), [now]);
-  const theme = useTheme();
   const total = TOTAL();
   return (
     <div className={s.page} data-total={total}>
+      <ThemeBar />
       <aside className={s.side}>
         <p className="milo-text-heading">慢牛 Milo</p>
         <p className={`milo-text-caption ${s.muted}`}>组件与交互态 · 规范 v2</p>
-        {/* 主题（2026-10-10）：同一套组件在深色 / 浅色下对照——只换 <html data-theme>，组件一行不改 */}
-        <Segmented label="主题" items={[['dark', '深色'], ['light', '浅色']] as const} value={theme} onChange={(v) => setThemePref(v)} />
         <nav className={s.toc} aria-label="组件目录">
           {GROUPS.map((g) => (
             <div key={g} className={s.tocGroup}>
@@ -94,7 +91,7 @@ export function Playground({ now }: { now: number }) {
         <header className={s.hero}>
           <h1 className="milo-text-title-l">组件与交互态</h1>
           <p className={`milo-text-body ${s.desc}`}>
-            {CATALOG.length} 个组件 · {total} 个变体 · 深色 / 浅色两套主题（左上角切换）。样式只引用 tokens.css（npm run check:hardcoded）；示例数字来自引擎在演示场景上的实算值。
+            {CATALOG.length} 个组件 · {total} 个变体 · 深色 / 浅色两套主题（右上角「全局主题」切换，整页都跟着换）。样式只引用 tokens.css（npm run check:hardcoded）；示例数字来自引擎在演示场景上的实算值。
             按下 / 聚焦在代码里是 :active / :focus-visible，这里强制显示；触屏优先，没有悬停态。系统开启「减少动态效果」时，按下不缩放、滑块直接到位、骨架不闪。
           </p>
           <p className={`milo-text-caption ${s.muted}`}>不进矩阵的导出：{Object.entries(NOT_IN_MATRIX).map(([k, why]) => `${k}（${why}）`).join('；')}</p>

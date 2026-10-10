@@ -119,3 +119,6 @@
 /* 浅色：发丝描边 → 拟真阴影（2026-10-10 用户：尽量不用描边；深色不变） */
 [data-theme='light'] .ledger { box-shadow: var(--depth-1); }
 [data-theme='light'] .plans { box-shadow: var(--depth-1); }
+/* 浅色：line-strong 发丝描边 → 拟真阴影（用户：尽量不用描边；深色不变） */
+[data-theme='light'] .card { box-shadow: var(--depth-1); }
+[data-theme='light'] .proMark { box-shadow: var(--depth-0); }

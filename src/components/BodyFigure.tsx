@@ -88,13 +88,13 @@ export const LIGHT_CONTOURS: Record<LightContourKind, LightContourSpec> = {
   'ink-heavy': { color: 'var(--milo-color-brand-mark)', alpha: 0.8, blur: 0.1, width: 1.1, blend: 'multiply' },
   deep: { color: 'var(--milo-color-accent-ink)', alpha: 0.45, blur: 0.1, width: 1.1, blend: 'multiply' },
   // 中绿线：深绿掺荧光，是荧光家族里的线，不是墨
-  green: { color: mix('lime-750', 40, 'lime-600'), alpha: 0.7, blur: 0.1, width: 1.1, blend: 'multiply' },
+  green: { color: 'var(--milo-prim-lime-600)', alpha: 0.9, blur: 0.1, width: 1.1, blend: 'multiply' },
   // 灰绿线：纸的暖灰掺一点深绿，淡、有点烟熏，比墨轻得多
-  sage: { color: mix('paper-300', 55, 'lime-750'), alpha: 0.6, blur: 0.12, width: 1.1, blend: 'multiply' },
+  sage: { color: mix('paper-300', 55, 'ink-500'), alpha: 0.6, blur: 0.12, width: 1.1, blend: 'multiply' },
   // 磨砂白线：纸白的细线 + 下沿一道很淡的绿影，像磨砂玻璃 / 压纹
-  frost: { color: 'var(--milo-prim-paper-50)', alpha: 0.95, blur: 0.08, width: 1.3, blend: 'normal', shadow: { color: 'var(--milo-prim-lime-750)', alpha: 0.42, dy: 0.5 } },
+  frost: { color: 'var(--milo-prim-paper-50)', alpha: 0.95, blur: 0.08, width: 1.3, blend: 'normal', shadow: { color: 'var(--milo-prim-ink-900)', alpha: 0.22, dy: 0.5 } },
   // 柔影：没有清晰的线，只有一圈宽而淡的深绿影，形体靠阴影不靠线
-  shade: { color: 'var(--milo-prim-lime-750)', alpha: 0.2, blur: 0.4, width: 2, blend: 'multiply' },
+  shade: { color: 'var(--milo-prim-ink-900)', alpha: 0.16, blur: 0.4, width: 2, blend: 'multiply' },
   // 无描边：只剩填充自己的唇边 / 内缘
   none: { color: 'transparent', alpha: 0, blur: 0, width: 1, blend: 'multiply' },
 };
@@ -107,14 +107,14 @@ export const LightContour = createContext<LightContourKind | null>(null);
 export interface LightTone { line: string; leader: string; tick: string; fx?: string }
 const TONES = {
   // 偏荧光：引线中绿、刻度深绿（胶囊都不描边，靠阴影 --depth-1 浮起来，2026-10-10 用户：尽量不用描边）
-  lime: { line: 'transparent', leader: mix('lime-750', 45, 'lime-600'), tick: mix('lime-750', 50, 'lime-600'), fx: 'var(--depth-1)' },
+  lime: { line: 'transparent', leader: 'color-mix(in srgb, var(--milo-prim-ink-900) 85%, transparent)', tick: 'var(--milo-prim-ink-500)', fx: 'var(--depth-1)' },
   // 偏纸色：引线深一点的绿、刻度暖灰
-  paper: { line: 'transparent', leader: mix('lime-750', 60, 'lime-600'), tick: 'var(--milo-prim-ink-500)', fx: 'var(--depth-1)' },
+  paper: { line: 'transparent', leader: 'color-mix(in srgb, var(--milo-prim-ink-900) 85%, transparent)', tick: 'var(--milo-prim-ink-500)', fx: 'var(--depth-1)' },
   // 偏绿影：引线、刻度同一个中绿
-  quiet: { line: 'transparent', leader: mix('lime-750', 50, 'lime-600'), tick: mix('lime-750', 55, 'lime-600'),
+  quiet: { line: 'transparent', leader: 'color-mix(in srgb, var(--milo-prim-ink-900) 85%, transparent)', tick: 'var(--milo-prim-ink-500)',
     fx: 'var(--depth-1)' },
   // 磨砂（L2d 默认）：引线、刻度中绿
-  frost: { line: 'transparent', leader: mix('lime-750', 50, 'lime-600'), tick: mix('lime-750', 50, 'lime-600'),
+  frost: { line: 'transparent', leader: 'color-mix(in srgb, var(--milo-prim-ink-900) 85%, transparent)', tick: 'var(--milo-prim-ink-500)',
     fx: 'var(--depth-1)' },
 } satisfies Record<string, LightTone>;
 
@@ -147,7 +147,7 @@ export const LIGHT_LOOKS: Record<LightLookKind, LightLookSpec> = {
   // 形体靠影：不画清晰的线，一圈宽而淡的深绿影托出肌肉分界；胶囊没有描边，只有一点影子
   L2c: { ramp: ['paper-50', 'lime-300', 'lime-500', 'lime-550', 'lime-600', 'lime-700'], lip: 0.72, edge: 0.86, grain: 0.06, glow: 0.3, sheen: 0.5, moltenTint: 'lime-600', molten: 1, contour: 'shade', tone: TONES.quiet, legend: '越绿越热' },
   // 磨砂：纸白细线 + 下沿绿影，像磨砂玻璃 / 压纹；胶囊是纸白细边
-  L2d: { ramp: ['paper-50', 'lime-300', 'lime-500', 'lime-550', 'lime-600', 'lime-700'], lip: 0.8, edge: 0.9, grain: 0.05, glow: 0.4, sheen: 1, moltenTint: 'lime-600', molten: 0.9, contour: 'frost', tone: TONES.frost, legend: '越绿越热' },
+  L2d: { ramp: ['paper-50', 'lime-300', 'lime-500', 'lime-500', 'lime-500', 'lime-500'], lip: 0.8, edge: 0.9, grain: 0.05, glow: 0.4, sheen: 1, moltenTint: 'lime-500', molten: 0.5, contour: 'frost', tone: TONES.frost, legend: '越绿越热' },
 };
 export const LightLook = createContext<LightLookKind | null>(null);
 /** 浅色人体的默认方案（2026-10-10 用户选定 L2d 磨砂 + C3 磨砂白线，即 L2d 自己的默认描边；L1–L4、L2a–c 落选，留在方案台） */

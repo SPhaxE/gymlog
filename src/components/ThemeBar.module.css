@@ -1,0 +1,4 @@
+.bar { position: fixed; z-index: 50; top: var(--milo-space-m); right: var(--milo-space-l); display: flex; align-items: center; gap: var(--milo-space-s);
+  padding: var(--milo-space-2xs) var(--milo-space-2xs) var(--milo-space-2xs) var(--milo-space-m); border-radius: var(--milo-radius-pill); color: var(--milo-color-text-secondary);
+  background: var(--milo-color-bg-raised); box-shadow: inset 0 0 0 var(--milo-stroke-hairline) var(--milo-color-line-default), 0 var(--milo-space-xs) var(--milo-space-l) var(--milo-color-shadow-float); }
+[data-theme='light'] .bar { box-shadow: var(--depth-1); }

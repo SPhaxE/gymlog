@@ -59,4 +59,6 @@
 .light .tex { opacity: 0.5; }
 .light .vig { opacity: 0.4; }
 .light .groove { opacity: 0.5; }
-.light .focus { box-shadow: 0 0 0 var(--milo-stroke-focus) var(--milo-color-text-primary), 0 0 var(--milo-space-m) var(--milo-space-2xs) var(--milo-color-accent-glow); }
+.light .focus { box-shadow: 0 0 0 var(--milo-stroke-focus) var(--milo-color-bg-raised), 0 var(--milo-space-2xs) var(--milo-space-s) var(--milo-space-2xs) var(--milo-color-shadow-float), 0 var(--milo-space-2xs) var(--milo-space-s) var(--milo-color-shadow-float), 0 0 var(--milo-space-m) var(--milo-space-2xs) var(--milo-color-accent-glow); }  /* 浅色：选中不是黑环，是纸白光圈 + 浮起的投影 */
+/* 浅色：line-strong 发丝描边 → 拟真阴影（用户：尽量不用描边；深色不变） */
+[data-theme='light'] .rdGo { box-shadow: var(--depth-1); }
